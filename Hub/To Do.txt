@@ -1,0 +1,7 @@
+- Upscale all textures
+- The blocks placed and on the right should be the exact same
+- Fix problematic blocks (end portal, chest list textures)
+- Proper lighting (Gemini)
+- Rain 
+- Doors, stairs
+- Skulk blocks

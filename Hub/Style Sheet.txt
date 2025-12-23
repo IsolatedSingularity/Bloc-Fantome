@@ -1,0 +1,156 @@
+# Style Sheet Instructions
+
+
+This represents a set of style instructions that must be consistent throughout the project, without exceptions. They must be adhered to.
+
+
+
+## Docstrings
+
+At the beginning of each Python file there should be a brief docstring which includes:
+
+- Title of the code (say like Quantum Chemistry Animation).
+
+- A brief description of the functionality of the code. This can be at most two short paragraphs which may or may not include bullet pointing with dashes '-'. In general if possible avoid bullet pointing unless listing different functionalities.
+
+- A line that states the authorship. The name is always the same mine: Jeffrey Morais. Never mention AI/LLMs/yourself. (The time isn't right yet, fret not.)
+
+
+### Explicit example:
+
+"""
+Interactive Quantum LDPC Circuit Builder
+
+This module implements a real-time interactive quantum circuit builder using tkinter with a dark theme GUI framework. The application provides a 2.5D isometric perspective where users can drag and drop 3D quantum circuit components from a toolbox onto a grid-based building area to construct quantum LDPC circuits and perform real-time quantum computations.
+
+Author: Jeffrey Morais
+"""
+
+
+
+## Sections
+
+There shouldn't be major sections of code without at least comments or a docstring. For instance, the section of code responsible for importing modeuls should be a brief comment preceeding it (also when trying to import modules with 'try:'). The reader should be a ble to piece whats going on without prior investigations. Not to say the comments should be exaggerated in length or technical depth, but it should flow. Note: seaborn pacakge should always be imported.
+
+
+### Explicit example:
+
+# Importing necessary modules
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.patches import Circle, Rectangle, FancyBboxPatch
+import matplotlib.patches as mpatches
+import os
+
+# Import Qiskit components (with fallback for manual drawing if not available)
+try:
+    from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+    from qiskit.visualization import circuit_drawer
+    from qiskit.circuit.library import TwoLocal, RealAmplitudes
+    QISKIT_AVAILABLE = True
+except ImportError:
+    print("Qiskit not available. Using manual circuit visualizations only.")
+    QISKIT_AVAILABLE = False
+
+
+
+## Functions
+
+Funtions should always contain docstrings within them near the beginning to describe the functionality of code. Within each section inside the function, whenever there is an indentation or spacing to allow for another section of code, there should always be one line comments (with a space between the # symbol and text), to keep consistent clarity for the reader/user. This also holds for the uses of classes.
+
+
+### Explicit example (function):
+
+def create_cavity_mediated_cnot():
+    """
+    Create Qiskit circuit for cavity-mediated CNOT gate
+    """
+    print("Creating cavity-mediated CNOT circuit...")
+    
+    if QISKIT_AVAILABLE:
+        # Create quantum circuit with 2 atoms + 1 cavity mode
+        qreg_atoms = QuantumRegister(2, 'atom')
+        qreg_cavity = QuantumRegister(1, 'cavity')
+        circuit = QuantumCircuit(qreg_atoms, qreg_cavity)
+        
+        # Cavity-mediated CNOT implementation
+        # Step 1: Entangle control atom with cavity
+        circuit.h(qreg_cavity[0])  # Put cavity in superposition
+        circuit.cx(qreg_atoms[0], qreg_cavity[0])  # Control atom - cavity
+        
+        # Step 2: Controlled rotation on target
+        circuit.cry(np.pi, qreg_cavity[0], qreg_atoms[1])  # Cavity controls target
+        
+        # Step 3: Disentangle cavity
+        circuit.cx(qreg_atoms[0], qreg_cavity[0])
+        circuit.h(qreg_cavity[0])
+        
+        # Add measurement (optional)
+        creg = ClassicalRegister(2, 'result')
+        circuit.add_register(creg)
+        circuit.measure(qreg_atoms, creg)
+        
+        # Draw circuit
+        circuit_fig = circuit_drawer(circuit, output='mpl', style='iqx', fold=100)
+        
+        # Save the circuit
+        save_path = 'cavity_cnot_circuit.png'
+        circuit_fig.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close(circuit_fig)
+        
+        print(f"Cavity-mediated CNOT circuit saved to {save_path}")
+        return circuit
+    
+    else:
+        return create_manual_circuit_cnot()
+
+
+### Explicit example (class, note it is cut off):
+
+class TQNNTensorProcessor:
+    """
+    Handles tensor network decomposition and topological quantum computations
+    
+    This class processes drawn patterns into quantum states and performs
+    real-time tensor decomposition with topological analysis.
+    """
+    
+    def __init__(self, lattice_size: int = 16):
+        """Initialize the tensor processor"""
+        self.lattice_size = lattice_size
+        self.current_state = None
+        self.decomposition_mode = TensorDecompositionMode.MPS
+        
+        # Tensor network components
+        self.mps_tensors = []
+        self.bond_dimensions = []
+        self.entanglement_spectrum = []
+        
+        # Topological properties
+        self.topological_order_parameter = 0.0
+        self.anyonic_charges = []
+        self.braiding_history = deque(maxlen=100)
+        
+        # Performance tracking
+        self.decomposition_times = deque(maxlen=50)
+        self.entropy_history = deque(maxlen=100)
+        self.charge_history = deque(maxlen=100)
+        
+        # Quantum circuit representation
+        self.circuit_depth = 0
+        self.gate_count = 0
+
+
+
+## General Style
+
+In general there are things that are of note. I am a theoretical phycisist so always work in natural units and start my indexing with 0 instead of 1. Now that is for components, if listing physical qubits then yes start indexing with n=1. Furthermore, I use camel style (exampleVariable) instead of snake style (example_variable). Furthermore, I like using colour palettes that make sense and aren't random. An example of this are the following seaborn colour palettes which appears in a few lines from now, use these palettes consistently. If these colour palettes run you into trouble, be sure to just replace it with whatever equivalent as close as possible in matplotlib, but that is a last resort.
+
+
+### Explicit example:
+
+# Set up the color palettes
+seqCmap = sns.color_palette("mako", as_cmap=True)
+divCmap = sns.cubehelix_palette(start=.5, rot=-.5, as_cmap=True)
+lightCmap = sns.cubehelix_palette(start=2, rot=0, dark=0, light=.95, reverse=True, as_cmap=True)

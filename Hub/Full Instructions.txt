@@ -1,0 +1,30 @@
+# Lego Builder Project
+
+This is your full instruction set. Aside from reading reference materials (step i), you are to ask me questions/clarifications before proceeding with each task. 
+
+
+i) Read the Reference Materials
+
+Read the following files in full, without skipping or summarizing prematurely — all content must be processed in one pass:
+
+- All files inside `References/Deep Research/` (This will give you context for the tools we develop.)
+- All files inside `Code/Examples/` (This will instruct you on the style and level of quality I want, if not even more than what is presented. Note, ignore the 余分 subfolder.)
+
+Even if unrelated in content (the Examples), they demonstrate formatting, commenting, structure, and output standards.
+
+Pay attention to:
+
+1. Clean and modular Python structure  
+2. Professional and informative README formatting  
+3. Well-labeled and styled visualizations  
+4. Clear and polished circuit implementations and diagrams
+
+When finished, output a **clear, concise summary** of your understanding. This is critical for grounding your work in the right conceptual direction.
+
+It is noted that all plots and images should be saved in the `Plots/` folder, even if the code resides in the `Code/` folder. Moreover, all code should reside in the `Code/` folder.
+
+
+ii) Minecraft Building Simulator (with GUI)
+
+Please come up with an interactive minecraft building GUI where I can drag and drop isometric perspective pieces (the menu I imagine would be like Too Many Items mod in Minecraft). Also have a set of premade structures I can load in. The GUI environment you can be inspired by the examples you read in the Example folders, as well can be derived from the Deep Research you read. There should also be sounds, and I suppose you can download the textures from online. Note: we are just wanting a prototype for now, no need for 1000 features.
+
