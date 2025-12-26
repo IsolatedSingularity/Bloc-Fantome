@@ -1338,6 +1338,564 @@ PREMADE_STRUCTURES = {
     "nether_fossil": STRUCTURE_NETHER_FOSSIL,
 }
 
+# Tutorial configuration file path
+TUTORIAL_CONFIG_FILE = os.path.join(BASE_DIR, ".tutorial_config.json")
+
+
+# ============================================================================
+# TUTORIAL SYSTEM
+# ============================================================================
+
+class TutorialScreen:
+    """
+    A Minecraft-themed tutorial overlay that guides users through the application.
+    
+    Features:
+    - Multi-step tutorial with navigation (Next/Back/Skip)
+    - Minecraft-style button textures and click sounds
+    - "Show on startup" checkbox preference
+    - Semi-transparent overlay with centered content panel
+    
+    Author: Jeffrey Morais
+    """
+    
+    # Tutorial content - each step has a title and content
+    TUTORIAL_STEPS = [
+        {
+            "title": "Welcome to Bite Sized Minecraft!",
+            "content": [
+                "This is an isometric building simulator inspired by Minecraft.",
+                "",
+                "You can place blocks, build structures, and explore different",
+                "dimensions - all with authentic sounds and textures!",
+                "",
+                "Let's learn how to use this tool."
+            ]
+        },
+        {
+            "title": "Placing Blocks",
+            "content": [
+                "• Left Click on the grid to place your selected block",
+                "• The ghost preview shows where your block will appear",
+                "• Blocks stack automatically on top of each other",
+                "",
+                "Tip: The isometric view gives a 2.5D perspective,",
+                "making it easy to visualize your builds!"
+            ]
+        },
+        {
+            "title": "Removing & Interacting",
+            "content": [
+                "• Right Click to remove blocks or interact with them",
+                "• Doors will open/close when right-clicked",
+                "• Other blocks will simply be removed",
+                "",
+                "Tip: You can open and close wooden and iron doors!"
+            ]
+        },
+        {
+            "title": "Camera Controls",
+            "content": [
+                "• Middle Mouse Button: Hold and drag to pan the view",
+                "• Mouse Wheel: Scroll to navigate the inventory panel",
+                "",
+                "Pan around to see different parts of your build,",
+                "or to find the perfect angle for screenshots!"
+            ]
+        },
+        {
+            "title": "Block Selection",
+            "content": [
+                "Use the right panel to select blocks:",
+                "",
+                "• Blocks: Organized by category (Building, Nature, etc.)",
+                "• Problematic: Blocks that may have rendering issues",
+                "• Structures: Pre-made buildings you can place",
+                "",
+                "Click category headers to expand/collapse them."
+            ]
+        },
+        {
+            "title": "Special Blocks",
+            "content": [
+                "Some blocks have special behaviors:",
+                "",
+                "• R Key: Rotate stairs to face different directions",
+                "• F Key: Flip slabs between top and bottom position",
+                "• Doors: Right-click to open/close",
+                "",
+                "These controls work on the block you're hovering over."
+            ]
+        },
+        {
+            "title": "Dimensions",
+            "content": [
+                "Explore three different dimensions:",
+                "",
+                "• Overworld: Classic grass and dirt (default)",
+                "• Nether: Netherrack floor with spooky ambiance",
+                "• End: End stone platform with mysterious music",
+                "",
+                "Switch dimensions in the Experimental section!"
+            ]
+        },
+        {
+            "title": "Pre-made Structures",
+            "content": [
+                "Build faster with pre-made structures!",
+                "",
+                "Open the Structures section and click any structure.",
+                "Then click on the grid to place it.",
+                "",
+                "Available: Houses, Trees, Portal, Fountain, and more!",
+                "",
+                "Keyboard shortcuts: H = House, T = Tree"
+            ]
+        },
+        {
+            "title": "Keyboard Shortcuts",
+            "content": [
+                "Quick block selection:",
+                "  1 = Grass    2 = Dirt    3 = Stone",
+                "  4 = Planks   5 = Cobblestone",
+                "",
+                "Other shortcuts:",
+                "  C = Clear the entire world",
+                "  ESC = Exit the application",
+                "",
+                "The position display shows your cursor coordinates."
+            ]
+        },
+        {
+            "title": "You're Ready!",
+            "content": [
+                "You now know everything to start building!",
+                "",
+                "Tips for great builds:",
+                "• Start with a floor plan",
+                "• Use different block types for variety",
+                "• Try the pre-made structures as starting points",
+                "• Experiment with all three dimensions!",
+                "",
+                "Have fun building!"
+            ]
+        }
+    ]
+    
+    def __init__(self, screenWidth: int, screenHeight: int):
+        """
+        Initialize the tutorial screen.
+        
+        Args:
+            screenWidth: Width of the game window
+            screenHeight: Height of the game window
+        """
+        self.screenWidth = screenWidth
+        self.screenHeight = screenHeight
+        self.currentStep = 0
+        self.visible = False
+        self.showOnStartup = True
+        
+        # Load saved preferences
+        self._loadConfig()
+        
+        # Panel dimensions
+        self.panelWidth = 550
+        self.panelHeight = 420
+        self.panelX = (screenWidth - self.panelWidth) // 2
+        self.panelY = (screenHeight - self.panelHeight) // 2
+        
+        # Button dimensions
+        self.buttonWidth = 100
+        self.buttonHeight = 30
+        self.buttonSpacing = 15
+        
+        # Checkbox dimensions
+        self.checkboxSize = 20
+        
+        # Calculate button positions (at bottom of panel)
+        buttonY = self.panelY + self.panelHeight - 50
+        totalButtonWidth = 3 * self.buttonWidth + 2 * self.buttonSpacing
+        startX = self.panelX + (self.panelWidth - totalButtonWidth) // 2
+        
+        self.backButtonRect = pygame.Rect(startX, buttonY, self.buttonWidth, self.buttonHeight)
+        self.nextButtonRect = pygame.Rect(startX + self.buttonWidth + self.buttonSpacing, 
+                                           buttonY, self.buttonWidth, self.buttonHeight)
+        self.skipButtonRect = pygame.Rect(startX + 2 * (self.buttonWidth + self.buttonSpacing), 
+                                           buttonY, self.buttonWidth, self.buttonHeight)
+        
+        # Checkbox position (below buttons)
+        checkboxY = buttonY + self.buttonHeight + 15
+        self.checkboxRect = pygame.Rect(
+            self.panelX + (self.panelWidth - 200) // 2,
+            checkboxY,
+            self.checkboxSize,
+            self.checkboxSize
+        )
+        
+        # UI textures (will be set from AssetManager)
+        self.buttonNormal = None
+        self.buttonHover = None
+        self.checkboxTexture = None
+        self.checkboxSelectedTexture = None
+        self.clickSound = None
+        self.assetManager = None  # For fetching block icons
+        
+        # Block icons to display per step (step index -> list of BlockTypes)
+        self.stepIcons = {}
+        
+        # Fonts
+        self.titleFont = pygame.font.Font(None, 36)
+        self.contentFont = pygame.font.Font(None, 26)
+        self.smallFont = pygame.font.Font(None, 22)
+        
+        # Hover states for buttons
+        self.backHovered = False
+        self.nextHovered = False
+        self.skipHovered = False
+        self.checkboxHovered = False
+    
+    def _loadConfig(self):
+        """Load tutorial preferences from config file"""
+        try:
+            if os.path.exists(TUTORIAL_CONFIG_FILE):
+                with open(TUTORIAL_CONFIG_FILE, 'r') as f:
+                    config = json.load(f)
+                    self.showOnStartup = config.get("showOnStartup", True)
+        except Exception as e:
+            print(f"Could not load tutorial config: {e}")
+            self.showOnStartup = True
+    
+    def _saveConfig(self):
+        """Save tutorial preferences to config file"""
+        try:
+            config = {"showOnStartup": self.showOnStartup}
+            with open(TUTORIAL_CONFIG_FILE, 'w') as f:
+                json.dump(config, f)
+        except Exception as e:
+            print(f"Could not save tutorial config: {e}")
+    
+    def setAssets(self, buttonNormal: pygame.Surface, buttonHover: pygame.Surface,
+                  checkboxTexture: pygame.Surface, checkboxSelectedTexture: pygame.Surface,
+                  clickSound: pygame.mixer.Sound, assetManager=None):
+        """
+        Set the UI assets from AssetManager.
+        
+        Args:
+            buttonNormal: Normal button texture
+            buttonHover: Hovered button texture
+            checkboxTexture: Unchecked checkbox texture
+            checkboxSelectedTexture: Checked checkbox texture
+            clickSound: Click sound effect
+            assetManager: AssetManager instance for fetching block icons
+        """
+        self.buttonNormal = buttonNormal
+        self.buttonHover = buttonHover
+        self.checkboxTexture = checkboxTexture
+        self.checkboxSelectedTexture = checkboxSelectedTexture
+        self.clickSound = clickSound
+        self.assetManager = assetManager
+        
+        # Define which block icons to show for each tutorial step
+        if assetManager:
+            self.stepIcons = {
+                0: [BlockType.GRASS, BlockType.STONE, BlockType.OAK_PLANKS, BlockType.COBBLESTONE, BlockType.BRICKS],  # Welcome
+                1: [BlockType.GRASS, BlockType.DIRT, BlockType.STONE],  # Placing blocks
+                2: [BlockType.OAK_DOOR, BlockType.IRON_DOOR],  # Removing & Interacting
+                5: [BlockType.OAK_STAIRS, BlockType.STONE_SLAB, BlockType.OAK_DOOR],  # Special blocks
+                6: [BlockType.GRASS, BlockType.NETHERRACK, BlockType.END_STONE],  # Dimensions
+                7: [BlockType.OAK_LOG, BlockType.OAK_LEAVES, BlockType.GLASS],  # Structures
+                8: [BlockType.GRASS, BlockType.DIRT, BlockType.STONE, BlockType.OAK_PLANKS, BlockType.COBBLESTONE],  # Keyboard shortcuts
+                9: [BlockType.DIAMOND_BLOCK, BlockType.GOLD_BLOCK, BlockType.IRON_BLOCK, BlockType.COPPER_BLOCK],  # You're ready!
+            }
+    
+    def show(self):
+        """Show the tutorial from the beginning"""
+        self.currentStep = 0
+        self.visible = True
+    
+    def hide(self):
+        """Hide the tutorial"""
+        self.visible = False
+    
+    def isVisible(self) -> bool:
+        """Check if tutorial is currently visible"""
+        return self.visible
+    
+    def shouldShowOnStartup(self) -> bool:
+        """Check if tutorial should show on startup"""
+        return self.showOnStartup
+    
+    def handleEvent(self, event: pygame.event.Event) -> bool:
+        """
+        Handle pygame events for the tutorial.
+        
+        Args:
+            event: The pygame event to handle
+            
+        Returns:
+            True if the event was consumed by the tutorial
+        """
+        if not self.visible:
+            return False
+        
+        if event.type == pygame.MOUSEMOTION:
+            mouseX, mouseY = event.pos
+            self.backHovered = self.backButtonRect.collidepoint(mouseX, mouseY)
+            self.nextHovered = self.nextButtonRect.collidepoint(mouseX, mouseY)
+            self.skipHovered = self.skipButtonRect.collidepoint(mouseX, mouseY)
+            self.checkboxHovered = self.checkboxRect.collidepoint(mouseX, mouseY)
+            return True
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouseX, mouseY = event.pos
+            
+            # Check button clicks
+            if self.backButtonRect.collidepoint(mouseX, mouseY):
+                self._onBackClick()
+                return True
+            
+            if self.nextButtonRect.collidepoint(mouseX, mouseY):
+                self._onNextClick()
+                return True
+            
+            if self.skipButtonRect.collidepoint(mouseX, mouseY):
+                self._onSkipClick()
+                return True
+            
+            if self.checkboxRect.collidepoint(mouseX, mouseY):
+                self._onCheckboxClick()
+                return True
+            
+            # Click outside panel doesn't close it - must use Skip
+            return True
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self._onSkipClick()
+                return True
+            if event.key == pygame.K_RIGHT or event.key == pygame.K_RETURN:
+                self._onNextClick()
+                return True
+            if event.key == pygame.K_LEFT:
+                self._onBackClick()
+                return True
+        
+        return True  # Consume all events when tutorial is visible
+    
+    def _playClickSound(self):
+        """Play the click sound if available"""
+        if self.clickSound:
+            self.clickSound.play()
+    
+    def _onBackClick(self):
+        """Handle Back button click"""
+        if self.currentStep > 0:
+            self._playClickSound()
+            self.currentStep -= 1
+    
+    def _onNextClick(self):
+        """Handle Next button click"""
+        self._playClickSound()
+        if self.currentStep < len(self.TUTORIAL_STEPS) - 1:
+            self.currentStep += 1
+        else:
+            # Last step - close tutorial
+            self.hide()
+    
+    def _onSkipClick(self):
+        """Handle Skip button click"""
+        self._playClickSound()
+        self.hide()
+    
+    def _onCheckboxClick(self):
+        """Handle checkbox click"""
+        self._playClickSound()
+        self.showOnStartup = not self.showOnStartup
+        self._saveConfig()
+    
+    def render(self, screen: pygame.Surface):
+        """
+        Render the tutorial overlay.
+        
+        Args:
+            screen: The pygame surface to render to
+        """
+        if not self.visible:
+            return
+        
+        # Semi-transparent overlay
+        overlay = pygame.Surface((self.screenWidth, self.screenHeight), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        screen.blit(overlay, (0, 0))
+        
+        # Panel background (dark with border)
+        panelRect = pygame.Rect(self.panelX, self.panelY, self.panelWidth, self.panelHeight)
+        pygame.draw.rect(screen, (30, 30, 35), panelRect)
+        pygame.draw.rect(screen, (80, 80, 90), panelRect, 3)
+        
+        # Inner border for depth effect
+        innerRect = pygame.Rect(self.panelX + 5, self.panelY + 5, 
+                                 self.panelWidth - 10, self.panelHeight - 10)
+        pygame.draw.rect(screen, (50, 50, 55), innerRect, 1)
+        
+        # Get current step content
+        step = self.TUTORIAL_STEPS[self.currentStep]
+        
+        # Progress indicator
+        progressText = f"Step {self.currentStep + 1} of {len(self.TUTORIAL_STEPS)}"
+        progressSurf = self.smallFont.render(progressText, True, (150, 150, 150))
+        progressRect = progressSurf.get_rect(centerx=self.panelX + self.panelWidth // 2,
+                                              top=self.panelY + 15)
+        screen.blit(progressSurf, progressRect)
+        
+        # Progress bar
+        barWidth = self.panelWidth - 60
+        barHeight = 6
+        barX = self.panelX + 30
+        barY = self.panelY + 38
+        pygame.draw.rect(screen, (60, 60, 70), (barX, barY, barWidth, barHeight))
+        fillWidth = int(barWidth * (self.currentStep + 1) / len(self.TUTORIAL_STEPS))
+        pygame.draw.rect(screen, (76, 175, 80), (barX, barY, fillWidth, barHeight))
+        
+        # Title
+        titleSurf = self.titleFont.render(step["title"], True, (255, 255, 255))
+        titleRect = titleSurf.get_rect(centerx=self.panelX + self.panelWidth // 2,
+                                        top=self.panelY + 55)
+        screen.blit(titleSurf, titleRect)
+        
+        # Decorative line under title
+        lineY = titleRect.bottom + 10
+        pygame.draw.line(screen, (80, 80, 90), 
+                        (self.panelX + 40, lineY), 
+                        (self.panelX + self.panelWidth - 40, lineY), 2)
+        
+        # Draw block icons for this step (if any)
+        if self.currentStep in self.stepIcons and self.assetManager:
+            icons = self.stepIcons[self.currentStep]
+            iconSize = 48
+            iconSpacing = 8
+            totalIconWidth = len(icons) * iconSize + (len(icons) - 1) * iconSpacing
+            iconStartX = self.panelX + (self.panelWidth - totalIconWidth) // 2
+            iconY = lineY + 15
+            
+            for i, blockType in enumerate(icons):
+                iconX = iconStartX + i * (iconSize + iconSpacing)
+                
+                # Draw slot background
+                slotRect = pygame.Rect(iconX - 4, iconY - 4, iconSize + 8, iconSize + 8)
+                pygame.draw.rect(screen, (50, 50, 55), slotRect)
+                pygame.draw.rect(screen, (70, 70, 80), slotRect, 2)
+                
+                # Draw block icon
+                icon = self.assetManager.getIconSprite(blockType)
+                if icon:
+                    scaledIcon = pygame.transform.scale(icon, (iconSize, iconSize))
+                    screen.blit(scaledIcon, (iconX, iconY))
+            
+            contentY = iconY + iconSize + 20
+        else:
+            contentY = lineY + 20
+        
+        # Content
+        for line in step["content"]:
+            if line:  # Skip empty lines but preserve spacing
+                lineSurf = self.contentFont.render(line, True, (220, 220, 220))
+                screen.blit(lineSurf, (self.panelX + 35, contentY))
+            contentY += 28
+        
+        # Draw buttons
+        self._drawButton(screen, self.backButtonRect, "Back", 
+                        self.backHovered, self.currentStep == 0)
+        
+        # Next button shows "Finish" on last step
+        nextText = "Finish" if self.currentStep == len(self.TUTORIAL_STEPS) - 1 else "Next"
+        self._drawButton(screen, self.nextButtonRect, nextText, self.nextHovered, False)
+        
+        self._drawButton(screen, self.skipButtonRect, "Skip", self.skipHovered, False)
+        
+        # Draw checkbox
+        self._drawCheckbox(screen)
+    
+    def _drawButton(self, screen: pygame.Surface, rect: pygame.Rect, 
+                    text: str, hovered: bool, disabled: bool):
+        """
+        Draw a Minecraft-style button.
+        
+        Args:
+            screen: Surface to draw on
+            rect: Button rectangle
+            text: Button label
+            hovered: Whether button is being hovered
+            disabled: Whether button is disabled
+        """
+        # Choose texture based on state
+        if disabled:
+            # Disabled state - darker and grayed out
+            color = (50, 50, 55)
+            textColor = (100, 100, 100)
+        elif hovered:
+            texture = self.buttonHover if self.buttonHover else None
+            textColor = (255, 255, 160)  # Bright yellow on hover
+        else:
+            texture = self.buttonNormal if self.buttonNormal else None
+            textColor = (255, 255, 255)
+        
+        if disabled:
+            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, (40, 40, 45), rect, 2)
+        elif hovered and self.buttonHover:
+            scaledBtn = pygame.transform.scale(self.buttonHover, (rect.width, rect.height))
+            screen.blit(scaledBtn, rect.topleft)
+        elif self.buttonNormal:
+            scaledBtn = pygame.transform.scale(self.buttonNormal, (rect.width, rect.height))
+            screen.blit(scaledBtn, rect.topleft)
+        else:
+            # Fallback rendering
+            color = (90, 90, 100) if hovered else (70, 70, 80)
+            pygame.draw.rect(screen, color, rect)
+            pygame.draw.rect(screen, (50, 50, 60), rect, 2)
+        
+        # Text with shadow
+        shadowSurf = self.smallFont.render(text, True, (30, 30, 30))
+        shadowRect = shadowSurf.get_rect(center=(rect.centerx + 1, rect.centery + 1))
+        screen.blit(shadowSurf, shadowRect)
+        
+        textSurf = self.smallFont.render(text, True, textColor)
+        textRect = textSurf.get_rect(center=rect.center)
+        screen.blit(textSurf, textRect)
+    
+    def _drawCheckbox(self, screen: pygame.Surface):
+        """Draw the 'Show on startup' checkbox"""
+        # Checkbox texture
+        if self.showOnStartup and self.checkboxSelectedTexture:
+            scaledCb = pygame.transform.scale(self.checkboxSelectedTexture, 
+                                               (self.checkboxSize, self.checkboxSize))
+            screen.blit(scaledCb, self.checkboxRect.topleft)
+        elif not self.showOnStartup and self.checkboxTexture:
+            scaledCb = pygame.transform.scale(self.checkboxTexture,
+                                               (self.checkboxSize, self.checkboxSize))
+            screen.blit(scaledCb, self.checkboxRect.topleft)
+        else:
+            # Fallback rendering
+            pygame.draw.rect(screen, (60, 60, 70), self.checkboxRect)
+            pygame.draw.rect(screen, (80, 80, 90), self.checkboxRect, 2)
+            if self.showOnStartup:
+                # Draw checkmark
+                pygame.draw.line(screen, (76, 175, 80),
+                               (self.checkboxRect.left + 4, self.checkboxRect.centery),
+                               (self.checkboxRect.centerx - 2, self.checkboxRect.bottom - 5), 2)
+                pygame.draw.line(screen, (76, 175, 80),
+                               (self.checkboxRect.centerx - 2, self.checkboxRect.bottom - 5),
+                               (self.checkboxRect.right - 4, self.checkboxRect.top + 5), 2)
+        
+        # Label
+        labelColor = (200, 200, 200) if self.checkboxHovered else (170, 170, 170)
+        labelSurf = self.smallFont.render("Show tutorial on startup", True, labelColor)
+        labelX = self.checkboxRect.right + 10
+        labelY = self.checkboxRect.centery - labelSurf.get_height() // 2
+        screen.blit(labelSurf, (labelX, labelY))
+
 
 # ============================================================================
 # ASSET MANAGEMENT
@@ -1373,6 +1931,8 @@ class AssetManager:
         self.buttonDisabled: Optional[pygame.Surface] = None
         self.slotFrame: Optional[pygame.Surface] = None
         self.backgroundTile: Optional[pygame.Surface] = None
+        self.checkboxTexture: Optional[pygame.Surface] = None
+        self.checkboxSelectedTexture: Optional[pygame.Surface] = None
         
         # Animation support for liquids
         self.waterFrames: List[pygame.Surface] = []
@@ -4312,6 +4872,10 @@ class AssetManager:
         buttonDisabledPath = os.path.join(widgetDir, "button_disabled.png")
         slotPath = os.path.join(widgetDir, "slot_frame.png")
         
+        # Load checkbox textures for tutorial
+        checkboxPath = os.path.join(widgetDir, "checkbox.png")
+        checkboxSelectedPath = os.path.join(widgetDir, "checkbox_selected.png")
+        
         if os.path.exists(buttonPath):
             self.buttonNormal = pygame.image.load(buttonPath).convert_alpha()
         if os.path.exists(buttonHoverPath):
@@ -4320,6 +4884,16 @@ class AssetManager:
             self.buttonDisabled = pygame.image.load(buttonDisabledPath).convert_alpha()
         if os.path.exists(slotPath):
             self.slotFrame = pygame.image.load(slotPath).convert_alpha()
+        
+        # Load checkbox textures
+        if os.path.exists(checkboxPath):
+            self.checkboxTexture = pygame.image.load(checkboxPath).convert_alpha()
+        else:
+            self.checkboxTexture = None
+        if os.path.exists(checkboxSelectedPath):
+            self.checkboxSelectedTexture = pygame.image.load(checkboxSelectedPath).convert_alpha()
+        else:
+            self.checkboxSelectedTexture = None
     
     def _createBackground(self, dimension: str = DIMENSION_OVERWORLD):
         """Create a dark repeating texture background based on dimension"""
@@ -4831,6 +5405,9 @@ class MinecraftBuilder:
         for category in CATEGORY_ORDER:
             if category != "Problems":  # Problems has its own main section
                 self.expandedCategories[category] = False
+        
+        # Tutorial system
+        self.tutorialScreen = TutorialScreen(WINDOW_WIDTH, WINDOW_HEIGHT)
     
     def _setAppIconEarly(self):
         """Set app icon BEFORE display is created (critical for Windows taskbar)"""
@@ -4969,6 +5546,20 @@ class MinecraftBuilder:
         # Set 3D app icon (after assets loaded)
         self._setAppIcon()
         
+        # Initialize tutorial with assets
+        self.tutorialScreen.setAssets(
+            self.assetManager.buttonNormal,
+            self.assetManager.buttonHover,
+            self.assetManager.checkboxTexture,
+            self.assetManager.checkboxSelectedTexture,
+            self.assetManager.clickSound,
+            self.assetManager  # Pass assetManager for block icons
+        )
+        
+        # Show tutorial on startup if enabled
+        if self.tutorialScreen.shouldShowOnStartup():
+            self.tutorialScreen.show()
+        
         # Play random menu music
         self._playMenuMusic()
         
@@ -5071,6 +5662,10 @@ class MinecraftBuilder:
     def _handleEvents(self):
         """Handle pygame events"""
         for event in pygame.event.get():
+            # Let tutorial handle events first if visible
+            if self.tutorialScreen.handleEvent(event):
+                continue
+            
             if event.type == pygame.QUIT:
                 self.running = False
             
@@ -5335,6 +5930,12 @@ class MinecraftBuilder:
                     self._switchDimension(dimKey)
                     return
                 dimY += 35
+            
+            # Check Show Tutorial button
+            if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+                self.tutorialScreen.show()
+                return
+            dimY += 35
             
             currentY = dimY + 5
         
@@ -5687,6 +6288,9 @@ class MinecraftBuilder:
         # Draw status text
         self._renderStatus()
         
+        # Draw tutorial overlay (on top of everything)
+        self.tutorialScreen.render(self.screen)
+        
         # Update display
         pygame.display.flip()
     
@@ -5853,10 +6457,10 @@ class MinecraftBuilder:
             numRows = (len(problemBlocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
             totalHeight += numRows * (slotSize + 4) + 15
         
-        # Experimental main button + content (3 dimension buttons)
+        # Experimental main button + content (3 dimension buttons + Show Tutorial)
         totalHeight += mainButtonHeight
         if self.experimentalExpanded:
-            totalHeight += 3 * 35 + 15  # 3 dimension buttons
+            totalHeight += 4 * 35 + 15  # 3 dimension buttons + 1 tutorial button
         
         # Structures main button + content
         totalHeight += mainButtonHeight
@@ -5983,7 +6587,7 @@ class MinecraftBuilder:
         self.assetManager.drawButton(self.screen, experimentalRect, "Experimental", self.font, experimentalHovered, self.experimentalExpanded)
         currentY += mainButtonHeight + 5
         
-        # Experimental content (dimension buttons)
+        # Experimental content (dimension buttons + Show Tutorial)
         if self.experimentalExpanded:
             dimensions = [
                 (DIMENSION_OVERWORLD, "Overworld"),
@@ -6005,6 +6609,16 @@ class MinecraftBuilder:
                     )
                 
                 dimY += 35
+            
+            # Show Tutorial button
+            tutorialBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
+            if dimY + 30 >= startY and dimY <= startY + availableHeight:
+                tutorialHovered = tutorialBtnRect.collidepoint(mouseX, mouseY)
+                self.assetManager.drawButton(
+                    self.screen, tutorialBtnRect, "Show Tutorial",
+                    self.smallFont, tutorialHovered, False
+                )
+            dimY += 35
             
             currentY = dimY + 5
         
