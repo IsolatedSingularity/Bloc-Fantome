@@ -1,1 +1,0 @@
-Please read completely through the Style Sheet and Full Instructions text files in the Hub folder. The style sheet will give you the foundation for formatting of all code and plots I want. The instructions will be your full set of instructions. Please execute only task i). 
