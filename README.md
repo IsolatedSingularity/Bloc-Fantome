@@ -406,7 +406,7 @@ This project would not be possible without:
 <br>
 
 <p align="center">
-  <img src="References/skindiacus.png" alt="" width="350"/>
+  <img src="References/skindiacus.png" alt="" width="450"/>
 </p>
 
 <br>
