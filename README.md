@@ -1,4 +1,8 @@
 # Bite Sized Minecraft
+
+<!-- Do not remove this comment. It is important. -->
+<!-- The gallery remembers those who visited. -->
+
 ##### An Interactive Isometric Building Simulator in Pygame. This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects are sourced from the official [Minecraft Resource Pack Template](https://aka.ms/resourcepacktemplate) and the [Minecraft Wiki](https://minecraft.wiki/), used here for educational and non-commercial purposes only. Minecraft® is a registered trademark of Mojang Synergies AB. 
 
 ![Pre-made Structures](References/bmc_structures.png)
@@ -16,6 +20,10 @@ The project serves as both a **creative tool** for designing and visualizing Min
 *The world remembers every block you place.*
 
 **Goal:** Provide an accessible, lightweight building sandbox where users can experiment with block placement, load pre-made structures, and explore the creative possibilities of voxel-based construction without the overhead of a full 3D engine.
+
+<br>
+
+> *Some doors, once opened, cannot be closed.*
 
 ---
 
@@ -176,15 +184,26 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ## The Geometry of Blocks
 
+<p align="center">
+  <img src="References/skindiacus.png" alt="Skindiacus" width="300"/>
+</p>
+<p align="center"><i>Fabricated World, 2012</i></p>
+
 ### Isometric Projection
 
 The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games. World coordinates $(x, y, z) \in \mathbb{Z}^3$ map to screen coordinates $(u, v) \in \mathbb{R}^2$ via the affine transformation:
 
 $$
-\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} w/2 & -w/2 & 0 \\ h/2 & h/2 & -h \end{pmatrix} \begin{pmatrix} x \\ y \\ z \end{pmatrix} + \begin{pmatrix} u_0 \\ v_0 \end{pmatrix}
+\mathbf{T}: \mathbb{Z}^3 \to \mathbb{R}^2, \quad \begin{pmatrix} u \\ v \end{pmatrix} = \underbrace{\begin{pmatrix} w/2 & -w/2 & 0 \\ h/2 & h/2 & -h \end{pmatrix}}_{\mathbf{P}} \begin{pmatrix} x \\ y \\ z \end{pmatrix} + \begin{pmatrix} u_0 \\ v_0 \end{pmatrix}
 $$
 
-where $w$ is the tile width, $h$ is the tile height, and $(u_0, v_0)$ is the camera offset.
+where $w$ is the tile width, $h$ is the tile height, and $(u_0, v_0)$ is the camera offset. The projection matrix $\mathbf{P}$ has rank 2, collapsing the 3D lattice onto a 2D plane while preserving the isometric angle $\theta = \arctan(1/2) \approx 26.57°$.
+
+The inverse mapping for screen-to-world picking requires solving the underdetermined system. Given screen coordinates $(u, v)$ and a fixed height plane $z = z_0$:
+
+$$
+\begin{pmatrix} x \\ y \end{pmatrix} = \mathbf{P}_{xy}^{-1} \left( \begin{pmatrix} u - u_0 \\ v - v_0 + h \cdot z_0 \end{pmatrix} \right) = \frac{1}{wh} \begin{pmatrix} h & w \\ -h & w \end{pmatrix} \begin{pmatrix} u - u_0 \\ v - v_0 + h \cdot z_0 \end{pmatrix}
+$$
 
 ```python
 def world_to_screen(grid_x, grid_y, grid_z):
@@ -199,10 +218,16 @@ def world_to_screen(grid_x, grid_y, grid_z):
 Blocks are rendered back-to-front using the **Painter's Algorithm**. For blocks at positions $\mathbf{r}_i = (x_i, y_i, z_i)$, the depth ordering is given by the linear functional:
 
 $$
-d(\mathbf{r}) = x + y + z
+d: \mathbb{Z}^3 \to \mathbb{Z}, \quad d(\mathbf{r}) = x + y + z
 $$
 
-Blocks are sorted by $d(\mathbf{r})$ in ascending order. This ensures proper occlusion: blocks further from the viewer are drawn first and naturally covered by closer blocks.
+This defines a total preorder on the block set $\mathcal{B}$. Blocks with equal depth $d(\mathbf{r}_i) = d(\mathbf{r}_j)$ lie on the same isometric plane and do not occlude each other. The sorting operation has complexity $\mathcal{O}(n \log n)$ for $n$ visible blocks.
+
+For a block at position $\mathbf{r}$, the set of positions it occludes is:
+
+$$
+\text{Occluded}(\mathbf{r}) = \{ \mathbf{r}' \in \mathbb{Z}^3 : d(\mathbf{r}') < d(\mathbf{r}) \land \mathbf{T}(\mathbf{r}') \cap \mathbf{T}(\mathbf{r}) \neq \varnothing \}
+$$
 
 ```python
 def render_world():
@@ -221,15 +246,46 @@ def render_world():
 
 ### Sparse World Representation
 
-The world state is a map $\mathcal{W}: \mathbb{Z}^3 \to \mathcal{B} \cup \{\varnothing\}$ where $\mathcal{B}$ is the set of block types and $\varnothing$ denotes empty space. This **sparse dictionary storage** ensures $\mathcal{O}(n)$ memory for $n$ placed blocks rather than $\mathcal{O}(V)$ for volume $V$:
+The world state is a partial function $\mathcal{W}: \mathbb{Z}^3 \rightharpoonup \mathcal{B}$ where $\mathcal{B}$ is the finite set of block types. The domain $\text{dom}(\mathcal{W}) \subset \mathbb{Z}^3$ contains only occupied positions. This **sparse dictionary storage** ensures $\mathcal{O}(|\text{dom}(\mathcal{W})|)$ memory for placed blocks rather than $\mathcal{O}(|V|)$ for the bounding volume $V$.
+
+Block operations define a group action on world states:
+
+$$
+\text{Place}: \mathcal{W} \times \mathbb{Z}^3 \times \mathcal{B} \to \mathcal{W}, \quad \text{Remove}: \mathcal{W} \times \mathbb{Z}^3 \to \mathcal{W}
+$$
+
+The undo/redo system maintains a history stack $\mathcal{H} = (\mathcal{W}_0, \mathcal{W}_1, \ldots, \mathcal{W}_n)$ with pointer $k$, supporting $\mathcal{O}(1)$ state traversal.
 
 ```python
 class World:
     def __init__(self, width, depth, height):
-        self.blocks = {}      # (x, y, z) → BlockType
-        self.properties = {}  # Special block states (doors, stairs, slabs)
+        self.blocks = {}        # (x, y, z) → BlockType
+        self.properties = {}    # Special block states (doors, stairs, slabs)
         self.liquidLevels = {}  # Liquid level tracking (1-8)
 ```
+
+### Liquid Dynamics
+
+Liquid flow follows a discrete diffusion model. Let $\ell(\mathbf{r}, t) \in \{0, 1, \ldots, 8\}$ denote the liquid level at position $\mathbf{r}$ and time step $t$. The update rule is:
+
+$$
+\ell(\mathbf{r}, t+1) = \begin{cases}
+\ell(\mathbf{r}_{above}, t) & \text{if } \mathbf{r}_{above} \text{ has liquid} \\
+\max\limits_{\mathbf{n} \in N_h(\mathbf{r})} \ell(\mathbf{n}, t) - 1 & \text{otherwise}
+\end{cases}
+$$
+
+where $N_h(\mathbf{r})$ is the horizontal 4-neighborhood. Water updates every $\Delta t_w = 400\text{ms}$, while lava uses $\Delta t_l = 6 \Delta t_w = 2400\text{ms}$.
+
+### Light Propagation
+
+Light propagates via breadth-first flood fill from emissive sources. For a light source at $\mathbf{r}_0$ with intensity $I_0$, the light level at position $\mathbf{r}$ is:
+
+$$
+L(\mathbf{r}) = \max\left(0, I_0 - \|\mathbf{r} - \mathbf{r}_0\|_1\right)
+$$
+
+where $\|\cdot\|_1$ is the Manhattan distance. Multiple sources combine via $L_{total}(\mathbf{r}) = \max_i L_i(\mathbf{r})$.
 
 ---
 
@@ -287,8 +343,35 @@ This project would not be possible without:
 
 ---
 
+<br>
+<br>
+<br>
+
+![Anomaly](References/anomaly.png)
+
+<br>
+
+---
+
 <p align="center">
   <img src="References/Darkness.gif" alt="Darkness" />
 </p>
 
+<br>
+
 <p align="center"><i>???</i></p>
+
+<br>
+
+<p align="center"><sub>The gallery is quiet now.</sub></p>
+
+<p align="center"><sub>You have viewed all the paintings.</sub></p>
+
+<p align="center"><sub>. . .</sub></p>
+
+<p align="center"><sub>Thank you for visiting.</sub></p>
+
+<br>
+<br>
+
+<!-- Mary was here. -->
