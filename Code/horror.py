@@ -1,10 +1,10 @@
 """
-Horror System Module for Bite Sized Minecraft
+Horror System Module for Bloc Fantôme
 
 This module manages all horror/ambient features including:
 - Cave ambient sounds
 - Visual glitches (screen tear, shadow figures)
-- Herobrine Easter egg
+- Hidden Easter eggs
 - Horror rain (black rain with reversed sounds)
 - Time-based events (3 AM, Halloween, Friday 13th)
 - Progression-based horror intensity

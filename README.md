@@ -1,9 +1,11 @@
-# Bite Sized Minecraft
+# Bloc Fantôme
 
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
 
-##### An Interactive Isometric Building Simulator in Pygame. This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects are sourced from the official [Minecraft Resource Pack Template](https://aka.ms/resourcepacktemplate) and the [Minecraft Wiki](https://minecraft.wiki/), used here for educational and non-commercial purposes only. Minecraft® is a registered trademark of Mojang Synergies AB. 
+> **⚠️ DISCLAIMER:** This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects must be sourced by the user from their own Minecraft installation (version 1.21.1+). Minecraft® is a registered trademark of Mojang Synergies AB.
+
+##### An isometric 2.5D creative sandbox inspired by voxel building games. Build structures, explore dimensions, and place blocks in this Pygame-powered building simulator. 
 
 ![Pre-made Structures](References/bmc_structures.png)
 
@@ -11,7 +13,7 @@
 
 ## Overview
 
-*Édition Miette* is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions. All with the familiar sounds and textures of the original game.
+*Bloc Fantôme* is a **creative building sandbox** that brings the essence of voxel-based block-placing into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place blocks onto a grid-based canvas, construct structures, and explore different dimensions. Users must provide their own textures and sounds from a legitimate Minecraft installation (version 1.21.1 or later).
 
 ![Main Interface](References/main.png)
 
@@ -358,17 +360,22 @@ where $\|\cdot\|_1$ is the Manhattan distance. Multiple sources combine via $L_{
 ## Quick Start
 
 ```bash
-# 1. Install
+# 1. Install dependencies
 pip install pygame
 
-# 2. Run
+# 2. Setup assets (requires Minecraft 1.21.1+ installed)
 cd Code
+python setup_assets.py
+
+# 3. Run
 python minecraftBuilder.py
 
-# 3. Build!
+# 4. Build!
 # Left-click to place, right-click to remove
 # Select blocks from the right panel
 ```
+
+> **Note:** You must own a legitimate copy of Minecraft Java Edition and have it installed to use this application. The setup script will extract textures and sounds from your local installation.
 
 ---
 
@@ -376,13 +383,13 @@ python minecraftBuilder.py
 
 This project would not be possible without:
 
-- **[Mojang Studios](https://www.minecraft.net/)** for creating Minecraft and providing the resource pack template
-- **[Minecraft Wiki](https://minecraft.wiki/)** for comprehensive texture and sound documentation
+- **[Mojang Studios](https://www.minecraft.net/)** for creating Minecraft, whose assets this project is designed to work with
+- **[Minecraft Wiki](https://minecraft.wiki/)** for comprehensive documentation
 - **[Pygame Community](https://www.pygame.org/)** for the excellent 2D game framework
 - *...and to those who watch from beyond the render distance*
 
 > [!NOTE]
-> This simulator is intended as a creative sandbox and technical demonstration. For the full Minecraft experience, please support the official game at [minecraft.net](https://www.minecraft.net/).
+> This simulator requires assets from your own Minecraft installation. Please support the official game at [minecraft.net](https://www.minecraft.net/).
 
 ---
 

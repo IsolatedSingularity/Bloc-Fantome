@@ -48,6 +48,13 @@ env/
 .tutorial_config.json
 minecraft_builder.log
 
+# Minecraft Assets (user must extract these from their own installation)
+# Run setup_assets.py to populate these folders
+Assets/Texture Hub/*
+Assets/Sound Hub/*
+!Assets/Texture Hub/README.md
+!Assets/Sound Hub/README.md
+
 # User saves (keep example saves in Code/saves)
 saves/*.json.gz
 Code/saves/_autosave.json.gz

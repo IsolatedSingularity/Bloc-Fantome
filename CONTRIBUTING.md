@@ -1,4 +1,4 @@
-# Contributing to Bite Sized Minecraft
+# Contributing to Bloc Fantôme
 
 Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to the project.
 
@@ -19,11 +19,12 @@ Thank you for your interest in contributing! This document provides guidelines a
 - Python 3.8 or higher
 - pygame library
 - Git
+- Minecraft Java Edition 1.21.1+ (for assets)
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/minecraft-builder.git
-cd minecraft-builder
+git clone https://github.com/IsolatedSingularity/Bloc-Fantome.git
+cd Bloc-Fantome
 ```
 
 ### Install Dependencies
@@ -31,9 +32,14 @@ cd minecraft-builder
 pip install pygame
 ```
 
-### Run from Source
+### Setup Assets
 ```bash
 cd Code
+python setup_assets.py
+```
+
+### Run from Source
+```bash
 python minecraftBuilder.py
 ```
 
@@ -43,9 +49,10 @@ python minecraftBuilder.py
 
 ### Project Structure
 ```
-Minecraft Builder/
+Bloc-Fantome/
 ├── Code/
 │   ├── minecraftBuilder.py   # Main application (entry point)
+│   ├── setup_assets.py       # Asset extraction script
 │   ├── splash.py             # Splash screen module
 │   ├── horror.py             # Horror system manager
 │   ├── constants.py          # Shared constants and enums
@@ -55,10 +62,10 @@ Minecraft Builder/
 │       ├── renderer.py       # Isometric renderer
 │       └── performance.py    # Performance utilities
 ├── Assets/
-│   ├── Texture Hub/          # Block and UI textures
-│   ├── Sound Hub/            # Sound effects and music
+│   ├── Texture Hub/          # Block and UI textures (user-provided)
+│   ├── Sound Hub/            # Sound effects and music (user-provided)
 │   └── Icons/                # Application icons
-└── References/               # Reference materials (do not modify)
+└── References/               # Reference materials
 ```
 
 ### Running Tests

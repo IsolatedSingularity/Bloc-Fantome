@@ -1,5 +1,5 @@
 """
-Build script for creating Minecraft Builder executable.
+Build script for creating Bloc Fantome executable.
 Run this script to generate the standalone .exe file.
 
 Usage:
@@ -24,13 +24,13 @@ WORK_DIR = os.path.join(BUILD_DIR, "work")
 
 # Version info
 VERSION = "1.1.0"
-COMPANY = "Bite Sized Games"
-PRODUCT = "Bite Sized Minecraft"
+COMPANY = "Jeffrey Morais"
+PRODUCT = "Bloc Fantome"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
 
 def build(debug: bool = False):
     print("=" * 60)
-    print(f"Building Minecraft Builder Executable v{VERSION}")
+    print(f"Building Bloc Fantome Executable v{VERSION}")
     print("=" * 60)
     
     # Create build directory if it doesn't exist
@@ -44,7 +44,7 @@ def build(debug: bool = False):
         f"--distpath={DIST_DIR}",       # Output directory for the exe
         f"--workpath={WORK_DIR}",       # Temp build files
         f"--specpath={BUILD_DIR}",      # Spec file location
-        "--name=MinecraftBuilder",      # Name of the executable
+        "--name=BlocFantome",           # Name of the executable
         "--clean",                      # Clean cache before building
         # Hidden imports that PyInstaller may miss
         "--hidden-import=pickle",
@@ -79,7 +79,7 @@ def build(debug: bool = False):
     result = subprocess.run(cmd, cwd=SCRIPT_DIR)
     
     if result.returncode == 0:
-        exe_path = os.path.join(DIST_DIR, "MinecraftBuilder.exe")
+        exe_path = os.path.join(DIST_DIR, "BlocFantome.exe")
         print("\n" + "=" * 60)
         print("BUILD SUCCESSFUL!")
         print("=" * 60)
@@ -87,20 +87,11 @@ def build(debug: bool = False):
         
         print("\n--- Distribution Instructions ---")
         print("To share this application, provide users with:")
-        print("  1. MinecraftBuilder.exe (from project root)")
-        print("  2. The entire 'Assets' folder")
+        print("  1. BlocFantome.exe (from project root)")
+        print("  2. Instructions to run setup_assets.py first")
         print("  3. config.json (optional, for custom settings)")
-        print("\nFolder structure for distribution:")
-        print("  YourFolder/")
-        print("    ├── MinecraftBuilder.exe")
-        print("    ├── config.json (optional)")
-        print("    └── Assets/")
-        print("        ├── Extensive Library/")
-        print("        ├── Icons/")
-        print("        ├── Sound Hub/")
-        print("        └── Texture Hub/")
-        print("\nNote: The exe must be placed where it can find the Assets folder")
-        print("      (in the same parent directory or adjust paths in code)")
+        print("\nNote: Users must have Minecraft Java Edition 1.21.1+ installed")
+        print("      and run setup_assets.py to extract textures and sounds.")
         print("\nTo create an installer, run:")
         print("  iscc installer.iss")
     else:

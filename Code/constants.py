@@ -1,5 +1,5 @@
 """
-Constants Module for Bite Sized Minecraft
+Constants Module for Bloc Fantôme
 
 This module centralizes all constant values, enums, and block definitions
 used throughout the application. Import from here for consistent access.
@@ -25,7 +25,7 @@ from enum import Enum
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
-TITLE = "Bite Sized Minecraft"
+TITLE = "Bloc Fantome"
 
 # Panel settings
 PANEL_WIDTH = 260

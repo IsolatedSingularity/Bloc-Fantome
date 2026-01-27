@@ -1,11 +1,11 @@
 """
-Bite Sized Minecraft - Splash Screen Module
+Bloc Fantôme - Splash Screen Module
 
 A self-contained splash screen that renders a high-resolution isometric block
 without depending on the main AssetManager. This module is designed to be
 robust against changes in the main codebase.
 
-Author: Bite Sized Minecraft Team
+Author: Jeffrey Morais
 """
 
 import os
@@ -272,7 +272,7 @@ class SplashScreen:
                                           self.window_height // 2 - icon.get_height() // 4))
         
         # Render title
-        title_text = self.title_font.render("Minecraft, Édition Miette", True, (255, 255, 255))
+        title_text = self.title_font.render("Bloc Fantôme", True, (255, 255, 255))
         title_rect = title_text.get_rect(center=(self.window_width // 2, 
                                                   self.window_height // 2 + icon.get_height() // 2 + 50))
         

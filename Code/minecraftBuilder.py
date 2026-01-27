@@ -1,12 +1,16 @@
 ﻿"""
-Bite Sized Minecraft
+Bloc Fantôme
 
-This module implements an interactive Minecraft-style building simulator using Pygame with
-isometric 2.5D rendering. Users can drag and drop blocks from a TMI-style inventory panel
-onto a grid-based building area, load premade structures, and hear authentic placement sounds.
+An isometric 2.5D building simulator using Pygame. Users can place blocks from an
+inventory panel onto a grid-based building area, load premade structures, and 
+create custom builds with authentic sounds and textures.
 
-The simulator features a 12x12x8 building grid with 2:1 dimetric projection for pixel-perfect
-isometric rendering, supporting block placement, removal, and structure loading.
+The simulator features a 12x12x12 building grid with 2:1 dimetric projection for 
+pixel-perfect isometric rendering, supporting block placement, removal, and 
+structure loading.
+
+Note: Users must run setup_assets.py to extract textures and sounds from their
+own Minecraft Java Edition installation (version 1.21.1+).
 
 Author: Jeffrey Morais
 """
@@ -34,7 +38,7 @@ from horror import HorrorManager
 if sys.platform == 'win32':
     try:
         import ctypes
-        myappid = 'bitesizedminecraft.builder.1.0'
+        myappid = 'blocfantome.builder.1.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -51,7 +55,7 @@ pygame.mixer.set_num_channels(32)  # Increase for ambient, rain, horror, block s
 # Window settings
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
-TITLE = "Bite Sized Minecraft"
+TITLE = "Bloc Fantome"
 
 # Grid settings
 GRID_WIDTH = 12
