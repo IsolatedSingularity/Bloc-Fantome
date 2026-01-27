@@ -30,11 +30,10 @@ BORDER_LIGHT = (100, 100, 110)    # Light border (top/left)
 TEXT_COLOR = (255, 255, 255)      # White text
 SHADOW_COLOR = (30, 30, 30)       # Dark shadow
 
-# Isometric settings - proper 2:1 ratio
-BLOCK_SIZE = 32  # Size of each block sprite
-ISO_W = 32       # Isometric tile width  
-ISO_H = 16       # Isometric tile height (2:1 ratio)
-ISO_D = 20       # Block depth/height
+# Isometric block dimensions
+BLOCK_W = 32   # Width of isometric block
+BLOCK_H = 18   # Height of top face (half width for 2:1)
+BLOCK_D = 20   # Depth/vertical height of sides
 
 # Headers to generate (matching the GIF names)
 HEADERS = [
@@ -44,91 +43,67 @@ HEADERS = [
     "Liquids"
 ]
 
-# Wide horizontal block showcase - 12 columns x 6 rows = 72 blocks
+# Expanded block showcase - 12 columns x 12 rows = 144 blocks
 SHOWCASE_BLOCKS = [
-    # Row 1: Nether Terrain
-    ("netherrack.png", "netherrack.png"),
-    ("nether_bricks.png", "nether_bricks.png"),
-    ("red_nether_bricks.png", "red_nether_bricks.png"),
-    ("chiseled_nether_bricks.png", "chiseled_nether_bricks.png"),
-    ("cracked_nether_bricks.png", "cracked_nether_bricks.png"),
-    ("nether_wart_block.png", "nether_wart_block.png"),
-    ("warped_wart_block.png", "warped_wart_block.png"),
-    ("crimson_nylium.png", "crimson_nylium_side.png"),
-    ("warped_nylium.png", "warped_nylium_side.png"),
-    ("soul_sand.png", "soul_sand.png"),
-    ("soul_soil.png", "soul_soil.png"),
-    ("magma.png", "magma.png"),
+    # Row 1: Basic Overworld
+    "grass_block_top.png", "dirt.png", "stone.png", "cobblestone.png",
+    "mossy_cobblestone.png", "gravel.png", "sand.png", "sandstone_top.png",
+    "red_sand.png", "red_sandstone_top.png", "clay.png", "mud.png",
     
-    # Row 2: Blackstone & Basalt
-    ("blackstone.png", "blackstone.png"),
-    ("polished_blackstone.png", "polished_blackstone.png"),
-    ("polished_blackstone_bricks.png", "polished_blackstone_bricks.png"),
-    ("chiseled_polished_blackstone.png", "chiseled_polished_blackstone.png"),
-    ("gilded_blackstone.png", "gilded_blackstone.png"),
-    ("basalt_top.png", "basalt_side.png"),
-    ("polished_basalt_top.png", "polished_basalt_side.png"),
-    ("smooth_basalt.png", "smooth_basalt.png"),
-    ("ancient_debris_top.png", "ancient_debris_side.png"),
-    ("netherite_block.png", "netherite_block.png"),
-    ("glowstone.png", "glowstone.png"),
-    ("shroomlight.png", "shroomlight.png"),
+    # Row 2: Stone Variants
+    "granite.png", "polished_granite.png", "diorite.png", "polished_diorite.png",
+    "andesite.png", "polished_andesite.png", "calcite.png", "tuff.png",
+    "dripstone_block.png", "moss_block.png", "rooted_dirt.png", "podzol_top.png",
     
-    # Row 3: End & Obsidian
-    ("end_stone.png", "end_stone.png"),
-    ("end_stone_bricks.png", "end_stone_bricks.png"),
-    ("purpur_block.png", "purpur_block.png"),
-    ("purpur_pillar_top.png", "purpur_pillar.png"),
-    ("obsidian.png", "obsidian.png"),
-    ("crying_obsidian.png", "crying_obsidian.png"),
-    ("dragon_egg.png", "dragon_egg.png"),
-    ("prismarine.png", "prismarine.png"),
-    ("prismarine_bricks.png", "prismarine_bricks.png"),
-    ("dark_prismarine.png", "dark_prismarine.png"),
-    ("sea_lantern.png", "sea_lantern.png"),
-    ("blue_ice.png", "blue_ice.png"),
+    # Row 3: Ores
+    "coal_ore.png", "iron_ore.png", "copper_ore.png", "gold_ore.png",
+    "diamond_ore.png", "emerald_ore.png", "lapis_ore.png", "redstone_ore.png",
+    "deepslate_coal_ore.png", "deepslate_iron_ore.png", "deepslate_diamond_ore.png", "nether_gold_ore.png",
     
-    # Row 4: Coral & Amethyst
-    ("tube_coral_block.png", "tube_coral_block.png"),
-    ("brain_coral_block.png", "brain_coral_block.png"),
-    ("bubble_coral_block.png", "bubble_coral_block.png"),
-    ("fire_coral_block.png", "fire_coral_block.png"),
-    ("horn_coral_block.png", "horn_coral_block.png"),
-    ("amethyst_block.png", "amethyst_block.png"),
-    ("budding_amethyst.png", "budding_amethyst.png"),
-    ("copper_block.png", "copper_block.png"),
-    ("exposed_copper.png", "exposed_copper.png"),
-    ("weathered_copper.png", "weathered_copper.png"),
-    ("oxidized_copper.png", "oxidized_copper.png"),
-    ("raw_copper_block.png", "raw_copper_block.png"),
+    # Row 4: Ore Blocks
+    "coal_block.png", "iron_block.png", "copper_block.png", "gold_block.png",
+    "diamond_block.png", "emerald_block.png", "lapis_block.png", "redstone_block.png",
+    "raw_iron_block.png", "raw_copper_block.png", "raw_gold_block.png", "netherite_block.png",
     
-    # Row 5: Deepslate & Sculk
-    ("deepslate_top.png", "deepslate.png"),
-    ("cobbled_deepslate.png", "cobbled_deepslate.png"),
-    ("polished_deepslate.png", "polished_deepslate.png"),
-    ("deepslate_bricks.png", "deepslate_bricks.png"),
-    ("deepslate_tiles.png", "deepslate_tiles.png"),
-    ("chiseled_deepslate.png", "chiseled_deepslate.png"),
-    ("sculk.png", "sculk.png"),
-    ("diamond_block.png", "diamond_block.png"),
-    ("emerald_block.png", "emerald_block.png"),
-    ("gold_block.png", "gold_block.png"),
-    ("iron_block.png", "iron_block.png"),
-    ("lapis_block.png", "lapis_block.png"),
+    # Row 5: Wood Planks
+    "oak_planks.png", "spruce_planks.png", "birch_planks.png", "jungle_planks.png",
+    "acacia_planks.png", "dark_oak_planks.png", "mangrove_planks.png", "cherry_planks.png",
+    "bamboo_planks.png", "crimson_planks.png", "warped_planks.png", "bamboo_mosaic.png",
     
-    # Row 6: Colorful Glazed
-    ("cyan_glazed_terracotta.png", "cyan_glazed_terracotta.png"),
-    ("purple_glazed_terracotta.png", "purple_glazed_terracotta.png"),
-    ("magenta_glazed_terracotta.png", "magenta_glazed_terracotta.png"),
-    ("red_glazed_terracotta.png", "red_glazed_terracotta.png"),
-    ("orange_glazed_terracotta.png", "orange_glazed_terracotta.png"),
-    ("yellow_glazed_terracotta.png", "yellow_glazed_terracotta.png"),
-    ("lime_glazed_terracotta.png", "lime_glazed_terracotta.png"),
-    ("green_glazed_terracotta.png", "green_glazed_terracotta.png"),
-    ("light_blue_glazed_terracotta.png", "light_blue_glazed_terracotta.png"),
-    ("blue_glazed_terracotta.png", "blue_glazed_terracotta.png"),
-    ("pink_glazed_terracotta.png", "pink_glazed_terracotta.png"),
-    ("redstone_block.png", "redstone_block.png"),
+    # Row 6: Wood Logs
+    "oak_log_top.png", "spruce_log_top.png", "birch_log_top.png", "jungle_log_top.png",
+    "acacia_log_top.png", "dark_oak_log_top.png", "mangrove_log_top.png", "cherry_log_top.png",
+    "crimson_stem_top.png", "warped_stem_top.png", "stripped_oak_log_top.png", "stripped_birch_log_top.png",
+    
+    # Row 7: Nether Blocks
+    "netherrack.png", "nether_bricks.png", "red_nether_bricks.png", "cracked_nether_bricks.png",
+    "nether_wart_block.png", "warped_wart_block.png", "crimson_nylium.png", "warped_nylium.png",
+    "soul_sand.png", "soul_soil.png", "magma.png", "glowstone.png",
+    
+    # Row 8: Blackstone & Basalt
+    "blackstone.png", "polished_blackstone.png", "polished_blackstone_bricks.png", "chiseled_polished_blackstone.png",
+    "gilded_blackstone.png", "basalt_top.png", "polished_basalt_top.png", "smooth_basalt.png",
+    "ancient_debris_top.png", "shroomlight.png", "crying_obsidian.png", "obsidian.png",
+    
+    # Row 9: End & Prismarine
+    "end_stone.png", "end_stone_bricks.png", "purpur_block.png", "purpur_pillar_top.png",
+    "prismarine.png", "prismarine_bricks.png", "dark_prismarine.png", "sea_lantern.png",
+    "blue_ice.png", "packed_ice.png", "ice.png", "snow.png",
+    
+    # Row 10: Coral & Amethyst  
+    "tube_coral_block.png", "brain_coral_block.png", "bubble_coral_block.png", "fire_coral_block.png",
+    "horn_coral_block.png", "dead_tube_coral_block.png", "amethyst_block.png", "budding_amethyst.png",
+    "exposed_copper.png", "weathered_copper.png", "oxidized_copper.png", "cut_copper.png",
+    
+    # Row 11: Deepslate & Sculk
+    "deepslate_top.png", "cobbled_deepslate.png", "polished_deepslate.png", "deepslate_bricks.png",
+    "deepslate_tiles.png", "chiseled_deepslate.png", "reinforced_deepslate_top.png", "sculk.png",
+    "sculk_catalyst_top.png", "mud_bricks.png", "packed_mud.png", "muddy_mangrove_roots_top.png",
+    
+    # Row 12: Glazed Terracotta
+    "white_glazed_terracotta.png", "orange_glazed_terracotta.png", "magenta_glazed_terracotta.png", "light_blue_glazed_terracotta.png",
+    "yellow_glazed_terracotta.png", "lime_glazed_terracotta.png", "pink_glazed_terracotta.png", "cyan_glazed_terracotta.png",
+    "purple_glazed_terracotta.png", "blue_glazed_terracotta.png", "green_glazed_terracotta.png", "red_glazed_terracotta.png",
 ]
 
 
@@ -177,80 +152,97 @@ def load_texture(filename: str) -> pygame.Surface:
     return None
 
 
-def draw_isometric_block(surface: pygame.Surface, x: int, y: int, 
-                         top_tex: pygame.Surface, side_tex: pygame.Surface):
+def draw_isometric_block(surface: pygame.Surface, x: int, y: int, texture: pygame.Surface):
     """
-    Draw a single isometric block at position (x, y) on the surface.
-    Uses proper 2:1 dimetric projection with sheared faces.
+    Draw a proper isometric block using polygon-based rendering.
+    Creates clean 2:1 dimetric projection with textured faces.
     """
-    # Scale textures to 16x16
+    if texture is None:
+        return
+    
+    # Scale texture to fit our block size
     tex_size = 16
-    if top_tex:
-        top = pygame.transform.scale(top_tex, (tex_size, tex_size))
-    if side_tex:
-        side = pygame.transform.scale(side_tex, (tex_size, tex_size))
+    tex = pygame.transform.scale(texture, (tex_size, tex_size))
     
-    # Block dimensions
-    w = ISO_W  # 32
-    h = ISO_H  # 16
-    d = ISO_D  # 20
+    w = BLOCK_W      # 32
+    h = BLOCK_H      # 18 (half of width for 2:1 ratio)
+    d = BLOCK_D      # 20
     
-    # Draw TOP face as diamond
-    if top_tex:
-        for ty in range(tex_size):
-            for tx in range(tex_size):
-                col = top.get_at((tx, ty))
-                if col[3] > 0:
-                    # Map texture coords to isometric diamond
-                    # tx: 0->16 maps to diamond width
-                    # ty: 0->16 maps to diamond height
-                    iso_x = x + (tx - ty) + tex_size
-                    iso_y = y + (tx + ty) // 2
-                    if iso_x >= 0 and iso_y >= 0:
-                        surface.set_at((int(iso_x), int(iso_y)), col)
+    # Define the 6 vertices of the isometric block
+    # Top face vertices (diamond shape)
+    top_center = (x + w // 2, y)
+    top_left = (x, y + h // 2)
+    top_right = (x + w, y + h // 2)
+    top_bottom = (x + w // 2, y + h)
     
-    # Draw LEFT face (darker)
-    if side_tex:
-        for ty in range(tex_size):
-            for tx in range(tex_size):
-                col = side.get_at((tx, ty))
-                if col[3] > 0:
-                    # Darken
-                    r = int(col[0] * 0.6)
-                    g = int(col[1] * 0.6)
-                    b = int(col[2] * 0.6)
-                    dark_col = (r, g, b, col[3])
-                    
-                    # Left face: vertical with slight slant
-                    fx = tx / tex_size  # 0 to 1
-                    fy = ty / tex_size  # 0 to 1
-                    
-                    iso_x = x + int(fx * (w // 2 - 1))
-                    iso_y = y + h // 2 + int(fy * d) + int((1 - fx) * (h // 2))
-                    
-                    if iso_x >= 0 and iso_y >= 0:
-                        surface.set_at((int(iso_x), int(iso_y)), dark_col)
+    # Bottom vertices (same x positions, shifted down by depth)
+    bot_left = (x, y + h // 2 + d)
+    bot_right = (x + w, y + h // 2 + d)
+    bot_bottom = (x + w // 2, y + h + d)
+    
+    # Get average color from texture for solid fill
+    def get_avg_color(surf):
+        total_r, total_g, total_b = 0, 0, 0
+        count = 0
+        for py in range(surf.get_height()):
+            for px in range(surf.get_width()):
+                c = surf.get_at((px, py))
+                if c[3] > 128:
+                    total_r += c[0]
+                    total_g += c[1]
+                    total_b += c[2]
+                    count += 1
+        if count == 0:
+            return (128, 128, 128)
+        return (total_r // count, total_g // count, total_b // count)
+    
+    base_color = get_avg_color(tex)
+    
+    # Draw LEFT face (darkest) 
+    left_color = (int(base_color[0] * 0.55), int(base_color[1] * 0.55), int(base_color[2] * 0.55))
+    pygame.draw.polygon(surface, left_color, [top_left, top_bottom, bot_bottom, bot_left])
     
     # Draw RIGHT face (medium brightness)
-    if side_tex:
-        for ty in range(tex_size):
-            for tx in range(tex_size):
-                col = side.get_at((tx, ty))
-                if col[3] > 0:
-                    # Medium brightness
-                    r = int(col[0] * 0.8)
-                    g = int(col[1] * 0.8)
-                    b = int(col[2] * 0.8)
-                    med_col = (r, g, b, col[3])
-                    
-                    fx = tx / tex_size
-                    fy = ty / tex_size
-                    
-                    iso_x = x + w // 2 + int(fx * (w // 2 - 1))
-                    iso_y = y + h // 2 + int(fy * d) + int(fx * (h // 2))
-                    
-                    if iso_x >= 0 and iso_y >= 0:
-                        surface.set_at((int(iso_x), int(iso_y)), med_col)
+    right_color = (int(base_color[0] * 0.75), int(base_color[1] * 0.75), int(base_color[2] * 0.75))
+    pygame.draw.polygon(surface, right_color, [top_right, bot_right, bot_bottom, top_bottom])
+    
+    # Draw TOP face (brightest) with texture sampling
+    # Create a surface for the top face and transform it
+    top_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+    
+    # Sample texture onto diamond shape
+    for py in range(h):
+        for px in range(w):
+            # Check if point is inside diamond
+            # Diamond from (w/2, 0) to (0, h/2) to (w/2, h) to (w, h/2)
+            cx, cy = w // 2, h // 2
+            dx = abs(px - cx) / (w / 2)
+            dy = abs(py - cy) / (h / 2)
+            if dx + dy <= 1.0:
+                # Map to texture coordinates
+                # Rotate 45 degrees conceptually
+                u = (px / w + py / h) / 2
+                v = (py / h - px / w + 1) / 2
+                tx = int(u * (tex_size - 1)) % tex_size
+                ty = int(v * (tex_size - 1)) % tex_size
+                color = tex.get_at((tx, ty))
+                if color[3] > 0:
+                    top_surf.set_at((px, py), color)
+    
+    surface.blit(top_surf, (x, y))
+    
+    # Draw outlines for clean edges
+    outline_color = (30, 30, 35)
+    # Top diamond
+    pygame.draw.lines(surface, outline_color, True, [top_center, top_right, top_bottom, top_left], 1)
+    # Left face edges
+    pygame.draw.line(surface, outline_color, top_left, bot_left, 1)
+    pygame.draw.line(surface, outline_color, top_bottom, bot_bottom, 1)
+    # Right face edges  
+    pygame.draw.line(surface, outline_color, top_right, bot_right, 1)
+    # Bottom edges
+    pygame.draw.line(surface, outline_color, bot_left, bot_bottom, 1)
+    pygame.draw.line(surface, outline_color, bot_bottom, bot_right, 1)
 
 
 def create_block_grid(blocks: list, grid_cols: int = 12) -> pygame.Surface:
@@ -259,31 +251,28 @@ def create_block_grid(blocks: list, grid_cols: int = 12) -> pygame.Surface:
     grid_rows = (num_blocks + grid_cols - 1) // grid_cols
     
     # Spacing between blocks
-    space_x = ISO_W + 2
-    space_y = ISO_H + ISO_D - 4
+    space_x = BLOCK_W + 4
+    space_y = BLOCK_H + BLOCK_D + 2
     
     # Calculate total size
-    pad = 12
+    pad = 16
     total_w = grid_cols * space_x + pad * 2
-    total_h = grid_rows * space_y + ISO_D + pad * 2
+    total_h = grid_rows * space_y + pad * 2
     
     # Dark background
     surface = pygame.Surface((total_w, total_h), pygame.SRCALPHA)
-    surface.fill((20, 20, 25, 255))
+    surface.fill((25, 25, 30, 255))
     
-    for i, block_data in enumerate(blocks):
+    for i, block_file in enumerate(blocks):
         row = i // grid_cols
         col = i % grid_cols
         
         x = pad + col * space_x
         y = pad + row * space_y
         
-        top_file, side_file = block_data
-        top_tex = load_texture(top_file)
-        side_tex = load_texture(side_file)
-        
-        if top_tex and side_tex:
-            draw_isometric_block(surface, x, y, top_tex, side_tex)
+        texture = load_texture(block_file)
+        if texture:
+            draw_isometric_block(surface, x, y, texture)
     
     return surface
 
@@ -302,8 +291,8 @@ def main():
         pygame.image.save(button_surface, filepath)
         print(f"  Created: {filename}")
     
-    # Generate wide horizontal block grid (12 columns)
-    print("\nGenerating block showcase grid (12 cols x 6 rows)...")
+    # Generate wide horizontal block grid (12 columns x 12 rows = 144 blocks)
+    print("\nGenerating block showcase grid (12 cols x 12 rows)...")
     grid_surface = create_block_grid(SHOWCASE_BLOCKS, grid_cols=12)
     grid_path = os.path.join(OUTPUT_DIR, "block_showcase.png")
     pygame.image.save(grid_surface, grid_path)

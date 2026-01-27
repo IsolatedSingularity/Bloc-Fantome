@@ -2,6 +2,7 @@
 
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
+<!-- Édition Miette -->
 
 ##### An Interactive Isometric Building Simulator in Pygame. This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects are sourced from the official [Minecraft Resource Pack Template](https://aka.ms/resourcepacktemplate) and the [Minecraft Wiki](https://minecraft.wiki/), used here for educational and non-commercial purposes only. Minecraft® is a registered trademark of Mojang Synergies AB. 
 
@@ -73,6 +74,34 @@ if right_click_on_door:
 ### Pre-made Structures
 
 Instantly place complete structures: houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
+
+---
+
+<br>
+
+<p align="center"><sub>. . .</sub></p>
+
+<br>
+
+<p align="center"><sub>Have we met before?</sub></p>
+
+<p align="center"><sub>You look familiar.</sub></p>
+
+<br>
+
+<p align="center"><sub>No, that's not right.</sub></p>
+
+<p align="center"><sub>I would remember a face like yours.</sub></p>
+
+<br>
+
+<p align="center"><sub>Wouldn't I?</sub></p>
+
+<br>
+
+<p align="center"><sub>. . .</sub></p>
+
+<br>
 
 ---
 
@@ -182,12 +211,37 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ---
 
-## The Geometry of Blocks
+<br>
 
-<p align="center">
-  <img src="References/skindiacus.png" alt="Skindiacus" width="300"/>
-</p>
-<p align="center"><i>Fabricated World, 2012</i></p>
+<p align="center"><sub>. . .</sub></p>
+
+<br>
+
+<p align="center"><sub>The water knows where it wants to go.</sub></p>
+
+<p align="center"><sub>It always finds a way down.</sub></p>
+
+<br>
+
+<p align="center"><sub>You can try to stop it.</sub></p>
+
+<p align="center"><sub>Build walls. Place blocks.</sub></p>
+
+<p align="center"><sub>It will wait.</sub></p>
+
+<br>
+
+<p align="center"><sub>It has always been waiting.</sub></p>
+
+<br>
+
+<p align="center"><sub>. . .</sub></p>
+
+<br>
+
+---
+
+## The Geometry of Blocks
 
 ### Isometric Projection
 
@@ -367,11 +421,38 @@ This project would not be possible without:
 
 <p align="center"><sub>You have viewed all the paintings.</sub></p>
 
+<br>
+
+<p align="center">
+  <img src="References/skindiacus.png" alt="" width="200"/>
+</p>
+
+<br>
+
 <p align="center"><sub>. . .</sub></p>
 
+<br>
+
+<p align="center"><sub>Do you remember this one?</sub></p>
+
+<p align="center"><sub>It was not here before.</sub></p>
+
+<br>
+
+<p align="center"><sub>. . .</sub></p>
+
+<br>
+
 <p align="center"><sub>Thank you for visiting.</sub></p>
+
+<p align="center"><sub>Please come again.</sub></p>
+
+<br>
+
+<p align="center"><sub><i>Édition Miette</i></sub></p>
 
 <br>
 <br>
 
 <!-- Mary was here. -->
+<!-- You found this. Why were you looking? -->
