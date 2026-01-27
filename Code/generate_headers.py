@@ -165,7 +165,7 @@ def darken_color(color: tuple, factor: float) -> tuple:
 def create_isometric_block(texture: pygame.Surface) -> pygame.Surface:
     """
     Create an isometric block sprite from a texture.
-    Uses the EXACT same logic as minecraftBuilder.py _createIsometricBlock().
+    Uses the EXACT same logic as blocFantome.py _createIsometricBlock().
     """
     W = TILE_WIDTH
     H = TILE_HEIGHT + BLOCK_HEIGHT

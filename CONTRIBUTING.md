@@ -40,7 +40,7 @@ python setup_assets.py
 
 ### Run from Source
 ```bash
-python minecraftBuilder.py
+python blocFantome.py
 ```
 
 ---
@@ -51,7 +51,7 @@ python minecraftBuilder.py
 ```
 Bloc-Fantome/
 ├── Code/
-│   ├── minecraftBuilder.py   # Main application (entry point)
+│   ├── blocFantome.py        # Main application (entry point)
 │   ├── setup_assets.py       # Asset extraction script
 │   ├── splash.py             # Splash screen module
 │   ├── horror.py             # Horror system manager
@@ -88,7 +88,7 @@ python build_exe.py
 - Use type hints for function parameters and return types
 
 ### Naming Conventions
-- Classes: `PascalCase` (e.g., `MinecraftBuilder`, `AssetManager`)
+- Classes: `PascalCase` (e.g., `BlocFantome`, `AssetManager`)
 - Functions/Methods: `camelCase` with underscore prefix for private (e.g., `_renderWorld`, `loadAssets`)
 - Constants: `UPPER_SNAKE_CASE` (e.g., `TILE_WIDTH`, `GRID_HEIGHT`)
 - Variables: `camelCase` (e.g., `blockType`, `currentDimension`)
@@ -136,7 +136,7 @@ except (ValueError, KeyError) as e:
 ## Adding New Blocks
 
 ### Step 1: Add to BlockType Enum
-In `minecraftBuilder.py`, find the `BlockType` enum and add your block:
+In `blocFantome.py`, find the `BlockType` enum and add your block:
 ```python
 class BlockType(Enum):
     # ... existing blocks ...
@@ -200,7 +200,7 @@ Create a new JSON file in `Code/saves/`:
 ```
 
 ### Step 2: Register as Predefined Structure
-In `minecraftBuilder.py`, find `PREDEFINED_STRUCTURES` and add:
+In `blocFantome.py`, find `PREDEFINED_STRUCTURES` and add:
 ```python
 PREDEFINED_STRUCTURES = {
     # ... existing structures ...

@@ -1,5 +1,5 @@
 """
-Isometric Renderer Module for Bite Sized Minecraft
+Isometric Renderer Module for Bloc Fantome
 
 This module handles conversion between 3D world coordinates and 2D screen
 coordinates using 2:1 dimetric (pseudo-isometric) projection.

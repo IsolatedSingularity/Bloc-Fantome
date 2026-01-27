@@ -1,5 +1,5 @@
 """
-World Module for Bite Sized Minecraft
+World Module for Bloc Fantome
 
 This module contains the World class which manages the 3D voxel grid
 for the building area. It uses dictionary-based sparse storage for
@@ -17,7 +17,7 @@ from collections import deque
 from typing import Dict, List, Tuple, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from minecraftBuilder import BlockType, BlockProperties, BlockDefinition
+    from blocFantome import BlockType, BlockProperties, BlockDefinition
 
 # These will be imported from the main module at runtime
 # to avoid circular imports

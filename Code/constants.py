@@ -210,13 +210,13 @@ class SoundDefinition:
 
 # ============================================================================
 # BLOCK TYPE ENUM
-# Note: Full definition is in minecraftBuilder.py for now
+# Note: Full definition is in blocFantome.py for now
 # This is a forward reference for imports
 # ============================================================================
 
-# BlockType enum is defined in minecraftBuilder.py due to its size (~250 values)
+# BlockType enum is defined in blocFantome.py due to its size (~250 values)
 # Import it from there:
-# from minecraftBuilder import BlockType, BLOCK_DEFINITIONS, BLOCK_SOUNDS
+# from blocFantome import BlockType, BLOCK_DEFINITIONS, BLOCK_SOUNDS
 
 # ============================================================================
 # 3D RENDERER UTILITIES

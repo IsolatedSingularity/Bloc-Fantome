@@ -300,7 +300,7 @@ def main():
     print("  Asset setup complete!")
     print("=" * 50)
     print()
-    print("You can now run minecraftBuilder.py")
+    print("You can now run blocFantome.py")
     print()
     print("NOTE: If you want authentic Minecraft textures,")
     print("you can manually copy them from your Minecraft")

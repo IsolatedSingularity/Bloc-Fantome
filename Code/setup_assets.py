@@ -301,7 +301,7 @@ def main():
         print("  ✅ Setup Complete!")
         print("=" * 60)
         print("\nYou can now run the application:")
-        print("    python minecraftBuilder.py")
+        print("    python blocFantome.py")
         return 0
     else:
         print("\n❌ Setup failed. Please check the errors above.")

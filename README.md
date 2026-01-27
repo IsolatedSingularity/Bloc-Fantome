@@ -368,7 +368,7 @@ cd Code
 python setup_assets.py
 
 # 3. Run
-python minecraftBuilder.py
+python blocFantome.py
 
 # 4. Build!
 # Left-click to place, right-click to remove

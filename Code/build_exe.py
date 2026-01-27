@@ -16,7 +16,7 @@ import argparse
 # Paths
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-MAIN_SCRIPT = os.path.join(SCRIPT_DIR, "minecraftBuilder.py")
+MAIN_SCRIPT = os.path.join(SCRIPT_DIR, "blocFantome.py")
 ICON_PATH = os.path.join(PROJECT_ROOT, "Assets", "Icons", "End_Stone.ico")
 BUILD_DIR = os.path.join(SCRIPT_DIR, "build")
 DIST_DIR = PROJECT_ROOT  # Output directly to project root

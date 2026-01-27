@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 import pygame
 
 if TYPE_CHECKING:
-    from minecraftBuilder import MinecraftBuilder, AssetManager, World
+    from blocFantome import BlocFantome, AssetManager, World
 
 # Constants
 DIMENSION_OVERWORLD = "overworld"
@@ -35,11 +35,11 @@ class HorrorManager:
     Manages all horror-related state and behavior.
     
     This class consolidates horror features that were previously scattered
-    throughout the main MinecraftBuilder class, making them easier to
+    throughout the main BlocFantome class, making them easier to
     maintain, test, and optionally disable.
     """
     
-    def __init__(self, game: 'MinecraftBuilder'):
+    def __init__(self, game: 'BlocFantome'):
         """Initialize the horror manager with a reference to the main game."""
         self.game = game
         

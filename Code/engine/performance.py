@@ -1,5 +1,5 @@
 """
-Performance Module for Bite Sized Minecraft
+Performance Module for Bloc Fantome
 
 This module provides performance optimizations including:
 - Dirty region tracking (only re-render changed areas)

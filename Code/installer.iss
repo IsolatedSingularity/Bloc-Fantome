@@ -1,4 +1,4 @@
-; Inno Setup Script for Bite Sized Minecraft
+; Inno Setup Script for Bloc Fantome
 ; This script creates a Windows installer for the application
 ;
 ; Requirements:
@@ -10,12 +10,12 @@
 ;
 ; Or use Inno Setup Compiler GUI
 
-#define MyAppName "Bite Sized Minecraft"
+#define MyAppName "Bloc Fantome"
 #define MyAppVersion "1.1.0"
 #define MyAppPublisher "Jeffrey Morais"
-#define MyAppURL "https://github.com/yourusername/bite-sized-minecraft"
-#define MyAppExeName "MinecraftBuilder.exe"
-#define MyAppAssocName "Bite Sized Minecraft Structure"
+#define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
+#define MyAppExeName "BlocFantome.exe"
+#define MyAppAssocName "Bloc Fantome Structure"
 #define MyAppAssocExt ".bsms"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
@@ -35,7 +35,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 ; Output settings
 OutputDir=build\installer
-OutputBaseFilename=BiteSizedMinecraft_Setup_{#MyAppVersion}
+OutputBaseFilename=BlocFantome_Setup_{#MyAppVersion}
 ; Compression
 Compression=lzma2/ultra64
 SolidCompression=yes

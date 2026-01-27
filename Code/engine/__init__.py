@@ -1,5 +1,5 @@
 """
-Engine module for Bite Sized Minecraft.
+Engine module for Bloc Fantome.
 
 Contains core systems:
 - Undo management

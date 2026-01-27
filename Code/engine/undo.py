@@ -1,5 +1,5 @@
 """
-Undo/Redo system for Bite Sized Minecraft.
+Undo/Redo system for Bloc Fantome.
 
 Implements the Command pattern for reversible block operations.
 Uses duck typing to avoid import issues with BlockType enum.
