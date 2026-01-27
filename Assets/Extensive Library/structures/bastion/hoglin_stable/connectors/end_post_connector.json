@@ -1,0 +1,1 @@
+{"size": [2, 2, 22], "palette": ["minecraft:jigsaw[orientation=north_up]", "minecraft:jigsaw[orientation=south_up]"], "blocks": [{"pos": [0, 1, 0], "id": 0}, {"pos": [0, 1, 21], "id": 1}]}

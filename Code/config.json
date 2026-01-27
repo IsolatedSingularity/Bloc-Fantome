@@ -1,0 +1,86 @@
+{
+    "version": "1.1.0",
+    "window": {
+        "width": 1200,
+        "height": 800,
+        "title": "Bite Sized Minecraft",
+        "fullscreen": false
+    },
+    "grid": {
+        "width": 12,
+        "depth": 12,
+        "height": 12
+    },
+    "isometric": {
+        "tile_width": 64,
+        "tile_height": 32,
+        "block_height": 38
+    },
+    "sound": {
+        "music_volume": 0.3,
+        "ambient_volume": 0.5,
+        "effects_volume": 0.7,
+        "ui_volume": 0.4,
+        "door_volume": 0.7
+    },
+    "animation": {
+        "portal_frame_delay_ms": 50,
+        "fire_frame_delay_ms": 80,
+        "chest_frame_delay_ms": 40,
+        "water_flow_delay_ms": 400,
+        "lava_flow_delay_ms": 1200,
+        "oxidation_interval_ms": 10000
+    },
+    "weather": {
+        "rain_drop_count_base": 150,
+        "rain_intensity_min": 0.5,
+        "rain_intensity_max": 1.5,
+        "thunder_min_delay_ms": 8000,
+        "thunder_max_delay_ms": 25000
+    },
+    "splash_screen": {
+        "display_frames": 150,
+        "fade_frames": 90,
+        "icon_size": 128
+    },
+    "controls": {
+        "keybinds": {
+            "rotate": "r",
+            "flip": "f",
+            "clear": "c",
+            "undo": "ctrl+z",
+            "redo": "ctrl+y",
+            "screenshot": "f2",
+            "quick_save_1": "f5",
+            "quick_save_2": "f6",
+            "quick_save_3": "f7",
+            "quick_save_4": "f8",
+            "quick_load_1": "f9",
+            "quick_load_2": "f10",
+            "quick_load_3": "f11",
+            "quick_load_4": "f12"
+        },
+        "zoom": {
+            "enabled": true,
+            "min": 0.5,
+            "max": 2.0,
+            "step": 0.1
+        }
+    },
+    "paths": {
+        "portable_mode": false,
+        "saves_in_appdata": true,
+        "screenshots_folder": "screenshots"
+    },
+    "tutorial": {
+        "show_on_startup": true
+    },
+    "performance": {
+        "max_liquid_updates_per_tick": 3,
+        "liquid_flow_enabled": true,
+        "cache_face_polygons": true
+    },
+    "undo": {
+        "max_history": 100
+    }
+}
