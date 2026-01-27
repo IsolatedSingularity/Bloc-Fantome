@@ -7,11 +7,11 @@
 
 ## Overview
 
-Bite Sized Minecraft is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions—all with the familiar sounds and textures of the original game.
+Bite Sized Minecraft is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions. All with the familiar sounds and textures of the original game.
 
 ![Main Interface](References/main.png)
 
-The project serves as both a **creative tool** for designing and visualizing Minecraft-style builds and a **technical demonstration** of isometric rendering, sprite management, and interactive GUI design in Python. Every block placement triggers authentic sounds with 3D positional audio—volume fades with distance, and stereo panning shifts based on where the block is placed on screen.
+The project serves as both a **creative tool** for designing and visualizing Minecraft-style builds and a **technical demonstration** of isometric rendering, sprite management, and interactive GUI design in Python. Every block placement triggers authentic sounds with 3D positional audio. Volume fades with distance, and stereo panning shifts based on where the block is placed on screen.
 
 *The world remembers every block you place.*
 
@@ -23,7 +23,7 @@ The project serves as both a **creative tool** for designing and visualizing Min
 
 ### Block Placement & Building
 
-The core experience revolves around intuitive block placement on an isometric grid. A ghost preview shows exactly where your block will land before you commit, and an unlimited undo/redo system (Ctrl+Z / Ctrl+Y) ensures you can always fix mistakes—or undo them one hundred times over if needed.
+The core experience revolves around intuitive block placement on an isometric grid. A ghost preview shows exactly where your block will land before you commit, and an unlimited undo/redo system (Ctrl+Z / Ctrl+Y) ensures you can always fix mistakes. Or undo them one hundred times over if needed.
 
 Building tools include adjustable brush sizes (1×1, 2×2, 3×3) for rapid construction, a fill tool for quickly covering large areas, and mirror mode for perfectly symmetrical builds. All saves are automatically compressed and backed up, so your creations are never lost.
 
@@ -64,7 +64,7 @@ if right_click_on_door:
 
 ### Pre-made Structures
 
-Instantly place complete structures—houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
+Instantly place complete structures: houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
 
 ---
 
@@ -82,21 +82,21 @@ A comprehensive tutorial guides users through all features, from basic block pla
 
 ![Dimensions Demo](References/Dimensions.gif)
 
-Three distinct dimensions await, each transforming your building canvas with unique floor textures, ambient soundscapes, and atmospheric music. Switching dimensions doesn't just change the scenery—it transports you to an entirely different realm with its own character and mood.
+Three distinct dimensions await, each transforming your building canvas with unique floor textures, ambient soundscapes, and atmospheric music. Switching dimensions does not just change the scenery. It transports you to an entirely different realm with its own character and mood.
 
 ### Overworld
 
-The default dimension greets you with familiar grass-covered ground and the gentle sounds of a calm meadow. Peaceful piano melodies drift in the background as you build under open skies. This is home—comfortable, safe, and full of creative possibility.
+The default dimension greets you with familiar grass-covered ground and the gentle sounds of a calm meadow. Peaceful piano melodies drift in the background as you build under open skies. This is home. Comfortable. Safe. Full of creative possibility.
 
 ### Nether
 
 ![Nether Dimension](References/nether.png)
 
-Step through the portal and the world transforms. Netherrack stretches beneath your feet, cracked and ancient. The air fills with deep, ominous rumbling—the sound of a realm that exists in eternal twilight between fire and shadow. Crimson forests and warped fungal growths dot the landscape, their bioluminescent glow cutting through the perpetual haze. Here you'll find soul sand valleys, bastions of blackstone, and rivers of flowing lava that illuminate the darkness with their molten glow. The music shifts to something darker, more primal—drums echo in the deep.
+Step through the portal and the world transforms. Netherrack stretches beneath your feet, cracked and ancient. The air fills with deep, ominous rumbling: the sound of a realm that exists in eternal twilight between fire and shadow. Crimson forests and warped fungal growths dot the landscape, their bioluminescent glow cutting through the perpetual haze. Here you will find soul sand valleys, bastions of blackstone, and rivers of flowing lava that illuminate the darkness with their molten glow. The music shifts to something darker, more primal. Drums echo in the deep.
 
 ### The End
 
-Journey to the edge of existence itself. End stone forms an alien landscape floating in an infinite void, its pale yellow surface stark against the absolute darkness that surrounds it. The atmosphere here is different—ethereal, empty, unsettling. Distant, haunting tones drift through the emptiness, and the purple-tinged sky holds no stars, no sun, no moon. End cities rise from the void, their purpur spires reaching toward nothing. This is a place of endings, where the familiar rules of the world no longer apply.
+Journey to the edge of existence itself. End stone forms an alien landscape floating in an infinite void, its pale yellow surface stark against the absolute darkness that surrounds it. The atmosphere here is different. Ethereal. Empty. *Unsettling*. Distant, haunting tones drift through the emptiness, and the purple-tinged sky holds no stars, no sun, no moon. End cities rise from the void, their purpur spires reaching toward nothing. This is a place of endings, where the familiar rules of the world no longer apply.
 
 ---
 
@@ -104,15 +104,19 @@ Journey to the edge of existence itself. End stone forms an alien landscape floa
 
 ![Weather Effects](References/Weather.gif)
 
-Weather transforms your world from a static canvas into a living, breathing environment. The system simulates realistic atmospheric effects that respond to the space around them, creating moments of beauty and drama as you build.
+*The sky knows when you are watching.*
 
-When rain begins, it starts subtly—a few drops here and there—before building into a full downpour. Each raindrop is individually simulated, falling at slightly different speeds and angles to create natural variation. As drops strike the ground, they burst into tiny splash particles that fade naturally. The intensity ebbs and flows over time, sometimes lightening to a drizzle, other times intensifying into a driving storm.
+Weather transforms your world from static canvas into something *alive*. The system simulates atmospheric effects that respond to the space around them, creating moments of beauty and drama. Or something else entirely.
 
-Thunder rolls across the sky at random intervals, accompanied by brilliant lightning strikes that illuminate your entire build in a flash of white. The lightning bolts themselves are procedurally generated, branching and forking realistically as they arc from sky to ground. During storms, the sky darkens gradually, casting your world in moody shadow.
+Rain arrives without warning. *First a whisper.* Then a downpour. Each raindrop is individually simulated, falling at slightly different speeds and angles. As drops strike the ground, they burst into tiny splash particles that fade naturally. The intensity ebbs and flows over time. Sometimes lightening to a drizzle. Other times intensifying into a driving storm.
 
-Snow brings a gentler atmosphere. Delicate flakes drift downward with realistic physics, swaying side to side as they fall. The effect is constrained to your building platform, creating a cozy snow globe effect around your creations. An overcast pall settles over the world during snowfall, muting colors and softening shadows.
+*You did not ask for thunder.*
 
-Clouds drift lazily overhead when enabled, their parallax movement creating depth against the sky. Multiple layers of clouds at different altitudes move at different speeds, building a convincing sense of atmosphere above your builds.
+Lightning strikes illuminate your entire build in a flash of white. The bolts themselves are procedurally generated, branching and forking as they arc from sky to ground. During storms, the sky darkens gradually, casting your world in moody shadow. *The shadows remember their shapes.*
+
+Snow brings a gentler atmosphere. Delicate flakes drift downward with realistic physics, swaying side to side as they fall. The effect is constrained to your building platform, creating a cozy snow globe effect around your creations. *Inside looking out. Or outside looking in?*
+
+Clouds drift lazily overhead when enabled, their parallax movement creating depth against the sky. Multiple layers at different altitudes move at different speeds. *They are patient.*
 
 ---
 
@@ -122,7 +126,7 @@ Clouds drift lazily overhead when enabled, their parallax movement creating dept
 
 The lighting system adds depth and atmosphere through dynamic illumination. Light-emitting blocks cast a warm glow that propagates outward, falling off naturally with distance. Place a glowstone and watch as nearby blocks brighten; surround it with walls and observe how light fills the interior space.
 
-Multiple light sources interact realistically, their influences combining to create nuanced illumination. A room lit by sea lanterns feels different from one lit by shroomlight—each source has its own color temperature and intensity. Magma blocks provide dim, ominous underglow, while jack-o'-lanterns cast their carved grins in warm orange light.
+Multiple light sources interact realistically, their influences combining to create nuanced illumination. A room lit by sea lanterns feels different from one lit by shroomlight. Each source has its own color temperature and intensity. Magma blocks provide dim, ominous underglow, while jack-o'-lanterns cast their carved grins in warm orange light.
 
 The day/night cycle brings its own lighting drama. The sun traces a smooth arc across the sky, its position determining the overall brightness of your world. As dusk approaches, colors shift toward warm oranges and purples. Night brings darkness, punctuated only by starlight and whatever artificial illumination you've placed. Stars twinkle overhead, their brightness fluctuating gently, and the moon cycles through eight distinct phases just as it does in the real Minecraft.
 
@@ -146,7 +150,7 @@ Water and lava behave as true fluids, flowing and spreading according to the sam
 
 The flow simulation tracks liquid levels from 1 to 8, where 8 represents a source block and lower values indicate flowing liquid at various distances from the source. Water spreads quickly, seeking the lowest available path with each simulation tick. Lava moves six times slower, its molten viscosity creating a more ponderous, threatening spread.
 
-When water meets lava, the interaction produces obsidian or cobblestone depending on the circumstances—source lava becomes obsidian, while flowing lava hardens to cobblestone. These interactions are accompanied by the satisfying hiss of rapidly cooling stone.
+When water meets lava, the interaction produces obsidian or cobblestone depending on the circumstances: source lava becomes obsidian, while flowing lava hardens to cobblestone. These interactions are accompanied by the satisfying hiss of rapidly cooling stone.
 
 ```python
 def update_liquid_flow(liquid_type, position):
@@ -170,11 +174,17 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ---
 
-## Mathematical Details
+## The Geometry of Blocks
 
 ### Isometric Projection
 
-The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games. This projection creates the illusion of 3D depth on a 2D canvas by rendering blocks at a fixed angle where horizontal movement translates to diagonal screen movement.
+The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games. World coordinates $(x, y, z) \in \mathbb{Z}^3$ map to screen coordinates $(u, v) \in \mathbb{R}^2$ via the affine transformation:
+
+$$
+\begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} w/2 & -w/2 & 0 \\ h/2 & h/2 & -h \end{pmatrix} \begin{pmatrix} x \\ y \\ z \end{pmatrix} + \begin{pmatrix} u_0 \\ v_0 \end{pmatrix}
+$$
+
+where $w$ is the tile width, $h$ is the tile height, and $(u_0, v_0)$ is the camera offset.
 
 ```python
 def world_to_screen(grid_x, grid_y, grid_z):
@@ -184,9 +194,15 @@ def world_to_screen(grid_x, grid_y, grid_z):
     return screen_x, screen_y
 ```
 
-### Depth Sorting (Painter's Algorithm)
+### Depth Ordering
 
-Blocks are rendered back-to-front using the **Painter's Algorithm**, where the sort key is the sum of coordinates. This ensures proper occlusion—blocks further from the viewer are drawn first and naturally covered by closer blocks.
+Blocks are rendered back-to-front using the **Painter's Algorithm**. For blocks at positions $\mathbf{r}_i = (x_i, y_i, z_i)$, the depth ordering is given by the linear functional:
+
+$$
+d(\mathbf{r}) = x + y + z
+$$
+
+Blocks are sorted by $d(\mathbf{r})$ in ascending order. This ensures proper occlusion: blocks further from the viewer are drawn first and naturally covered by closer blocks.
 
 ```python
 def render_world():
@@ -203,9 +219,9 @@ def render_world():
         draw_block(x, y, z, block_type)
 ```
 
-### Sparse World Storage
+### Sparse World Representation
 
-The world uses **dictionary-based sparse storage** for memory efficiency—only occupied positions consume memory:
+The world state is a map $\mathcal{W}: \mathbb{Z}^3 \to \mathcal{B} \cup \{\varnothing\}$ where $\mathcal{B}$ is the set of block types and $\varnothing$ denotes empty space. This **sparse dictionary storage** ensures $\mathcal{O}(n)$ memory for $n$ placed blocks rather than $\mathcal{O}(V)$ for volume $V$:
 
 ```python
 class World:

@@ -30,10 +30,12 @@ BORDER_LIGHT = (100, 100, 110)    # Light border (top/left)
 TEXT_COLOR = (255, 255, 255)      # White text
 SHADOW_COLOR = (30, 30, 30)       # Dark shadow
 
-# Isometric settings
-TILE_WIDTH = 48
-TILE_HEIGHT = 24
-BLOCK_HEIGHT = 28
+# Isometric settings (2:1 ratio)
+TEXTURE_SIZE = 16  # Original Minecraft texture size
+SCALE = 2          # Scale factor for output
+TILE_WIDTH = TEXTURE_SIZE * SCALE * 2   # 64
+TILE_HEIGHT = TEXTURE_SIZE * SCALE      # 32
+BLOCK_HEIGHT = TEXTURE_SIZE * SCALE     # 32
 
 # Headers to generate (matching the GIF names)
 HEADERS = [
@@ -43,48 +45,104 @@ HEADERS = [
     "Liquids"
 ]
 
-# Nether and End blocks for the showcase grid
-# Format: (texture_top, texture_side, texture_bottom, tint_top, tint_side)
-NETHER_END_BLOCKS = [
-    # Nether blocks
-    ("netherrack.png", "netherrack.png", "netherrack.png", None, None),
-    ("nether_bricks.png", "nether_bricks.png", "nether_bricks.png", None, None),
-    ("red_nether_bricks.png", "red_nether_bricks.png", "red_nether_bricks.png", None, None),
-    ("soul_sand.png", "soul_sand.png", "soul_sand.png", None, None),
-    ("soul_soil.png", "soul_soil.png", "soul_soil.png", None, None),
-    ("glowstone.png", "glowstone.png", "glowstone.png", None, None),
-    ("magma.png", "magma.png", "magma.png", None, None),
-    ("nether_wart_block.png", "nether_wart_block.png", "nether_wart_block.png", None, None),
-    ("warped_wart_block.png", "warped_wart_block.png", "warped_wart_block.png", None, None),
-    ("shroomlight.png", "shroomlight.png", "shroomlight.png", None, None),
-    ("blackstone.png", "blackstone.png", "blackstone.png", None, None),
-    ("polished_blackstone.png", "polished_blackstone.png", "polished_blackstone.png", None, None),
-    ("polished_blackstone_bricks.png", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png", None, None),
-    ("gilded_blackstone.png", "gilded_blackstone.png", "gilded_blackstone.png", None, None),
-    ("basalt_top.png", "basalt_side.png", "basalt_top.png", None, None),
-    ("polished_basalt_top.png", "polished_basalt_side.png", "polished_basalt_top.png", None, None),
-    ("ancient_debris_top.png", "ancient_debris_side.png", "ancient_debris_top.png", None, None),
-    ("netherite_block.png", "netherite_block.png", "netherite_block.png", None, None),
-    ("crying_obsidian.png", "crying_obsidian.png", "crying_obsidian.png", None, None),
-    ("crimson_nylium.png", "crimson_nylium_side.png", "netherrack.png", None, None),
-    ("warped_nylium.png", "warped_nylium_side.png", "netherrack.png", None, None),
-    ("crimson_stem_top.png", "crimson_stem.png", "crimson_stem_top.png", None, None),
-    ("warped_stem_top.png", "warped_stem.png", "warped_stem_top.png", None, None),
-    ("crimson_planks.png", "crimson_planks.png", "crimson_planks.png", None, None),
-    ("warped_planks.png", "warped_planks.png", "warped_planks.png", None, None),
-    # End blocks
-    ("end_stone.png", "end_stone.png", "end_stone.png", None, None),
-    ("end_stone_bricks.png", "end_stone_bricks.png", "end_stone_bricks.png", None, None),
-    ("purpur_block.png", "purpur_block.png", "purpur_block.png", None, None),
-    ("purpur_pillar_top.png", "purpur_pillar.png", "purpur_pillar_top.png", None, None),
-    ("obsidian.png", "obsidian.png", "obsidian.png", None, None),
-    # Bonus interesting blocks to fill grid
-    ("prismarine.png", "prismarine.png", "prismarine.png", None, None),
-    ("dark_prismarine.png", "dark_prismarine.png", "dark_prismarine.png", None, None),
-    ("sea_lantern.png", "sea_lantern.png", "sea_lantern.png", None, None),
-    ("amethyst_block.png", "amethyst_block.png", "amethyst_block.png", None, None),
-    ("copper_block.png", "copper_block.png", "copper_block.png", None, None),
-    ("oxidized_copper.png", "oxidized_copper.png", "oxidized_copper.png", None, None),
+# Extended block list - doubled with more visually interesting blocks
+# Format: (texture_top, texture_side, texture_bottom)
+SHOWCASE_BLOCKS = [
+    # Row 1: Nether Core
+    ("netherrack.png", "netherrack.png", "netherrack.png"),
+    ("nether_bricks.png", "nether_bricks.png", "nether_bricks.png"),
+    ("red_nether_bricks.png", "red_nether_bricks.png", "red_nether_bricks.png"),
+    ("chiseled_nether_bricks.png", "chiseled_nether_bricks.png", "chiseled_nether_bricks.png"),
+    ("cracked_nether_bricks.png", "cracked_nether_bricks.png", "cracked_nether_bricks.png"),
+    ("nether_wart_block.png", "nether_wart_block.png", "nether_wart_block.png"),
+    
+    # Row 2: Warped/Crimson
+    ("warped_wart_block.png", "warped_wart_block.png", "warped_wart_block.png"),
+    ("crimson_nylium.png", "crimson_nylium_side.png", "netherrack.png"),
+    ("warped_nylium.png", "warped_nylium_side.png", "netherrack.png"),
+    ("crimson_stem_top.png", "crimson_stem.png", "crimson_stem_top.png"),
+    ("warped_stem_top.png", "warped_stem.png", "warped_stem_top.png"),
+    ("shroomlight.png", "shroomlight.png", "shroomlight.png"),
+    
+    # Row 3: Blackstone Family
+    ("blackstone.png", "blackstone.png", "blackstone.png"),
+    ("polished_blackstone.png", "polished_blackstone.png", "polished_blackstone.png"),
+    ("polished_blackstone_bricks.png", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png"),
+    ("chiseled_polished_blackstone.png", "chiseled_polished_blackstone.png", "chiseled_polished_blackstone.png"),
+    ("cracked_polished_blackstone_bricks.png", "cracked_polished_blackstone_bricks.png", "cracked_polished_blackstone_bricks.png"),
+    ("gilded_blackstone.png", "gilded_blackstone.png", "gilded_blackstone.png"),
+    
+    # Row 4: Basalt & Soul
+    ("basalt_top.png", "basalt_side.png", "basalt_top.png"),
+    ("polished_basalt_top.png", "polished_basalt_side.png", "polished_basalt_top.png"),
+    ("smooth_basalt.png", "smooth_basalt.png", "smooth_basalt.png"),
+    ("soul_sand.png", "soul_sand.png", "soul_sand.png"),
+    ("soul_soil.png", "soul_soil.png", "soul_soil.png"),
+    ("magma.png", "magma.png", "magma.png"),
+    
+    # Row 5: Precious Nether
+    ("ancient_debris_top.png", "ancient_debris_side.png", "ancient_debris_top.png"),
+    ("netherite_block.png", "netherite_block.png", "netherite_block.png"),
+    ("nether_gold_ore.png", "nether_gold_ore.png", "nether_gold_ore.png"),
+    ("nether_quartz_ore.png", "nether_quartz_ore.png", "nether_quartz_ore.png"),
+    ("glowstone.png", "glowstone.png", "glowstone.png"),
+    ("crying_obsidian.png", "crying_obsidian.png", "crying_obsidian.png"),
+    
+    # Row 6: End Dimension
+    ("end_stone.png", "end_stone.png", "end_stone.png"),
+    ("end_stone_bricks.png", "end_stone_bricks.png", "end_stone_bricks.png"),
+    ("purpur_block.png", "purpur_block.png", "purpur_block.png"),
+    ("purpur_pillar_top.png", "purpur_pillar.png", "purpur_pillar_top.png"),
+    ("obsidian.png", "obsidian.png", "obsidian.png"),
+    ("dragon_egg.png", "dragon_egg.png", "dragon_egg.png"),
+    
+    # Row 7: Prismarine & Ocean
+    ("prismarine.png", "prismarine.png", "prismarine.png"),
+    ("prismarine_bricks.png", "prismarine_bricks.png", "prismarine_bricks.png"),
+    ("dark_prismarine.png", "dark_prismarine.png", "dark_prismarine.png"),
+    ("sea_lantern.png", "sea_lantern.png", "sea_lantern.png"),
+    ("tube_coral_block.png", "tube_coral_block.png", "tube_coral_block.png"),
+    ("brain_coral_block.png", "brain_coral_block.png", "brain_coral_block.png"),
+    
+    # Row 8: Coral & Deep
+    ("bubble_coral_block.png", "bubble_coral_block.png", "bubble_coral_block.png"),
+    ("fire_coral_block.png", "fire_coral_block.png", "fire_coral_block.png"),
+    ("horn_coral_block.png", "horn_coral_block.png", "horn_coral_block.png"),
+    ("blue_ice.png", "blue_ice.png", "blue_ice.png"),
+    ("packed_ice.png", "packed_ice.png", "packed_ice.png"),
+    ("ice.png", "ice.png", "ice.png"),
+    
+    # Row 9: Amethyst & Copper
+    ("amethyst_block.png", "amethyst_block.png", "amethyst_block.png"),
+    ("budding_amethyst.png", "budding_amethyst.png", "budding_amethyst.png"),
+    ("copper_block.png", "copper_block.png", "copper_block.png"),
+    ("exposed_copper.png", "exposed_copper.png", "exposed_copper.png"),
+    ("weathered_copper.png", "weathered_copper.png", "weathered_copper.png"),
+    ("oxidized_copper.png", "oxidized_copper.png", "oxidized_copper.png"),
+    
+    # Row 10: Deepslate & Sculk
+    ("deepslate_top.png", "deepslate.png", "deepslate_top.png"),
+    ("deepslate_bricks.png", "deepslate_bricks.png", "deepslate_bricks.png"),
+    ("deepslate_tiles.png", "deepslate_tiles.png", "deepslate_tiles.png"),
+    ("chiseled_deepslate.png", "chiseled_deepslate.png", "chiseled_deepslate.png"),
+    ("sculk.png", "sculk.png", "sculk.png"),
+    ("reinforced_deepslate_top.png", "reinforced_deepslate_side.png", "reinforced_deepslate_bottom.png"),
+    
+    # Row 11: Precious Ores
+    ("diamond_block.png", "diamond_block.png", "diamond_block.png"),
+    ("emerald_block.png", "emerald_block.png", "emerald_block.png"),
+    ("gold_block.png", "gold_block.png", "gold_block.png"),
+    ("iron_block.png", "iron_block.png", "iron_block.png"),
+    ("lapis_block.png", "lapis_block.png", "lapis_block.png"),
+    ("redstone_block.png", "redstone_block.png", "redstone_block.png"),
+    
+    # Row 12: Glazed Terracotta (colorful)
+    ("cyan_glazed_terracotta.png", "cyan_glazed_terracotta.png", "cyan_glazed_terracotta.png"),
+    ("purple_glazed_terracotta.png", "purple_glazed_terracotta.png", "purple_glazed_terracotta.png"),
+    ("magenta_glazed_terracotta.png", "magenta_glazed_terracotta.png", "magenta_glazed_terracotta.png"),
+    ("red_glazed_terracotta.png", "red_glazed_terracotta.png", "red_glazed_terracotta.png"),
+    ("orange_glazed_terracotta.png", "orange_glazed_terracotta.png", "orange_glazed_terracotta.png"),
+    ("lime_glazed_terracotta.png", "lime_glazed_terracotta.png", "lime_glazed_terracotta.png"),
 ]
 
 
@@ -143,87 +201,77 @@ def load_texture(filename: str) -> pygame.Surface:
     return None
 
 
-def apply_brightness(surface: pygame.Surface, brightness: float) -> pygame.Surface:
-    """Apply brightness modifier to a surface."""
-    result = surface.copy()
-    dark = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
-    if brightness < 1.0:
-        dark.fill((0, 0, 0, int(255 * (1.0 - brightness))))
-        result.blit(dark, (0, 0))
-    return result
-
-
-def create_isometric_block(top_tex: pygame.Surface, side_tex: pygame.Surface, 
-                           front_tex: pygame.Surface = None) -> pygame.Surface:
-    """Create an isometric block sprite from face textures."""
-    if front_tex is None:
-        front_tex = side_tex
+def create_isometric_block(top_tex: pygame.Surface, left_tex: pygame.Surface, 
+                           right_tex: pygame.Surface = None) -> pygame.Surface:
+    """
+    Create a proper isometric block using 2:1 dimetric projection.
+    Uses pixel-perfect rendering for clean edges.
+    """
+    if right_tex is None:
+        right_tex = left_tex
     
-    # Scale textures to tile size
-    face_w = TILE_WIDTH // 2
-    face_h = TILE_HEIGHT // 2
-    
-    # Create output surface
+    # Output surface size
     out_w = TILE_WIDTH
     out_h = TILE_HEIGHT + BLOCK_HEIGHT
     surface = pygame.Surface((out_w, out_h), pygame.SRCALPHA)
     
-    center_x = out_w // 2
-    top_y = 0
+    tex_size = TEXTURE_SIZE * SCALE  # 32 pixels
     
-    # === TOP FACE ===
+    # Scale textures
     if top_tex:
-        scaled_top = pygame.transform.scale(top_tex, (face_w, face_w))
-        # Transform to isometric diamond
-        top_points = [
-            (center_x, top_y),  # Top
-            (out_w, top_y + TILE_HEIGHT // 2),  # Right
-            (center_x, top_y + TILE_HEIGHT),  # Bottom
-            (0, top_y + TILE_HEIGHT // 2),  # Left
-        ]
-        # Simple approach: scale and rotate
-        top_iso = pygame.transform.scale(top_tex, (TILE_WIDTH, TILE_HEIGHT))
-        # Create diamond mask
-        mask_surf = pygame.Surface((TILE_WIDTH, TILE_HEIGHT), pygame.SRCALPHA)
-        pygame.draw.polygon(mask_surf, (255, 255, 255, 255), [
-            (TILE_WIDTH // 2, 0),
-            (TILE_WIDTH, TILE_HEIGHT // 2),
-            (TILE_WIDTH // 2, TILE_HEIGHT),
-            (0, TILE_HEIGHT // 2)
-        ])
-        top_iso.blit(mask_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        surface.blit(top_iso, (0, top_y))
+        top_scaled = pygame.transform.scale(top_tex, (tex_size, tex_size))
+    if left_tex:
+        left_scaled = pygame.transform.scale(left_tex, (tex_size, tex_size))
+    if right_tex:
+        right_scaled = pygame.transform.scale(right_tex, (tex_size, tex_size))
     
-    # === LEFT FACE (darker) ===
-    if side_tex:
-        scaled_side = pygame.transform.scale(side_tex, (TILE_WIDTH // 2, BLOCK_HEIGHT))
-        scaled_side = apply_brightness(scaled_side, 0.7)
-        # Draw as parallelogram
-        left_y = TILE_HEIGHT // 2
-        for y in range(BLOCK_HEIGHT):
-            for x in range(TILE_WIDTH // 2):
-                px = x
-                py = left_y + y + (TILE_WIDTH // 2 - x) // 2
-                if py < out_h:
-                    col = scaled_side.get_at((x, y))
-                    if col[3] > 0:
-                        surface.set_at((px, py), col)
+    # TOP FACE: Transform to isometric diamond
+    if top_tex:
+        for py in range(tex_size):
+            for px in range(tex_size):
+                col = top_scaled.get_at((px, py))
+                if col[3] > 0:
+                    # Isometric transform for top face
+                    iso_x = (px - py) + tex_size - 1
+                    iso_y = (px + py) // 2
+                    if 0 <= iso_x < out_w and 0 <= iso_y < out_h:
+                        surface.set_at((iso_x, iso_y), col)
     
-    # === RIGHT FACE (medium) ===
-    if front_tex:
-        scaled_front = pygame.transform.scale(front_tex, (TILE_WIDTH // 2, BLOCK_HEIGHT))
-        scaled_front = apply_brightness(scaled_front, 0.85)
-        # Draw as parallelogram
-        right_x = TILE_WIDTH // 2
-        right_y = TILE_HEIGHT // 2
-        for y in range(BLOCK_HEIGHT):
-            for x in range(TILE_WIDTH // 2):
-                px = right_x + x
-                py = right_y + y + x // 2
-                if py < out_h and px < out_w:
-                    col = scaled_front.get_at((x, y))
-                    if col[3] > 0:
-                        surface.set_at((px, py), col)
+    # LEFT FACE (darker): Draw as left parallelogram
+    if left_tex:
+        for py in range(tex_size):
+            for px in range(tex_size):
+                col = left_scaled.get_at((px, py))
+                if col[3] > 0:
+                    # Darken for shading
+                    r = int(col[0] * 0.6)
+                    g = int(col[1] * 0.6)
+                    b = int(col[2] * 0.6)
+                    darkened = (r, g, b, col[3])
+                    
+                    # Left face position
+                    iso_x = px // 2
+                    iso_y = TILE_HEIGHT // 2 + py + (tex_size - px) // 2
+                    if 0 <= iso_x < out_w // 2 and 0 <= iso_y < out_h:
+                        surface.set_at((iso_x, iso_y), darkened)
+    
+    # RIGHT FACE (medium): Draw as right parallelogram  
+    if right_tex:
+        for py in range(tex_size):
+            for px in range(tex_size):
+                col = right_scaled.get_at((px, py))
+                if col[3] > 0:
+                    # Medium brightness
+                    r = int(col[0] * 0.8)
+                    g = int(col[1] * 0.8)
+                    b = int(col[2] * 0.8)
+                    medium = (r, g, b, col[3])
+                    
+                    # Right face position
+                    iso_x = out_w // 2 + px // 2
+                    iso_y = TILE_HEIGHT // 2 + py + px // 2
+                    if 0 <= iso_x < out_w and 0 <= iso_y < out_h:
+                        surface.set_at((iso_x, iso_y), medium)
     
     return surface
 
@@ -233,29 +281,32 @@ def create_block_grid(blocks: list, grid_cols: int = 6) -> pygame.Surface:
     num_blocks = len(blocks)
     grid_rows = (num_blocks + grid_cols - 1) // grid_cols
     
-    # Calculate spacing
-    spacing_x = TILE_WIDTH + 4
-    spacing_y = TILE_HEIGHT + BLOCK_HEIGHT - 10
+    # Calculate spacing (tighter packing)
+    spacing_x = TILE_WIDTH - 8
+    spacing_y = TILE_HEIGHT + BLOCK_HEIGHT - 20
     
-    # Calculate total size
-    total_w = grid_cols * spacing_x + TILE_WIDTH // 2
-    total_h = grid_rows * spacing_y + BLOCK_HEIGHT + 20
+    # Calculate total size with padding
+    pad = 16
+    total_w = grid_cols * spacing_x + TILE_WIDTH // 2 + pad * 2
+    total_h = grid_rows * spacing_y + BLOCK_HEIGHT + pad * 2
     
     # Create surface with dark background
     surface = pygame.Surface((total_w, total_h), pygame.SRCALPHA)
-    surface.fill((25, 25, 30, 255))
+    surface.fill((20, 20, 25, 255))
     
     # Draw each block
     for i, block_data in enumerate(blocks):
         row = i // grid_cols
         col = i % grid_cols
         
-        # Isometric offset (alternate rows)
-        x = col * spacing_x + (TILE_WIDTH // 4 if row % 2 else 0) + 10
-        y = row * spacing_y + 10
+        # Staggered layout for isometric effect
+        x = col * spacing_x + pad
+        if row % 2 == 1:
+            x += spacing_x // 2
+        y = row * spacing_y + pad
         
         # Load textures
-        top_file, side_file, bottom_file, tint_top, tint_side = block_data
+        top_file, side_file, bottom_file = block_data
         top_tex = load_texture(top_file)
         side_tex = load_texture(side_file)
         
@@ -281,8 +332,8 @@ def main():
         print(f"  Created: {filename}")
     
     # Generate block grid showcase
-    print("\nGenerating Nether/End block grid...")
-    grid_surface = create_block_grid(NETHER_END_BLOCKS, grid_cols=6)
+    print("\nGenerating block showcase grid...")
+    grid_surface = create_block_grid(SHOWCASE_BLOCKS, grid_cols=6)
     grid_path = os.path.join(OUTPUT_DIR, "block_showcase.png")
     pygame.image.save(grid_surface, grid_path)
     print(f"  Created: block_showcase.png ({grid_surface.get_width()}x{grid_surface.get_height()})")
