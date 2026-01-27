@@ -1,8 +1,9 @@
 # Bite Sized Minecraft
 
+<p align="center"><i>Édition Miette</i></p>
+
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
-<!-- Édition Miette -->
 
 ##### An Interactive Isometric Building Simulator in Pygame. This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects are sourced from the official [Minecraft Resource Pack Template](https://aka.ms/resourcepacktemplate) and the [Minecraft Wiki](https://minecraft.wiki/), used here for educational and non-commercial purposes only. Minecraft® is a registered trademark of Mojang Synergies AB. 
 
@@ -75,8 +76,6 @@ if right_click_on_door:
 
 Instantly place complete structures: houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
 
----
-
 <br>
 
 <p align="center"><sub>. . .</sub></p>
@@ -102,8 +101,6 @@ Instantly place complete structures: houses, towers, trees, portals, temples, an
 <p align="center"><sub>. . .</sub></p>
 
 <br>
-
----
 
 ## Interactive Tutorial
 
@@ -209,29 +206,27 @@ def update_liquid_flow(liquid_type, position):
 
 The liquid simulation runs continuously in the background, so you can place a water source at the top of a staircase and watch it tumble down step by step, or create lava falls that slowly creep toward your structures. Liquid flow can be toggled on and off if you prefer static water features.
 
----
-
 <br>
 
 <p align="center"><sub>. . .</sub></p>
 
 <br>
 
-<p align="center"><sub>The water knows where it wants to go.</sub></p>
+<p align="center"><sub>L'eau sait où elle veut aller.</sub></p>
 
-<p align="center"><sub>It always finds a way down.</sub></p>
-
-<br>
-
-<p align="center"><sub>You can try to stop it.</sub></p>
-
-<p align="center"><sub>Build walls. Place blocks.</sub></p>
-
-<p align="center"><sub>It will wait.</sub></p>
+<p align="center"><sub>Elle trouve toujours un chemin vers le bas.</sub></p>
 
 <br>
 
-<p align="center"><sub>It has always been waiting.</sub></p>
+<p align="center"><sub>Tu peux essayer de l'arrêter.</sub></p>
+
+<p align="center"><sub>Construire des murs. Placer des blocs.</sub></p>
+
+<p align="center"><sub>Elle attendra.</sub></p>
+
+<br>
+
+<p align="center"><sub>Elle a toujours attendu.</sub></p>
 
 <br>
 
@@ -405,6 +400,12 @@ This project would not be possible without:
 
 <br>
 
+<p align="center">
+  <img src="References/skindiacus.png" alt="" width="200"/>
+</p>
+
+<br>
+
 ---
 
 <p align="center">
@@ -423,29 +424,13 @@ This project would not be possible without:
 
 <br>
 
-<p align="center">
-  <img src="References/skindiacus.png" alt="" width="200"/>
-</p>
-
-<br>
-
 <p align="center"><sub>. . .</sub></p>
 
 <br>
 
-<p align="center"><sub>Do you remember this one?</sub></p>
+<p align="center"><sub>Merci de votre visite.</sub></p>
 
-<p align="center"><sub>It was not here before.</sub></p>
-
-<br>
-
-<p align="center"><sub>. . .</sub></p>
-
-<br>
-
-<p align="center"><sub>Thank you for visiting.</sub></p>
-
-<p align="center"><sub>Please come again.</sub></p>
+<p align="center"><sub>Revenez bientôt.</sub></p>
 
 <br>
 
