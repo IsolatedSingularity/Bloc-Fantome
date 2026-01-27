@@ -1,268 +1,318 @@
 # Bite Sized Minecraft
 ##### An Interactive Isometric Building Simulator in Pygame. This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects are sourced from the official [Minecraft Resource Pack Template](https://aka.ms/resourcepacktemplate) and the [Minecraft Wiki](https://minecraft.wiki/), used here for educational and non-commercial purposes only. Minecraft® is a registered trademark of Mojang Synergies AB. 
 
-![Pre-made Structures](Plots/bmc_structures.png)
+![Pre-made Structures](References/bmc_structures.png)
 
-## Objective
+---
 
-Bite Sized Minecraft is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to drag and drop authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions—all with the familiar sounds and textures of the original game.
+## Overview
 
-The project serves as both a **creative tool** for designing and visualizing Minecraft-style builds and a **technical demonstration** of isometric rendering, sprite management, and interactive GUI design in Python.
+Bite Sized Minecraft is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions—all with the familiar sounds and textures of the original game.
+
+![Main Interface](References/main.png)
 
 **Goal:** Provide an accessible, lightweight building sandbox where users can experiment with block placement, load pre-made structures, and explore the creative possibilities of voxel-based construction without the overhead of a full 3D engine.
 
-## Technical Overview
-
-### Isometric Projection
-
-The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games. This projection creates the illusion of 3D depth on a 2D canvas by rendering blocks at a fixed angle where horizontal movement translates to diagonal screen movement.
-
-The world-to-screen coordinate transformation follows the classic isometric formula, converting 3D grid positions into 2D pixel coordinates. For every two horizontal pixels, the line progresses exactly one vertical pixel, producing clean, pixel-perfect edges at approximately 26.57° (the arctangent of 0.5).
-
-```python
-def world_to_screen(grid_x, grid_y, grid_z):
-    """
-    Convert 3D world coordinates to 2D isometric screen position
-    
-    The transformation projects the 3D grid onto a 2D plane where:
-    - Moving +X shifts the view right and down
-    - Moving +Y shifts the view left and down  
-    - Moving +Z shifts the view upward
-    """
-    screen_x = (grid_x - grid_y) * (TILE_WIDTH // 2) + offset_x
-    screen_y = (grid_x + grid_y) * (TILE_HEIGHT // 2) - grid_z * BLOCK_HEIGHT + offset_y
-    
-    return screen_x, screen_y
-```
-
-### Block Rendering Pipeline
-
-Each block is rendered as a composite isometric sprite with three visible faces (top, left, right), each with appropriate shading to simulate depth. The rendering pipeline handles texture loading, tinting (for grass and leaves), transparency, and special block variants.
-
-```python
-def create_isometric_block(top_texture, side_texture, front_texture):
-    """
-    Generate an isometric block sprite from face textures
-    
-    Face shading follows Minecraft conventions:
-    - Top face: 100% brightness (direct light)
-    - Right face: 85% brightness (partial shadow)
-    - Left face: 70% brightness (deeper shadow)
-    """
-    surface = pygame.Surface((TILE_WIDTH, TILE_HEIGHT + BLOCK_HEIGHT), pygame.SRCALPHA)
-    
-    # Render top diamond face
-    render_top_face(surface, top_texture, brightness=1.0)
-    
-    # Render left parallelogram face
-    render_left_face(surface, side_texture, brightness=0.7)
-    
-    # Render right parallelogram face
-    render_right_face(surface, front_texture, brightness=0.85)
-    
-    return surface
-```
-
-![Bite Sized Minecraft Overview](Plots/bmc_overall.png)
-
-### World Data Structure
-
-The world uses a **sparse dictionary** to store block data, where only occupied positions are tracked. This approach is memory-efficient for the typical building scenario where most of the grid remains empty.
-
-```python
-class World:
-    """
-    Manages the 3D block grid using sparse storage
-    
-    Blocks are stored as: (x, y, z) -> BlockType
-    Only non-air blocks consume memory
-    """
-    def __init__(self, width, depth, height):
-        self.blocks = {}  # Sparse storage: coordinate tuple -> block type
-        self.properties = {}  # Special block states (door open/closed, stair facing)
-        
-    def place_block(self, x, y, z, block_type):
-        # Validate bounds and place block
-        if self.in_bounds(x, y, z):
-            self.blocks[(x, y, z)] = block_type
-            
-    def remove_block(self, x, y, z):
-        # Remove block if exists
-        if (x, y, z) in self.blocks:
-            del self.blocks[(x, y, z)]
-```
-
-### Depth Sorting with Painter's Algorithm
-
-Blocks are rendered back-to-front using the **Painter's Algorithm**, where the sort key is the sum of coordinates. This ensures proper occlusion—blocks further from the viewer are drawn first and naturally covered by closer blocks.
-
-```python
-def render_world():
-    """
-    Render all blocks in correct depth order
-    
-    Sort key: x + y + z (isometric depth)
-    Lower values = further from camera = drawn first
-    """
-    blocks_to_draw = []
-    
-    for (x, y, z), block_type in world.blocks.items():
-        sort_key = x + y + z
-        blocks_to_draw.append((sort_key, x, y, z, block_type))
-    
-    # Sort by depth (furthest first)
-    blocks_to_draw.sort(key=lambda b: b[0])
-    
-    # Draw in order
-    for _, x, y, z, block_type in blocks_to_draw:
-        draw_block(x, y, z, block_type)
-```
+---
 
 ## Features
 
-### Block Placement and Interaction
+### Block Placement & Building
 
-- **Left Click**: Place the currently selected block
-- **Right Click**: Remove blocks or interact (open/close doors)
-- **Ghost Preview**: Semi-transparent preview shows where blocks will be placed
-- **Stacking**: Blocks automatically stack on top of existing structures
+The core experience revolves around intuitive block placement on an isometric grid:
 
-### Block Categories
+- **Left Click** to place the currently selected block
+- **Right Click** to remove blocks or interact (open/close doors)
+- **Ghost Preview** shows where blocks will be placed before clicking
+- **Brush Sizes** (1×1, 2×2, 3×3) for faster building
+- **Fill Tool** for quickly filling large areas
+- **Mirror Mode** for symmetrical construction
 
-The inventory panel organizes **100+ block types** into intuitive categories:
+### 100+ Block Types
 
-- **Natural**: Grass, dirt, stone, sand, gravel, snow, ice
-- **Wood**: Oak, birch, spruce, dark oak (logs, planks, leaves)
-- **Ores & Minerals**: Coal, iron, gold, diamond (ore and block forms)
-- **Copper**: All oxidation stages (block and cut variants)
-- **Building**: Bricks, stone bricks, sandstone, bone block
-- **Decorative**: Glass, wool (6 colors), concrete, bookshelf
-- **Special**: Crafting table, furnace, TNT, water, lava
-- **Nether/End**: Obsidian, nether bricks, end stone, portals
+Over 100 authentic Minecraft blocks organized into categories:
+
+| Category | Examples |
+|----------|----------|
+| **Natural** | Grass, Dirt, Stone, Sand, Gravel, Snow, Ice |
+| **Wood** | Oak, Birch, Spruce, Dark Oak, Acacia, Jungle (logs, planks, leaves) |
+| **Ores** | Coal, Iron, Gold, Diamond, Emerald, Lapis, Redstone |
+| **Nether** | Netherrack, Soul Sand, Nether Bricks, Glowstone, Magma |
+| **End** | End Stone, Purpur, Obsidian |
+| **Decorative** | Glass, Wool (16 colors), Concrete, Terracotta, Bookshelves |
+| **Interactive** | Doors, Stairs, Slabs, Chests, Crafting Tables |
+| **Liquids** | Water, Lava (with flow simulation) |
 
 ### Special Block Behaviors
 
 ```python
 # Stairs can be rotated to face different directions
 if event.key == K_r:
-    rotate_stair_facing()  # Cycles: North -> East -> South -> West
+    rotate_stair_facing()  # Cycles: North → East → South → West
 
 # Slabs can be flipped between top and bottom position
 if event.key == K_f:
-    flip_slab_position()  # Toggles: Bottom <-> Top
+    flip_slab_position()   # Toggles: Bottom ↔ Top
 
 # Doors can be opened and closed
 if right_click_on_door:
-    toggle_door_state()  # Swings open/closed
-```
-
-### Animated Blocks
-
-Several blocks feature real-time animations:
-
-- **Water & Lava**: Flowing texture animation with proper tinting
-- **Nether Portal**: Swirling purple vortex effect
-- **End Portal**: Parallax scrolling starfield
-- **Fire & Soul Fire**: Flickering flame animation
-- **Mob Spawner**: Floating flame particles
-
-### Dimensions
-
-![Dimension Selection](Plots/bmc_dimensions.png)
-
-Explore three distinct dimensions, each with unique floor textures and ambient soundscapes:
-
-```python
-DIMENSIONS = {
-    "overworld": {
-        "floor": BlockType.GRASS,
-        "music": "music/menu/",
-        "ambient": "calm meadow atmosphere"
-    },
-    "nether": {
-        "floor": BlockType.NETHERRACK,
-        "music": "music/game/nether/",
-        "ambient": "ominous rumbling"
-    },
-    "end": {
-        "floor": BlockType.END_STONE,
-        "music": "music/game/end/",
-        "ambient": "ethereal void"
-    }
-}
+    toggle_door_state()    # Swings open/closed
 ```
 
 ### Pre-made Structures
 
 Instantly place complete structures with a single click:
 
-- **Buildings**: Simple House, Villager House, Watch Tower
-- **Trees**: Oak, Birch, Spruce, Dark Oak
-- **Portals**: Nether Portal, End Portal
-- **Decorative**: Fountain, Lamp Post, Desert Well
-- **Nature**: Cactus Farm, Pumpkin Patch, Igloo
-- **Nether**: Nether Ruins, Nether Fortress Bridge, Nether Fossil
+- **Buildings:** Simple House, Villager House, Watch Tower, Temple
+- **Trees:** Oak, Birch, Spruce, Dark Oak, Jungle
+- **Portals:** Nether Portal, End Portal
+- **Decorative:** Fountain, Lamp Post, Desert Well
+- **Nether:** Bastion Remnants, Warped Forest, Nether Fortress Bridge
 
-### Interactive Tutorial
+---
 
-![Tutorial System](Plots/bmc_tutorial.png)
+## Interactive Tutorial
 
-A comprehensive 10-step tutorial guides new users through all features:
+A comprehensive 17-step tutorial guides users through all features:
 
-1. Welcome and introduction
-2. Placing blocks
-3. Removing and interacting
-4. Camera controls (panning)
-5. Block selection panel
-6. Special blocks (stairs, slabs, doors)
-7. Dimension switching
-8. Pre-made structures
-9. Keyboard shortcuts
-10. Building tips
+![Tutorial Screen](References/tutorial.png)
 
-The tutorial features Minecraft-style buttons, a progress bar, and a "Show on startup" preference that persists between sessions.
+The tutorial covers:
+1. **Basics** — Block placement, removal, and camera controls
+2. **Selection** — Using the block panel and search
+3. **Tools** — Fill mode, brush sizes, mirror mode
+4. **Navigation** — Zoom, pan, and view rotation
+5. **Advanced** — Undo/redo, save/load, structures
+6. **Dimensions** — Switching between Overworld, Nether, and End
+7. **Effects** — Weather, lighting, and day/night cycle
+
+---
+
+![Dimensions Header](References/Dimensions.png)
+
+## Dimensions
+
+![Dimensions Demo](References/Dimensions.gif)
+
+Explore three distinct dimensions, each with unique floor textures and ambient soundscapes:
+
+### Overworld
+The default dimension with grass floors, calm meadow atmosphere, and peaceful background music.
+
+### Nether
+![Nether Dimension](References/nether.png)
+
+Enter the dangerous Nether realm featuring:
+- Netherrack floor texture
+- Ominous ambient rumbling
+- Fiery atmosphere with Nether-themed music
+- Soul sand valleys and warped forests
+
+### The End
+Journey to the mysterious End dimension with:
+- End stone floor texture
+- Ethereal void atmosphere
+- Eerie purple ambient sounds
+- End city structures
+
+---
+
+![Weather Header](References/Weather.png)
+
+## Weather System
+
+![Weather Effects](References/Weather.gif)
+
+Dynamic weather effects bring your builds to life:
+
+### Rain
+- Realistic raindrop particles with varying intensity
+- Splash effects when drops hit surfaces
+- Thunder and lightning storms with screen flash
+- Layered ambient rain sounds (Minecraft-style)
+
+### Snow
+- Gentle snowflake particles with drift physics
+- Snow constrained to the building platform
+- Overcast sky darkening effect
+
+### Clouds
+- Floating cloud particles across the sky
+- Adjustable cloud coverage
+- Smooth parallax movement
+
+---
+
+![Lighting Header](References/Lighting.png)
+
+## Lighting System
+
+![Lighting Effects](References/Lighting.gif)
+
+Dynamic lighting creates depth and atmosphere:
+
+- **Light Sources:** Glowstone, Sea Lanterns, Jack-o'-Lanterns, Torches, Shroomlight, Magma Blocks
+- **Light Propagation:** Realistic falloff from light sources
+- **Ambient Occlusion:** Subtle shadows in corners and crevices
+- **Day/Night Cycle:** Sun and moon with smooth transitions
+- **Star Field:** Twinkling stars visible at night
+
+### Light-Emitting Blocks
+
+```python
+# Blocks with light levels
+GLOWSTONE:      lightLevel = 15  # Maximum brightness
+SEA_LANTERN:    lightLevel = 15
+JACK_O_LANTERN: lightLevel = 15
+SHROOMLIGHT:    lightLevel = 15
+MAGMA_BLOCK:    lightLevel = 3   # Dim glow
+LAVA:           lightLevel = 15  # Full brightness
+```
+
+---
+
+![Darkness Header](References/Darkness.png)
+
+## Day/Night Cycle & Darkness
+
+![Darkness Cycle](References/Darkness.gif)
+
+Experience the passage of time in your world:
+
+- **Sun Movement:** Smooth arc across the sky during daytime
+- **Moon Phases:** 8 different moon phases cycling realistically
+- **Sky Transitions:** Gradual color shifts from dawn to dusk
+- **Star Visibility:** Stars fade in at dusk, fade out at dawn
+- **Darkness Effects:** Building area dims during night
+
+### Celestial Controls
+- Toggle the sun/moon cycle on/off
+- Adjust cycle speed
+- Skip to specific times of day
+
+---
+
+## Technical Overview
+
+### Isometric Projection
+
+The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games:
+
+```python
+def world_to_screen(grid_x, grid_y, grid_z):
+    """Convert 3D world coordinates to 2D isometric screen position"""
+    screen_x = (grid_x - grid_y) * (TILE_WIDTH // 2) + offset_x
+    screen_y = (grid_x + grid_y) * (TILE_HEIGHT // 2) - grid_z * BLOCK_HEIGHT + offset_y
+    return screen_x, screen_y
+```
+
+### Depth Sorting (Painter's Algorithm)
+
+Blocks are rendered back-to-front using the **Painter's Algorithm**:
+
+```python
+def render_world():
+    """Render all blocks in correct depth order"""
+    blocks_to_draw = []
+    
+    for (x, y, z), block_type in world.blocks.items():
+        sort_key = x + y + z  # Isometric depth
+        blocks_to_draw.append((sort_key, x, y, z, block_type))
+    
+    blocks_to_draw.sort(key=lambda b: b[0])  # Furthest first
+    
+    for _, x, y, z, block_type in blocks_to_draw:
+        draw_block(x, y, z, block_type)
+```
+
+### Sparse World Storage
+
+The world uses a **dictionary-based sparse storage** for memory efficiency:
+
+```python
+class World:
+    """Only non-air blocks consume memory"""
+    def __init__(self, width, depth, height):
+        self.blocks = {}  # (x, y, z) → BlockType
+        self.properties = {}  # Special block states
+```
+
+### Liquid Flow Simulation
+
+Water and lava flow realistically:
+- **Water** spreads horizontally and falls vertically
+- **Lava** flows 6× slower than water (like Minecraft)
+- **Interactions:** Water + Lava = Obsidian/Cobblestone
+
+---
+
+## Hidden Features
+
+![Anomaly](References/anomaly.png)
+
+The world holds secrets for those who explore deeply...
+
+![Skindiacus](References/skindiacus.png)
+
+*Some things are better left undiscovered.*
+
+---
 
 ## Controls
 
 | Input | Action |
 |-------|--------|
-| Left Click | Place block |
-| Right Click | Remove block / Interact |
-| Middle Mouse (drag) | Pan camera |
-| Mouse Wheel | Scroll inventory |
-| R | Rotate stairs |
-| F | Flip slab position |
-| 1-5 | Quick select blocks |
-| H | Place house structure |
-| T | Place tree structure |
-| C | Clear world |
-| ESC | Exit application |
+| **Left Click** | Place block |
+| **Right Click** | Remove block / Interact |
+| **Middle Mouse (drag)** | Pan camera |
+| **Scroll Wheel** | Zoom in/out |
+| **WASD** | Move camera |
+| **Q / E** | Rotate view |
+| **R** | Rotate stairs |
+| **F** | Flip slab / Toggle fill mode |
+| **B** | Cycle brush size |
+| **M** | Mirror mode (X-axis) |
+| **Shift+M** | Mirror mode (Z-axis) |
+| **Ctrl+Z** | Undo |
+| **Ctrl+Y** | Redo |
+| **Ctrl+S** | Save build |
+| **Ctrl+O** | Load build |
+| **H** | Show tutorial |
+| **C** | Clear world |
+| **1-9** | Quick select hotbar |
+| **ESC** | Exit |
+
+---
 
 ## Project Structure
 
 ```
-Minecraft Builder/
+Bite-Size-Minecraft/
 ├── Code/
-│   ├── minecraftBuilder.py    # Main application (6700+ lines)
-│   └── downloadAssets.py      # Asset downloader utility
+│   ├── minecraftBuilder.py    # Main application (~17,000 lines)
+│   ├── splash.py              # Splash screen module
+│   ├── horror.py              # Horror system manager
+│   ├── constants.py           # Shared constants and enums
+│   ├── config.json            # Application configuration
+│   ├── engine/                # Core engine modules
+│   │   ├── world.py           # Voxel grid management
+│   │   ├── renderer.py        # Isometric projection
+│   │   ├── undo.py            # Command pattern undo system
+│   │   └── performance.py     # Optimization utilities
+│   └── saves/                 # User saves and presets
 ├── Assets/
 │   ├── Texture Hub/           # Block and UI textures
-│   │   ├── blocks/            # 16x16 block face PNGs
-│   │   ├── entity/            # Chest and entity textures
-│   │   └── gui/               # UI element textures
-│   └── Sound Hub/             # Sound effects and music
-│       ├── block/             # Placement/break sounds
-│       ├── music/             # Background music
-│       └── ambient/           # Environmental sounds
-├── Plots/                # Screenshots and distribution
-└── README.md
+│   ├── Sound Hub/             # Sound effects and music
+│   └── Icons/                 # Application icons
+└── References/                # Documentation images
 ```
+
+---
 
 ## Requirements
 
 - Python 3.8+
 - Pygame 2.0+
-- Minecraft textures (from official resource pack)
 
 ```bash
 pip install pygame
@@ -275,27 +325,7 @@ cd Code
 python minecraftBuilder.py
 ```
 
-On first run, ensure the `Assets/Texture Hub/blocks/` folder contains the required Minecraft textures. These can be obtained from the [official Mojang resource pack](https://aka.ms/resourcepacktemplate).
-
-## Future Directions
-
-- **Texture Upscaling**: Higher resolution block textures for crisp visuals
-- **Proper Lighting**: Dynamic lighting system with shadows
-- **Voxel Art Style**: Optional stylized rendering mode
-- **Weather Effects**: Rain, snow, and atmospheric particles
-- **Day/Night Cycle**: Sunrise, sunset, and moon phases
-- **Extended Blocks**: Doors, stairs, fences (improved rendering)
-- **Sculk Blocks**: Deep dark themed blocks with special effects
-- **Entities**: Passive mobs and decorative creatures
-- **Structure Export**: Save builds to shareable format
-
-## Caveats and Known Issues
-
-- **Liquid Flow Performance**: The water and lava flow simulation is currently unoptimized. Placing large amounts of liquid blocks may cause significant lag as the flow propagation calculates neighboring block levels each frame.
-
-- **Complex Block Rendering**: Some blocks with intricate geometry (multi-part doors, corner stairs) use simplified representations that may not perfectly match their in-game appearance.
-
-- **Memory Usage**: While the sparse storage is efficient, loading all texture variants and animation frames does consume noticeable memory on startup.
+---
 
 ## Acknowledgments
 
