@@ -1,7 +1,5 @@
 # Bite Sized Minecraft
 
-<p align="center"><i>Édition Miette</i></p>
-
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
 
@@ -13,7 +11,7 @@
 
 ## Overview
 
-Bite Sized Minecraft is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions. All with the familiar sounds and textures of the original game.
+*Édition Miette* is a **creative building sandbox** that brings the essence of Minecraft's block-placing experience into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place authentic Minecraft blocks onto a grid-based canvas, construct structures, and explore different dimensions. All with the familiar sounds and textures of the original game.
 
 ![Main Interface](References/main.png)
 
@@ -401,7 +399,7 @@ This project would not be possible without:
 <br>
 
 <p align="center">
-  <img src="References/skindiacus.png" alt="" width="200"/>
+  <img src="References/skindiacus.png" alt="" width="350"/>
 </p>
 
 <br>

@@ -43,49 +43,55 @@ HEADERS = [
     "Liquids"
 ]
 
-# Landscape block showcase - 18 columns x 6 rows = 108 blocks
+# Landscape block showcase - 21 columns x 6 rows = 126 blocks
 SHOWCASE_BLOCKS = [
     # Row 1: Overworld Terrain
     "grass_block_top.png", "dirt.png", "stone.png", "cobblestone.png",
     "mossy_cobblestone.png", "gravel.png", "sand.png", "sandstone_top.png",
-    "red_sand.png", "clay.png", "mud.png", "podzol_top.png",
-    "mycelium_top.png", "snow.png", "ice.png", "packed_ice.png",
-    "blue_ice.png", "moss_block.png",
+    "red_sand.png", "red_sandstone_top.png", "clay.png", "mud.png",
+    "podzol_top.png", "mycelium_top.png", "snow.png", "ice.png",
+    "packed_ice.png", "blue_ice.png", "moss_block.png", "rooted_dirt.png",
+    "coarse_dirt.png",
     
     # Row 2: Stone & Deepslate
-    "granite.png", "diorite.png", "andesite.png", "calcite.png",
-    "tuff.png", "dripstone_block.png", "deepslate_top.png", "cobbled_deepslate.png",
-    "polished_deepslate.png", "deepslate_bricks.png", "deepslate_tiles.png", "chiseled_deepslate.png",
-    "smooth_stone.png", "stone_bricks.png", "mossy_stone_bricks.png", "cracked_stone_bricks.png",
-    "chiseled_stone_bricks.png", "bricks.png",
+    "granite.png", "polished_granite.png", "diorite.png", "polished_diorite.png",
+    "andesite.png", "polished_andesite.png", "calcite.png", "tuff.png",
+    "dripstone_block.png", "deepslate_top.png", "cobbled_deepslate.png", "polished_deepslate.png",
+    "deepslate_bricks.png", "deepslate_tiles.png", "chiseled_deepslate.png", "smooth_stone.png",
+    "stone_bricks.png", "mossy_stone_bricks.png", "cracked_stone_bricks.png", "chiseled_stone_bricks.png",
+    "bricks.png",
     
     # Row 3: Ores & Ore Blocks
     "coal_ore.png", "iron_ore.png", "copper_ore.png", "gold_ore.png",
     "diamond_ore.png", "emerald_ore.png", "lapis_ore.png", "redstone_ore.png",
-    "coal_block.png", "iron_block.png", "copper_block.png", "gold_block.png",
-    "diamond_block.png", "emerald_block.png", "lapis_block.png", "redstone_block.png",
-    "netherite_block.png", "amethyst_block.png",
+    "nether_gold_ore.png", "nether_quartz_ore.png", "coal_block.png", "iron_block.png",
+    "copper_block.png", "gold_block.png", "diamond_block.png", "emerald_block.png",
+    "lapis_block.png", "redstone_block.png", "netherite_block.png", "amethyst_block.png",
+    "quartz_block_top.png",
     
     # Row 4: Wood & Planks
     "oak_log_top.png", "spruce_log_top.png", "birch_log_top.png", "jungle_log_top.png",
-    "acacia_log_top.png", "dark_oak_log_top.png", "oak_planks.png", "spruce_planks.png",
-    "birch_planks.png", "jungle_planks.png", "acacia_planks.png", "dark_oak_planks.png",
-    "crimson_planks.png", "warped_planks.png", "mangrove_planks.png", "cherry_planks.png",
-    "bamboo_planks.png", "bamboo_mosaic.png",
+    "acacia_log_top.png", "dark_oak_log_top.png", "mangrove_log_top.png", "cherry_log_top.png",
+    "oak_planks.png", "spruce_planks.png", "birch_planks.png", "jungle_planks.png",
+    "acacia_planks.png", "dark_oak_planks.png", "mangrove_planks.png", "cherry_planks.png",
+    "crimson_planks.png", "warped_planks.png", "bamboo_planks.png", "bamboo_mosaic.png",
+    "bookshelf.png",
     
     # Row 5: Nether Blocks
     "netherrack.png", "nether_bricks.png", "red_nether_bricks.png", "cracked_nether_bricks.png",
-    "nether_wart_block.png", "warped_wart_block.png", "crimson_nylium.png", "warped_nylium.png",
-    "soul_sand.png", "soul_soil.png", "blackstone.png", "polished_blackstone.png",
-    "polished_blackstone_bricks.png", "gilded_blackstone.png", "basalt_top.png", "ancient_debris_top.png",
-    "magma.png", "glowstone.png",
+    "chiseled_nether_bricks.png", "nether_wart_block.png", "warped_wart_block.png", "crimson_nylium.png",
+    "warped_nylium.png", "soul_sand.png", "soul_soil.png", "blackstone.png",
+    "polished_blackstone.png", "polished_blackstone_bricks.png", "chiseled_polished_blackstone.png", "gilded_blackstone.png",
+    "basalt_top.png", "polished_basalt_top.png", "ancient_debris_top.png", "magma.png",
+    "glowstone.png",
     
     # Row 6: End & Colorful
-    "end_stone.png", "end_stone_bricks.png", "purpur_block.png", "obsidian.png",
-    "crying_obsidian.png", "prismarine.png", "dark_prismarine.png", "sea_lantern.png",
-    "shroomlight.png", "sculk.png", "white_glazed_terracotta.png", "orange_glazed_terracotta.png",
-    "magenta_glazed_terracotta.png", "cyan_glazed_terracotta.png", "purple_glazed_terracotta.png", "blue_glazed_terracotta.png",
-    "green_glazed_terracotta.png", "red_glazed_terracotta.png",
+    "end_stone.png", "end_stone_bricks.png", "purpur_block.png", "purpur_pillar_top.png",
+    "obsidian.png", "crying_obsidian.png", "prismarine.png", "prismarine_bricks.png",
+    "dark_prismarine.png", "sea_lantern.png", "shroomlight.png", "sculk.png",
+    "white_glazed_terracotta.png", "orange_glazed_terracotta.png", "magenta_glazed_terracotta.png", "cyan_glazed_terracotta.png",
+    "purple_glazed_terracotta.png", "blue_glazed_terracotta.png", "green_glazed_terracotta.png", "red_glazed_terracotta.png",
+    "yellow_glazed_terracotta.png",
 ]
 
 
@@ -311,9 +317,9 @@ def main():
         pygame.image.save(button_surface, filepath)
         print(f"  Created: {filename}")
     
-    # Generate landscape block grid (18 columns x 6 rows = 108 blocks)
-    print("\nGenerating block showcase grid (18 cols x 6 rows)...")
-    grid_surface = create_block_grid(SHOWCASE_BLOCKS, grid_cols=18)
+    # Generate landscape block grid (21 columns x 6 rows = 126 blocks)
+    print("\nGenerating block showcase grid (21 cols x 6 rows)...")
+    grid_surface = create_block_grid(SHOWCASE_BLOCKS, grid_cols=21)
     grid_path = os.path.join(OUTPUT_DIR, "block_showcase.png")
     pygame.image.save(grid_surface, grid_path)
     print(f"  Created: block_showcase.png ({grid_surface.get_width()}x{grid_surface.get_height()})")
