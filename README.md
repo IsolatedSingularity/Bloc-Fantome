@@ -331,10 +331,10 @@ where $N_h(\mathbf{r})$ is the horizontal 4-neighborhood. Water updates every $\
 Light propagates via breadth-first flood fill from emissive sources. For a light source at $\mathbf{r}_0$ with intensity $I_0$, the light level at position $\mathbf{r}$ is:
 
 $$
-L(\mathbf{r}) = \max\left(0, I_0 - \|\mathbf{r} - \mathbf{r}_0\|_1\right)
+L(\mathbf{r}) = \max\left(0, I_0 - \lVert\mathbf{r} - \mathbf{r}_0\rVert_1\right)
 $$
 
-where $\|\cdot\|_1$ is the Manhattan distance. Multiple sources combine via $L_{total}(\mathbf{r}) = \max_i L_i(\mathbf{r})$.
+where $\lVert\cdot\rVert_1$ is the Manhattan distance. Multiple sources combine via $L_{\text{total}}(\mathbf{r}) = \max_i L_i(\mathbf{r})$.
 
 ---
 
