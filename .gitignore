@@ -48,6 +48,9 @@ env/
 .tutorial_config.json
 minecraft_builder.log
 
+# Personal/private folders
+abyssalAnchor/
+
 # Minecraft Assets (user must extract these from their own installation)
 # Run setup_assets.py to populate these folders
 Assets/Texture Hub/*
