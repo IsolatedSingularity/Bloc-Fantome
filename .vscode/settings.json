@@ -1,5 +1,7 @@
 {
     "python.terminal.activateEnvironment": false,
     "terminal.integrated.shellIntegration.enabled": true,
-    "python.condaPath": ""
+    "python.condaPath": "",
+    "python.analysis.userFileIndexingLimit": 5000,
+    "github.copilot.advanced.workspaceIndexing": true
 }

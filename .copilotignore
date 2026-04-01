@@ -1,0 +1,21 @@
+# Skip large asset directories that choke the indexer
+Assets/Extensive Library/
+Assets/Extras/
+Assets/Sound Hub/
+Assets/Texture Hub/
+Assets/Fonts/
+Assets/Icons/
+
+# Skip binary/non-code files
+*.png
+*.ogg
+*.nbt
+*.gif
+*.wav
+*.ico
+*.pdf
+*.gz
+*.pyc
+
+# Skip build artifacts
+Code/build/
