@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -88,6 +88,9 @@ audit-*.md
 .env
 audit-*.md
 
-# Kilo Code
-.kilo/node_modules/
-.kilo/worktrees/
+# Kilo Code / Agent Configuration
+.kilo/
+.kilocodeignore
+AGENTS.md
+Jenova/
+
