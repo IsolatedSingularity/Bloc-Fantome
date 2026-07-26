@@ -87,3 +87,7 @@ audit-*.md
 
 .env
 audit-*.md
+
+# Kilo Code
+.kilo/node_modules/
+.kilo/worktrees/
