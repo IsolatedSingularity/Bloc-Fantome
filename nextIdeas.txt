@@ -1,25 +1,21 @@
 Major
 
-- Biome selection and generation for all dimensions (with previews in right submenu)
-- Fix all experimental elements.
-- Custom weather in all dimensions!
-- Add other structures: fortress, stronghold, pyramid, etc.
-- Programming language change optimization!?
-
-
-Unknown
 
 - Performance is a lot better but it shits the bed visually and has a lag spike when zooming in and out. if too zoomed out parts of the map dont render and it has like some lag vignette effect when zooming in and out.
-- You closed the structures for the lighting and weather tutorial terrains, undo that
-- Use old end building or a better part of the end city for tutorial
+- Biome selection and generation for all dimensions (with previews in right submenu)
+- Fix all experimental elements.
+- Programming language change optimization!?
+
 
 
 Minor
 
-- Start menu entry with proper icon
+
+- You closed the structures for the lighting and weather tutorial terrains, undo that
+- Use old end building or a better part of the end city for tutorial
+- Weather effects in all dimensions flesh out: splash effects / covering effects. End dimension equivalent of snow is way too subtle.
+- Add other structures: fortress, stronghold, pyramid, etc.
+- Start menu icon still looks squished and low res.
 - UI and performance pass.
 
 
-Maybe
-
-- "actually do the minimal path here and share with me the script download bundle. do i have to extract for 1.16.1 again since i missed like mobs and maybe sounds and also doa  full scrape of 1.26? because i wana be able to load 1.16.1 terrain as well as new 1.26 and all its info. we did it for 1.16 but in my viewer now im missing the ability to load trial chambers or ancient cities bc i dont have the deobsfuacted extracted contents. do i combine the new files with my Game Reference or will we change it a lot? i have some apps utilizing info from Game Reference so not too much i hopes"
