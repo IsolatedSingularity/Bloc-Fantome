@@ -17,10 +17,13 @@ def load_module(name, path):
 
 renderer_module = load_module("bloc_renderer", ROOT / "Code" / "engine" / "renderer.py")
 world_module = load_module("bloc_world", ROOT / "Code" / "engine" / "world.py")
+performance_module = load_module("bloc_performance", ROOT / "Code" / "engine" / "performance.py")
 IsometricRenderer = renderer_module.IsometricRenderer
+ProjectionMetrics = renderer_module.ProjectionMetrics
 set_tile_dimensions = renderer_module.set_tile_dimensions
 World = world_module.World
-init_world_module = world_module.init_world_module
+from domain.world_catalog import WorldCatalog
+SpriteCache = performance_module.SpriteCache
 
 
 class BlockType(Enum):
@@ -46,12 +49,57 @@ class BlockDefinition:
 
 
 BLOCK_DEFINITIONS = {block: BlockDefinition() for block in BlockType}
+WORLD_CATALOG = WorldCatalog(
+    block_type=BlockType,
+    air=BlockType.AIR,
+    water=BlockType.WATER,
+    lava=BlockType.LAVA,
+    obsidian=BlockType.OBSIDIAN,
+    cobblestone=BlockType.COBBLESTONE,
+    stone=BlockType.STONE,
+    definitions=BLOCK_DEFINITIONS,
+)
+
+
+class SpriteCacheTests(unittest.TestCase):
+    def test_approximate_memory_counts_surface_pixel_storage(self):
+        class SurfaceStub:
+            def get_size(self):
+                return 8, 4
+
+            def get_bytesize(self):
+                return 4
+
+        cache = SpriteCache()
+        cache.set("surface", SurfaceStub())
+        cache.set("not-a-surface", object())
+        self.assertEqual(cache.approximate_memory(), 8 * 4 * 4)
+
+    def test_byte_budget_evicts_least_recently_used_surfaces(self):
+        class SurfaceStub:
+            def __init__(self, width):
+                self.width = width
+
+            def get_size(self):
+                return self.width, 4
+
+            def get_bytesize(self):
+                return 4
+
+        cache = SpriteCache(max_size=10, max_bytes=96)
+        cache.set("a", SurfaceStub(4))  # 64 bytes
+        cache.set("b", SurfaceStub(4))  # evicts a
+        self.assertIsNone(cache.get("a"))
+        self.assertIsNotNone(cache.get("b"))
+        stats = cache.get_stats()
+        self.assertEqual(stats["current_bytes"], 64)
+        self.assertEqual(stats["peak_bytes"], 128)
+        self.assertEqual(stats["evictions"], 1)
 
 
 class WorldFluidTests(unittest.TestCase):
     def setUp(self):
-        init_world_module(BlockType, BlockProperties, BLOCK_DEFINITIONS)
-        self.world = World(6, 6, 5)
+        self.world = World(6, 6, 5, catalog=WORLD_CATALOG)
 
     def add_floor(self, holes=()):
         holes = set(holes)
@@ -102,7 +150,7 @@ class WorldFluidTests(unittest.TestCase):
         ]
         self.assertIn(6, overworld_levels)
 
-        nether = World(6, 6, 5)
+        nether = World(6, 6, 5, catalog=WORLD_CATALOG)
         nether.setDimension("nether")
         for x in range(nether.width):
             for y in range(nether.depth):
@@ -123,7 +171,7 @@ class WorldFluidTests(unittest.TestCase):
         self.assertEqual(self.world.getBlock(2, 2, 1), BlockType.OBSIDIAN)
 
     def test_multiple_waterfalls_settle_without_queue_churn(self):
-        world = World(12, 12, 12)
+        world = World(12, 12, 12, catalog=WORLD_CATALOG)
         for x in range(world.width):
             for y in range(world.depth):
                 if (x, y) not in {(1, 10), (10, 10)}:
@@ -139,7 +187,7 @@ class WorldFluidTests(unittest.TestCase):
         self.assertLess(batches, 50)
 
     def test_surface_index_excludes_buried_cells_and_tracks_edits(self):
-        world = World(5, 5, 5)
+        world = World(5, 5, 5, catalog=WORLD_CATALOG)
         with world.bulkUpdate():
             for x in range(1, 4):
                 for y in range(1, 4):
@@ -192,6 +240,16 @@ class RendererPickingTests(unittest.TestCase):
             self.renderer.setViewRotation(rotation)
             actual.append(self.renderer.depthKey(2, 5, 0))
         self.assertEqual(tuple(actual), expected)
+
+    def test_projection_metrics_are_owned_by_each_renderer(self):
+        compact = IsometricRenderer(0, 0, ProjectionMetrics(32, 16, 19))
+        large = IsometricRenderer(0, 0, ProjectionMetrics(128, 64, 76))
+        compact.setZoom(1.0)
+        large.setZoom(1.0)
+        self.assertEqual(compact.worldToScreen(1, 0, 0), (16, 8))
+        self.assertEqual(large.worldToScreen(1, 0, 0), (64, 32))
+        set_tile_dimensions(8, 8, 8)
+        self.assertEqual(compact.worldToScreen(1, 0, 0), (16, 8))
 
 
 if __name__ == "__main__":

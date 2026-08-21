@@ -9,8 +9,8 @@ Contains core systems:
 """
 
 from .undo import UndoManager, Command, PlaceBlockCommand, RemoveBlockCommand, BatchCommand
-from .renderer import IsometricRenderer, set_tile_dimensions
-from .world import World, init_world_module
+from .renderer import IsometricRenderer, ProjectionMetrics, set_tile_dimensions
+from .world import World
 from .performance import (
     DirtyRegionTracker,
     ChunkStorage,
@@ -30,10 +30,10 @@ __all__ = [
     'BatchCommand',
     # Renderer
     'IsometricRenderer',
+    'ProjectionMetrics',
     'set_tile_dimensions',
     # World
     'World',
-    'init_world_module',
     # Performance
     'DirtyRegionTracker',
     'ChunkStorage',

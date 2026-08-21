@@ -11,20 +11,25 @@ Features:
 - Zoom support
 """
 
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-# Default tile dimensions - can be overridden
-TILE_WIDTH = 64
-TILE_HEIGHT = 32
-BLOCK_HEIGHT = 38
+@dataclass(frozen=True)
+class ProjectionMetrics:
+    """Immutable dimensions shared by projection and picking."""
+
+    tile_width: int = 64
+    tile_height: int = 32
+    block_height: int = 38
+
+
+_compatibility_metrics = ProjectionMetrics()
 
 
 def set_tile_dimensions(tile_width: int, tile_height: int, block_height: int):
-    """Set the tile dimensions used for projection."""
-    global TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT
-    TILE_WIDTH = tile_width
-    TILE_HEIGHT = tile_height
-    BLOCK_HEIGHT = block_height
+    """Set defaults for legacy callers that omit explicit metrics."""
+    global _compatibility_metrics
+    _compatibility_metrics = ProjectionMetrics(tile_width, tile_height, block_height)
 
 
 class IsometricRenderer:
@@ -39,7 +44,12 @@ class IsometricRenderer:
     - 3: Rotated 270° clockwise (315°)
     """
     
-    def __init__(self, offsetX: int, offsetY: int):
+    def __init__(
+        self,
+        offsetX: int,
+        offsetY: int,
+        metrics: ProjectionMetrics | None = None,
+    ):
         """
         Initialize the renderer.
         
@@ -49,23 +59,24 @@ class IsometricRenderer:
         """
         self.offsetX = offsetX
         self.offsetY = offsetY
+        self.metrics = metrics or _compatibility_metrics
         self.zoomLevel = 1.0
         self.viewRotation = 0  # 0, 1, 2, 3 for 4 isometric views
         # Cached zoom-scaled tile dimensions
-        self._tileW = float(TILE_WIDTH)
-        self._tileH = float(TILE_HEIGHT)
-        self._blockH = float(BLOCK_HEIGHT)
-        self._tileWHalf = TILE_WIDTH / 2.0
-        self._tileHHalf = TILE_HEIGHT / 2.0
+        self._tileW = float(self.metrics.tile_width)
+        self._tileH = float(self.metrics.tile_height)
+        self._blockH = float(self.metrics.block_height)
+        self._tileWHalf = self.metrics.tile_width / 2.0
+        self._tileHHalf = self.metrics.tile_height / 2.0
     
     def setZoom(self, zoomLevel: float):
         """Set zoom without quantizing the projection at overview scales."""
         self.zoomLevel = max(0.01, float(zoomLevel))
         # Keeping these as floats matters below 25%. Integer dimensions made
         # the half-height become zero and caused blocks to jump or collapse.
-        self._tileW = TILE_WIDTH * self.zoomLevel
-        self._tileH = TILE_HEIGHT * self.zoomLevel
-        self._blockH = BLOCK_HEIGHT * self.zoomLevel
+        self._tileW = self.metrics.tile_width * self.zoomLevel
+        self._tileH = self.metrics.tile_height * self.zoomLevel
+        self._blockH = self.metrics.block_height * self.zoomLevel
         self._tileWHalf = self._tileW / 2.0
         self._tileHHalf = self._tileH / 2.0
     

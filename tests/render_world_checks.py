@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 import sys
+import tempfile
 
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -71,4 +72,9 @@ def render(output_dir: Path, scenes=SCENES) -> None:
 
 
 if __name__ == "__main__":
-    render(Path(sys.argv[1]), tuple(sys.argv[2:]) or SCENES)
+    if len(sys.argv) > 1:
+        output = Path(sys.argv[1])
+        selected = tuple(sys.argv[2:]) or SCENES
+        render(output, selected)
+    else:
+        render(Path(tempfile.gettempdir()) / "kilo" / "bloc-fantome-world-checks")

@@ -7,6 +7,8 @@ import time
 import unittest
 import struct
 import gzip
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -156,6 +158,20 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertLessEqual(abs(projected[0] - cursor[0]), 1)
         self.assertLessEqual(abs(projected[1] - cursor[1]), 1)
 
+    def test_fit_world_uses_precomputed_occupied_bounds(self):
+        self.app.world.setBlock(2, 3, 1, app_module.BlockType.STONE)
+        self.app.world.setBlock(10, 8, 6, app_module.BlockType.DEEPSLATE)
+
+        with patch.object(
+            self.app,
+            "_fitPositionsToViewport",
+            side_effect=AssertionError("fit should not rescan world positions"),
+        ):
+            self.app._fitWorldToViewport(notify=False)
+
+        self.assertGreaterEqual(self.app.zoomLevel, self.app.zoomMin)
+        self.assertLessEqual(self.app.zoomLevel, self.app.zoomMax)
+
     def test_exposed_blocks_receive_brighter_skylight_than_enclosed_blocks(self):
         with self.app.world.bulkUpdate():
             for x in range(3, 6):
@@ -266,7 +282,14 @@ class AppIntegrationTests(unittest.TestCase):
             pos for pos in self.app.sceneStructurePositions
             if pos[2] < self.app.world.heightIndex.get(pos[:2], pos[2])
         }
+        overviewStructure = self.app.world.structureOverviewPositions()
+        drawnStructure = drawn & self.app.sceneStructurePositions
         self.assertTrue(drawn & buriedStructure)
+        self.assertTrue(overviewStructure <= drawnStructure)
+        self.assertLess(
+            len(drawnStructure),
+            len(self.app.world.structureSurfacePositions(self.app.renderer.viewRotation)),
+        )
         self.assertIn(
             max(self.app.sceneStructurePositions, key=lambda pos: pos[2]), drawn
         )
@@ -403,6 +426,116 @@ class AppIntegrationTests(unittest.TestCase):
         self.app.undoManager.undo()
         self.assertEqual(self.app.world.getBlock(4, 4, 1), app_module.BlockType.STONE)
         self.assertEqual(self.app.world.getBlock(4, 4, 2), app_module.BlockType.AIR)
+
+    def test_replace_all_is_one_undoable_bulk_edit(self):
+        for x in range(4):
+            self.app.world.setBlock(x, 1, 1, app_module.BlockType.STONE)
+        revision = self.app.world.revision
+
+        replaced = self.app._replaceAllBlocks(
+            app_module.BlockType.STONE, app_module.BlockType.DIRT
+        )
+
+        self.assertEqual(replaced, 4)
+        self.assertEqual(len(self.app.undoManager.undo_stack), 1)
+        self.assertEqual(self.app.world.revision, revision + 1)
+        self.app.undoManager.undo()
+        self.assertTrue(all(
+            self.app.world.getBlock(x, 1, 1) == app_module.BlockType.STONE
+            for x in range(4)
+        ))
+
+    def test_magic_wand_delete_is_one_undoable_bulk_edit(self):
+        positions = {(2, 2, 1), (3, 2, 1), (3, 3, 1)}
+        for pos in positions:
+            self.app.world.setBlock(*pos, app_module.BlockType.BRICKS)
+        self.app.magicWandSelection = set(positions)
+
+        self.app._deleteMagicWandSelection()
+
+        self.assertEqual(len(self.app.undoManager.undo_stack), 1)
+        self.assertTrue(all(
+            self.app.world.getBlock(*pos) == app_module.BlockType.AIR
+            for pos in positions
+        ))
+        self.app.undoManager.undo()
+        self.assertTrue(all(
+            self.app.world.getBlock(*pos) == app_module.BlockType.BRICKS
+            for pos in positions
+        ))
+
+    def test_stamp_is_one_undoable_bulk_edit(self):
+        self.app.hoveredCell = (2, 2, 1)
+        self.app.stampData = {
+            (0, 0, 0): app_module.BlockType.STONE,
+            (1, 0, 0): app_module.BlockType.DIRT,
+        }
+
+        self.app._handleStampClick()
+
+        self.assertEqual(len(self.app.undoManager.undo_stack), 1)
+        self.assertEqual(self.app.world.getBlock(2, 2, 1), app_module.BlockType.STONE)
+        self.assertEqual(self.app.world.getBlock(3, 2, 1), app_module.BlockType.DIRT)
+        self.app.undoManager.undo()
+        self.assertEqual(self.app.world.getBlock(2, 2, 1), app_module.BlockType.AIR)
+        self.assertEqual(self.app.world.getBlock(3, 2, 1), app_module.BlockType.AIR)
+
+    def test_contextual_shortcuts_reach_the_intended_app_actions(self):
+        def press(key, mods=0):
+            event = SimpleNamespace(key=key, unicode="")
+            with patch.object(pygame.key, "get_mods", return_value=mods):
+                self.app._handleKeyDown(event)
+
+        self.app.fillToolActive = False
+        self.app.selectedBlock = app_module.BlockType.STONE
+        press(pygame.K_f)
+        self.assertTrue(self.app.fillToolActive)
+
+        self.app.selectedBlock = app_module.BlockType.OAK_SLAB
+        old_half = self.app.previewSlabPosition
+        press(pygame.K_f)
+        self.assertNotEqual(self.app.previewSlabPosition, old_half)
+        self.assertTrue(self.app.fillToolActive)
+
+        self.app.measurementMode = False
+        self.app.mirrorModeX = False
+        self.app.mirrorModeY = False
+        press(pygame.K_m)
+        press(pygame.K_m, pygame.KMOD_SHIFT)
+        press(pygame.K_m, pygame.KMOD_CTRL)
+        self.assertTrue(self.app.measurementMode)
+        self.assertTrue(self.app.mirrorModeX)
+        self.assertTrue(self.app.mirrorModeY)
+
+    def test_escape_cancels_editor_modes_before_quitting(self):
+        def press_escape():
+            event = SimpleNamespace(key=pygame.K_ESCAPE, unicode="")
+            with patch.object(pygame.key, "get_mods", return_value=0):
+                self.app._handleKeyDown(event)
+
+        self.app.running = True
+        self.app.historyPanelOpen = False
+        self.app.settingsMenuOpen = False
+        self.app.showShortcutsPanel = False
+        self.app.blueprintMode = False
+        self.app.fillToolActive = False
+        self.app.measurementMode = False
+        self.app.replaceMode = False
+        self.app.stampMode = False
+        self.app.selectionActive = True
+        self.app.selectionStart = (1, 1, 1)
+        self.app.selectionEnd = (2, 2, 2)
+        press_escape()
+        self.assertFalse(self.app.selectionActive)
+        self.assertTrue(self.app.running)
+
+        self.app.measurementMode = True
+        press_escape()
+        self.assertFalse(self.app.measurementMode)
+        self.assertTrue(self.app.running)
+
+        press_escape()
+        self.assertFalse(self.app.running)
 
     def test_tutorial_loads_nether_and_end_showcases(self):
         for title, dimension, minimumBlocks in (
@@ -546,6 +679,61 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(staged[0][4].facing, app_module.Facing.EAST)
         self.assertEqual(staged[0][4].slabPosition, app_module.SlabPosition.TOP)
         self.assertEqual(staged[1][3], app_module.BlockType.NETHER_BRICKS)
+
+    def test_identical_regular_blocks_share_sprite_and_mipmaps(self):
+        glowstone = self.app.assetManager.blockSprites[app_module.BlockType.GLOWSTONE]
+        alias = self.app.assetManager.blockSprites[app_module.BlockType.GLOWSTONE_BLOCK]
+        self.assertIs(glowstone, alias)
+        self.assertEqual(set(self.app.assetManager._mipmaps[glowstone]), {0.5, 0.25})
+
+    def test_nearby_zoom_values_share_a_cached_variant(self):
+        sprite = self.app.assetManager.blockSprites[app_module.BlockType.STONE]
+        first = self.app.assetManager.getScaledSprite(sprite, 0.31)
+        second = self.app.assetManager.getScaledSprite(sprite, 0.32)
+        self.assertIs(first, second)
+
+    def test_transparent_sprite_variants_are_cached(self):
+        sprite = self.app.assetManager.blockSprites[app_module.BlockType.STONE]
+        first = self.app.assetManager.getAlphaSprite(sprite, 40)
+        second = self.app.assetManager.getAlphaSprite(sprite, 40)
+        self.assertIs(first, second)
+        self.assertEqual(first.get_alpha(), 40)
+
+    def test_dimension_weather_configs_and_particles(self):
+        expected = {
+            app_module.DIMENSION_OVERWORLD: ("Rain", "Snow"),
+            app_module.DIMENSION_NETHER: ("Ember Fall", "Soul Drift"),
+            app_module.DIMENSION_END: ("Void Rain", "End Shards"),
+        }
+        for dimension, names in expected.items():
+            self.app.currentDimension = dimension
+            config = self.app._getDimensionWeatherConfig()
+            self.assertEqual((config["rain"]["name"], config["snow"]["name"]), names)
+            self.app._startRain()
+            self.app._startSnow()
+            self.assertTrue(self.app.rainDrops)
+            self.assertTrue(self.app.snowFlakes)
+            self.assertIn(self.app.rainDrops[0]["color"], config["rain"]["colors"])
+            self.assertIn(self.app.snowFlakes[0]["color"], config["snow"]["colors"])
+            self.app.rainEnabled = True
+            self.app.snowEnabled = True
+            self.app._updateRain(16)
+            self.app._updateSnow(16)
+            self.app._renderRain()
+            self.app._renderSnow()
+            self.app.rainEnabled = False
+            self.app.snowEnabled = False
+            self.app._stopRain()
+            self.app._stopSnow()
+
+    def test_small_app_icon_keeps_a_cube_silhouette(self):
+        texture = self.app.assetManager.textures["end_stone.png"]
+        for size in (16, 24, 32):
+            icon = app_module.render_app_icon_surface(texture, size)
+            bounds = icon.get_bounding_rect(min_alpha=1)
+            self.assertLessEqual(bounds.width / bounds.height, 1.6)
+            self.assertLess(bounds.width, size)
+            self.assertLess(bounds.height, size)
 
 
 if __name__ == "__main__":

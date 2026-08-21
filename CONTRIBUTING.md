@@ -51,16 +51,26 @@ python blocFantome.py
 ```
 Bloc-Fantome/
 ├── Code/
-│   ├── blocFantome.py        # Main application (entry point)
-│   ├── setup_assets.py       # Asset extraction script
-│   ├── splash.py             # Splash screen module
-│   ├── horror.py             # Horror system manager
-│   ├── constants.py          # Shared constants and enums
-│   └── engine/               # Core engine modules
-│       ├── undo.py           # Undo/redo system
-│       ├── world.py          # World voxel grid
-│       ├── renderer.py       # Isometric renderer
-│       └── performance.py    # Performance utilities
+│   ├── blocFantome.py         # Composition root and application orchestration
+│   ├── runtime_paths.py       # Source/frozen paths and user-data locations
+│   ├── constants.py           # Compatibility re-exports
+│   ├── domain/                # Stable data and identities; no UI dependencies
+│   │   ├── blocks.py          # BlockType and serializable block state
+│   │   ├── block_catalog.py   # Definition value objects
+│   │   ├── dimensions.py      # Dimension and weather presentation data
+│   │   ├── structures.py      # JSON structure loading and registry composition
+│   │   └── world_catalog.py   # Narrow dependency required by World
+│   ├── engine/
+│   │   ├── build_io.py        # Transactional build parsing and migration
+│   │   ├── input_commands.py  # Context-aware keyboard command resolution
+│   │   ├── renderer.py        # Instance-owned projection and picking geometry
+│   │   ├── scene_cache.py     # Validated derived large-world cache
+│   │   ├── undo.py            # Undoable editor commands
+│   │   ├── world.py           # Sparse world and spatial indexes
+│   │   └── world_snapshot.py  # Immutable staged replacement data
+│   ├── ui/                    # Existing modal interfaces
+│   ├── setup_assets.py        # Asset extraction script
+│   └── splash.py              # Splash screen module
 ├── Assets/
 │   ├── Texture Hub/          # Block and UI textures (user-provided)
 │   ├── Sound Hub/            # Sound effects and music (user-provided)
@@ -69,12 +79,19 @@ Bloc-Fantome/
 ```
 
 ### Running Tests
-Currently, manual testing is required. See the [Testing](#testing) section.
+Run the automated and deterministic checks from the repository root:
+
+```bash
+python -m pytest -q
+python tests/render_visual_checks.py
+python tests/render_world_checks.py
+python tests/benchmark_large_world.py ancient_city_121 trial_chamber_121
+```
 
 ### Building the Executable
 ```bash
-cd Code
-python build_exe.py
+python Code/build_exe.py --diagnostic
+python Code/build_exe.py
 ```
 
 ---
@@ -136,7 +153,8 @@ except (ValueError, KeyError) as e:
 ## Adding New Blocks
 
 ### Step 1: Add to BlockType Enum
-In `blocFantome.py`, find the `BlockType` enum and add your block:
+Add the stable serialized identity to `Code/domain/blocks.py`. Never create a
+second enum with equivalent values:
 ```python
 class BlockType(Enum):
     # ... existing blocks ...
@@ -144,7 +162,9 @@ class BlockType(Enum):
 ```
 
 ### Step 2: Define Block Properties
-Add an entry to `BLOCK_DEFINITIONS`:
+Add the corresponding compatibility catalog entry to `BLOCK_DEFINITIONS` in
+`Code/blocFantome.py`. `Code/domain/block_catalog.py` owns the immutable value
+types used by this map:
 ```python
 BlockType.MY_NEW_BLOCK: BlockDefinition(
     textureTop="my_block_top.png",
@@ -200,11 +220,12 @@ Create a new JSON file in `Code/saves/`:
 ```
 
 ### Step 2: Register as Predefined Structure
-In `blocFantome.py`, find `PREDEFINED_STRUCTURES` and add:
+Add the JSON filename and display name to `JSON_STRUCTURE_LIBRARY` in
+`Code/domain/structures.py`:
 ```python
-PREDEFINED_STRUCTURES = {
+JSON_STRUCTURE_LIBRARY = {
     # ... existing structures ...
-    "my_structure": "my_structure.json",
+    "my_structure": "My Structure",
 }
 ```
 
@@ -214,6 +235,50 @@ Structure previews are auto-generated at startup from the JSON files.
 ---
 
 ## Testing
+
+### Automated Gates
+
+Every behavioral change starts with a focused failing test. Run that focused
+test after the implementation, then run the complete suite before moving to a
+different subsystem. Rendering, projection, sprites, ordering, lighting,
+weather, and UI changes also require both deterministic visual scripts.
+
+Large-world changes must retain these Trial Chamber medians over at least five
+runs:
+
+- Cached load at or below 1,000 ms.
+- Stable full-frame p95 below 16.7 ms.
+- Cold view rebuild below 100 ms.
+- Fit plus first exact frame below 250 ms.
+- Bounded world-surface and sprite-cache memory reported by the benchmark.
+
+The software Pygame renderer currently meets these practical budgets. NumPy is
+not a dependency and a GPU backend is intentionally not maintained: neither is
+accepted without an isolated benchmark showing the gains defined by the
+refactor plan, equivalent deterministic output, a tested one-file build, and an
+automatic Pygame fallback.
+
+### Architecture Invariants
+
+- Dependencies point from `blocFantome.py` toward `domain`, `engine`, and `ui`;
+  extracted modules never import the application module.
+- `BlockType` and block-state classes have one canonical identity in
+  `Code/domain/blocks.py`.
+- `World` receives its immutable catalog dependency through its constructor.
+- Build readers return a `WorldSnapshot`; only the main thread replaces the live
+  world or creates and mutates Pygame surfaces.
+- Source and frozen path lookup stays in `Code/runtime_paths.py`.
+- Render and sprite caches are byte-bounded. Invalidation must preserve source
+  sprites when only projection, camera, or composition state changes.
+- Painter order is global. Never concatenate independently sorted chunks unless
+  an equivalence test proves the resulting order.
+
+### Save Compatibility
+
+Save-format work must preserve versions 1 through 5, gzip and plain JSON input,
+v3 single-cell door migration, nested and legacy block-state fields, liquid
+level/source/falling state, scene roles, v5 bounds/provenance, and atomic writes.
+Malformed loads must leave the current live world unchanged.
 
 ### Manual Testing Checklist
 Before submitting changes, verify:

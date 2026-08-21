@@ -13,31 +13,13 @@ Features:
 - Structure placement
 """
 
-from collections import deque
+from collections import defaultdict, deque
 from contextlib import contextmanager
-from typing import Deque, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
+from typing import Any, Deque, Dict, List, Optional, Set, Tuple
 
+from domain.world_catalog import WorldCatalog
 from engine.block_state import BlockProperties
 from engine.performance import ChunkStorage, DirtyRegionTracker
-
-if TYPE_CHECKING:
-    from blocFantome import BlockType, BlockDefinition
-
-# These will be imported from the main module at runtime
-# to avoid circular imports
-BlockType = None
-BLOCK_DEFINITIONS = None
-
-
-def init_world_module(block_type, block_properties_or_definitions, block_definitions=None):
-    """Provide the application block enum and registry.
-
-    The three-argument form remains accepted for older callers; shared block
-    properties now come from `engine.block_state` directly.
-    """
-    global BlockType, BLOCK_DEFINITIONS
-    BlockType = block_type
-    BLOCK_DEFINITIONS = block_definitions or block_properties_or_definitions
 
 
 class World:
@@ -48,8 +30,8 @@ class World:
     storing only non-air blocks.
     """
     
-    def __init__(self, width: int, depth: int, height: int, *, min_y: int = 0,
-                 chunk_size: int = 16):
+    def __init__(self, width: int, depth: int, height: int, *,
+                 catalog: WorldCatalog, min_y: int = 0, chunk_size: int = 16):
         """
         Initialize the world.
         
@@ -58,21 +40,36 @@ class World:
             depth: Y dimension of the world  
             height: Z dimension (vertical) of the world
         """
+        self.catalog = catalog
         self.width = width
         self.depth = depth
         self.height = height
         self.min_y = int(min_y)
         self.max_y_exclusive = self.min_y + self.height
-        self.blocks: Dict[Tuple[int, int, int], 'BlockType'] = {}
+        self.blocks: Dict[Tuple[int, int, int], Any] = {}
         self.chunkStorage = ChunkStorage(chunk_size)
         self.dirtyRegions = DirtyRegionTracker(chunk_size)
         self._columnLevels: Dict[Tuple[int, int], Set[int]] = {}
         self.heightIndex: Dict[Tuple[int, int], int] = {}
+        self.blockTypePositions: Dict[Any, Set[Tuple[int, int, int]]] = {}
+        self.blockTypeCounts: Dict[Any, int] = {}
+        self._axisCounts = ({}, {}, {})
+        self.occupiedBounds: Optional[
+            Tuple[Tuple[int, int, int], Tuple[int, int, int]]
+        ] = None
         # Conservative render index: blocks with at least one air neighbor.
         # It removes buried terrain cells from large-world candidate scans
         # without changing the editable sparse world representation.
         self.surfaceBlocks: Set[Tuple[int, int, int]] = set()
         self.surfaceChunks: Dict[Tuple[int, int, int], Set[Tuple[int, int, int]]] = {}
+        self.sceneStructurePositions: Set[Tuple[int, int, int]] = set()
+        self.sceneStructureBounds: Optional[
+            Tuple[Tuple[int, int, int], Tuple[int, int, int]]
+        ] = None
+        self.sceneStructureChunks: Dict[Tuple[int, int, int], Set[Tuple[int, int, int]]] = {}
+        self.sceneStructureSurfacesByView = {rotation: set() for rotation in range(4)}
+        self.sceneStructureSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+        self._sceneStructureOverviewPositions = None
         self.revision = 0
         self._bulkDepth = 0
         self._bulkChanged = False
@@ -95,6 +92,7 @@ class World:
     
     def getBlock(self, x: int, y: int, z: int) -> 'BlockType':
         """Get the block type at a position"""
+        BlockType = self.catalog.block_type
         if not self.isInBounds(x, y, z):
             return BlockType.AIR
         return self.blocks.get((x, y, z), BlockType.AIR)
@@ -115,6 +113,7 @@ class World:
 
     def _storeBlock(self, pos: Tuple[int, int, int], blockType: 'BlockType') -> bool:
         """Synchronize sparse, chunk, height, and dirty indexes for one edit."""
+        BlockType = self.catalog.block_type
         oldBlock = self.blocks.get(pos, BlockType.AIR)
         if oldBlock == blockType:
             return False
@@ -124,6 +123,7 @@ class World:
         if oldBlock != BlockType.AIR:
             self.blocks.pop(pos, None)
             self.chunkStorage.set_block(x, y, z, None)
+            self._removePositionIndexes(pos, oldBlock)
             if levels is not None:
                 levels.discard(z)
                 if not levels:
@@ -134,6 +134,7 @@ class World:
         if blockType != BlockType.AIR:
             self.blocks[pos] = blockType
             self.chunkStorage.set_block(x, y, z, blockType)
+            self._addPositionIndexes(pos, blockType)
             levels = self._columnLevels.setdefault(column, set())
             levels.add(z)
             if z > self.heightIndex.get(column, self.min_y - 1):
@@ -146,6 +147,42 @@ class World:
             self.dirtyRegions.mark_block_and_neighbors(x, y, z)
         return True
 
+    def _addPositionIndexes(self, pos, blockType) -> None:
+        positions = self.blockTypePositions.setdefault(blockType, set())
+        positions.add(pos)
+        self.blockTypeCounts[blockType] = len(positions)
+        for axis, value in enumerate(pos):
+            counts = self._axisCounts[axis]
+            counts[value] = counts.get(value, 0) + 1
+        self._refreshOccupiedBounds()
+
+    def _removePositionIndexes(self, pos, blockType) -> None:
+        positions = self.blockTypePositions.get(blockType)
+        if positions is not None:
+            positions.discard(pos)
+            if positions:
+                self.blockTypeCounts[blockType] = len(positions)
+            else:
+                self.blockTypePositions.pop(blockType, None)
+                self.blockTypeCounts.pop(blockType, None)
+        for axis, value in enumerate(pos):
+            counts = self._axisCounts[axis]
+            remaining = counts.get(value, 0) - 1
+            if remaining > 0:
+                counts[value] = remaining
+            else:
+                counts.pop(value, None)
+        self._refreshOccupiedBounds()
+
+    def _refreshOccupiedBounds(self) -> None:
+        if not self.blocks:
+            self.occupiedBounds = None
+            return
+        self.occupiedBounds = (
+            tuple(min(counts) for counts in self._axisCounts),
+            tuple(max(counts) for counts in self._axisCounts),
+        )
+
     @staticmethod
     def _neighborPositions(pos: Tuple[int, int, int]):
         x, y, z = pos
@@ -156,6 +193,7 @@ class World:
             yield (x + dx, y + dy, z + dz)
 
     def _isSurfaceBlock(self, pos: Tuple[int, int, int]) -> bool:
+        BlockType = self.catalog.block_type
         if self.blocks.get(pos, BlockType.AIR) == BlockType.AIR:
             return False
         return any(self.getBlock(*neighbor) == BlockType.AIR for neighbor in self._neighborPositions(pos))
@@ -178,14 +216,166 @@ class World:
                             self.surfaceChunks.pop(chunk, None)
 
     def _rebuildSurfaceIndex(self) -> None:
+        blocks = self.blocks
         self.surfaceBlocks = {
-            pos for pos in self.blocks if self._isSurfaceBlock(pos)
+            pos for pos in blocks
+            if any(neighbor not in blocks for neighbor in self._neighborPositions(pos))
         }
         self.surfaceChunks.clear()
         size = self.chunkStorage.chunk_size
         for pos in self.surfaceBlocks:
             chunk = tuple(value // size for value in pos)
             self.surfaceChunks.setdefault(chunk, set()).add(pos)
+
+    def replace(self, snapshot) -> None:
+        """Atomically replace live state from a validated immutable snapshot."""
+        BlockType = self.catalog.block_type
+        width = int(snapshot.width)
+        depth = int(snapshot.depth)
+        height = int(snapshot.height)
+        min_y = int(snapshot.min_y)
+        max_y = min_y + height
+        blocks = snapshot.blocks if isinstance(snapshot.blocks, dict) else dict(snapshot.blocks)
+
+        chunkStorage = ChunkStorage(self.chunkStorage.chunk_size)
+        size = chunkStorage.chunk_size
+        chunks = defaultdict(dict)
+        columnLevels = defaultdict(set)
+        typePositions = defaultdict(set)
+        axisCounts = ({}, {}, {})
+        xCounts, yCounts, zCounts = axisCounts
+        for (x, y, z), blockType in blocks.items():
+            chunk = (x // size, y // size, z // size)
+            local = (x % size, y % size, z % size)
+            chunks[chunk][local] = blockType
+            columnLevels[(x, y)].add(z)
+            typePositions[blockType].add((x, y, z))
+            xCounts[x] = xCounts.get(x, 0) + 1
+            yCounts[y] = yCounts.get(y, 0) + 1
+            zCounts[z] = zCounts.get(z, 0) + 1
+
+        chunkStorage.chunks = dict(chunks)
+        columnLevels = dict(columnLevels)
+        typePositions = dict(typePositions)
+
+        surfaceBlocks = (
+            snapshot.surface_positions
+            if isinstance(snapshot.surface_positions, set)
+            else set(snapshot.surface_positions)
+        )
+        if not surfaceBlocks and blocks:
+            surfaceBlocks = {
+                pos for pos in blocks
+                if any(neighbor not in blocks for neighbor in self._neighborPositions(pos))
+            }
+        surfaceChunks = defaultdict(set)
+        for pos in surfaceBlocks:
+            chunk = (pos[0] // size, pos[1] // size, pos[2] // size)
+            surfaceChunks[chunk].add(pos)
+        surfaceChunks = dict(surfaceChunks)
+
+        structurePositions = (
+            snapshot.structure_positions
+            if isinstance(snapshot.structure_positions, set)
+            else set(snapshot.structure_positions)
+        )
+        suppliedSurfaces = snapshot.structure_surfaces_by_view
+        if all(rotation in suppliedSurfaces for rotation in range(4)):
+            structureSurfacesByView = {
+                rotation: (
+                    suppliedSurfaces[rotation]
+                    if isinstance(suppliedSurfaces[rotation], set)
+                    else set(suppliedSurfaces[rotation])
+                )
+                for rotation in range(4)
+            }
+        else:
+            sideDirections = (
+                ((0, 1), (1, 0)),
+                ((1, 0), (0, -1)),
+                ((0, -1), (-1, 0)),
+                ((-1, 0), (0, 1)),
+            )
+            exteriorShell = snapshot.scene_metadata.get("exterior_shell_view") == "glass"
+            structureSurfacesByView = {rotation: set() for rotation in range(4)}
+            if exteriorShell:
+                visible = {
+                    position for position in structurePositions
+                    if any(
+                        neighbor not in structurePositions
+                        for neighbor in self._neighborPositions(position)
+                    )
+                }
+                structureSurfacesByView = {rotation: visible for rotation in range(4)}
+            else:
+                for x, y, z in structurePositions:
+                    position = (x, y, z)
+                    definition = self.catalog.definitions.get(blocks[position])
+                    opaqueCube = bool(
+                        definition
+                        and not getattr(definition, "transparent", False)
+                        and not getattr(definition, "isLiquid", False)
+                        and not getattr(definition, "isThin", False)
+                        and not getattr(definition, "isSlab", False)
+                        and not getattr(definition, "isStair", False)
+                        and not getattr(definition, "isPortal", False)
+                        and not getattr(definition, "modelKind", None)
+                    )
+                    if not opaqueCube:
+                        for visible in structureSurfacesByView.values():
+                            visible.add(position)
+                        continue
+                    for rotation, directions in enumerate(sideDirections):
+                        neighbors = ((x, y, z + 1),) + tuple(
+                            (x + dx, y + dy, z) for dx, dy in directions
+                        )
+                        if any(neighbor not in structurePositions for neighbor in neighbors):
+                            structureSurfacesByView[rotation].add(position)
+        self.width = width
+        self.depth = depth
+        self.height = height
+        self.min_y = min_y
+        self.max_y_exclusive = max_y
+        self.dimension = snapshot.dimension
+        self.blocks = blocks
+        self.chunkStorage = chunkStorage
+        self._columnLevels = columnLevels
+        self.heightIndex = {
+            column: max(levels) for column, levels in columnLevels.items()
+        }
+        self.blockTypePositions = typePositions
+        self.blockTypeCounts = {
+            blockType: len(positions)
+            for blockType, positions in typePositions.items()
+        }
+        self._axisCounts = axisCounts
+        self.occupiedBounds = (
+            tuple(min(counts) for counts in axisCounts),
+            tuple(max(counts) for counts in axisCounts),
+        ) if blocks else None
+        self.surfaceBlocks = surfaceBlocks
+        self.surfaceChunks = surfaceChunks
+        self.sceneStructurePositions = structurePositions
+        self.sceneStructureBounds = (
+            tuple(min(position[axis] for position in structurePositions) for axis in range(3)),
+            tuple(max(position[axis] for position in structurePositions) for axis in range(3)),
+        ) if structurePositions else None
+        self.sceneStructureChunks = {}
+        self.sceneStructureSurfacesByView = structureSurfacesByView
+        self.sceneStructureSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+        self._sceneStructureOverviewPositions = None
+        self.blockProperties = dict(snapshot.properties)
+        self.liquidLevels = dict(snapshot.liquid_levels)
+        self.liquidSources = set(snapshot.liquid_sources) & blocks.keys()
+        self.liquidFalling = set(snapshot.liquid_falling) & blocks.keys()
+        self.waterUpdateQueue.clear()
+        self.lavaUpdateQueue.clear()
+        self._waterQueued.clear()
+        self._lavaQueued.clear()
+        self._bulkDepth = 0
+        self._bulkChanged = False
+        self.revision += 1
+        self.dirtyRegions.request_full_redraw()
 
     @contextmanager
     def bulkUpdate(self):
@@ -207,6 +397,7 @@ class World:
     
     def setBlock(self, x: int, y: int, z: int, blockType: 'BlockType') -> bool:
         """Set a block and schedule any affected fluid cells."""
+        BlockType = self.catalog.block_type
         if not self.isInBounds(x, y, z):
             return False
         pos = (x, y, z)
@@ -231,6 +422,7 @@ class World:
         return True
 
     def _queueFor(self, liquidType: 'BlockType'):
+        BlockType = self.catalog.block_type
         if liquidType == BlockType.WATER:
             return self.waterUpdateQueue, self._waterQueued
         return self.lavaUpdateQueue, self._lavaQueued
@@ -259,6 +451,7 @@ class World:
         level: int,
         falling: bool,
     ) -> bool:
+        BlockType = self.catalog.block_type
         if not self.isInBounds(*pos) or level <= 0:
             return False
         oldBlock = self.blocks.get(pos, BlockType.AIR)
@@ -282,6 +475,7 @@ class World:
     
     def _queueNeighborUpdates(self, x: int, y: int, z: int):
         """Queue neighboring liquid blocks for update"""
+        BlockType = self.catalog.block_type
         neighbors = [
             (x + 1, y, z), (x - 1, y, z),
             (x, y + 1, z), (x, y - 1, z),
@@ -296,6 +490,7 @@ class World:
     
     def _queueLiquidAbove(self, x: int, y: int, z: int):
         """Queue liquid blocks above and adjacent for update when solid block is removed"""
+        BlockType = self.catalog.block_type
         # Check block directly above
         if z + 1 < self.max_y_exclusive:
             blockAbove = self.getBlock(x, y, z + 1)
@@ -318,6 +513,7 @@ class World:
         Process liquid flow updates for a specific type (water or lava).
         Returns list of (x, y, z, blockType, level) for changed blocks.
         """
+        BlockType = self.catalog.block_type
         # Select the appropriate queue
         if liquidType == BlockType.WATER:
             queue = self.waterUpdateQueue
@@ -422,6 +618,7 @@ class World:
     def _legacyFindHoleDirections(self, startX: int, startY: int, z: int,
                             liquidType: 'BlockType', maxRange: int) -> List[Tuple[int, int]]:
         """Use BFS to find directions leading to holes within range."""
+        BlockType = self.catalog.block_type
         directionHoles = {}
         visited = {(startX, startY)}
         bfsQueue = deque()
@@ -481,6 +678,7 @@ class World:
 
     def updateLiquids(self, liquidType: 'BlockType' = None, maxUpdates: int = 32) -> List[Tuple[int, int, int, 'BlockType', int]]:
         """Process a deduplicated batch of source-style scheduled fluid updates."""
+        BlockType = self.catalog.block_type
         if liquidType not in (BlockType.WATER, BlockType.LAVA):
             return []
         queue, queued = self._queueFor(liquidType)
@@ -547,16 +745,19 @@ class World:
         )
 
     def _levelDecrease(self, liquidType: 'BlockType') -> int:
+        BlockType = self.catalog.block_type
         if liquidType == BlockType.WATER:
             return 1
         return 1 if self.dimension == "nether" else 2
 
     def _flowSearchDepth(self, liquidType: 'BlockType') -> int:
+        BlockType = self.catalog.block_type
         if liquidType == BlockType.WATER or self.dimension == "nether":
             return 4
         return 2
 
     def _stabilizeLiquid(self, pos: Tuple[int, int, int], liquidType: 'BlockType'):
+        BlockType = self.catalog.block_type
         if pos in self.liquidSources:
             self.liquidLevels[pos] = 8
             self.liquidFalling.discard(pos)
@@ -603,6 +804,7 @@ class World:
         return None
 
     def _canFlowHorizontally(self, pos: Tuple[int, int, int], liquidType: 'BlockType') -> bool:
+        BlockType = self.catalog.block_type
         block = self.getBlock(*pos)
         return block == BlockType.AIR or (block == liquidType and pos not in self.liquidSources)
 
@@ -612,6 +814,7 @@ class World:
         liquidType: 'BlockType',
         blockedDirection: Tuple[int, int],
     ) -> int:
+        BlockType = self.catalog.block_type
         maxDepth = self._flowSearchDepth(liquidType)
         queue = deque([(start[0], start[1], 1)])
         visited = {(start[0], start[1])}
@@ -635,6 +838,7 @@ class World:
         return 1000
 
     def _bestSpreadDirections(self, pos: Tuple[int, int, int], liquidType: 'BlockType') -> List[Tuple[int, int]]:
+        BlockType = self.catalog.block_type
         x, y, z = pos
         candidates = []
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -658,6 +862,7 @@ class World:
         self._queueNeighborUpdates(*pos)
 
     def _reactLavaWithWater(self, pos: Tuple[int, int, int]):
+        BlockType = self.catalog.block_type
         if self.getBlock(*pos) != BlockType.LAVA:
             return None
         x, y, z = pos
@@ -703,6 +908,93 @@ class World:
         """Iterate chunk keys and their conservative surface positions."""
         return self.surfaceChunks.items()
 
+    def iterSurfaceChunksInHorizontalRadius(self, centerX: int, centerY: int, chunkRadius: int):
+        """Iterate surface chunks by direct key lookup in a horizontal square."""
+        size = self.chunkStorage.chunk_size
+        centerChunkX = centerX // size
+        centerChunkY = centerY // size
+        radius = max(0, int(chunkRadius))
+        if self.occupiedBounds is None:
+            return
+        minChunkZ = self.occupiedBounds[0][2] // size
+        maxChunkZ = self.occupiedBounds[1][2] // size
+        for chunkX in range(centerChunkX - radius, centerChunkX + radius + 1):
+            for chunkY in range(centerChunkY - radius, centerChunkY + radius + 1):
+                for chunkZ in range(minChunkZ, maxChunkZ + 1):
+                    key = (chunkX, chunkY, chunkZ)
+                    positions = self.surfaceChunks.get(key)
+                    if positions:
+                        yield key, positions
+
+    def iterStructurePositionsInChunkRadius(self, centerX: int, centerY: int, chunkRadius: int):
+        """Iterate structure-role positions by direct chunk lookup."""
+        size = self.chunkStorage.chunk_size
+        if not self.sceneStructureChunks and self.sceneStructurePositions:
+            for pos in self.sceneStructurePositions:
+                chunk = tuple(value // size for value in pos)
+                self.sceneStructureChunks.setdefault(chunk, set()).add(pos)
+        centerChunkX = centerX // size
+        centerChunkY = centerY // size
+        radius = max(0, int(chunkRadius))
+        if self.occupiedBounds is None:
+            return
+        minChunkZ = self.occupiedBounds[0][2] // size
+        maxChunkZ = self.occupiedBounds[1][2] // size
+        for chunkX in range(centerChunkX - radius, centerChunkX + radius + 1):
+            for chunkY in range(centerChunkY - radius, centerChunkY + radius + 1):
+                for chunkZ in range(minChunkZ, maxChunkZ + 1):
+                    yield from self.sceneStructureChunks.get((chunkX, chunkY, chunkZ), ())
+
+    def structureSurfacePositions(self, viewRotation: int):
+        """Return precomputed structure cells visible from one view."""
+        return self.sceneStructureSurfacesByView[viewRotation % 4]
+
+    def structureOverviewPositions(self):
+        """Return the top structure cell per column for subpixel overview LOD."""
+        if self._sceneStructureOverviewPositions is None:
+            columns = {}
+            for x, y, z in self.sceneStructurePositions:
+                key = (x, y)
+                if z > columns.get(key, self.min_y - 1):
+                    columns[key] = z
+            self._sceneStructureOverviewPositions = {
+                (x, y, z) for (x, y), z in columns.items()
+            }
+        return self._sceneStructureOverviewPositions
+
+    def prepareStructureSurfaceChunks(self, viewRotation: int) -> None:
+        """Build one rotation's chunk lookup before latency-sensitive rendering."""
+        rotation = viewRotation % 4
+        chunks = self.sceneStructureSurfaceChunksByView[rotation]
+        if chunks or not self.sceneStructureSurfacesByView[rotation]:
+            return
+        size = self.chunkStorage.chunk_size
+        for pos in self.sceneStructureSurfacesByView[rotation]:
+            chunk = (pos[0] // size, pos[1] // size, pos[2] // size)
+            chunks.setdefault(chunk, set()).add(pos)
+
+    def iterStructureSurfaceChunksInHorizontalRadius(
+        self, viewRotation: int, centerX: int, centerY: int, chunkRadius: int
+    ):
+        """Iterate precomputed view-facing structure surfaces by direct lookup."""
+        size = self.chunkStorage.chunk_size
+        centerChunkX = centerX // size
+        centerChunkY = centerY // size
+        radius = max(0, int(chunkRadius))
+        if self.occupiedBounds is None:
+            return
+        chunks = self.sceneStructureSurfaceChunksByView[viewRotation % 4]
+        self.prepareStructureSurfaceChunks(viewRotation)
+        minChunkZ = self.occupiedBounds[0][2] // size
+        maxChunkZ = self.occupiedBounds[1][2] // size
+        for chunkX in range(centerChunkX - radius, centerChunkX + radius + 1):
+            for chunkY in range(centerChunkY - radius, centerChunkY + radius + 1):
+                for chunkZ in range(minChunkZ, maxChunkZ + 1):
+                    key = (chunkX, chunkY, chunkZ)
+                    positions = chunks.get(key)
+                    if positions:
+                        yield key, positions
+
     def iterBlocksInChunkRadius(self, centerX: int, centerY: int, chunkRadius: int):
         """Iterate blocks inside the horizontal render distance."""
         return self.chunkStorage.iter_horizontal_radius(centerX, centerY, chunkRadius)
@@ -740,8 +1032,21 @@ class World:
         self.chunkStorage.clear()
         self._columnLevels.clear()
         self.heightIndex.clear()
+        self.blockTypePositions.clear()
+        self.blockTypeCounts.clear()
+        for counts in self._axisCounts:
+            counts.clear()
+        self.occupiedBounds = None
         self.surfaceBlocks.clear()
         self.surfaceChunks.clear()
+        self.sceneStructurePositions.clear()
+        self.sceneStructureBounds = None
+        self.sceneStructureChunks.clear()
+        for positions in self.sceneStructureSurfacesByView.values():
+            positions.clear()
+        for chunks in self.sceneStructureSurfaceChunksByView.values():
+            chunks.clear()
+        self._sceneStructureOverviewPositions = None
         self.blockProperties.clear()
         self.liquidLevels.clear()
         self.liquidSources.clear()
@@ -755,6 +1060,7 @@ class World:
     
     def clearLiquids(self) -> int:
         """Clear all water and lava blocks. Returns count of removed blocks."""
+        BlockType = self.catalog.block_type
         removed = 0
         toRemove = []
         for pos, blockType in self.blocks.items():
@@ -775,10 +1081,11 @@ class World:
     
     def hasBlockType(self, blockType: 'BlockType') -> bool:
         """Check if the world contains any blocks of the specified type"""
-        for block in self.blocks.values():
-            if block == blockType:
-                return True
-        return False
+        return bool(self.blockTypeCounts.get(blockType))
+
+    def positionsOfType(self, blockType: 'BlockType') -> Set[Tuple[int, int, int]]:
+        """Return a defensive copy of positions occupied by one block type."""
+        return set(self.blockTypePositions.get(blockType, ()))
     
     def getHighestBlock(self, x: int, y: int) -> int:
         """Get the height of the highest block at (x, y)"""
@@ -789,6 +1096,8 @@ class World:
         Calculate light levels and colors for all positions.
         Returns dict of (x, y, z) -> (light level, light color RGB).
         """
+        BlockType = self.catalog.block_type
+        BLOCK_DEFINITIONS = self.catalog.definitions
         lightMap = {}
         
         lightSources = []
@@ -862,6 +1171,7 @@ class World:
         Calculate ambient occlusion factors for a block's 3 visible faces.
         Returns (topAO, leftAO, rightAO) where each is 0.0 (dark) to 1.0 (bright).
         """
+        BlockType = self.catalog.block_type
         topAO = 1.0
         leftAO = 1.0
         rightAO = 1.0

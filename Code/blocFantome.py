@@ -34,9 +34,12 @@ from concurrent.futures import ThreadPoolExecutor
 # Import splash screen module
 from splash import SplashScreen, show_splash
 from engine.app_icon import render_app_icon_surface
-
-# Import horror system module
-from horror import HorrorManager
+from engine.input_commands import (
+    Command as InputCommand,
+    InputContext,
+    KeyChord,
+    resolve_command,
+)
 
 # Windows-specific: Set AppUserModelID for proper taskbar icon
 if sys.platform == 'win32':
@@ -113,213 +116,6 @@ WATER_FLOW_DELAY = 250
 LAVA_FLOW_DELAY = 1500
 
 
-# ============================================================================
-# 3D RENDERER - Consistent projection for ALL block shapes
-# ============================================================================
-
-class Renderer3D:
-    """
-    A proper 3D box renderer with fixed isometric camera.
-    All blocks (regular, doors, stairs, slabs) use this same projection.
-    No more special-case isometric math!
-    """
-    
-    # Isometric angles (classic 2:1 dimetric)
-    ANGLE_X = math.atan(0.5)  # ~26.57 degrees - pitch
-    ANGLE_Y = math.pi / 4     # 45 degrees - yaw
-    
-    # Pre-compute rotation matrix components
-    COS_X = math.cos(ANGLE_X)
-    SIN_X = math.sin(ANGLE_X)
-    COS_Y = math.cos(ANGLE_Y)
-    SIN_Y = math.sin(ANGLE_Y)
-    
-    # Scale factors
-    SCALE = TILE_WIDTH / 16  # 4 pixels per voxel unit
-    
-    @classmethod
-    def project(cls, x: float, y: float, z: float) -> Tuple[float, float]:
-        """
-        Project a 3D point to 2D screen coordinates.
-        Input: x (right), y (up), z (toward viewer) in voxel units (0-16)
-        Output: screen x, y
-        """
-        # Apply Y rotation (around vertical axis)
-        rx = x * cls.COS_Y - z * cls.SIN_Y
-        rz = x * cls.SIN_Y + z * cls.COS_Y
-        ry = y
-        
-        # Apply X rotation (tilt down)
-        fy = ry * cls.COS_X - rz * cls.SIN_X
-        fz = ry * cls.SIN_X + rz * cls.COS_X
-        
-        # Project to 2D (orthographic)
-        screenX = rx * cls.SCALE
-        screenY = -fy * cls.SCALE  # Flip Y for screen coords
-        
-        return screenX, screenY
-    
-    @classmethod
-    def renderBox(cls, surface: pygame.Surface, 
-                  x: float, y: float, z: float,
-                  w: float, h: float, d: float,
-                  topTex: pygame.Surface = None,
-                  sideTex: pygame.Surface = None,
-                  frontTex: pygame.Surface = None,
-                  centerX: int = None, centerY: int = None) -> None:
-        """
-        Render a 3D box onto a surface.
-        
-        Box defined in voxel coordinates (0-16 range like Minecraft):
-        - x, y, z: corner position (bottom-back-left)
-        - w: width (X axis)
-        - h: height (Y axis)  
-        - d: depth (Z axis)
-        
-        centerX/Y: screen position to center the rendering
-        """
-        if centerX is None:
-            centerX = surface.get_width() // 2
-        if centerY is None:
-            centerY = surface.get_height() // 2
-        
-        # Define 8 corners of the box
-        corners = [
-            (x, y, z),          # 0: bottom-back-left
-            (x+w, y, z),        # 1: bottom-back-right
-            (x+w, y, z+d),      # 2: bottom-front-right
-            (x, y, z+d),        # 3: bottom-front-left
-            (x, y+h, z),        # 4: top-back-left
-            (x+w, y+h, z),      # 5: top-back-right
-            (x+w, y+h, z+d),    # 6: top-front-right
-            (x, y+h, z+d),      # 7: top-front-left
-        ]
-        
-        # Project all corners to 2D
-        projected = []
-        for cx, cy, cz in corners:
-            px, py = cls.project(cx - 8, cy - 8, cz - 8)  # Center around origin
-            projected.append((int(centerX + px), int(centerY + py)))
-        
-        # Define visible faces (top, left/back, right/front)
-        # Each face: list of corner indices, texture, brightness
-        faces = [
-            # Top face (indices 4,5,6,7)
-            ([4, 5, 6, 7], topTex, 1.0),
-            # Left face (indices 0,3,7,4) - darker
-            ([0, 3, 7, 4], sideTex, 0.7),
-            # Right face (indices 1,2,6,5) - medium  
-            ([3, 2, 6, 7], frontTex if frontTex else sideTex, 0.85),
-        ]
-        
-        for indices, tex, brightness in faces:
-            pts = [projected[i] for i in indices]
-            
-            # Get average color from texture for base fill
-            if tex:
-                avgColor = cls._getAverageColor(tex)
-                shadedColor = (int(avgColor[0] * brightness),
-                              int(avgColor[1] * brightness),
-                              int(avgColor[2] * brightness))
-            else:
-                shadedColor = (int(128 * brightness), int(128 * brightness), int(128 * brightness))
-            
-            # Fill polygon with base color
-            pygame.draw.polygon(surface, shadedColor, pts)
-            
-            # Apply texture mapping
-            if tex:
-                cls._textureQuad(surface, pts, tex, brightness)
-    
-    @classmethod
-    def _getAverageColor(cls, texture: pygame.Surface) -> Tuple[int, int, int]:
-        """Get average color from texture"""
-        try:
-            scaled = pygame.transform.scale(texture, (1, 1))
-            return scaled.get_at((0, 0))[:3]
-        except (pygame.error, IndexError) as e:
-            print(f"Warning: Could not get average color: {e}")
-            return (128, 128, 128)
-    
-    @classmethod
-    def _textureQuad(cls, surface: pygame.Surface, pts: List[Tuple[int, int]], 
-                     tex: pygame.Surface, brightness: float) -> None:
-        """
-        Apply texture to a quadrilateral using scanline rendering.
-        pts: 4 corner points in order (e.g., top-left, top-right, bottom-right, bottom-left)
-        """
-        # Scale texture to 16x16
-        tex = pygame.transform.scale(tex, (16, 16))
-        
-        # Find bounding box
-        minX = min(p[0] for p in pts)
-        maxX = max(p[0] for p in pts)
-        minY = min(p[1] for p in pts)
-        maxY = max(p[1] for p in pts)
-        
-        # For each pixel in bounding box, check if inside quad and map texture
-        for py in range(minY, maxY + 1):
-            for px in range(minX, maxX + 1):
-                # Check if point is inside quad using cross product method
-                if cls._pointInQuad(px, py, pts):
-                    # Calculate UV coordinates using bilinear interpolation
-                    u, v = cls._getUV(px, py, pts)
-                    texX = max(0, min(15, int(u * 15)))
-                    texY = max(0, min(15, int(v * 15)))
-                    
-                    try:
-                        color = tex.get_at((texX, texY))
-                        if color.a > 0:
-                            r = int(color.r * brightness)
-                            g = int(color.g * brightness)
-                            b = int(color.b * brightness)
-                            surface.set_at((px, py), (r, g, b, 255))
-                    except (IndexError, pygame.error):
-                        pass  # Out of bounds pixel access is expected at edges
-    
-    @classmethod
-    def _pointInQuad(cls, x: int, y: int, pts: List[Tuple[int, int]]) -> bool:
-        """Check if point is inside quadrilateral using cross products"""
-        def cross(o, a, b):
-            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
-        
-        # Check all edges have consistent winding
-        n = len(pts)
-        sign = None
-        for i in range(n):
-            c = cross(pts[i], pts[(i+1) % n], (x, y))
-            if c != 0:
-                if sign is None:
-                    sign = c > 0
-                elif (c > 0) != sign:
-                    return False
-        return True
-    
-    @classmethod
-    def _getUV(cls, px: int, py: int, pts: List[Tuple[int, int]]) -> Tuple[float, float]:
-        """
-        Calculate UV coordinates for a point inside a quad.
-        Uses inverse bilinear interpolation.
-        """
-        # Simplified UV mapping based on position within bounding box
-        # For more accuracy, could use proper inverse bilinear
-        minX = min(p[0] for p in pts)
-        maxX = max(p[0] for p in pts)
-        minY = min(p[1] for p in pts)
-        maxY = max(p[1] for p in pts)
-        
-        # Use position relative to quad center and extents
-        if maxX > minX:
-            u = (px - minX) / (maxX - minX)
-        else:
-            u = 0.5
-        if maxY > minY:
-            v = (py - minY) / (maxY - minY)
-        else:
-            v = 0.5
-        
-        return max(0, min(1, u)), max(0, min(1, v))
-
 # Colors (dark theme)
 BG_COLOR = (30, 30, 35)
 GRID_COLOR = (60, 60, 70)
@@ -338,41 +134,33 @@ ICONS_PER_ROW = 3
 # Background tile size (larger for less busy look)
 BG_TILE_SIZE = 64
 
-# Asset paths - handles both script and frozen executable
-if getattr(sys, 'frozen', False):
-    # Running as compiled executable
-    BASE_DIR = os.path.dirname(sys.executable)
-    BUNDLED_DATA_DIR = getattr(sys, '_MEIPASS', BASE_DIR)
-    ASSETS_DIR = os.path.join(BASE_DIR, "Assets")
-else:
-    # Running as script
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    BUNDLED_DATA_DIR = BASE_DIR
-    ASSETS_DIR = os.path.join(BASE_DIR, "..", "Assets")
-TEXTURES_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "blocks")
-ENTITY_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "entity")
-ITEMS_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "items")
-GUI_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "gui")
-COLORMAP_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "colormap")
-SOUNDS_DIR = os.path.join(ASSETS_DIR, "Sound Hub")
-MUSIC_DIR = os.path.join(SOUNDS_DIR, "music", "menu")
-MUSIC_DIR_NETHER = os.path.join(SOUNDS_DIR, "music", "game", "nether")
-MUSIC_DIR_END = os.path.join(SOUNDS_DIR, "music", "game", "end")
-ICONS_DIR = os.path.join(ASSETS_DIR, "Icons")
-FONTS_DIR = os.path.join(ASSETS_DIR, "Fonts")
-SAVES_DIR = os.path.join(BASE_DIR, "saves")  # Saves folder next to exe or in Code folder
-BUILTIN_STRUCTURES_DIR = os.path.join(BUNDLED_DATA_DIR, "structures" if getattr(sys, 'frozen', False) else "saves")
-WORLDS_DIR = os.path.join(BUNDLED_DATA_DIR, "worlds")
-CUSTOM_MUSIC_DIR = os.path.join(SAVES_DIR, "custom_music")  # User-added music folder
-APP_CONFIG_FILE = os.path.join(BASE_DIR, ".app_config.json")  # App preferences file
-DERIVED_WORLD_CACHE_DIR = os.path.join(
-    os.environ.get("LOCALAPPDATA", BASE_DIR), "BlocFantome", "Cache", "worlds"
+from domain.dimensions import (
+    DIMENSION_END,
+    DIMENSION_NETHER,
+    DIMENSION_OVERWORLD,
+    DIMENSION_WEATHER,
 )
-
-# Dimension constants
-DIMENSION_OVERWORLD = "overworld"
-DIMENSION_NETHER = "nether"
-DIMENSION_END = "end"
+from runtime_paths import (
+    APP_CONFIG_FILE,
+    ASSETS_DIR,
+    BASE_DIR,
+    BUILTIN_STRUCTURES_DIR,
+    COLORMAP_DIR,
+    CUSTOM_MUSIC_DIR,
+    DERIVED_WORLD_CACHE_DIR,
+    ENTITY_DIR,
+    FONTS_DIR,
+    GUI_DIR,
+    ICONS_DIR,
+    ITEMS_DIR,
+    MUSIC_DIR,
+    MUSIC_DIR_END,
+    MUSIC_DIR_NETHER,
+    SAVES_DIR,
+    SOUNDS_DIR,
+    TEXTURES_DIR,
+    WORLDS_DIR,
+)
 
 # Grass tint color (plains biome - sampled from colormap)
 GRASS_TINT = (124, 189, 107)
@@ -385,7 +173,7 @@ LAVA_TINT = (207, 92, 15)  # Orange-red lava tint
 # BLOCK DEFINITIONS
 # ============================================================================
 
-class BlockType(Enum):
+class _LegacyBlockType(Enum):
     """Enumeration of available block types"""
     AIR = 0
     # Natural blocks
@@ -753,26 +541,14 @@ class BlockType(Enum):
     REDSTONE_WALL_TORCH = 532
 
 
-@dataclass
-class BlockDefinition:
-    """Definition for a block type including texture names"""
-    name: str
-    textureTop: str
-    textureSide: str
-    textureBottom: str
-    tintTop: bool = False  # Whether to apply grass tint to top
-    tintSide: bool = False  # Whether to apply grass/leaf tint to sides
-    textureFront: str = None  # Optional front texture (for furnace, etc.)
-    transparent: bool = False  # Whether block is transparent (glass)
-    isThin: bool = False  # Whether block is a thin block (door)
-    isDoor: bool = False  # Whether block is a door (can open/close)
-    isLiquid: bool = False  # Whether block is a liquid (water/lava)
-    isStair: bool = False  # Whether block is a stair
-    isSlab: bool = False  # Whether block is a half-height slab
-    isPortal: bool = False  # Whether block is an animated portal
-    lightLevel: int = 0  # Light emission level (0-15, like Minecraft)
-    lightColor: Tuple[int, int, int] = (255, 200, 150)  # Light color RGB (warm orange default)
-    modelKind: str = None  # Cached box model for fences, walls, trapdoors, plants, etc.
+from domain.blocks import BlockType
+
+# The canonical enum is exported; the historical declaration above is not part
+# of the runtime interface while its data-only removal is completed separately.
+del _LegacyBlockType
+
+
+from domain.block_catalog import BlockDefinition, SoundDefinition
 
 
 from engine.block_state import (
@@ -785,13 +561,6 @@ from engine.block_state import (
 )
     
     
-@dataclass
-class SoundDefinition:
-    """Definition for block sounds"""
-    placeSound: str  # Sound category for placement
-    breakSound: str  # Sound category for breaking
-
-
 # Block definitions with texture file names
 BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     # Natural blocks
@@ -2774,102 +2543,21 @@ PREMADE_STRUCTURES = {
     "block_showcase": STRUCTURE_BLOCK_SHOWCASE,
 }
 
-JSON_STRUCTURE_LIBRARY = {
-    "bastion_bridge_edge": "Housing Units Bastion Piece",
-    "bastion_remnant_no_lava": "Hoglin Stable Bastion Piece",
-    "bastion_remnant_with_lava": "Treasure Bastion Lava Basin",
-    "end_city_tower": "End City Tower",
-    "ruined_portal_accurate": "Ruined Portal",
-    "warped_forest_accurate": "Warped Forest",
-}
+from domain.structures import (
+    JSON_STRUCTURE_LIBRARY,
+    compose_structure_registry,
+    properties_from_structure_state,
+    structure_block_parts,
+)
 
 
-def _propertiesFromStructureState(blockType: BlockType, stateData) -> Optional[BlockProperties]:
-    """Translate canonical Java block-state strings for cursor structures."""
-    if not isinstance(stateData, dict) or not stateData:
-        return None
-    definition = BLOCK_DEFINITIONS.get(blockType)
-    if not definition or not (
-        definition.isDoor or definition.isStair or definition.isSlab or definition.modelKind
-    ):
-        return None
-    props = BlockProperties()
-    props.facing = Facing.__members__.get(
-        str(stateData.get("facing", "south")).upper(), Facing.SOUTH
-    )
-    openValue = stateData.get("isOpen", stateData.get("open", False))
-    props.isOpen = openValue is True or str(openValue).casefold() == "true"
-    verticalHalf = stateData.get(
-        "slabPosition", stateData.get("half" if definition.isStair else "type", "bottom")
-    )
-    props.slabPosition = SlabPosition.__members__.get(
-        str(verticalHalf).upper(), SlabPosition.BOTTOM
-    )
-    props.stairShape = StairShape.__members__.get(
-        str(stateData.get("stairShape", stateData.get("shape", "straight"))).upper(),
-        StairShape.STRAIGHT,
-    )
-    props.doorHalf = DoorHalf.__members__.get(
-        str(stateData.get("doorHalf", stateData.get("half", "lower"))).upper(),
-        DoorHalf.LOWER,
-    )
-    props.doorHinge = DoorHinge.__members__.get(
-        str(stateData.get("doorHinge", stateData.get("hinge", "left"))).upper(),
-        DoorHinge.LEFT,
-    )
-    return props
-
-
-def _structureBlockParts(block):
-    """Return a uniform five-part cursor-structure cell tuple."""
-    x, y, z, blockType = block[:4]
-    properties = block[4] if len(block) > 4 else None
-    return x, y, z, blockType, properties
-
-
-def _loadJsonStructureLibrary() -> None:
-    """Load curated build JSON files as cursor-placeable structures."""
-    for structureKey, displayName in JSON_STRUCTURE_LIBRARY.items():
-        filepath = os.path.join(BUILTIN_STRUCTURES_DIR, f"{structureKey}.json")
-        if not os.path.isfile(filepath):
-            print(f"Built-in structure unavailable: {filepath}")
-            continue
-        try:
-            with open(filepath, 'r', encoding='utf-8') as handle:
-                saveData = json.load(handle)
-            rawBlocks = saveData.get("blocks", [])
-            converted = []
-            for block in rawBlocks:
-                blockType = BlockType[block["type"]]
-                converted.append((
-                    int(block["x"]), int(block["y"]), int(block["z"]), blockType,
-                    _propertiesFromStructureState(blockType, block.get("state", {})),
-                ))
-            if not converted:
-                continue
-
-            minX = min(block[0] for block in converted)
-            maxX = max(block[0] for block in converted)
-            minY = min(block[1] for block in converted)
-            maxY = max(block[1] for block in converted)
-            minZ = min(block[2] for block in converted)
-            centerX = (minX + maxX) // 2
-            centerY = (minY + maxY) // 2
-            normalized = [
-                (x - centerX, y - centerY, z - minZ, blockType, properties)
-                for x, y, z, blockType, properties in converted
-            ]
-            PREMADE_STRUCTURES[structureKey] = {
-                "name": displayName,
-                "blocks": normalized,
-                "dimension": saveData.get("dimension", DIMENSION_OVERWORLD),
-                "source_file": filepath,
-            }
-        except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
-            print(f"Could not load built-in structure '{structureKey}': {error}")
-
-
-_loadJsonStructureLibrary()
+_propertiesFromStructureState = properties_from_structure_state
+_structureBlockParts = structure_block_parts
+PREMADE_STRUCTURES = compose_structure_registry(
+    PREMADE_STRUCTURES,
+    structure_directory=BUILTIN_STRUCTURES_DIR,
+    definitions=BLOCK_DEFINITIONS,
+)
 
 # Tutorial configuration file path
 TUTORIAL_CONFIG_FILE = os.path.join(BASE_DIR, ".tutorial_config.json")
@@ -3745,11 +3433,15 @@ class AssetManager:
 
         self.audioRouter = AudioRouter(pygame.mixer)
         self.blockModelRenderer = BlockModelRenderer(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT)
-        self.zoomSpriteCache = SpriteCache(max_size=4096)
+        self.zoomSpriteCache = SpriteCache(max_size=4096, max_bytes=256 * 1024 * 1024)
+        self.alphaSpriteCache = SpriteCache(max_size=2048, max_bytes=32 * 1024 * 1024)
         self.uiScaleCache: Dict[Tuple[int, int, int], pygame.Surface] = {}
         self.uiTextCache: Dict[Tuple[int, str, Tuple[int, int, int]], pygame.Surface] = {}
         self.textures: Dict[str, pygame.Surface] = {}
         self.blockSprites: Dict[BlockType, pygame.Surface] = {}
+        # Flyweight intern pool: source textures/render flags -> shared Surface
+        self._spriteInternPool: Dict[Tuple, pygame.Surface] = {}
+        self._mipmaps: Dict[pygame.Surface, Dict[float, pygame.Surface]] = {}
         self.iconSprites: Dict[BlockType, pygame.Surface] = {}
         self.sounds: Dict[str, List[pygame.mixer.Sound]] = {}  # Category -> list of sound variants
         self.clickSound: Optional[pygame.mixer.Sound] = None
@@ -3870,6 +3562,9 @@ class AssetManager:
         # Create isometric block sprites
         self._createBlockSprites()
         print(f"  Created {len(self.blockSprites)} block sprites")
+        # Pre-render mipmap levels for all unique sprites (flyweight optimization)
+        self._buildMipmaps()
+        print(f"  Built mipmaps for {len(self._mipmaps)} unique sprite(s)")
         
         # Create icon sprites for the panel
         self._createIconSprites()
@@ -4254,7 +3949,11 @@ class AssetManager:
                     self.soundActiveChannels[category] -= 1
     
     def _createBlockSprites(self):
-        """Create isometric block sprites from textures"""
+        """Create isometric block sprites from textures.
+        Uses a flyweight intern pool so blocks sharing identical texture triplets
+        share a single Surface object, reducing memory and speeding up zoom cache hits.
+        """
+        self._spriteInternPool.clear()
         for blockType, blockDef in BLOCK_DEFINITIONS.items():
             topTex = self.textures.get(blockDef.textureTop)
             sideTex = self.textures.get(blockDef.textureSide)
@@ -4396,9 +4095,22 @@ class AssetManager:
             else:
                 # Regular full block (skip OXIDIZING_COPPER - handled in updateAnimation)
                 if blockType != BlockType.OXIDIZING_COPPER:
-                    self.blockSprites[blockType] = self._createIsometricBlock(
-                        topTex, sideTex, frontTex, blockDef.transparent
+                    _internKey = (
+                        blockDef.textureTop,
+                        blockDef.textureSide,
+                        blockDef.textureFront or blockDef.textureSide,
+                        blockDef.transparent,
+                        blockDef.tintTop,
+                        blockDef.tintSide,
                     )
+                    if _internKey in self._spriteInternPool:
+                        self.blockSprites[blockType] = self._spriteInternPool[_internKey]
+                    else:
+                        sprite = self._createIsometricBlock(
+                            topTex, sideTex, frontTex, blockDef.transparent
+                        )
+                        self._spriteInternPool[_internKey] = sprite
+                        self.blockSprites[blockType] = sprite
     
     def _tintTexture(self, texture: pygame.Surface, tint: Tuple[int, int, int]) -> pygame.Surface:
         """Apply a color tint to a grayscale texture (like Minecraft biome coloring)"""
@@ -7448,8 +7160,12 @@ class AssetManager:
     def getScaledSprite(
         self, sprite: pygame.Surface, zoom: float, *, flipped: bool = False
     ) -> pygame.Surface:
-        """Return a cached, pixel-crisp view/zoom variant."""
-        zoomBucket = round(max(0.1, float(zoom)), 3)
+        """Return a cached, pixel-crisp view/zoom variant.
+        Uses pre-rendered mipmap levels to reduce scaling cost at low zoom.
+        Zoom bucket uses 5% steps to reduce cache pressure without visible difference.
+        """
+        # Coarser zoom bucket: 5% steps instead of 0.1% steps
+        zoomBucket = round(max(0.1, float(zoom)) * 20) / 20
         if zoomBucket == 1.0 and not flipped:
             return sprite
         # Keep the Surface itself in the key. Temporary animated liquid
@@ -7460,17 +7176,65 @@ class AssetManager:
         if cached is not None:
             return cached
         transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
+        # Use mipmap if available: pick closest pre-rendered level then scale the remainder
+        source = transformed
+        effectiveZoom = zoomBucket
+        mipmapLevels = self._mipmaps.get(sprite)
+        if mipmapLevels and zoomBucket < 0.9:
+            bestScale = min(mipmapLevels, key=lambda level: abs(level - zoomBucket))
+            mmSurface = mipmapLevels[bestScale]
+            if flipped:
+                mmSurface = pygame.transform.flip(mmSurface, True, False)
+            source = mmSurface
+            effectiveZoom = zoomBucket / bestScale
         size = (
-            max(1, int(transformed.get_width() * zoomBucket)),
-            max(1, int(transformed.get_height() * zoomBucket)),
+            max(1, int(source.get_width() * effectiveZoom)),
+            max(1, int(source.get_height() * effectiveZoom)),
         )
         # Preserve vanilla pixel edges at every zoom.  Filtering tiny Nether
         # and End structures made their dark palettes look lower-resolution
         # than equally sized Overworld scenes.
-        scaled = pygame.transform.scale(transformed, size)
+        scaled = pygame.transform.scale(source, size)
         self.zoomSpriteCache.set(key, scaled)
         return scaled
-    
+
+    def getAlphaSprite(self, sprite: pygame.Surface, alpha: int) -> pygame.Surface:
+        """Return a cached immutable alpha variant of a sprite."""
+        key = (sprite, max(0, min(255, int(alpha))))
+        cached = self.alphaSpriteCache.get(key)
+        if cached is not None:
+            return cached
+        variant = sprite.copy()
+        variant.set_alpha(key[1])
+        self.alphaSpriteCache.set(key, variant)
+        return variant
+
+    def _buildMipmaps(self) -> None:
+        """Pre-render each unique block sprite at 0.5x and 0.25x zoom levels.
+        Keeping the source Surface as the key prevents stale id reuse after an
+        animated sprite is replaced.
+        getScaledSprite() uses the nearest mipmap to avoid full-resolution downscaling.
+        """
+        self._mipmaps.clear()
+        seen = set()
+        all_sprites = list(self.blockSprites.values())
+        all_sprites += list(self.slabSprites.values())
+        all_sprites += [v for v in self.stairSprites.values()]
+        all_sprites += [v for v in self.doorSprites.values()]
+        for sprite in all_sprites:
+            if sprite is None:
+                continue
+            if sprite in seen:
+                continue
+            seen.add(sprite)
+            w, h = sprite.get_width(), sprite.get_height()
+            levels = {}
+            for scale in (0.5, 0.25):
+                sw = max(1, int(w * scale))
+                sh = max(1, int(h * scale))
+                levels[scale] = pygame.transform.smoothscale(sprite, (sw, sh))
+            self._mipmaps[sprite] = levels
+
     def clearZoomCache(self):
         """Clear cached sprite variants after source assets are replaced."""
         self.zoomSpriteCache.clear()
@@ -8151,6 +7915,9 @@ class IsometricRenderer:
 # MAIN GAME CLASS
 # ============================================================================
 
+from engine.renderer import IsometricRenderer, ProjectionMetrics
+from engine.world import World
+
 class BlocFantome:
     """
     Main application class for Bloc Fantome.
@@ -8172,12 +7939,23 @@ class BlocFantome:
         
         # Initialize the modular engine implementations. The legacy in-file
         # classes remain temporarily for compatibility but are no longer active.
-        from engine.world import World as EngineWorld, init_world_module
-        from engine.renderer import IsometricRenderer as EngineRenderer, set_tile_dimensions
-        init_world_module(BlockType, BLOCK_DEFINITIONS)
-        set_tile_dimensions(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT)
+        from domain.world_catalog import WorldCatalog
         self.assetManager = AssetManager()
-        self.world = EngineWorld(GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT)
+        self.world = World(
+            GRID_WIDTH,
+            GRID_DEPTH,
+            GRID_HEIGHT,
+            catalog=WorldCatalog(
+                block_type=BlockType,
+                air=BlockType.AIR,
+                water=BlockType.WATER,
+                lava=BlockType.LAVA,
+                obsidian=BlockType.OBSIDIAN,
+                cobblestone=BlockType.COBBLESTONE,
+                stone=BlockType.STONE,
+                definitions=BLOCK_DEFINITIONS,
+            ),
+        )
         self.cameraFocusZ = 0
         self.sceneMetadata = {
             "kind": "build",
@@ -8192,7 +7970,11 @@ class BlocFantome:
         # Calculate center offset for rendering
         centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
         centerY = WINDOW_HEIGHT // 3
-        self.renderer = EngineRenderer(centerX, centerY)
+        self.renderer = IsometricRenderer(
+            centerX,
+            centerY,
+            ProjectionMetrics(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT),
+        )
         from engine.performance import PerformanceMonitor
         self.performanceMonitor = PerformanceMonitor(window_size=120)
         self.renderDistanceChunks = 4
@@ -8658,8 +8440,6 @@ class BlocFantome:
         # Collapse button tracking for categories
         self.collapseBtnRects: Dict[str, pygame.Rect] = {}  # category -> rect
         
-        # Initialize HorrorManager (consolidates all horror features)
-        self.horrorManager = HorrorManager(self)
         # Alias for backward compatibility
         self.panelWidth = PANEL_WIDTH
         
@@ -9105,6 +8885,21 @@ class BlocFantome:
         self._worldSurfaceCache = None
         self._renderChunkAnchor = None
         self._screenCullAnchorOffset = None
+
+    def _afterWorldEdit(self, affectedPositions=()) -> None:
+        """Invalidate derived application state after one logical world edit."""
+        positions = tuple(affectedPositions)
+        self.lightingDirty = True
+        self._minimapCacheKey = None
+        self._invalidateViewCaches()
+        if self.world.heightIndex:
+            self.currentBuildHeight = max(self.world.heightIndex.values())
+        else:
+            self.currentBuildHeight = self.world.min_y
+        for position in positions:
+            blockType = self.world.getBlock(*position)
+            if blockType != BlockType.AIR:
+                self.blockUsageStats[blockType] = self.blockUsageStats.get(blockType, 0) + 1
     
     def _centerOnCell(self, worldX: int, worldY: int, worldZ: int):
         """Center the view on a specific world cell"""
@@ -9362,13 +9157,12 @@ class BlocFantome:
         if newDimension == self.currentDimension:
             return  # Already in this dimension
         
-        # Stop rain if leaving Overworld
-        if self.rainEnabled and newDimension != DIMENSION_OVERWORLD:
+        # Weather is dimension-specific; switching starts with a clean effect.
+        if self.rainEnabled:
             self.rainEnabled = False
             self._stopRain()
         
-        # Stop snow if leaving Overworld
-        if self.snowEnabled and newDimension != DIMENSION_OVERWORLD:
+        if self.snowEnabled:
             self.snowEnabled = False
             self._stopSnow()
         
@@ -10003,6 +9797,35 @@ class BlocFantome:
                 self.searchQuery += event.unicode.lower()
                 self._updateSearchResults()
                 return
+
+        command = resolve_command(
+            KeyChord(
+                pygame.key.name(event.key),
+                ctrl=bool(mods & pygame.KMOD_CTRL),
+                shift=bool(mods & pygame.KMOD_SHIFT),
+            ),
+            InputContext(
+                selected_half_block=bool(
+                    (definition := BLOCK_DEFINITIONS.get(self.selectedBlock))
+                    and (definition.isStair or definition.isSlab)
+                ),
+                confirmed_selection=bool(
+                    self.selectionActive and self.selectionStart and self.selectionEnd
+                ),
+                history=self.historyPanelOpen,
+                settings=self.settingsMenuOpen,
+                shortcuts=self.showShortcutsPanel,
+                blueprint=self.blueprintMode,
+                fill=self.fillToolActive,
+                selection=self.selectionActive,
+                measurement=self.measurementMode,
+                replace=self.replaceMode,
+                stamp=self.stampMode,
+                tutorial=self.tutorialScreen.visible,
+            ),
+        )
+        if command is not None and self._executeInputCommand(command):
+            return
         
         if event.key == pygame.K_ESCAPE:
             # Close menus in order
@@ -10406,6 +10229,83 @@ class BlocFantome:
         elif event.key == pygame.K_RIGHTBRACKET:
             # Rotate clipboard clockwise (])
             self._rotateClipboard(clockwise=True)
+
+    def _executeInputCommand(self, command: InputCommand) -> bool:
+        """Execute a resolved conflicting shortcut and report consumption."""
+        if command is InputCommand.FLIP_PREVIEW_HALF:
+            self.previewSlabPosition = (
+                SlabPosition.TOP
+                if self.previewSlabPosition == SlabPosition.BOTTOM
+                else SlabPosition.BOTTOM
+            )
+        elif command is InputCommand.TOGGLE_FILL:
+            self.fillToolActive = not self.fillToolActive
+            self.fillStart = None
+        elif command is InputCommand.TOGGLE_MEASUREMENT:
+            self.measurementMode = not self.measurementMode
+            self.measurePoint1 = None
+            self.measurePoint2 = None
+        elif command is InputCommand.TOGGLE_X_MIRROR:
+            self.mirrorModeX = not self.mirrorModeX
+        elif command is InputCommand.TOGGLE_Y_MIRROR:
+            self.mirrorModeY = not self.mirrorModeY
+        elif command is InputCommand.START_OR_CONFIRM_SELECTION:
+            self._startSelection()
+        elif command is InputCommand.TOGGLE_BLUEPRINT:
+            self.blueprintMode = not self.blueprintMode
+            if not self.blueprintMode:
+                for pos, blockType in self.blueprintBlocks.items():
+                    self._placeBlockWithUndo(*pos, blockType)
+                self.blueprintBlocks.clear()
+        elif command is InputCommand.HOLLOW_SELECTION:
+            self._hollowSelection(self.selectedBlock)
+        elif command is InputCommand.TOGGLE_HISTORY:
+            self.historyPanelOpen = not self.historyPanelOpen
+        elif command is InputCommand.TOGGLE_REPLACE:
+            self.replaceMode = not self.replaceMode
+            self.replaceSourceBlock = None
+        elif command is InputCommand.FIT_WORLD:
+            self._fitWorldToViewport()
+        elif command is InputCommand.CENTER_CONTEXT:
+            self._centerOnHoveredOrGrid()
+        elif command is InputCommand.CLOSE_SEARCH:
+            self.searchActive = False
+            self.searchQuery = ""
+            self.searchResults = []
+        elif command is InputCommand.CLOSE_HISTORY:
+            self.historyPanelOpen = False
+        elif command is InputCommand.CLOSE_SETTINGS:
+            self.settingsMenuOpen = False
+        elif command is InputCommand.CLOSE_SHORTCUTS:
+            self.showShortcutsPanel = False
+        elif command is InputCommand.CANCEL_BLUEPRINT:
+            self.blueprintMode = False
+            self.blueprintBlocks.clear()
+        elif command is InputCommand.CANCEL_FILL:
+            self.fillToolActive = False
+            self.fillStart = None
+        elif command is InputCommand.CANCEL_SELECTION:
+            self._clearSelection()
+        elif command is InputCommand.CANCEL_MEASUREMENT:
+            self.measurementMode = False
+            self.measurePoint1 = None
+            self.measurePoint2 = None
+        elif command is InputCommand.CANCEL_REPLACE:
+            self.replaceMode = False
+            self.replaceSourceBlock = None
+        elif command is InputCommand.CANCEL_STAMP:
+            self.stampMode = False
+            self.stampData.clear()
+            self.stampOrigin = None
+        elif command is InputCommand.CLOSE_TUTORIAL:
+            self.tutorialScreen.visible = False
+        elif command is InputCommand.QUIT:
+            self.running = False
+        elif command is InputCommand.CLOSE_MODAL:
+            return False
+        else:
+            return False
+        return True
     
     def _handlePanelClick(self, mouseX: int, mouseY: int):
         """Handle click on the inventory panel with three main dropdown buttons"""
@@ -10554,13 +10454,13 @@ class BlocFantome:
                 return
             dimY += 35
             
-            # Check Rain toggle button (only in Overworld)
+            # Check the current dimension's rain-family effect.
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
                 self._toggleRain()
                 return
             dimY += 35
             
-            # Check Snow toggle button (only in Overworld)
+            # Check the current dimension's snow-family effect.
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
                 self._toggleSnow()
                 return
@@ -11491,10 +11391,10 @@ class BlocFantome:
             self.assetManager.fireAmbientTimer = 0
             
             # Check if any fire blocks exist (FIRE or SOUL_FIRE)
-            fireBlocks = []
-            for (x, y, z), blockType in self.world.blocks.items():
-                if blockType in (BlockType.FIRE, BlockType.SOUL_FIRE):
-                    fireBlocks.append((x, y, z))
+            fireBlocks = tuple(
+                self.world.positionsOfType(BlockType.FIRE)
+                | self.world.positionsOfType(BlockType.SOUL_FIRE)
+            )
             
             if fireBlocks and "fire" in self.assetManager.sounds and self.assetManager.sounds["fire"]:
                 # Pick a random fire block to be the sound source
@@ -11517,57 +11417,30 @@ class BlocFantome:
         if self.spawnerSpawnTimer >= 80:
             self.spawnerSpawnTimer = 0
             
-            # Find all spawners in the world
-            for (x, y, z), blockType in self.world.blocks.items():
-                if blockType == BlockType.MOB_SPAWNER:
-                    # Spawn 4-8 particles per mob spawner
+            palettes = (
+                (BlockType.MOB_SPAWNER, (
+                    (255, 80, 30), (255, 120, 50),
+                    (255, 180, 80), (255, 50, 20),
+                )),
+                (BlockType.TRIAL_SPAWNER, (
+                    (50, 150, 255), (80, 200, 255),
+                    (100, 180, 255), (30, 120, 220),
+                )),
+            )
+            for blockType, colors in palettes:
+                for x, y, z in self.world.positionsOfType(blockType):
                     for _ in range(random.randint(4, 8)):
-                        # Random position around the spawner
-                        px = x + random.uniform(-0.4, 0.4)
-                        py = y + random.uniform(-0.4, 0.4)
-                        pz = z + random.uniform(0, 0.6)
-                        
-                        # Particle properties - orange/red flames
-                        particle = {
-                            "x": x, "y": y, "z": z,  # Block position for sorting
-                            "px": px, "py": py, "pz": pz,  # Actual position
+                        self.spawnerParticleList.append({
+                            "x": x, "y": y, "z": z,
+                            "px": x + random.uniform(-0.4, 0.4),
+                            "py": y + random.uniform(-0.4, 0.4),
+                            "pz": z + random.uniform(0, 0.6),
                             "vx": random.uniform(-0.02, 0.02),
                             "vy": random.uniform(-0.02, 0.02),
-                            "vz": random.uniform(0.01, 0.04),  # Float upward
+                            "vz": random.uniform(0.01, 0.04),
                             "life": random.randint(20, 40),
-                            "color": random.choice([
-                                (255, 80, 30),    # Deep orange flame
-                                (255, 120, 50),   # Orange flame
-                                (255, 180, 80),   # Yellow-orange
-                                (255, 50, 20),    # Red-orange
-                            ])
-                        }
-                        self.spawnerParticleList.append(particle)
-                
-                elif blockType == BlockType.TRIAL_SPAWNER:
-                    # Spawn 4-8 particles per trial spawner - blue particles
-                    for _ in range(random.randint(4, 8)):
-                        # Random position around the spawner
-                        px = x + random.uniform(-0.4, 0.4)
-                        py = y + random.uniform(-0.4, 0.4)
-                        pz = z + random.uniform(0, 0.6)
-                        
-                        # Particle properties - blue/cyan flames
-                        particle = {
-                            "x": x, "y": y, "z": z,  # Block position for sorting
-                            "px": px, "py": py, "pz": pz,  # Actual position
-                            "vx": random.uniform(-0.02, 0.02),
-                            "vy": random.uniform(-0.02, 0.02),
-                            "vz": random.uniform(0.01, 0.04),  # Float upward
-                            "life": random.randint(20, 40),
-                            "color": random.choice([
-                                (50, 150, 255),   # Bright blue
-                                (80, 200, 255),   # Cyan-blue
-                                (100, 180, 255),  # Light blue
-                                (30, 120, 220),   # Deep blue
-                            ])
-                        }
-                        self.spawnerParticleList.append(particle)
+                            "color": random.choice(colors),
+                        })
         
         # Update existing particles
         for particle in self.spawnerParticleList:
@@ -11590,10 +11463,7 @@ class BlocFantome:
         print(f"Cleared {removed} liquid blocks")
     
     def _toggleRain(self):
-        """Toggle rain on/off (only works in Overworld)"""
-        if self.currentDimension != DIMENSION_OVERWORLD:
-            return  # Rain only in Overworld
-        
+        """Toggle the first weather effect for the current dimension."""
         # If snow is on, turn it off first
         if self.snowEnabled:
             self.snowEnabled = False
@@ -11609,7 +11479,8 @@ class BlocFantome:
             self._stopRain()
     
     def _startRain(self):
-        """Initialize rain effects"""
+        """Initialize the current dimension's rain-family effect."""
+        config = self._getDimensionWeatherConfig()["rain"]
         self.rainDrops = []
         self.rainSplashes = []
         self.thunderTimer = 0
@@ -11621,19 +11492,21 @@ class BlocFantome:
         self.rainIntensityTimer = 0
         self.rainIntensityTarget = 1.0
         
-        # Create initial rain drops with slight angle
-        for _ in range(150):  # 150 rain drops
+        particleCount = 110 if config["style"] == "embers" else 150
+        for _ in range(particleCount):
             self.rainDrops.append({
                 "x": random.randint(0, WINDOW_WIDTH),
                 "y": random.randint(-WINDOW_HEIGHT, 0),
-                "speed": random.randint(15, 25),
-                "length": random.randint(10, 20),
-                "angle": random.uniform(0.08, 0.15)  # Slight wind angle
+                "speed": random.uniform(*config["speed"]),
+                "length": random.randint(*config["length"]),
+                "angle": random.uniform(*config["angle"]),
+                "color": random.choice(config["colors"]),
+                "phase": random.uniform(0, math.tau),
             })
         
         # Rain sound: Use pre-loaded Sound (avoids loading stutter)
         self.rainSoundChannel = None
-        if self.assetManager.relaxingRainSound:
+        if self.currentDimension == DIMENSION_OVERWORLD and self.assetManager.relaxingRainSound:
             try:
                 # Use pre-loaded Sound object to avoid loading delay/stutter
                 self.rainSound = self.assetManager.relaxingRainSound
@@ -11645,6 +11518,17 @@ class BlocFantome:
                 print("    Playing relaxing rain track (on sound channel)")
             except Exception as e:
                 print(f"    Could not play rain track: {e}")
+        elif self.currentDimension == DIMENSION_NETHER:
+            sounds = self.assetManager.sounds.get("fire", [])
+            if sounds:
+                self.assetManager.playOneShot(
+                    random.choice(sounds), group="weather", volume=self.ambientVolume * 0.35
+                )
+        elif self.currentDimension == DIMENSION_END and self.assetManager.endermanSounds:
+            self.assetManager.playOneShot(
+                random.choice(self.assetManager.endermanSounds),
+                group="weather", volume=self.ambientVolume * 0.2,
+            )
         
         # Thunder ambient: Use a dedicated channel that we control
         self.thunderAmbientChannel = None
@@ -11823,10 +11707,7 @@ class BlocFantome:
     def _spawnHorrorSplashesOnBlocks(self):
         """Spawn horror splash effects directly on random blocks in the world (like normal rain)"""
         # Find the highest block at each (x, y) position
-        topBlocks = {}  # (x, y) -> z
-        for (x, y, z), blockType in self.world.blocks.items():
-            if (x, y) not in topBlocks or z > topBlocks[(x, y)]:
-                topBlocks[(x, y)] = z
+        topBlocks = self.world.heightIndex
         
         if not topBlocks:
             return
@@ -12064,10 +11945,7 @@ class BlocFantome:
                 self.screen.blit(fogSurf, (screenX - TILE_WIDTH // 2, screenY))
     
     def _toggleSnow(self):
-        """Toggle snow on/off (only works in Overworld)"""
-        if self.currentDimension != DIMENSION_OVERWORLD:
-            return  # Snow only in Overworld
-        
+        """Toggle the second weather effect for the current dimension."""
         # If rain is on, turn it off first
         if self.rainEnabled:
             self.rainEnabled = False
@@ -12081,25 +11959,33 @@ class BlocFantome:
             self._stopSnow()
     
     def _startSnow(self):
-        """Initialize snow effects"""
+        """Initialize the current dimension's snow-family effect."""
+        config = self._getDimensionWeatherConfig()["snow"]
         self.snowFlakes = []
         self.snowSkyDarkness = 0
+        self.snowAccumulateTimer = 0
         
         # Calculate platform screen bounds for constraining snow
         self._updatePlatformBounds()
         
         # Create initial snowflakes within platform bounds
-        for _ in range(80):  # Fewer particles than rain
+        for _ in range(80):
             x = self._getRandomSnowPosition()
             self.snowFlakes.append({
                 "x": x,
                 "y": random.randint(-50, WINDOW_HEIGHT),
-                "speed": random.uniform(1.5, 3.5),  # Much slower than rain
-                "size": random.randint(2, 4),
+                "speed": random.uniform(*config["speed"]),
+                "size": random.randint(*config["size"]),
                 "drift": random.uniform(-0.5, 0.5),  # Horizontal drift
                 "driftSpeed": random.uniform(0.01, 0.03),
-                "driftPhase": random.uniform(0, 6.28)  # Random starting phase
+                "driftPhase": random.uniform(0, math.tau),
+                "color": random.choice(config["colors"]),
+                "rotation": random.uniform(0, math.tau),
             })
+
+    def _getDimensionWeatherConfig(self):
+        """Return weather presentation and motion settings for this dimension."""
+        return DIMENSION_WEATHER.get(self.currentDimension, DIMENSION_WEATHER[DIMENSION_OVERWORLD])
     
     def _updatePlatformBounds(self):
         """Calculate the screen bounds of the platform for weather effects"""
@@ -12182,6 +12068,8 @@ class BlocFantome:
             if self.snowSkyDarkness > 0:
                 self.snowSkyDarkness = max(0, self.snowSkyDarkness - 2)
             return
+
+        config = self._getDimensionWeatherConfig()["snow"]
         
         # Update platform bounds periodically (every few frames) for panning support
         if not hasattr(self, '_snowBoundsTimer'):
@@ -12191,9 +12079,9 @@ class BlocFantome:
             self._snowBoundsTimer = 0
             self._updatePlatformBounds()
         
-        # Fade in sky darkness (lighter than rain - around 80)
-        if self.snowSkyDarkness < 80:
-            self.snowSkyDarkness = min(80, self.snowSkyDarkness + 1)
+        darknessTarget = config["darkness"]
+        if self.snowSkyDarkness < darknessTarget:
+            self.snowSkyDarkness = min(darknessTarget, self.snowSkyDarkness + 1)
         
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
         
@@ -12204,6 +12092,7 @@ class BlocFantome:
             # Sinusoidal horizontal drift (like real snowflakes)
             flake["driftPhase"] += flake["driftSpeed"]
             flake["x"] += math.sin(flake["driftPhase"]) * flake["drift"]
+            flake["rotation"] += 0.035
             
             # Update platform bounds periodically (in case of panning)
             if not hasattr(self, 'platformMinX'):
@@ -12217,30 +12106,23 @@ class BlocFantome:
             if flake["y"] > maxY or flake["x"] < minX - 20 or flake["x"] > maxX + 20:
                 flake["y"] = random.randint(-30, -5)
                 flake["x"] = self._getRandomSnowPosition()
-                flake["speed"] = random.uniform(1.5, 3.5)
-                flake["size"] = random.randint(2, 4)
+                flake["speed"] = random.uniform(*config["speed"])
+                flake["size"] = random.randint(*config["size"])
                 flake["drift"] = random.uniform(-0.5, 0.5)
-                flake["driftPhase"] = random.uniform(0, 6.28)
+                flake["driftPhase"] = random.uniform(0, math.tau)
+                flake["color"] = random.choice(config["colors"])
         
         # Snow accumulation on blocks (like Minecraft)
-        self.snowAccumulateTimer += dt
-        if self.snowAccumulateTimer >= 1500:  # Every 1.5 seconds
-            self.snowAccumulateTimer = 0
-            self._accumulateSnowOnBlocks()
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.snowAccumulateTimer += dt
+            if self.snowAccumulateTimer >= 1500:
+                self.snowAccumulateTimer = 0
+                self._accumulateSnowOnBlocks()
     
     def _accumulateSnowOnBlocks(self):
         """Add thin snow layer on top of random exposed blocks (only within platform bounds)"""
         # Find all top blocks (exposed to sky) that are within platform bounds
-        topBlocks = {}
-        for (x, y, z), blockType in self.world.blocks.items():
-            # Skip if outside platform bounds
-            if x < 0 or x >= self.world.width or y < 0 or y >= self.world.depth:
-                continue
-            # Skip if there's already a block above (not exposed)
-            if (x, y, z + 1) in self.world.blocks:
-                continue
-            if (x, y) not in topBlocks or z > topBlocks[(x, y)]:
-                topBlocks[(x, y)] = z
+        topBlocks = self.world.heightIndex
         
         if not topBlocks:
             return
@@ -12264,14 +12146,14 @@ class BlocFantome:
     
     def _renderSnow(self) -> None:
         """Render snow overlay effects and accumulated snow layers"""
+        config = self._getDimensionWeatherConfig()["snow"]
         # Calculate panel boundary
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
         
         # Draw snow darkening overlay (lighter than rain)
         if self.snowSkyDarkness > 0:
             darkOverlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            # Blueish-gray tint for snowy atmosphere
-            darkOverlay.fill((40, 50, 70, self.snowSkyDarkness))
+            darkOverlay.fill((*config["overlay"], self.snowSkyDarkness))
             self.screen.blit(darkOverlay, (0, 0))
         
         # Draw accumulated snow layers on blocks (thin white layer covering block top)
@@ -12347,11 +12229,28 @@ class BlocFantome:
                 if not self._isPointInPlatformDiamond(flake["x"], flake["y"]):
                     continue
                 
-                # Draw snowflake as small white circle
-                color = (255, 255, 255, 200)
-                snowSurf = pygame.Surface((flake["size"] * 2, flake["size"] * 2), pygame.SRCALPHA)
-                pygame.draw.circle(snowSurf, color, (flake["size"], flake["size"]), flake["size"])
-                self.screen.blit(snowSurf, (int(flake["x"]), int(flake["y"])))
+                size = flake["size"]
+                color = flake.get("color", config["colors"][0])
+                snowSurf = pygame.Surface((size * 4, size * 4), pygame.SRCALPHA)
+                center = size * 2
+                if config["style"] == "shards":
+                    angle = flake["rotation"]
+                    dx = math.cos(angle) * size
+                    dy = math.sin(angle) * size
+                    points = [
+                        (center + dx, center + dy),
+                        (center - dy * 0.5, center + dx * 0.5),
+                        (center - dx, center - dy),
+                        (center + dy * 0.5, center - dx * 0.5),
+                    ]
+                    pygame.draw.polygon(snowSurf, color, points)
+                else:
+                    if config["style"] == "souls":
+                        pulse = 0.65 + 0.35 * math.sin(flake["driftPhase"] * 2)
+                        color = (*color[:3], int(color[3] * pulse))
+                        pygame.draw.circle(snowSurf, (*color[:3], 35), (center, center), size + 2)
+                    pygame.draw.circle(snowSurf, color, (center, center), size)
+                self.screen.blit(snowSurf, (int(flake["x"]) - center, int(flake["y"]) - center))
     
     def _generateStars(self):
         """Generate random star positions for night sky"""
@@ -12807,9 +12706,10 @@ class BlocFantome:
 
     def _saveBuilding(self, filename: str = None, silent: bool = False, filepath: str = None):
         """Save the current building to a compressed JSON file (gzip) with atomic write"""
-        import json
-        import gzip
         from datetime import datetime
+        from engine.build_io import write_build
+        from engine.world_snapshot import WorldSnapshot
+
         trackCurrentPath = filepath is not None or (filename is None and not silent)
 
         if filepath is None:
@@ -12824,63 +12724,26 @@ class BlocFantome:
                 filepath = os.path.join(SAVES_DIR, filename)
         elif not filepath.endswith('.gz'):
             filepath = filepath + '.gz'
-
-        os.makedirs(os.path.dirname(filepath) or SAVES_DIR, exist_ok=True)
-        tempPath = filepath + '.tmp'
-        
-        # Collect block data with proper enum serialization
-        blocks = []
-        for (x, y, z), blockType in self.world.blocks.items():
-            blockData = {
-                "x": x, "y": y, "z": z,
-                "type": blockType.name
-            }
-            if blockType in (BlockType.WATER, BlockType.LAVA):
-                blockData["liquidLevel"] = self.world.getLiquidLevel(x, y, z)
-                blockData["liquidSource"] = (x, y, z) in getattr(self.world, 'liquidSources', set())
-                blockData["liquidFalling"] = (x, y, z) in getattr(self.world, 'liquidFalling', set())
-            if (x, y, z) in self.sceneStructurePositions:
-                blockData["role"] = "structure"
-            # Include properties if present - serialize enums as names
-            props = self.world.getBlockProperties(x, y, z)
-            if props:
-                definition = BLOCK_DEFINITIONS.get(blockType)
-                if props.facing:
-                    blockData["facing"] = props.facing.name if hasattr(props.facing, 'name') else str(props.facing)
-                if definition and definition.isDoor:
-                    blockData["isOpen"] = props.isOpen
-                    blockData["doorHalf"] = props.doorHalf.name
-                    blockData["doorHinge"] = props.doorHinge.name
-                if definition and definition.isStair:
-                    blockData["stairShape"] = props.stairShape.name
-                if props.slabPosition:
-                    blockData["slabPosition"] = props.slabPosition.name if hasattr(props.slabPosition, 'name') else str(props.slabPosition)
-            blocks.append(blockData)
-        
-        saveData = {
-            "version": 5,  # Version 5 = scalable bounds and scene provenance
-            "dimension": self.currentDimension,
-            "bounds": {
-                "width": self.world.width,
-                "depth": self.world.depth,
-                "height": self.world.height,
-                "min_y": self.world.min_y,
-            },
-            "scene": dict(getattr(self, "sceneMetadata", {}) or {}),
-            "blocks": blocks
-        }
-        
         try:
-            # Atomic write: write to temp file first, then rename
-            jsonStr = json.dumps(saveData, separators=(',', ':'))  # Compact JSON
-            with gzip.open(tempPath, 'wt', encoding='utf-8') as f:
-                f.write(jsonStr)
-            # Atomic rename - prevents corruption if write fails mid-way
-            os.replace(tempPath, filepath)
+            snapshot = WorldSnapshot(
+                width=self.world.width,
+                depth=self.world.depth,
+                height=self.world.height,
+                min_y=self.world.min_y,
+                dimension=self.currentDimension,
+                blocks=self.world.blocks,
+                properties=self.world.blockProperties,
+                liquid_levels=self.world.liquidLevels,
+                liquid_sources=self.world.liquidSources,
+                liquid_falling=self.world.liquidFalling,
+                scene_metadata=dict(getattr(self, "sceneMetadata", {}) or {}),
+                structure_positions=self.sceneStructurePositions,
+            )
+            result = write_build(filepath, snapshot, BLOCK_DEFINITIONS)
             if not silent:
                 if trackCurrentPath:
-                    self.currentBuildPath = filepath
-                print(f"Build saved to {filepath} (compressed)")
+                    self.currentBuildPath = str(result.path)
+                print(f"Build saved to {result.path} (compressed)")
                 self.tooltipText = "Build saved!"
                 self.tooltipTimer = 1500
             return True
@@ -12889,12 +12752,6 @@ class BlocFantome:
                 print(f"Error saving build: {e}")
                 self.tooltipText = f"Save failed: {e}"
                 self.tooltipTimer = 3000
-            # Clean up temp file if it exists
-            if os.path.exists(tempPath):
-                try:
-                    os.remove(tempPath)
-                except OSError:
-                    pass
             return False
     
     def _legacyLoadBuilding(self, filename: str, silent: bool = False):
@@ -13436,6 +13293,28 @@ class BlocFantome:
     
     def _readBuildFile(self, filepath: str):
         """Parse and stage a build completely before the live world is changed."""
+        from engine.build_io import BuildReadPolicy, read_build
+
+        result = read_build(
+            filepath,
+            self.world.catalog,
+            BuildReadPolicy(
+                default_bounds=(GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT, 0),
+                bundled_worlds_dir=WORLDS_DIR,
+                derived_cache_dir=DERIVED_WORLD_CACHE_DIR,
+            ),
+        )
+        snapshot = result.snapshot
+        return (
+            snapshot.dimension,
+            (snapshot.width, snapshot.depth, snapshot.height, snapshot.min_y),
+            snapshot.scene_metadata,
+            snapshot,
+            result.skipped_count,
+        )
+
+        # Legacy parser retained temporarily for source-diff review. Runtime
+        # parsing is owned by engine.build_io above.
         import gzip
         cacheDigest = None
         cachePath = None
@@ -13455,10 +13334,6 @@ class BlocFantome:
                 cached = scene_cache.load(cachePath, cacheDigest, BlockType)
                 dimension, bounds, metadata, stagedBlocks, skippedCount = cached
                 metadata = dict(metadata)
-                structurePositions = set(metadata.get("_structure_positions", set()))
-                metadata["_exterior_glass_positions"] = self._findExteriorGlassPositions(
-                    metadata, stagedBlocks, structurePositions
-                )
                 print(f"World cache hit: {os.path.basename(filepath)}")
                 return dimension, bounds, metadata, stagedBlocks, skippedCount
             except (OSError, ValueError, KeyError, IndexError, struct.error):
@@ -13583,21 +13458,28 @@ class BlocFantome:
                     migrated.append((x, y, z + 1, blockType, upperProps, None))
                     occupied.add(upper)
             stagedBlocks.extend(migrated)
+        sceneMetadata = dict(sceneMetadata)
+        sceneMetadata["_structure_positions"] = structurePositions
+        sceneMetadata["_exterior_glass_positions"] = self._findExteriorGlassPositions(
+            sceneMetadata, stagedBlocks, structurePositions
+        )
+        sceneMetadata["_structure_surfaces_by_view"] = self._findStructureSurfacesByView(
+            sceneMetadata, stagedBlocks, structurePositions
+        )
+        sceneMetadata["_surface_positions"] = self._findSurfacePositions(stagedBlocks)
         if cachePath is not None and cacheDigest is not None:
             try:
                 from engine import scene_cache
                 scene_cache.write(
                     cachePath, cacheDigest, dimension, bounds, sceneMetadata,
                     stagedBlocks, structurePositions,
+                    sceneMetadata["_exterior_glass_positions"],
+                    sceneMetadata["_structure_surfaces_by_view"],
+                    sceneMetadata["_surface_positions"],
                 )
                 scene_cache.prune(DERIVED_WORLD_CACHE_DIR)
             except (OSError, ValueError, struct.error) as error:
                 print(f"World cache skipped: {error}")
-        sceneMetadata = dict(sceneMetadata)
-        sceneMetadata["_structure_positions"] = structurePositions
-        sceneMetadata["_exterior_glass_positions"] = self._findExteriorGlassPositions(
-            sceneMetadata, stagedBlocks, structurePositions
-        )
         return dimension, bounds, sceneMetadata, stagedBlocks, skippedCount
 
     @staticmethod
@@ -13641,52 +13523,146 @@ class BlocFantome:
             )
         }
 
+    @staticmethod
+    def _findStructureSurfacesByView(sceneMetadata, stagedBlocks, structurePositions):
+        """Precompute exact structure surfaces once for all camera rotations."""
+        blockTypes = {
+            (x, y, z): blockType
+            for x, y, z, blockType, _props, _liquidState in stagedBlocks
+        }
+        result = {rotation: set() for rotation in range(4)}
+        if not structurePositions:
+            return result
+        if sceneMetadata.get("exterior_shell_view") == "glass":
+            visible = {
+                position for position in structurePositions
+                if any(
+                    neighbor not in structurePositions
+                    for neighbor in (
+                        (position[0] + 1, position[1], position[2]),
+                        (position[0] - 1, position[1], position[2]),
+                        (position[0], position[1] + 1, position[2]),
+                        (position[0], position[1] - 1, position[2]),
+                        (position[0], position[1], position[2] + 1),
+                        (position[0], position[1], position[2] - 1),
+                    )
+                )
+            }
+            return {rotation: visible for rotation in range(4)}
+        sideDirections = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )
+        for x, y, z in structurePositions:
+            position = (x, y, z)
+            if not BlocFantome._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(blockTypes[position])):
+                for visible in result.values():
+                    visible.add(position)
+                continue
+            for rotation, directions in enumerate(sideDirections):
+                if any(
+                    neighbor not in structurePositions
+                    for neighbor in ((x, y, z + 1),) + tuple(
+                        (x + dx, y + dy, z) for dx, dy in directions
+                    )
+                ):
+                    result[rotation].add(position)
+        return result
+
+    @staticmethod
+    def _findSurfacePositions(stagedBlocks):
+        """Build the conservative six-neighbor surface set for cache storage."""
+        positions = {
+            (x, y, z) for x, y, z, _blockType, _props, _liquidState in stagedBlocks
+        }
+        return {
+            position for position in positions
+            if any(
+                neighbor not in positions
+                for neighbor in (
+                    (position[0] + 1, position[1], position[2]),
+                    (position[0] - 1, position[1], position[2]),
+                    (position[0], position[1] + 1, position[2]),
+                    (position[0], position[1] - 1, position[2]),
+                    (position[0], position[1], position[2] + 1),
+                    (position[0], position[1], position[2] - 1),
+                )
+            )
+        }
+
     def _applyStagedBuild(self, dimension: str, bounds, sceneMetadata,
                           stagedBlocks, filepath: str, silent: bool) -> bool:
         if dimension != self.currentDimension:
             self._switchDimension(dimension)
-        width, depth, height, minY = bounds
-        self.world.resize(width, depth, height, min_y=minY, preserve=False)
-        if hasattr(self.world, 'setDimension'):
-            self.world.setDimension(dimension)
-        self.liquidLevelSpriteCache.clear()
+        from engine.world_snapshot import WorldSnapshot
 
-        with self.world.bulkUpdate():
+        width, depth, height, minY = bounds
+        self.liquidLevelSpriteCache.clear()
+        if isinstance(stagedBlocks, WorldSnapshot):
+            snapshot = stagedBlocks
+            blockCount = len(snapshot.blocks)
+        else:
+            blocks = {}
+            properties = {}
+            liquidLevels = {}
+            liquidSources = set()
+            liquidFalling = set()
             for x, y, z, blockType, props, liquidState in stagedBlocks:
-                self.world.setBlock(x, y, z, blockType)
+                pos = (x, y, z)
+                blocks[pos] = blockType
                 if props is not None:
-                    self.world.setBlockProperties(x, y, z, props)
+                    properties[pos] = props
                 if liquidState is not None:
                     level, isSource, isFalling = liquidState
-                    pos = (x, y, z)
-                    self.world.liquidLevels[pos] = level
+                    liquidLevels[pos] = level
                     if isSource:
-                        self.world.liquidSources.add(pos)
-                    else:
-                        self.world.liquidSources.discard(pos)
+                        liquidSources.add(pos)
                     if isFalling:
-                        self.world.liquidFalling.add(pos)
-                    else:
-                        self.world.liquidFalling.discard(pos)
+                        liquidFalling.add(pos)
+            snapshot = WorldSnapshot(
+                width=width,
+                depth=depth,
+                height=height,
+                min_y=minY,
+                dimension=dimension,
+                blocks=blocks,
+                properties=properties,
+                liquid_levels=liquidLevels,
+                liquid_sources=liquidSources,
+                liquid_falling=liquidFalling,
+                scene_metadata=sceneMetadata,
+                structure_positions=set(
+                    (sceneMetadata or {}).get("_structure_positions", ())
+                ),
+                exterior_glass_positions=set(
+                    (sceneMetadata or {}).get("_exterior_glass_positions", ())
+                ),
+                structure_surfaces_by_view=(
+                    (sceneMetadata or {}).get("_structure_surfaces_by_view", {})
+                ),
+                surface_positions=set(
+                    (sceneMetadata or {}).get("_surface_positions", ())
+                ),
+            )
+            blockCount = len(stagedBlocks)
+        self.world.replace(snapshot)
 
         if (sceneMetadata or {}).get("kind") != "world":
             self._normalizeSpecialBlockTopology()
 
         self.currentDimension = dimension
         loadedMetadata = dict(sceneMetadata or {})
-        self.sceneStructurePositions = set(loadedMetadata.pop("_structure_positions", set()))
+        self.sceneStructurePositions = self.world.sceneStructurePositions
         self.sceneExteriorGlassPositions = set(
             loadedMetadata.pop("_exterior_glass_positions", set())
         )
-        if self.sceneStructurePositions:
-            self.sceneStructureBounds = tuple(
-                (min(pos[axis] for pos in self.sceneStructurePositions),
-                 max(pos[axis] for pos in self.sceneStructurePositions))
-                for axis in range(3)
-            )
-        else:
-            self.sceneStructureBounds = None
+        loadedMetadata.pop("_structure_surfaces_by_view", None)
+        loadedMetadata.pop("_surface_positions", None)
+        self.sceneStructureBounds = self.world.sceneStructureBounds
         self.sceneMetadata = loadedMetadata
+        self.world.prepareStructureSurfaceChunks(self.renderer.viewRotation)
         self.sceneTerrainMode = (
             str(self.sceneMetadata.get("default_terrain_view", "transparent"))
             if self.sceneStructurePositions else "all"
@@ -13706,19 +13682,20 @@ class BlocFantome:
             max(getattr(self, "currentViewLayer", minY), minY),
             self.world.max_y_exclusive - 1,
         )
-        self.currentBuildHeight = max(
-            (position[2] for position in self.world.blocks),
-            default=self.world.min_y,
+        self.currentBuildHeight = (
+            self.world.occupiedBounds[1][2]
+            if self.world.occupiedBounds is not None
+            else self.world.min_y
         )
-        if self.sceneStructurePositions:
-            self._fitPositionsToViewport(self.sceneStructurePositions, notify=False)
+        if self.sceneStructureBounds:
+            self._fitBoundsToViewport(self.sceneStructureBounds, notify=False)
         else:
             self._frameCurrentCanvas()
         if not silent:
             self.currentBuildPath = filepath
-            self.tooltipText = f"Opened {len(stagedBlocks)} blocks"
+            self.tooltipText = f"Opened {blockCount} blocks"
             self.tooltipTimer = 2000
-            print(f"Build opened from {filepath} ({len(stagedBlocks)} blocks)")
+            print(f"Build opened from {filepath} ({blockCount} blocks)")
         return True
 
     def _loadBuilding(self, filename: str, silent: bool = False):
@@ -13731,11 +13708,21 @@ class BlocFantome:
                 self.tooltipTimer = 2500
             return False
         try:
-            dimension, bounds, sceneMetadata, stagedBlocks, skippedCount = self._readBuildFile(filepath)
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
             if skippedCount and not silent:
-                print(f"Skipped {skippedCount} invalid block entries while opening {filepath}")
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
             return self._applyStagedBuild(
-                dimension, bounds, sceneMetadata, stagedBlocks, filepath, silent
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
             )
         except (OSError, ValueError, json.JSONDecodeError) as error:
             if not silent:
@@ -14365,20 +14352,18 @@ class BlocFantome:
         self.tooltipTimer = 1500
     
     def _replaceAllBlocks(self, sourceType: BlockType, targetType: BlockType) -> int:
-        """Replace all blocks of sourceType with targetType"""
-        count = 0
-        positions = list(self.world.blocks.keys())
-        
-        for pos in positions:
-            if self.world.blocks[pos] == sourceType:
-                x, y, z = pos
-                # Record for undo
-                self.undoManager.recordPlacement(x, y, z, sourceType, targetType)
-                self.world.setBlock(x, y, z, targetType)
-                count += 1
-        
-        self.lightingDirty = True
-        return count
+        """Replace matching cells as one transactional undo operation."""
+        from engine.undo import BatchCommand, PlaceBlockCommand
+
+        commands = [
+            PlaceBlockCommand(self.world, *pos, targetType)
+            for pos, blockType in tuple(self.world.blocks.items())
+            if blockType == sourceType and blockType != targetType
+        ]
+        if commands:
+            self.undoManager.execute(BatchCommand(commands, "Replace blocks"))
+            self._afterWorldEdit(pos for command in commands for pos in ((command.x, command.y, command.z),))
+        return len(commands)
     
     def _handleMagicWandClick(self):
         """Handle click in magic wand mode - select all connected blocks of same type"""
@@ -14477,20 +14462,23 @@ class BlocFantome:
         """Delete all blocks in magic wand selection"""
         if not self.magicWandSelection:
             return
-        
-        count = 0
-        for x, y, z in self.magicWandSelection:
-            blockType = self.world.getBlock(x, y, z)
-            if blockType != BlockType.AIR:
-                # Record for undo
-                self.undoManager.recordPlacement(x, y, z, blockType, BlockType.AIR)
-                self.world.setBlock(x, y, z, BlockType.AIR)
-                count += 1
+
+        from engine.undo import BatchCommand, RemoveBlockCommand
+
+        commands = [
+            RemoveBlockCommand(self.world, x, y, z)
+            for x, y, z in self.magicWandSelection
+            if self.world.getBlock(x, y, z) != BlockType.AIR
+        ]
+        if commands:
+            self.undoManager.execute(BatchCommand(commands, "Delete magic wand selection"))
+            self._afterWorldEdit(
+                (command.x, command.y, command.z) for command in commands
+            )
+        count = len(commands)
         
         # Clear selection
         self.magicWandSelection.clear()
-        self.lightingDirty = True
-        
         self.tooltipText = f"Deleted {count} blocks"
         self.tooltipTimer = 2000
         self.assetManager.playClickSound()
@@ -14534,8 +14522,9 @@ class BlocFantome:
             return
         
         baseX, baseY, baseZ = self.hoveredCell
-        count = 0
-        
+        from engine.undo import BatchCommand, PlaceBlockCommand
+
+        commands = []
         for (relX, relY, relZ), blockType in self.stampData.items():
             x = baseX + relX
             y = baseY + relY
@@ -14545,13 +14534,14 @@ class BlocFantome:
             if not self.world.isInBounds(x, y, z):
                 continue
             
-            # Record for undo and place
-            oldBlock = self.world.getBlock(x, y, z)
-            self.undoManager.recordPlacement(x, y, z, oldBlock, blockType)
-            self.world.setBlock(x, y, z, blockType)
-            count += 1
-        
-        self.lightingDirty = True
+            commands.append(PlaceBlockCommand(self.world, x, y, z, blockType))
+
+        if commands:
+            self.undoManager.execute(BatchCommand(commands, "Place stamp"))
+            self._afterWorldEdit(
+                (command.x, command.y, command.z) for command in commands
+            )
+        count = len(commands)
         self.tooltipText = f"Stamped {count} blocks"
         self.tooltipTimer = 1000
         self.assetManager.playClickSound()
@@ -16267,21 +16257,24 @@ class BlocFantome:
 
     def _fitWorldToViewport(self, notify: bool = True) -> None:
         """Fit the occupied editable world into the canvas with safe padding."""
-        if not self.world.blocks:
+        if self.world.occupiedBounds is None:
             return
-        self._fitPositionsToViewport(self.world.blocks.keys(), notify=notify)
+        self._fitBoundsToViewport(self.world.occupiedBounds, notify=notify)
 
     def _fitPositionsToViewport(self, positions, notify: bool = True) -> None:
         """Fit an occupied subset while leaving every world cell editable."""
         positions = tuple(positions)
         if not positions:
             return
-        minX = min(pos[0] for pos in positions)
-        maxX = max(pos[0] for pos in positions)
-        minY = min(pos[1] for pos in positions)
-        maxY = max(pos[1] for pos in positions)
-        minZ = min(pos[2] for pos in positions)
-        maxZ = max(pos[2] for pos in positions)
+        bounds = (
+            tuple(min(pos[axis] for pos in positions) for axis in range(3)),
+            tuple(max(pos[axis] for pos in positions) for axis in range(3)),
+        )
+        self._fitBoundsToViewport(bounds, notify=notify)
+
+    def _fitBoundsToViewport(self, bounds, notify: bool = True) -> None:
+        """Fit precomputed inclusive world bounds into the editable viewport."""
+        (minX, minY, minZ), (maxX, maxY, maxZ) = bounds
 
         oldZoom = self.zoomLevel
         oldOffset = (self.renderer.offsetX, self.renderer.offsetY)
@@ -16996,10 +16989,12 @@ class BlocFantome:
             if self.lightningFlash > 0:
                 self.lightningFlash = max(0, self.lightningFlash - 15)
             return
+
+        config = self._getDimensionWeatherConfig()["rain"]
         
-        # Fade in sky darkness (130 for darker stormy effect)
-        if self.skyDarkness < 130:
-            self.skyDarkness = min(130, self.skyDarkness + 1)
+        darknessTarget = config["darkness"]
+        if self.skyDarkness < darknessTarget:
+            self.skyDarkness = min(darknessTarget, self.skyDarkness + 1)
         
         # Fade out lightning flash
         if self.lightningFlash > 0:
@@ -17023,22 +17018,26 @@ class BlocFantome:
         dropSpeed = int(20 * self.rainIntensity)
         for drop in self.rainDrops:
             drop["y"] += drop["speed"] * self.rainIntensity
-            drop["x"] += drop["angle"] * drop["speed"]  # Wind drift
+            drop["phase"] += 0.03
+            curl = math.sin(drop["phase"]) * 0.35 if config["style"] == "embers" else 0
+            drop["x"] += drop["angle"] * drop["speed"] + curl
             
             # If drop goes off screen, reset to top
-            if drop["y"] > WINDOW_HEIGHT or drop["x"] > WINDOW_WIDTH:
+            if drop["y"] > WINDOW_HEIGHT or drop["x"] > WINDOW_WIDTH or drop["x"] < -50:
                 drop["y"] = random.randint(-50, -10)
                 drop["x"] = random.randint(-50, WINDOW_WIDTH)
-                drop["speed"] = random.randint(15, 25)
-                drop["length"] = random.randint(10, 20)
-                drop["angle"] = random.uniform(0.08, 0.15)
+                drop["speed"] = random.uniform(*config["speed"])
+                drop["length"] = random.randint(*config["length"])
+                drop["angle"] = random.uniform(*config["angle"])
+                drop["color"] = random.choice(config["colors"])
         
         # Spawn splashes directly on random blocks (scaled by intensity)
-        self.splashSpawnTimer += dt
-        splashInterval = int(50 / self.rainIntensity)  # More frequent when intense
-        if self.splashSpawnTimer >= splashInterval:
-            self.splashSpawnTimer = 0
-            self._spawnSplashesOnBlocks()
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.splashSpawnTimer += dt
+            splashInterval = int(50 / self.rainIntensity)
+            if self.splashSpawnTimer >= splashInterval:
+                self.splashSpawnTimer = 0
+                self._spawnSplashesOnBlocks()
         
         # Update splashes
         for splash in self.rainSplashes:
@@ -17048,13 +17047,28 @@ class BlocFantome:
         # Lightning timing (visual effect with thunder sound)
         self.thunderTimer += dt
         if self.thunderTimer >= self.nextThunderTime:
-            self._triggerLightning()  # Now triggers lightning WITH thunder
+            if self.currentDimension == DIMENSION_OVERWORLD:
+                self._triggerLightning()
+            else:
+                # Nether heat flare / End void pulse, with no lightning bolt.
+                self.lightningFlash = 45
+                sounds = (
+                    self.assetManager.netherAmbientSounds
+                    if self.currentDimension == DIMENSION_NETHER
+                    else self.assetManager.endermanSounds
+                )
+                if sounds:
+                    self.assetManager.playOneShot(
+                        random.choice(sounds), group="weather",
+                        volume=self.ambientVolume * 0.18,
+                    )
             self.thunderTimer = 0
-            self.nextThunderTime = random.randint(15000, 35000)  # 15-35 seconds between lightning strikes
+            self.nextThunderTime = random.randint(15000, 35000)
         
         # Thunder ambient background (distant rumbles, separate from lightning)
         self.thunderAmbientTimer += dt
-        if self.thunderAmbientTimer >= self.nextThunderAmbientTime:
+        if (self.currentDimension == DIMENSION_OVERWORLD
+                and self.thunderAmbientTimer >= self.nextThunderAmbientTime):
             self._playThunderAmbient()
             self.thunderAmbientTimer = 0
             self.nextThunderAmbientTime = random.randint(8000, 18000)  # 8-18 sec between ambient rumbles
@@ -17066,7 +17080,7 @@ class BlocFantome:
                 self.lightningBolt = []
         
         # Subtle whispers during rain (horror feature)
-        if self.horrorEnabled:
+        if self.currentDimension == DIMENSION_OVERWORLD and self.horrorEnabled:
             self._updateRainWhispers(dt)
     
     def _updateRainWhispers(self, dt: int):
@@ -17120,10 +17134,7 @@ class BlocFantome:
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
         
         # Get all top blocks to choose a target
-        topBlocks = {}
-        for (x, y, z), blockType in self.world.blocks.items():
-            if (x, y) not in topBlocks or z > topBlocks[(x, y)]:
-                topBlocks[(x, y)] = z
+        topBlocks = self.world.heightIndex
         
         if topBlocks:
             # Pick a random block to strike
@@ -17186,10 +17197,7 @@ class BlocFantome:
     def _spawnSplashesOnBlocks(self):
         """Spawn splash effects directly on random blocks in the world"""
         # Find the highest block at each (x, y) position
-        topBlocks = {}  # (x, y) -> z
-        for (x, y, z), blockType in self.world.blocks.items():
-            if (x, y) not in topBlocks or z > topBlocks[(x, y)]:
-                topBlocks[(x, y)] = z
+        topBlocks = self.world.heightIndex
         
         if not topBlocks:
             return
@@ -17230,6 +17238,7 @@ class BlocFantome:
         
         # Calculate panel boundary (don't render rain on UI panel)
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        config = self._getDimensionWeatherConfig()["rain"]
         
         # Draw rain drops with visible blue glow
         for drop in self.rainDrops:
@@ -17242,24 +17251,30 @@ class BlocFantome:
             endX = drop["x"] + int(drop["length"] * angle)
             endY = drop["y"] + drop["length"]
             
-            # Blue glow effect (drawn first, behind the drop)
-            # Glow is more visible when lighting is enabled
-            glowIntensity = 60 if self.lightingEnabled else 40
-            glowWidth = 6 if self.lightingEnabled else 4
-            glowSurf = pygame.Surface((12, int(drop["length"]) + 8), pygame.SRCALPHA)
-            glowColor = (80, 140, 255, glowIntensity)  # Bright blue glow
-            pygame.draw.line(glowSurf, glowColor, (6, 0), (6, int(drop["length"])), glowWidth)
-            self.screen.blit(glowSurf, (int(drop["x"]) - 6, int(drop["y"]) - 4))
-            
-            # Rain streak color (blue-gray)
-            color = (70, 100, 140, 220)
-            pygame.draw.line(
-                self.screen,
-                color,
-                (int(drop["x"]), int(drop["y"])),
-                (int(endX), int(endY)),
-                1
-            )
+            color = drop.get("color", config["colors"][0])
+            if config["style"] == "embers":
+                radius = max(1, drop["length"] // 3)
+                emberSurf = pygame.Surface((radius * 6, radius * 6), pygame.SRCALPHA)
+                center = radius * 3
+                pygame.draw.circle(emberSurf, (*color[:3], 35), (center, center), radius * 3)
+                pygame.draw.circle(emberSurf, color, (center, center), radius)
+                self.screen.blit(emberSurf, (int(drop["x"]) - center, int(drop["y"]) - center))
+            else:
+                if config["style"] == "rain":
+                    glowColor = (80, 140, 255, 60 if self.lightingEnabled else 40)
+                    glowSurf = pygame.Surface((12, int(drop["length"]) + 8), pygame.SRCALPHA)
+                    pygame.draw.line(
+                        glowSurf, glowColor, (6, 0), (6, int(drop["length"])),
+                        6 if self.lightingEnabled else 4,
+                    )
+                    self.screen.blit(glowSurf, (int(drop["x"]) - 6, int(drop["y"]) - 4))
+                elif config["style"] == "void":
+                    trailStart = (int(drop["x"] - drop["length"] * angle), int(drop["y"] - drop["length"]))
+                    pygame.draw.line(self.screen, (*color[:3], 55), trailStart, (int(endX), int(endY)), 3)
+                pygame.draw.line(
+                    self.screen, color,
+                    (int(drop["x"]), int(drop["y"])), (int(endX), int(endY)), 1,
+                )
         
         # Draw splash particles (more pronounced)
         for splash in self.rainSplashes:
@@ -17307,7 +17322,12 @@ class BlocFantome:
         # Draw lightning flash overlay
         if self.lightningFlash > 0:
             flashOverlay = pygame.Surface((WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            flashOverlay.fill((255, 255, 255, self.lightningFlash))
+            flashColor = {
+                DIMENSION_OVERWORLD: (255, 255, 255),
+                DIMENSION_NETHER: (255, 95, 20),
+                DIMENSION_END: (150, 65, 220),
+            }.get(self.currentDimension, (255, 255, 255))
+            flashOverlay.fill((*flashColor, self.lightningFlash))
             self.screen.blit(flashOverlay, (0, 0))
 
     def _render(self) -> None:
@@ -17336,8 +17356,9 @@ class BlocFantome:
         
         # Draw rain darkening overlay (behind world but on background)
         if self.skyDarkness > 0:
+            rainConfig = self._getDimensionWeatherConfig()["rain"]
             darkOverlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            darkOverlay.fill((20, 30, 50, self.skyDarkness))
+            darkOverlay.fill((*rainConfig["overlay"], self.skyDarkness))
             self.screen.blit(darkOverlay, (0, 0))
         
         # Draw grid and blocks
@@ -17661,6 +17682,8 @@ class BlocFantome:
 
     def _visibleBlocksInDrawOrder(self):
         """Return a cached painter order for visible chunks near the camera."""
+        adaptiveMargin = max(192, min(384, round(256 * self.zoomLevel ** 0.5)))
+        self._worldSurfaceMargin = adaptiveMargin
         centerX, centerY = self._cameraWorldCenter()
         chunkSize = self.world.chunkStorage.chunk_size
         actualCenterChunk = (centerX // chunkSize, centerY // chunkSize)
@@ -17692,6 +17715,7 @@ class BlocFantome:
             self.layerViewEnabled,
             self.currentViewLayer if self.layerViewEnabled else None,
             self.sceneTerrainMode,
+            self._worldSurfaceMargin,
         )
         if cacheKey == self._visibleOrderCacheKey:
             return self._visibleOrderCache
@@ -17703,22 +17727,25 @@ class BlocFantome:
             # crossed a zoom threshold.
             if self.sceneTerrainMode != "hidden":
                 for (x, y), z in self.world.heightIndex.items():
-                    blockType = self.world.getBlock(x, y, z)
+                    blockType = self.world.blocks.get((x, y, z), BlockType.AIR)
                     if blockType == BlockType.AIR:
                         continue
                     position = (x, y, z)
                     addedPositions.add(position)
                     blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
-            for x, y, z in self.sceneStructurePositions:
+            structurePositions = (
+                self.world.structureOverviewPositions()
+                if self.zoomLevel <= self.overviewZoomThreshold
+                else self.world.structureSurfacePositions(self.renderer.viewRotation)
+            )
+            for x, y, z in structurePositions:
                 if self.layerViewEnabled and z > self.currentViewLayer:
                     continue
                 position = (x, y, z)
                 if position in addedPositions:
                     continue
-                blockType = self.world.getBlock(x, y, z)
+                blockType = self.world.blocks.get(position, BlockType.AIR)
                 if blockType == BlockType.AIR:
-                    continue
-                if not self._isStructureSurfaceForView(x, y, z, blockType):
                     continue
                 addedPositions.add(position)
                 blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
@@ -17731,16 +17758,16 @@ class BlocFantome:
         # the camera merely crosses a chunk edge. Screen culling still limits
         # what is actually rasterized.
         radius = self.renderDistanceChunks + self._renderChunkHysteresis
-        for (chunkX, chunkY, chunkZ), surfacePositions in self.world.iterSurfaceChunks():
-            if abs(chunkX - centerChunk[0]) > radius or abs(chunkY - centerChunk[1]) > radius:
-                continue
+        for (chunkX, chunkY, chunkZ), surfacePositions in self.world.iterSurfaceChunksInHorizontalRadius(
+            centerX, centerY, radius
+        ):
             if not self._chunkIsOnScreen(chunkX, chunkY, chunkZ, self._worldSurfaceMargin):
                 continue
             for x, y, z in surfacePositions:
-                blockType = self.world.getBlock(x, y, z)
+                position = (x, y, z)
+                blockType = self.world.blocks.get(position, BlockType.AIR)
                 if self.layerViewEnabled and z > self.currentViewLayer:
                     continue
-                position = (x, y, z)
                 if self.sceneTerrainMode == "hidden" and position not in self.sceneStructurePositions:
                     continue
                 if (
@@ -17752,24 +17779,24 @@ class BlocFantome:
                 addedPositions.add(position)
                 blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
         if self.sceneTerrainMode != "all":
-            for x, y, z in self.sceneStructurePositions:
-                position = (x, y, z)
-                if position in addedPositions:
+            for (chunkX, chunkY, chunkZ), structurePositions in (
+                self.world.iterStructureSurfaceChunksInHorizontalRadius(
+                    self.renderer.viewRotation, centerX, centerY, radius
+                )
+            ):
+                if not self._chunkIsOnScreen(chunkX, chunkY, chunkZ, self._worldSurfaceMargin):
                     continue
-                if self.layerViewEnabled and z > self.currentViewLayer:
-                    continue
-                chunkX, chunkY = x // chunkSize, y // chunkSize
-                if abs(chunkX - centerChunk[0]) > radius or abs(chunkY - centerChunk[1]) > radius:
-                    continue
-                if not self._blockIsOnScreen(x, y, z, self._worldSurfaceMargin):
-                    continue
-                blockType = self.world.getBlock(x, y, z)
-                if blockType == BlockType.AIR:
-                    continue
-                if not self._isStructureSurfaceForView(x, y, z, blockType):
-                    continue
-                addedPositions.add(position)
-                blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
+                for x, y, z in structurePositions:
+                    position = (x, y, z)
+                    if position in addedPositions:
+                        continue
+                    if self.layerViewEnabled and z > self.currentViewLayer:
+                        continue
+                    blockType = self.world.blocks.get(position, BlockType.AIR)
+                    if blockType == BlockType.AIR:
+                        continue
+                    addedPositions.add(position)
+                    blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
         blocksToDraw.sort(key=lambda block: (block[0], block[3], block[1], block[2]))
         self._visibleOrderCacheKey = cacheKey
         self._visibleOrderCache = blocksToDraw
@@ -17806,9 +17833,12 @@ class BlocFantome:
             self.sceneTerrainMode != "all"
             and (x, y, z) in self.sceneStructurePositions
         )
+        blocks = self.world.blocks
+        definitions = BLOCK_DEFINITIONS
+        air = BlockType.AIR
         return all(
             (not structureCutaway or pos in self.sceneStructurePositions)
-            and self._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(self.world.getBlock(*pos)))
+            and self._isOpaqueCubeDefinition(definitions.get(blocks.get(pos, air)))
             for pos in neighbors
         )
 
@@ -17893,14 +17923,38 @@ class BlocFantome:
 
         plan = []
         occluded = 0
+        rotation = self.renderer.viewRotation
+        offsetX = self.renderer.offsetX
+        offsetY = self.renderer.offsetY
+        halfTileWidth = self.renderer._tileWHalf
+        halfTileHeight = self.renderer._tileHHalf
+        blockHeight = self.renderer._blockH
+        spriteHalfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
+        spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
+        margin = self._worldSurfaceMargin
+        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        overview = self.zoomLevel <= self.overviewZoomThreshold
         for item in blocksToDraw:
             _, x, y, z, blockType = item
-            if (
-                self.zoomLevel > self.overviewZoomThreshold
-                and not self._blockIsOnScreen(x, y, z, self._worldSurfaceMargin)
-            ):
-                continue
-            if self._isFullyOccluded(x, y, z, blockType):
+            if self.zoomLevel > self.overviewZoomThreshold:
+                if rotation == 0:
+                    rx, ry = x, y
+                elif rotation == 1:
+                    rx, ry = -y, x
+                elif rotation == 2:
+                    rx, ry = -x, -y
+                else:
+                    rx, ry = y, -x
+                screenX = round((rx - ry) * halfTileWidth + offsetX)
+                screenY = round((rx + ry) * halfTileHeight - z * blockHeight + offsetY)
+                if (
+                    screenX + spriteHalfWidth < -margin
+                    or screenX - spriteHalfWidth > viewportRight + margin
+                    or screenY + spriteHeight < -margin
+                    or screenY > WINDOW_HEIGHT + margin
+                ):
+                    continue
+            if not overview and self._isFullyOccluded(x, y, z, blockType):
                 occluded += 1
                 continue
             plan.append(item)
@@ -17995,6 +18049,7 @@ class BlocFantome:
                 pygame.SRCALPHA,
             )
         drawnCount = 0
+        blits = []
         
         # Draw blocks
         for _, x, y, z, blockType in blocksToDraw:
@@ -18086,24 +18141,28 @@ class BlocFantome:
                 drawY = screenY
                 
                 # Apply X-Ray transparency for solid blocks
+                alpha = None
                 if (
                     self.sceneTerrainMode == "transparent"
                     and (x, y, z) not in self.sceneStructurePositions
                 ):
-                    sprite = sprite.copy()
-                    sprite.set_alpha(40)
+                    alpha = 40
                 if self.xrayEnabled and blockType in self.xrayBlocks:
-                    sprite = sprite.copy()
-                    sprite.set_alpha(self.xrayAlpha)
+                    alpha = self.xrayAlpha
+                if alpha is not None:
+                    sprite = self.assetManager.getAlphaSprite(sprite, alpha)
                 
-                targetSurface.blit(
+                blits.append((
                     sprite,
                     (
                         drawX + (self._worldSurfaceMargin if canCacheSurface else 0),
                         drawY + (self._worldSurfaceMargin if canCacheSurface else 0),
                     ),
-                )
+                ))
                 drawnCount += 1
+
+        if blits:
+            targetSurface.blits(blits)
 
         if canCacheSurface:
             self._worldSurfaceCacheKey = surfaceKey
@@ -18569,51 +18628,28 @@ class BlocFantome:
             dimY += 35
             
             # Rain toggle button (with status indicator)
+            weatherConfig = self._getDimensionWeatherConfig()
             rainBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 rainHovered = rainBtnRect.collidepoint(mouseX, mouseY)
-                rainLabel = "Rain: ON" if self.rainEnabled else "Rain: OFF"
-                # Disable button if not in Overworld
-                canRain = self.currentDimension == DIMENSION_OVERWORLD
-                if canRain:
-                    self.assetManager.drawButton(
-                        self.screen, rainBtnRect, rainLabel,
-                        self.smallFont, rainHovered, self.rainEnabled, bgTexture="lapis_block.png"
-                    )
-                else:
-                    # Draw disabled button
-                    self.assetManager.drawButton(
-                        self.screen, rainBtnRect, "Rain (Overworld only)",
-                        self.smallFont, False, False
-                    )
-                    # Darken to show disabled
-                    darkOverlay = pygame.Surface((rainBtnRect.width, rainBtnRect.height), pygame.SRCALPHA)
-                    darkOverlay.fill((0, 0, 0, 100))
-                    self.screen.blit(darkOverlay, rainBtnRect.topleft)
+                rain = weatherConfig["rain"]
+                rainLabel = f"{rain['name']}: {'ON' if self.rainEnabled else 'OFF'}"
+                self.assetManager.drawButton(
+                    self.screen, rainBtnRect, rainLabel,
+                    self.smallFont, rainHovered, self.rainEnabled, bgTexture=rain["texture"]
+                )
             dimY += 35
             
             # Snow toggle button (with status indicator)
             snowBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 snowHovered = snowBtnRect.collidepoint(mouseX, mouseY)
-                snowLabel = "Snow: ON" if self.snowEnabled else "Snow: OFF"
-                # Disable button if not in Overworld
-                canSnow = self.currentDimension == DIMENSION_OVERWORLD
-                if canSnow:
-                    self.assetManager.drawButton(
-                        self.screen, snowBtnRect, snowLabel,
-                        self.smallFont, snowHovered, self.snowEnabled, bgTexture="snow.png"
-                    )
-                else:
-                    # Draw disabled button
-                    self.assetManager.drawButton(
-                        self.screen, snowBtnRect, "Snow (Overworld only)",
-                        self.smallFont, False, False
-                    )
-                    # Darken to show disabled
-                    darkOverlay = pygame.Surface((snowBtnRect.width, snowBtnRect.height), pygame.SRCALPHA)
-                    darkOverlay.fill((0, 0, 0, 100))
-                    self.screen.blit(darkOverlay, snowBtnRect.topleft)
+                snow = weatherConfig["snow"]
+                snowLabel = f"{snow['name']}: {'ON' if self.snowEnabled else 'OFF'}"
+                self.assetManager.drawButton(
+                    self.screen, snowBtnRect, snowLabel,
+                    self.smallFont, snowHovered, self.snowEnabled, bgTexture=snow["texture"]
+                )
             dimY += 35
             
             # Sun/Moon toggle button (with status indicator)

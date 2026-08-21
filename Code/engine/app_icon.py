@@ -20,9 +20,10 @@ def render_app_icon_surface(
     # Rasterize small icons above their destination resolution. This keeps the
     # isometric silhouette and the End Stone mottling visible after Windows
     # scales the taskbar resource.
-    scale = 4 if size <= 48 else 2
+    scale = 8 if size <= 24 else (4 if size <= 48 else 2)
     working_size = size * scale
-    padding = max(2 * scale, round(working_size * 0.09))
+    padding_ratio = 0.14 if size <= 24 else 0.09
+    padding = max(2 * scale, round(working_size * padding_ratio))
     inner = working_size - padding * 2
     inner -= inner % 2
 

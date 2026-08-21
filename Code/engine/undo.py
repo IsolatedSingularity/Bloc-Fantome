@@ -6,6 +6,7 @@ Uses duck typing to avoid import issues with BlockType enum.
 """
 
 from abc import ABC, abstractmethod
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from typing import List, Optional, Any, Tuple
 
@@ -17,16 +18,49 @@ class Command(ABC):
     def execute(self) -> bool:
         """Execute the command. Returns True if successful."""
         pass
-    
+
     @abstractmethod
     def undo(self) -> bool:
         """Undo the command. Returns True if successful."""
         pass
-    
+
     @abstractmethod
     def get_description(self) -> str:
         """Get a human-readable description of the command"""
         pass
+
+
+def _copy_properties(properties: Any) -> Any:
+    if properties is not None and hasattr(properties, "copy"):
+        return properties.copy()
+    return properties
+
+
+def _capture_liquid_state(world: Any, pos: Tuple[int, int, int]) -> Tuple[int, bool, bool]:
+    return (
+        getattr(world, "liquidLevels", {}).get(pos, 0),
+        pos in getattr(world, "liquidSources", ()),
+        pos in getattr(world, "liquidFalling", ()),
+    )
+
+
+def _restore_liquid_state(
+    world: Any,
+    pos: Tuple[int, int, int],
+    state: Tuple[int, bool, bool],
+) -> None:
+    level, source, falling = state
+    levels = getattr(world, "liquidLevels", None)
+    sources = getattr(world, "liquidSources", None)
+    falling_cells = getattr(world, "liquidFalling", None)
+    if levels is None or sources is None or falling_cells is None:
+        return
+    if level:
+        levels[pos] = level
+    else:
+        levels.pop(pos, None)
+    (sources.add if source else sources.discard)(pos)
+    (falling_cells.add if falling else falling_cells.discard)(pos)
 
 
 @dataclass
@@ -41,6 +75,7 @@ class PlaceBlockCommand(Command):
     # State saved for undo
     previous_block: Any = None
     previous_properties: Any = None
+    previous_liquid_state: Tuple[int, bool, bool] = (0, False, False)
     _executed: bool = False
     
     def execute(self) -> bool:
@@ -50,14 +85,18 @@ class PlaceBlockCommand(Command):
         
         # Save previous state for undo
         self.previous_block = self.world.getBlock(self.x, self.y, self.z)
-        self.previous_properties = self.world.getBlockProperties(self.x, self.y, self.z)
-        if self.previous_properties and hasattr(self.previous_properties, 'copy'):
-            self.previous_properties = self.previous_properties.copy()
+        self.previous_properties = _copy_properties(
+            self.world.getBlockProperties(self.x, self.y, self.z)
+        )
+        pos = (self.x, self.y, self.z)
+        self.previous_liquid_state = _capture_liquid_state(self.world, pos)
         
         # Place the new block
         self.world.setBlock(self.x, self.y, self.z, self.block_type)
         if self.properties:
-            self.world.setBlockProperties(self.x, self.y, self.z, self.properties)
+            self.world.setBlockProperties(
+                self.x, self.y, self.z, _copy_properties(self.properties)
+            )
         
         self._executed = True
         return True
@@ -81,6 +120,9 @@ class PlaceBlockCommand(Command):
             self.world.setBlock(self.x, self.y, self.z, self.previous_block)
             if self.previous_properties:
                 self.world.setBlockProperties(self.x, self.y, self.z, self.previous_properties)
+        _restore_liquid_state(
+            self.world, (self.x, self.y, self.z), self.previous_liquid_state
+        )
         
         return True
     
@@ -99,6 +141,7 @@ class RemoveBlockCommand(Command):
     # State saved for undo
     previous_block: Any = None
     previous_properties: Any = None
+    previous_liquid_state: Tuple[int, bool, bool] = (0, False, False)
     _executed: bool = False
     
     def execute(self) -> bool:
@@ -117,9 +160,12 @@ class RemoveBlockCommand(Command):
         if is_air:
             return False  # Nothing to remove
         
-        self.previous_properties = self.world.getBlockProperties(self.x, self.y, self.z)
-        if self.previous_properties and hasattr(self.previous_properties, 'copy'):
-            self.previous_properties = self.previous_properties.copy()
+        self.previous_properties = _copy_properties(
+            self.world.getBlockProperties(self.x, self.y, self.z)
+        )
+        self.previous_liquid_state = _capture_liquid_state(
+            self.world, (self.x, self.y, self.z)
+        )
         
         # Remove the block - create AIR from the same enum class
         air_type = self.previous_block.__class__(0)
@@ -136,6 +182,9 @@ class RemoveBlockCommand(Command):
         self.world.setBlock(self.x, self.y, self.z, self.previous_block)
         if self.previous_properties:
             self.world.setBlockProperties(self.x, self.y, self.z, self.previous_properties)
+        _restore_liquid_state(
+            self.world, (self.x, self.y, self.z), self.previous_liquid_state
+        )
         
         return True
     
@@ -150,6 +199,14 @@ class BatchCommand(Command):
     commands: List[Command] = field(default_factory=list)
     description: str = "Batch operation"
     _executed: bool = False
+
+    def _worlds(self):
+        seen = set()
+        for command in self.commands:
+            world = getattr(command, "world", None)
+            if world is not None and id(world) not in seen:
+                seen.add(id(world))
+                yield world
     
     def add(self, command: Command) -> None:
         """Add a command to the batch"""
@@ -161,9 +218,14 @@ class BatchCommand(Command):
             return False
         
         success = True
-        for cmd in self.commands:
-            if not cmd.execute():
-                success = False
+        with ExitStack() as stack:
+            for world in self._worlds():
+                bulk_update = getattr(world, "bulkUpdate", None)
+                if bulk_update is not None:
+                    stack.enter_context(bulk_update())
+            for cmd in self.commands:
+                if not cmd.execute():
+                    success = False
         
         self._executed = True
         return success
@@ -174,9 +236,14 @@ class BatchCommand(Command):
             return False
         
         success = True
-        for cmd in reversed(self.commands):
-            if not cmd.undo():
-                success = False
+        with ExitStack() as stack:
+            for world in self._worlds():
+                bulk_update = getattr(world, "bulkUpdate", None)
+                if bulk_update is not None:
+                    stack.enter_context(bulk_update())
+            for cmd in reversed(self.commands):
+                if not cmd.undo():
+                    success = False
         
         return success
     

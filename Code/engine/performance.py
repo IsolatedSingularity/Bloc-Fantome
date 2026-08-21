@@ -275,7 +275,7 @@ class SpriteCache:
     Uses OrderedDict to track access order and evict least-used entries.
     """
     
-    def __init__(self, max_size: int = 500):
+    def __init__(self, max_size: int = 500, max_bytes: Optional[int] = None):
         """
         Initialize sprite cache.
         
@@ -283,9 +283,24 @@ class SpriteCache:
             max_size: Maximum number of sprites to cache
         """
         self.max_size = max_size
+        self.max_bytes = max_bytes
         self.cache: OrderedDict[Any, Any] = OrderedDict()
+        self._sizes: Dict[Any, int] = {}
+        self.current_bytes = 0
+        self.peak_bytes = 0
         self.hits = 0
         self.misses = 0
+        self.evictions = 0
+
+    @staticmethod
+    def _surface_bytes(value: Any) -> int:
+        get_size = getattr(value, "get_size", None)
+        if get_size is None:
+            return 0
+        width, height = get_size()
+        get_bytesize = getattr(value, "get_bytesize", None)
+        bytes_per_pixel = get_bytesize() if get_bytesize is not None else 4
+        return width * height * bytes_per_pixel
     
     def get(self, key: Any) -> Optional[Any]:
         """
@@ -314,19 +329,31 @@ class SpriteCache:
             sprite: Sprite to cache
         """
         if key in self.cache:
+            self.current_bytes -= self._sizes.get(key, 0)
             # Update existing and move to end
             self.cache[key] = sprite
             self.cache.move_to_end(key)
         else:
             # Add new entry
             self.cache[key] = sprite
-            # Evict oldest if over capacity
-            while len(self.cache) > self.max_size:
-                self.cache.popitem(last=False)  # Remove oldest (first)
+        size = self._surface_bytes(sprite)
+        self._sizes[key] = size
+        self.current_bytes += size
+        self.peak_bytes = max(self.peak_bytes, self.current_bytes)
+        # Keep both count and byte limits deterministic.
+        while (
+            len(self.cache) > self.max_size
+            or self.max_bytes is not None and self.current_bytes > self.max_bytes
+        ):
+            oldest, _ = self.cache.popitem(last=False)
+            self.current_bytes -= self._sizes.pop(oldest, 0)
+            self.evictions += 1
     
     def invalidate(self, key: Any) -> None:
         """Remove a specific entry from cache."""
-        self.cache.pop(key, None)
+        if key in self.cache:
+            self.cache.pop(key)
+            self.current_bytes -= self._sizes.pop(key, 0)
     
     def invalidate_by_prefix(self, prefix: Any) -> None:
         """
@@ -339,12 +366,17 @@ class SpriteCache:
         keys_to_remove = [k for k in self.cache if k[0] == prefix]
         for key in keys_to_remove:
             del self.cache[key]
+            self.current_bytes -= self._sizes.pop(key, 0)
     
     def clear(self) -> None:
         """Clear the entire cache."""
         self.cache.clear()
+        self._sizes.clear()
+        self.current_bytes = 0
+        self.peak_bytes = 0
         self.hits = 0
         self.misses = 0
+        self.evictions = 0
     
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
@@ -355,8 +387,16 @@ class SpriteCache:
             "max_size": self.max_size,
             "hits": self.hits,
             "misses": self.misses,
-            "hit_rate": hit_rate
+            "hit_rate": hit_rate,
+            "evictions": self.evictions,
+            "current_bytes": self.current_bytes,
+            "peak_bytes": self.peak_bytes,
+            "max_bytes": self.max_bytes,
         }
+
+    def approximate_memory(self) -> int:
+        """Estimate cached pixel storage in bytes for diagnostics."""
+        return self.current_bytes
 
 
 class TextureAtlas:

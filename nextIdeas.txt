@@ -4,12 +4,19 @@ Major
 - Fix all experimental elements.
 - Custom weather in all dimensions!
 - Add other structures: fortress, stronghold, pyramid, etc.
-- Flyweight pattern and/or programming language change optimization.
+- Programming language change optimization!?
+
+
+Unknown
+
+- Performance is a lot better but it shits the bed visually and has a lag spike when zooming in and out. if too zoomed out parts of the map dont render and it has like some lag vignette effect when zooming in and out.
+- You closed the structures for the lighting and weather tutorial terrains, undo that
+- Use old end building or a better part of the end city for tutorial
 
 
 Minor
 
-- Start menu entry with proper icon. Like we have the large icon for block fantome on desktop looks good but medium and small it looks more like a block that was squished, a rectangular prism rather than a cube. when i put block fantome exe and pin to start just to test the resolution of the end stone (rectangular prism) is super low res. For this though call it Miette. It should be identical to BlocFantome.exe (perhaps most lightweight is based on updated Bloc Fantome exe this updates the Miette start icon)
+- Start menu entry with proper icon
 - UI and performance pass.
 
 

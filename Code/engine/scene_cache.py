@@ -18,9 +18,9 @@ from engine.block_state import (
 )
 
 
-MAGIC = b"BFC2"
+MAGIC = b"BFC5"
 HEADER = struct.Struct("<4s32sI")
-RECORD = struct.Struct("<hhhHBBBBBBB")
+RECORD = struct.Struct("<hhhHHBBBBBB")
 STAIR_SHAPES = tuple(StairShape)
 
 
@@ -52,7 +52,11 @@ def load(path: str, expected_digest: bytes, block_type):
         raise ValueError("Invalid world cache record count")
 
     staged = []
+    block_types_by_value = {member.value: member for member in block_type}
     structure_positions = set()
+    exterior_glass_positions = set()
+    structure_surfaces_by_view = {rotation: set() for rotation in range(4)}
+    surface_positions = set()
     for values in RECORD.iter_unpack(payload):
         x, y, z, type_value, flags, facing, slab, stair, door_half, hinge, liquid = values
         props = None
@@ -68,30 +72,67 @@ def load(path: str, expected_digest: bytes, block_type):
         liquid_state = None
         if flags & 4:
             liquid_state = (max(1, min(8, liquid)), bool(flags & 8), bool(flags & 16))
-        staged.append((x, y, z, block_type(type_value), props, liquid_state))
+        try:
+            parsed_block_type = block_types_by_value[type_value]
+        except KeyError as error:
+            raise ValueError("Invalid block type in world cache") from error
+        staged.append((x, y, z, parsed_block_type, props, liquid_state))
         if flags & 2:
             structure_positions.add((x, y, z))
+        if flags & 64:
+            exterior_glass_positions.add((x, y, z))
+        for rotation in range(4):
+            if flags & (128 << rotation):
+                structure_surfaces_by_view[rotation].add((x, y, z))
+        if flags & 2048:
+            surface_positions.add((x, y, z))
     scene = dict(metadata.get("scene", {}))
     scene["_structure_positions"] = structure_positions
+    scene["_exterior_glass_positions"] = exterior_glass_positions
+    scene["_structure_surfaces_by_view"] = structure_surfaces_by_view
+    scene["_surface_positions"] = surface_positions
     bounds = tuple(metadata["bounds"])
+    if len(bounds) != 4:
+        raise ValueError("Invalid world cache bounds")
+    width, depth, height, min_y = bounds
+    if not (1 <= width <= 256 and 1 <= depth <= 256 and 1 <= height <= 512):
+        raise ValueError("Invalid world cache dimensions")
+    if any(
+        not (0 <= x < width and 0 <= y < depth and min_y <= z < min_y + height)
+        for x, y, z, *_ in staged
+    ):
+        raise ValueError("World cache record is outside declared bounds")
     return metadata["dimension"], bounds, scene, staged, 0
 
 
 def write(path: str, digest: bytes, dimension: str, bounds, scene,
-          staged: Iterable, structure_positions) -> None:
+          staged: Iterable, structure_positions,
+          exterior_glass_positions=(), structure_surfaces_by_view=None,
+          surface_positions=()) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     staged = tuple(staged)
+    serialized_scene = {
+        key: value for key, value in scene.items() if not key.startswith("_")
+    }
     metadata = json.dumps(
-        {"dimension": dimension, "bounds": list(bounds), "scene": dict(scene)},
+        {"dimension": dimension, "bounds": list(bounds), "scene": serialized_scene},
         separators=(",", ":"),
     ).encode("utf-8")
     temp_path = path + ".tmp"
+    structure_surfaces_by_view = structure_surfaces_by_view or {}
     with open(temp_path, "wb") as handle:
         handle.write(HEADER.pack(MAGIC, digest, len(metadata)))
         handle.write(metadata)
         handle.write(struct.pack("<I", len(staged)))
         for x, y, z, block, props, liquid_state in staged:
             flags = 2 if (x, y, z) in structure_positions else 0
+            if (x, y, z) in exterior_glass_positions:
+                flags |= 64
+            for rotation in range(4):
+                if (x, y, z) in structure_surfaces_by_view.get(rotation, ()):
+                    flags |= 128 << rotation
+            if (x, y, z) in surface_positions:
+                flags |= 2048
             facing = slab = stair = door_half = hinge = liquid = 0
             if props is not None:
                 flags |= 1
