@@ -50,6 +50,8 @@ minecraft_builder.log
 
 # Personal/private folders
 abyssalAnchor/
+Game Reference/
+Jenova/
 
 # Minecraft Assets (user must extract these from their own installation)
 # Run setup_assets.py to populate these folders
@@ -76,6 +78,7 @@ desktop.ini
 
 # Distribution
 *.exe
+!BlocFantome.exe
 !Assets/Icons/*.ico
 
 Jenova/
@@ -94,6 +97,8 @@ audit-*.md
 AGENTS.md
 Jenova/
 
+# TEMP FILES
+NEXT.txt
 
 # AI & Problematic Content (Standardized)
 CLAUDE.md

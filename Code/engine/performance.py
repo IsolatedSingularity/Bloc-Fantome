@@ -12,10 +12,14 @@ Usage:
     from engine.performance import DirtyRegionTracker, ChunkStorage, SpriteCache
 """
 
-from collections import OrderedDict
-from typing import Dict, Set, Tuple, Optional, List, Any
-import pygame
+from __future__ import annotations
+
+from collections import OrderedDict, deque
+from typing import Dict, Iterable, Iterator, Set, Tuple, Optional, List, Any, TYPE_CHECKING
 import math
+
+if TYPE_CHECKING:
+    import pygame
 
 
 class DirtyRegionTracker:
@@ -29,7 +33,7 @@ class DirtyRegionTracker:
     Regions are cube-shaped chunks of configurable size.
     """
     
-    def __init__(self, chunk_size: int = 8):
+    def __init__(self, chunk_size: int = 16):
         """
         Initialize the dirty region tracker.
         
@@ -51,6 +55,14 @@ class DirtyRegionTracker:
         chunk_y = y // self.chunk_size
         chunk_z = z // self.chunk_size
         self.dirty_chunks.add((chunk_x, chunk_y, chunk_z))
+
+    def mark_block_and_neighbors(self, x: int, y: int, z: int) -> None:
+        """Mark a changed cell and every chunk whose exposed faces can change."""
+        for dx, dy, dz in (
+            (0, 0, 0), (1, 0, 0), (-1, 0, 0),
+            (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1),
+        ):
+            self.mark_dirty(x + dx, y + dy, z + dz)
     
     def mark_region_dirty(self, x1: int, y1: int, z1: int, 
                           x2: int, y2: int, z2: int) -> None:
@@ -113,7 +125,7 @@ class ChunkStorage:
     Each chunk is a dictionary mapping local coordinates to block data.
     """
     
-    def __init__(self, chunk_size: int = 8):
+    def __init__(self, chunk_size: int = 16):
         """
         Initialize chunk storage.
         
@@ -217,6 +229,34 @@ class ChunkStorage:
     def get_occupied_chunks(self) -> List[Tuple[int, int, int]]:
         """Get list of all chunks that contain blocks."""
         return list(self.chunks.keys())
+
+    def iter_blocks(self) -> Iterator[Tuple[Tuple[int, int, int], Any]]:
+        """Iterate stored blocks as world-coordinate/data pairs without copying."""
+        for (cx, cy, cz), chunk_data in self.chunks.items():
+            base_x = cx * self.chunk_size
+            base_y = cy * self.chunk_size
+            base_z = cz * self.chunk_size
+            for (lx, ly, lz), data in chunk_data.items():
+                yield (base_x + lx, base_y + ly, base_z + lz), data
+
+    def iter_horizontal_radius(
+        self, center_x: int, center_y: int, chunk_radius: int
+    ) -> Iterator[Tuple[Tuple[int, int, int], Any]]:
+        """Iterate only chunks inside a horizontal render-distance square."""
+        center_cx = center_x // self.chunk_size
+        center_cy = center_y // self.chunk_size
+        radius = max(0, int(chunk_radius))
+        for (cx, cy, cz), chunk_data in self.chunks.items():
+            if abs(cx - center_cx) > radius or abs(cy - center_cy) > radius:
+                continue
+            base_x = cx * self.chunk_size
+            base_y = cy * self.chunk_size
+            base_z = cz * self.chunk_size
+            for (lx, ly, lz), data in chunk_data.items():
+                yield (base_x + lx, base_y + ly, base_z + lz), data
+
+    def chunk_key(self, x: int, y: int, z: int) -> Tuple[int, int, int]:
+        return self._get_chunk_key(x, y, z)
     
     def get_block_count(self) -> int:
         """Get total number of blocks stored."""
@@ -243,11 +283,11 @@ class SpriteCache:
             max_size: Maximum number of sprites to cache
         """
         self.max_size = max_size
-        self.cache: OrderedDict[Any, pygame.Surface] = OrderedDict()
+        self.cache: OrderedDict[Any, Any] = OrderedDict()
         self.hits = 0
         self.misses = 0
     
-    def get(self, key: Any) -> Optional[pygame.Surface]:
+    def get(self, key: Any) -> Optional[Any]:
         """
         Get a cached sprite.
         
@@ -265,7 +305,7 @@ class SpriteCache:
         self.misses += 1
         return None
     
-    def set(self, key: Any, sprite: pygame.Surface) -> None:
+    def set(self, key: Any, sprite: Any) -> None:
         """
         Store a sprite in cache.
         
@@ -353,6 +393,7 @@ class TextureAtlas:
         Returns:
             The combined atlas surface
         """
+        import pygame
         if not textures:
             return pygame.Surface((1, 1))
         
@@ -406,6 +447,7 @@ class TextureAtlas:
         Returns:
             pygame.Rect for the tile, or None if not found
         """
+        import pygame
         if name not in self.tile_positions:
             return None
         x, y = self.tile_positions[name]
@@ -458,6 +500,7 @@ class LazyTextureLoader:
             Loaded texture or None if load failed
         """
         import os
+        import pygame
         
         # Return cached if available
         if name in self.loaded_textures:
@@ -570,8 +613,8 @@ class PerformanceMonitor:
             window_size: Number of frames to average over
         """
         self.window_size = window_size
-        self.frame_times: List[float] = []
-        self.section_times: Dict[str, List[float]] = {}
+        self.frame_times = deque(maxlen=window_size)
+        self.section_times: Dict[str, deque] = {}
         self._section_start: Dict[str, float] = {}
     
     def frame_start(self) -> None:
@@ -584,8 +627,6 @@ class PerformanceMonitor:
         import time
         elapsed = time.perf_counter() - self._frame_start
         self.frame_times.append(elapsed * 1000)  # Convert to ms
-        if len(self.frame_times) > self.window_size:
-            self.frame_times.pop(0)
     
     def section_start(self, name: str) -> None:
         """Start timing a named section."""
@@ -600,10 +641,8 @@ class PerformanceMonitor:
         elapsed = time.perf_counter() - self._section_start[name]
         
         if name not in self.section_times:
-            self.section_times[name] = []
+            self.section_times[name] = deque(maxlen=self.window_size)
         self.section_times[name].append(elapsed * 1000)
-        if len(self.section_times[name]) > self.window_size:
-            self.section_times[name].pop(0)
     
     def get_fps(self) -> float:
         """Get average FPS over the window."""

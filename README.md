@@ -39,9 +39,9 @@ Building tools include adjustable brush sizes (1×1, 2×2, 3×3) for rapid const
 
 *...and some features that found their way in on their own.*
 
-### 100+ Block Types
+### 200+ Block Types
 
-Over 100 authentic Minecraft blocks organized into expandable categories. Water, lava, fire, and portals feature real-time animations that bring your builds to life.
+More than 200 authentic Minecraft blocks are organized into expandable categories. Water, lava, fire, and portals feature real-time animations that bring your builds to life.
 
 ![Block Showcase](References/block_showcase.png)
 
@@ -75,6 +75,28 @@ if right_click_on_door:
 ### Pre-made Structures
 
 Instantly place complete structures: houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
+
+### Worlds Beyond the Frame
+
+The **Worlds** gallery opens the canvas beyond a single building plot. These are 256×256 editable scenes backed by chunk-indexed storage and a four-chunk render distance, so the editor only prepares the part of a massive build that can matter to the current view. You can pan across the scene, place and remove blocks, and save the result like any other build.
+
+![Bridge Bastion World](References/worlds_bastion.png)
+
+The bundled gallery includes all four Java 1.16.1 bastion types, a Java 1.16.1 End City, five Java 1.16.1 village biomes, and separately labelled Java 1.21 Ancient City and Trial Chamber assemblies. Their structures are assembled from the canonical NBT, processor lists, feature elements, and jigsaw pools used by the structure viewer in [Minecraft-Generation](https://github.com/IsolatedSingularity/Minecraft-Generation). Technical markers stay hidden, while the structure palette remains available as ordinary placeable blocks in the editor. The surrounding habitats are deterministic showcase terrain, not claims of seed-identical natural generation. When exact generated blocks matter, **Import Java World** reads a four-chunk-radius slice directly from an official Java save's Anvil region files.
+
+The render path is built for these larger scenes. Sparse 16×16×16 chunks, conservative chunk culling, hidden-cube rejection, LRU sprite caches, and a movable cached viewport keep stable and scrolling views responsive without changing the editor into a static structure viewer. The **−** and **+** controls shrink or extend all three canvas axes in 16-block steps. Hovering either control previews the new dimensions and warns how many occupied cells a shrink would remove.
+
+*The horizon moved when you were not looking.*
+
+### Terrain Slices
+
+Open **Features** and choose **Terrain Slice** to replace the canvas with a broad, editable cross-section of the active dimension. Overworld slices form changing heights, banks, dips, rivers, and climate-influenced surfaces. Nether slices move between crimson, warped, soul sand valley, and basalt habitats. End slices break apart into islands and void.
+
+![Overworld Terrain Slice](References/terrain_slice.png)
+
+Terrain Slice is a source-informed artistic generator for immediate building space. It is deliberately labeled separately from Java parity. For the actual output of Minecraft's world generator, import the chunks from a Java world instead.
+
+*There is always more land beyond the edge of the map.*
 
 <br>
 
@@ -295,7 +317,7 @@ def render_world():
 
 ### Sparse World Representation
 
-The world state is a partial function $\mathcal{W}: \mathbb{Z}^3 \rightharpoonup \mathcal{B}$ where $\mathcal{B}$ is the finite set of block types. The domain $\text{dom}(\mathcal{W}) \subset \mathbb{Z}^3$ contains only occupied positions. This **sparse dictionary storage** ensures $\mathcal{O}(|\text{dom}(\mathcal{W})|)$ memory for placed blocks rather than $\mathcal{O}(|V|)$ for the bounding volume $V$.
+The world state is a partial function $\mathcal{W}: \mathbb{Z}^3 \rightharpoonup \mathcal{B}$ where $\mathcal{B}$ is the finite set of block types. The domain $\text{dom}(\mathcal{W}) \subset \mathbb{Z}^3$ contains only occupied positions. This **sparse chunk storage** keeps occupied cells indexed in 16×16×16 regions. Memory remains $\mathcal{O}(|\text{dom}(\mathcal{W})|)$ rather than $\mathcal{O}(|V|)$ for the bounding volume $V$, while render-distance queries avoid scanning the entire build.
 
 Block operations define a group action on world states:
 
@@ -308,7 +330,8 @@ The undo/redo system maintains a history stack $\mathcal{H} = (\mathcal{W}_0, \m
 ```python
 class World:
     def __init__(self, width, depth, height):
-        self.blocks = {}        # (x, y, z) → BlockType
+        self.blocks = {}        # Compatibility view of occupied cells
+        self.chunkStorage = ChunkStorage(chunk_size=16)
         self.properties = {}    # Special block states (doors, stairs, slabs)
         self.liquidLevels = {}  # Liquid level tracking (1-8)
 ```
@@ -324,7 +347,7 @@ $$
 \end{cases}
 $$
 
-where $N_h(\mathbf{r})$ is the horizontal 4-neighborhood. Water updates every $\Delta t_w = 400\text{ms}$, while lava uses $\Delta t_l = 6 \Delta t_w = 2400\text{ms}$.
+where $N_h(\mathbf{r})$ is the horizontal 4-neighborhood. Water updates every $\Delta t_w = 250\text{ms}$. Lava updates every $1500\text{ms}$ outside the Nether and every $500\text{ms}$ inside it, matching the Java 1.16.1 scheduling ratio of 5 ticks for water, 30 ticks for ordinary lava, and 10 ticks for Nether lava.
 
 ### Light Propagation
 
@@ -360,8 +383,8 @@ where $\lVert\cdot\rVert_1$ is the Manhattan distance. Multiple sources combine 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
-pip install pygame
+# 1. Install the locked runtime dependencies
+python -m pip install -r requirements.txt
 
 # 2. Setup assets (requires Minecraft 1.21.1+ installed)
 cd Code

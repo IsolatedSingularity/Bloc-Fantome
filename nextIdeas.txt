@@ -1,0 +1,18 @@
+Major
+
+- Biome selection and generation for all dimensions (with previews in right submenu)
+- Fix all experimental elements.
+- Custom weather in all dimensions!
+- Add other structures: fortress, stronghold, pyramid, etc.
+- Flyweight pattern and/or programming language change optimization.
+
+
+Minor
+
+- Start menu entry with proper icon. Like we have the large icon for block fantome on desktop looks good but medium and small it looks more like a block that was squished, a rectangular prism rather than a cube. when i put block fantome exe and pin to start just to test the resolution of the end stone (rectangular prism) is super low res. For this though call it Miette. It should be identical to BlocFantome.exe (perhaps most lightweight is based on updated Bloc Fantome exe this updates the Miette start icon)
+- UI and performance pass.
+
+
+Maybe
+
+- "actually do the minimal path here and share with me the script download bundle. do i have to extract for 1.16.1 again since i missed like mobs and maybe sounds and also doa  full scrape of 1.26? because i wana be able to load 1.16.1 terrain as well as new 1.26 and all its info. we did it for 1.16 but in my viewer now im missing the ability to load trial chambers or ancient cities bc i dont have the deobsfuacted extracted contents. do i combine the new files with my Game Reference or will we change it a lot? i have some apps utilizing info from Game Reference so not too much i hopes"

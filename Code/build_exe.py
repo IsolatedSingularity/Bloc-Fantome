@@ -18,25 +18,58 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 MAIN_SCRIPT = os.path.join(SCRIPT_DIR, "blocFantome.py")
 ICON_PATH = os.path.join(PROJECT_ROOT, "Assets", "Icons", "End_Stone.ico")
+ICON_GENERATOR = os.path.join(SCRIPT_DIR, "generate_icon.py")
+STRUCTURES_DIR = os.path.join(SCRIPT_DIR, "saves")
+WORLDS_DIR = os.path.join(SCRIPT_DIR, "worlds")
 BUILD_DIR = os.path.join(SCRIPT_DIR, "build")
 DIST_DIR = PROJECT_ROOT  # Output directly to project root
 WORK_DIR = os.path.join(BUILD_DIR, "work")
+TK_RUNTIME_HOOK = os.path.join(SCRIPT_DIR, "pyi_tk_runtime.py")
+VERSION_FILE = os.path.join(BUILD_DIR, "version_info.txt")
 
 # Version info
-VERSION = "1.1.0"
+VERSION = "2.2.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantome"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
 
-def build(debug: bool = False):
+
+def write_version_resource() -> None:
+    """Create the Windows version resource consumed by PyInstaller."""
+    major, minor, patch = (int(part) for part in VERSION.split("."))
+    content = f"""VSVersionInfo(
+  ffi=FixedFileInfo(filevers=({major}, {minor}, {patch}, 0), prodvers=({major}, {minor}, {patch}, 0),
+    mask=0x3f, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0, date=(0, 0)),
+  kids=[
+    StringFileInfo([StringTable('040904B0', [
+      StringStruct('CompanyName', '{COMPANY}'),
+      StringStruct('FileDescription', '{PRODUCT}'),
+      StringStruct('FileVersion', '{VERSION}'),
+      StringStruct('InternalName', 'BlocFantome'),
+      StringStruct('LegalCopyright', '{COPYRIGHT}'),
+      StringStruct('OriginalFilename', 'BlocFantome.exe'),
+      StringStruct('ProductName', '{PRODUCT}'),
+      StringStruct('ProductVersion', '{VERSION}')])]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ])
+"""
+    with open(VERSION_FILE, "w", encoding="utf-8") as handle:
+        handle.write(content)
+
+def build(debug: bool = False, diagnostic: bool = False):
     print("=" * 60)
     print(f"Building Bloc Fantome Executable v{VERSION}")
     print("=" * 60)
     
+    # Keep the desktop/taskbar resource synchronized with the runtime icon.
+    subprocess.run([sys.executable, ICON_GENERATOR], cwd=SCRIPT_DIR, check=True)
+
     # Create build directory if it doesn't exist
     os.makedirs(BUILD_DIR, exist_ok=True)
+    write_version_resource()
     
     # PyInstaller command - use python -m PyInstaller to ensure correct environment
+    executable_name = "BlocFantome-Diagnostic" if diagnostic else "BlocFantome"
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",                    # Single .exe file
@@ -44,27 +77,84 @@ def build(debug: bool = False):
         f"--distpath={DIST_DIR}",       # Output directory for the exe
         f"--workpath={WORK_DIR}",       # Temp build files
         f"--specpath={BUILD_DIR}",      # Spec file location
-        "--name=BlocFantome",           # Name of the executable
+        f"--name={executable_name}",    # Name of the executable
+        f"--version-file={VERSION_FILE}",
         "--clean",                      # Clean cache before building
         # Hidden imports that PyInstaller may miss
         "--hidden-import=pickle",
         "--hidden-import=multiprocessing",
+        "--hidden-import=tkinter",
+        "--hidden-import=tkinter.filedialog",
+        "--hidden-import=tkinter.messagebox",
+        "--hidden-import=tkinter.simpledialog",
+        "--hidden-import=engine.anvil",
+        f"--runtime-hook={TK_RUNTIME_HOOK}",
         # Exclude truly unused modules for smaller exe
         # NOTE: Be careful! Many modules have hidden dependencies
         # - email, http, html are needed by urllib.request
         # - xml may be needed by various parsers
-        "--exclude-module=tkinter",
         "--exclude-module=unittest",
         "--exclude-module=test",
         "--exclude-module=pydoc",
         "--exclude-module=doctest",
     ]
+
+    # Some Windows Python installations can import tkinter but PyInstaller's
+    # probe cannot initialize Tcl in the build account. Bundle the known-good
+    # runtime explicitly so frozen Open, Save As, and Java import dialogs do
+    # not silently disappear.
+    pythonRoot = sys.base_prefix
+    tkFiles = (
+        (os.path.join(pythonRoot, "Lib", "tkinter"), "tkinter", "data"),
+        (os.path.join(pythonRoot, "tcl", "tcl8.6"), "_tcl_data", "data"),
+        (os.path.join(pythonRoot, "tcl", "tk8.6"), "_tk_data", "data"),
+        (os.path.join(pythonRoot, "DLLs", "_tkinter.pyd"), ".", "binary"),
+        (os.path.join(pythonRoot, "DLLs", "tcl86t.dll"), ".", "binary"),
+        (os.path.join(pythonRoot, "DLLs", "tk86t.dll"), ".", "binary"),
+    )
+    for sourcePath, destination, kind in tkFiles:
+        if not os.path.exists(sourcePath):
+            raise FileNotFoundError(f"Required Tk runtime path is missing: {sourcePath}")
+        option = "--add-binary" if kind == "binary" else "--add-data"
+        cmd.append(f"{option}={sourcePath}{os.pathsep}{destination}")
     
     # Add windowed mode only for release builds
-    if not debug:
+    if not debug and not diagnostic:
         cmd.append("--windowed")  # No console window
     else:
         cmd.append("--console")  # Keep console for debugging
+
+    # Curated JSON builds are read-only application data used by the tutorial
+    # and the cursor-placeable Structures tab.
+    for structure_name in (
+        "bastion_bridge_edge",
+        "bastion_remnant_no_lava",
+        "bastion_remnant_with_lava",
+        "end_city_tower",
+        "ruined_portal_accurate",
+        "warped_forest_accurate",
+        "warped_forest",
+    ):
+        source_path = os.path.join(STRUCTURES_DIR, f"{structure_name}.json")
+        cmd.append(f"--add-data={source_path}{os.pathsep}structures")
+
+    for world_name in (
+        "bastion_treasure_1161",
+        "bastion_bridge_1161",
+        "bastion_hoglin_stable_1161",
+        "bastion_housing_units_1161",
+        "basalt_deltas_1161",
+        "end_city_1161",
+        "ancient_city_121",
+        "trial_chamber_121",
+        "village_plains_1161",
+        "village_desert_1161",
+        "village_savanna_1161",
+        "village_taiga_1161",
+        "village_snowy_1161",
+    ):
+        source_path = os.path.join(WORLDS_DIR, f"{world_name}.json.gz")
+        cmd.append(f"--add-data={source_path}{os.pathsep}worlds")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)
@@ -79,7 +169,7 @@ def build(debug: bool = False):
     result = subprocess.run(cmd, cwd=SCRIPT_DIR)
     
     if result.returncode == 0:
-        exe_path = os.path.join(DIST_DIR, "BlocFantome.exe")
+        exe_path = os.path.join(DIST_DIR, f"{executable_name}.exe")
         print("\n" + "=" * 60)
         print("BUILD SUCCESSFUL!")
         print("=" * 60)
@@ -104,11 +194,15 @@ def build(debug: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build Minecraft Builder executable")
+    parser = argparse.ArgumentParser(description="Build Bloc Fantome executable")
     parser.add_argument("--debug", action="store_true", help="Build with console for debugging")
+    parser.add_argument(
+        "--diagnostic", action="store_true",
+        help="Build BlocFantome-Diagnostic.exe with console audio diagnostics",
+    )
     args = parser.parse_args()
     
-    return build(debug=args.debug)
+    return build(debug=args.debug, diagnostic=args.diagnostic)
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ Features:
 - Zoom support
 """
 
-from typing import Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Default tile dimensions - can be overridden
 TILE_WIDTH = 64
@@ -52,21 +52,22 @@ class IsometricRenderer:
         self.zoomLevel = 1.0
         self.viewRotation = 0  # 0, 1, 2, 3 for 4 isometric views
         # Cached zoom-scaled tile dimensions
-        self._tileW = TILE_WIDTH
-        self._tileH = TILE_HEIGHT
-        self._blockH = BLOCK_HEIGHT
-        self._tileWHalf = TILE_WIDTH // 2
-        self._tileHHalf = TILE_HEIGHT // 2
+        self._tileW = float(TILE_WIDTH)
+        self._tileH = float(TILE_HEIGHT)
+        self._blockH = float(BLOCK_HEIGHT)
+        self._tileWHalf = TILE_WIDTH / 2.0
+        self._tileHHalf = TILE_HEIGHT / 2.0
     
     def setZoom(self, zoomLevel: float):
-        """Set the zoom level (0.5 to 2.0)"""
-        self.zoomLevel = zoomLevel
-        # Update cached dimensions
-        self._tileW = int(TILE_WIDTH * zoomLevel)
-        self._tileH = int(TILE_HEIGHT * zoomLevel)
-        self._blockH = int(BLOCK_HEIGHT * zoomLevel)
-        self._tileWHalf = self._tileW // 2
-        self._tileHHalf = self._tileH // 2
+        """Set zoom without quantizing the projection at overview scales."""
+        self.zoomLevel = max(0.01, float(zoomLevel))
+        # Keeping these as floats matters below 25%. Integer dimensions made
+        # the half-height become zero and caused blocks to jump or collapse.
+        self._tileW = TILE_WIDTH * self.zoomLevel
+        self._tileH = TILE_HEIGHT * self.zoomLevel
+        self._blockH = BLOCK_HEIGHT * self.zoomLevel
+        self._tileWHalf = self._tileW / 2.0
+        self._tileHHalf = self._tileH / 2.0
     
     def rotateView(self, direction: int = 1):
         """
@@ -129,7 +130,7 @@ class IsometricRenderer:
         # Use cached zoom-scaled dimensions for performance
         screenX = (rx - ry) * self._tileWHalf + self.offsetX
         screenY = (rx + ry) * self._tileHHalf - z * self._blockH + self.offsetY
-        return (screenX, screenY)
+        return (round(screenX), round(screenY))
     
     def screenToWorld(self, screenX: int, screenY: int, targetZ: int = 0) -> Tuple[int, int]:
         """
@@ -160,19 +161,84 @@ class IsometricRenderer:
         
         return (worldX, worldY)
     
-    def setOffset(self, offsetX: int, offsetY: int):
+    def setOffset(self, offsetX: float, offsetY: float):
         """Update the screen offset"""
         self.offsetX = offsetX
         self.offsetY = offsetY
     
-    def getScaledBlockHeight(self) -> int:
+    def getScaledBlockHeight(self) -> float:
         """Get the current zoom-scaled block height"""
         return self._blockH
     
-    def getScaledTileWidth(self) -> int:
+    def getScaledTileWidth(self) -> float:
         """Get the current zoom-scaled tile width"""
         return self._tileW
     
-    def getScaledTileHeight(self) -> int:
+    def getScaledTileHeight(self) -> float:
         """Get the current zoom-scaled tile height"""
         return self._tileH
+
+    def depthKey(self, x: int, y: int, z: int) -> int:
+        """Return the exact painter-order key used by rendering and picking."""
+        if self.viewRotation == 0:
+            return x + y + z
+        if self.viewRotation == 1:
+            return -y + x + z
+        if self.viewRotation == 2:
+            return -x - y + z
+        return y - x + z
+
+    def getBlockFacePolygons(self, x: int, y: int, z: int) -> Dict[str, List[Tuple[int, int]]]:
+        """Return zoom-correct polygons for the three visible cube faces."""
+        screenX, screenY = self.worldToScreen(x, y, z)
+        halfW = self._tileW / 2.0
+        halfH = self._tileH / 2.0
+        tileH = self._tileH
+        blockH = self._blockH
+        point = lambda px, py: (round(px), round(py))
+        return {
+            "top": [
+                point(screenX, screenY),
+                point(screenX + halfW, screenY + halfH),
+                point(screenX, screenY + tileH),
+                point(screenX - halfW, screenY + halfH),
+            ],
+            "left": [
+                point(screenX - halfW, screenY + halfH),
+                point(screenX, screenY + tileH),
+                point(screenX, screenY + tileH + blockH),
+                point(screenX - halfW, screenY + halfH + blockH),
+            ],
+            "right": [
+                point(screenX, screenY + tileH),
+                point(screenX + halfW, screenY + halfH),
+                point(screenX + halfW, screenY + halfH + blockH),
+                point(screenX, screenY + tileH + blockH),
+            ],
+        }
+
+    @staticmethod
+    def _pointInConvexPolygon(point: Tuple[int, int], polygon: List[Tuple[int, int]], tolerance: int = 1) -> bool:
+        """Return True for points inside or on the edge of a convex polygon."""
+        px, py = point
+        sign = 0
+        for index, (x1, y1) in enumerate(polygon):
+            x2, y2 = polygon[(index + 1) % len(polygon)]
+            cross = (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1)
+            if abs(cross) <= tolerance:
+                continue
+            currentSign = 1 if cross > 0 else -1
+            if sign and currentSign != sign:
+                return False
+            sign = currentSign
+        return True
+
+    def detectBlockFace(self, mouseX: int, mouseY: int, x: int, y: int, z: int) -> Optional[str]:
+        """Pick a visible face using the same scaled geometry as rendering."""
+        polygons = self.getBlockFacePolygons(x, y, z)
+        tolerance = 0 if self.zoomLevel < 0.2 else max(1, int(self.zoomLevel * 2))
+        # Top wins shared edges, matching the visible top surface.
+        for face in ("top", "left", "right"):
+            if self._pointInConvexPolygon((mouseX, mouseY), polygons[face], tolerance):
+                return face
+        return None

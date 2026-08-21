@@ -13,13 +13,13 @@ import pygame
 from typing import Optional, Tuple
 
 # Splash screen configuration
-SPLASH_ICON_SIZE = 128  # Smaller, sharper block
+SPLASH_ICON_SIZE = 288  # Large connected cube, rendered from the source texture
 SPLASH_DISPLAY_FRAMES = 120   # 2 seconds at 60fps
 SPLASH_FADE_FRAMES = 60       # 1 second fade
 SPLASH_FPS = 60
 
 # Colors  
-SPLASH_BG_COLOR = (0, 0, 0)  # Black background
+SPLASH_BG_COLOR = (5, 5, 4)
 END_STONE_COLOR = (219, 222, 158)
 END_STONE_BORDER = (180, 183, 130)
 
@@ -32,7 +32,7 @@ class SplashScreen:
     - Proper textured isometric block using actual end_stone.png
     - Independent texture loading (no AssetManager dependency)
     - Smooth fade transition
-    - Black background with centered icon
+    - Dim tiled End Stone background with a centered, seamless cube
     """
     
     def __init__(self, screen: pygame.Surface, clock: pygame.time.Clock, 
@@ -58,6 +58,7 @@ class SplashScreen:
         
         # Load resources
         self.texture = self._load_texture()
+        self.background_tile = self._create_background_tile()
         self.icon = self._create_textured_block()
         self.title_font = self._load_title_font()
     
@@ -116,7 +117,7 @@ class SplashScreen:
         # Ultimate fallback
         return pygame.font.Font(None, 56)
     
-    def _create_textured_block(self) -> pygame.Surface:
+    def _legacy_create_textured_block(self) -> pygame.Surface:
         """
         Create a crisp isometric block sprite with proper texture mapping.
         Uses nearest-neighbor scaling for that pixelated Minecraft look.
@@ -247,6 +248,44 @@ class SplashScreen:
         
         return surface
     
+    def _create_background_tile(self) -> pygame.Surface:
+        """Create the dim repeating End Stone texture used behind the logo."""
+        tile = pygame.Surface((64, 64))
+        if self.texture:
+            tile.blit(pygame.transform.scale(self.texture, (64, 64)), (0, 0))
+        else:
+            tile.fill(END_STONE_COLOR)
+        darkness = pygame.Surface(tile.get_size(), pygame.SRCALPHA)
+        darkness.fill((0, 0, 0, 224))
+        tile.blit(darkness, (0, 0))
+        return tile
+
+    def _draw_background(self, target: pygame.Surface) -> None:
+        """Tile the background without per-frame surface allocation."""
+        for y in range(0, target.get_height(), self.background_tile.get_height()):
+            for x in range(0, target.get_width(), self.background_tile.get_width()):
+                target.blit(self.background_tile, (x, y))
+
+    def _create_textured_block(self) -> pygame.Surface:
+        """Render one seamless full-cube model from the End Stone texture."""
+        from engine.model_renderer import BlockModelRenderer
+
+        texture = self.texture
+        if texture is None:
+            texture = pygame.Surface((16, 16), pygame.SRCALPHA)
+            texture.fill((*END_STONE_COLOR, 255))
+        renderer = BlockModelRenderer(
+            SPLASH_ICON_SIZE,
+            SPLASH_ICON_SIZE // 2,
+            SPLASH_ICON_SIZE // 2,
+        )
+        return renderer.render_boxes(
+            ((0, 0, 0, 16, 16, 16),),
+            texture,
+            texture,
+            texture,
+        )
+
     def _create_fallback_icon(self) -> pygame.Surface:
         """Create a simple colored block as fallback."""
         icon = pygame.Surface((SPLASH_ICON_SIZE, SPLASH_ICON_SIZE), pygame.SRCALPHA)
@@ -284,7 +323,7 @@ class SplashScreen:
             except:
                 pass
         
-        # Display phase - solid black background with icon
+        # Display phase - dim tiled background with the model icon
         for frame in range(SPLASH_DISPLAY_FRAMES):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -293,7 +332,7 @@ class SplashScreen:
                     # Skip splash on input
                     return
             
-            self.screen.fill(SPLASH_BG_COLOR)
+            self._draw_background(self.screen)
             self.screen.blit(icon, icon_rect)
             self.screen.blit(title_text, title_rect)
             
@@ -304,7 +343,7 @@ class SplashScreen:
         if game_frame is None:
             # Create blank game frame
             game_frame = pygame.Surface((self.window_width, self.window_height))
-            game_frame.fill(SPLASH_BG_COLOR)
+            self._draw_background(game_frame)
         
         splash_frame = self.screen.copy()
         

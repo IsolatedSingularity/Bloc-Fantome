@@ -23,13 +23,17 @@ import json
 import urllib.request
 import zipfile
 import shutil
+import struct
 from typing import Dict, List, Tuple, Optional, Any, Set
 from dataclasses import dataclass
 from enum import Enum
 import random
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
+from engine.app_icon import render_app_icon_surface
 
 # Import horror system module
 from horror import HorrorManager
@@ -38,14 +42,22 @@ from horror import HorrorManager
 if sys.platform == 'win32':
     try:
         import ctypes
-        myappid = 'blocfantome.builder.1.0'
+        # Bump when the embedded icon changes so Windows does not reuse the
+        # taskbar identity and cached glyph from an older one-file build.
+        myappid = 'blocfantome.builder.2.2'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
 
+# A 4096-sample signed-16 stereo buffer prioritizes uninterrupted OST playback
+# on ordinary Windows audio devices.  The release backend decodes one track at
+# a time, so this is mainly headroom for effects and device scheduling jitter.
+AUDIO_BUFFER_SIZE = max(2048, int(os.environ.get("BLOC_FANTOME_AUDIO_BUFFER", "4096")))
+pygame.mixer.pre_init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 # Initialize pygame
 pygame.init()
-pygame.mixer.init()
+if pygame.mixer.get_init() is None:
+    pygame.mixer.init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 pygame.mixer.set_num_channels(32)  # Increase for ambient, rain, horror, block sounds
 
 # ============================================================================
@@ -95,9 +107,10 @@ RAIN_INTENSITY_MAX = 1.5
 THUNDER_MIN_DELAY = 8000      # Min ms between thunder
 THUNDER_MAX_DELAY = 25000     # Max ms between thunder
 
-# Liquid flow timing (milliseconds)
-WATER_FLOW_DELAY = 400        # Water flows every 400ms
-LAVA_FLOW_DELAY = 2400        # Lava flows every 2400ms (6x slower than water, like Minecraft)
+# Minecraft 1.16.1 schedules water at 5 ticks and lava at 10 ticks in the
+# Nether or 30 ticks elsewhere. One game tick is 50 ms.
+WATER_FLOW_DELAY = 250
+LAVA_FLOW_DELAY = 1500
 
 
 # ============================================================================
@@ -329,10 +342,12 @@ BG_TILE_SIZE = 64
 if getattr(sys, 'frozen', False):
     # Running as compiled executable
     BASE_DIR = os.path.dirname(sys.executable)
+    BUNDLED_DATA_DIR = getattr(sys, '_MEIPASS', BASE_DIR)
     ASSETS_DIR = os.path.join(BASE_DIR, "Assets")
 else:
     # Running as script
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BUNDLED_DATA_DIR = BASE_DIR
     ASSETS_DIR = os.path.join(BASE_DIR, "..", "Assets")
 TEXTURES_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "blocks")
 ENTITY_DIR = os.path.join(ASSETS_DIR, "Texture Hub", "entity")
@@ -346,8 +361,13 @@ MUSIC_DIR_END = os.path.join(SOUNDS_DIR, "music", "game", "end")
 ICONS_DIR = os.path.join(ASSETS_DIR, "Icons")
 FONTS_DIR = os.path.join(ASSETS_DIR, "Fonts")
 SAVES_DIR = os.path.join(BASE_DIR, "saves")  # Saves folder next to exe or in Code folder
+BUILTIN_STRUCTURES_DIR = os.path.join(BUNDLED_DATA_DIR, "structures" if getattr(sys, 'frozen', False) else "saves")
+WORLDS_DIR = os.path.join(BUNDLED_DATA_DIR, "worlds")
 CUSTOM_MUSIC_DIR = os.path.join(SAVES_DIR, "custom_music")  # User-added music folder
 APP_CONFIG_FILE = os.path.join(BASE_DIR, ".app_config.json")  # App preferences file
+DERIVED_WORLD_CACHE_DIR = os.path.join(
+    os.environ.get("LOCALAPPDATA", BASE_DIR), "BlocFantome", "Cache", "worlds"
+)
 
 # Dimension constants
 DIMENSION_OVERWORLD = "overworld"
@@ -585,6 +605,18 @@ class BlockType(Enum):
     RESPAWN_ANCHOR = 357
     LODESTONE = 358
     TARGET = 359
+    # Deep Dark / Ancient City palette (Java 1.21 provider)
+    DEEPSLATE = 360
+    COBBLED_DEEPSLATE = 361
+    POLISHED_DEEPSLATE = 362
+    DEEPSLATE_BRICKS = 363
+    CRACKED_DEEPSLATE_BRICKS = 364
+    DEEPSLATE_TILES = 365
+    CRACKED_DEEPSLATE_TILES = 366
+    CHISELED_DEEPSLATE = 367
+    REINFORCED_DEEPSLATE = 368
+    SCULK_CATALYST = 369
+    SCULK_SHRIEKER = 370
     # Cold blocks
     SNOW = 140
     ICE = 141
@@ -621,6 +653,104 @@ class BlockType(Enum):
     FIRE = 207  # Animated fire
     SOUL_FIRE = 208  # Animated soul fire
     MATRIX = 209  # Animated Matrix falling code effect
+    # Source-backed structure palette and model variants
+    TUFF = 400
+    POLISHED_TUFF = 401
+    TUFF_BRICKS = 402
+    CHISELED_TUFF = 403
+    CHISELED_TUFF_BRICKS = 404
+    DIRT_PATH = 405
+    FARMLAND = 406
+    WHEAT = 407
+    SMOOTH_SANDSTONE = 408
+    CUT_SANDSTONE = 409
+    POWDER_SNOW = 410
+    GLASS_PANE = 411
+    LADDER = 412
+    CHAIN = 413
+    LANTERN = 414
+    SOUL_LANTERN = 415
+    REDSTONE_LAMP = 416
+    VAULT = 417
+    DECORATED_POT = 418
+    SPRUCE_STAIRS = 420
+    ACACIA_STAIRS = 421
+    PURPUR_STAIRS = 422
+    DEEPSLATE_BRICK_STAIRS = 423
+    DEEPSLATE_TILE_STAIRS = 424
+    COBBLED_DEEPSLATE_STAIRS = 425
+    POLISHED_DEEPSLATE_STAIRS = 426
+    BLACKSTONE_STAIRS = 427
+    POLISHED_BLACKSTONE_BRICK_STAIRS = 428
+    SPRUCE_SLAB = 430
+    ACACIA_SLAB = 431
+    PURPUR_SLAB = 432
+    DEEPSLATE_BRICK_SLAB = 433
+    DEEPSLATE_TILE_SLAB = 434
+    COBBLED_DEEPSLATE_SLAB = 435
+    POLISHED_DEEPSLATE_SLAB = 436
+    BLACKSTONE_SLAB = 437
+    POLISHED_BLACKSTONE_BRICK_SLAB = 438
+    SPRUCE_DOOR = 440
+    ACACIA_DOOR = 441
+    JUNGLE_DOOR = 442
+    CHORUS_PLANT = 450
+    CHORUS_FLOWER = 451
+    CRIMSON_FUNGUS = 452
+    WARPED_FUNGUS = 453
+    NETHER_SPROUTS = 454
+    TWISTING_VINES = 455
+    WEEPING_VINES = 456
+    SMOOTH_SANDSTONE_SLAB = 460
+    SANDSTONE_SLAB = 461
+    SMOOTH_SANDSTONE_STAIRS = 462
+    SANDSTONE_STAIRS = 463
+    SMOOTH_STONE_SLAB = 464
+    POLISHED_TUFF_SLAB = 465
+    SMOOTH_QUARTZ_SLAB = 466
+    GRANITE_STAIRS = 467
+    OXIDIZED_CUT_COPPER_STAIRS = 468
+    CUT_COPPER_SLAB = 469
+    POLISHED_DEEPSLATE_WALL = 470
+    DEEPSLATE_TILE_WALL = 471
+    COBBLESTONE_WALL = 472
+    SANDSTONE_WALL = 473
+    DEEPSLATE_BRICK_WALL = 474
+    BLACKSTONE_WALL = 475
+    DIORITE_WALL = 476
+    GRANITE_WALL = 477
+    SPRUCE_FENCE = 480
+    ACACIA_FENCE = 481
+    OAK_FENCE = 482
+    DARK_OAK_FENCE = 483
+    JUNGLE_FENCE = 484
+    OAK_FENCE_GATE = 485
+    SPRUCE_TRAPDOOR = 490
+    OAK_TRAPDOOR = 491
+    OXIDIZED_COPPER_TRAPDOOR = 492
+    COPPER_GRATE = 500
+    OXIDIZED_COPPER_GRATE = 501
+    COPPER_BULB = 502
+    EXPOSED_COPPER_BULB = 503
+    WEATHERED_COPPER_BULB = 504
+    OXIDIZED_COPPER_BULB = 505
+    CANDLE = 510
+    WHITE_CANDLE = 511
+    RED_CANDLE = 512
+    WALL_TORCH = 513
+    WHITE_BED = 520
+    YELLOW_BED = 521
+    GREEN_BED = 522
+    RED_BED = 523
+    LIME_BED = 524
+    CYAN_BED = 525
+    BLUE_BED = 526
+    PURPLE_BED = 527
+    ORANGE_BED = 528
+    BROWN_BED = 529
+    BROWN_WALL_BANNER = 530
+    MAGENTA_WALL_BANNER = 531
+    REDSTONE_WALL_TORCH = 532
 
 
 @dataclass
@@ -642,39 +772,17 @@ class BlockDefinition:
     isPortal: bool = False  # Whether block is an animated portal
     lightLevel: int = 0  # Light emission level (0-15, like Minecraft)
     lightColor: Tuple[int, int, int] = (255, 200, 150)  # Light color RGB (warm orange default)
+    modelKind: str = None  # Cached box model for fences, walls, trapdoors, plants, etc.
 
 
-class Facing(Enum):
-    """Cardinal directions for block facing"""
-    NORTH = 0  # -Y direction (towards top-left in isometric)
-    EAST = 1   # +X direction (towards top-right in isometric)
-    SOUTH = 2  # +Y direction (towards bottom-right in isometric)
-    WEST = 3   # -X direction (towards bottom-left in isometric)
-
-
-class SlabPosition(Enum):
-    """Position of slab within block space"""
-    BOTTOM = 0
-    TOP = 1
-
-
-@dataclass
-class BlockProperties:
-    """
-    Properties for special blocks that need additional state.
-    Used for doors (open/closed, hinge), slabs (top/bottom), stairs (facing).
-    """
-    facing: Facing = Facing.SOUTH  # Direction the block faces
-    isOpen: bool = False  # For doors: whether door is open
-    slabPosition: SlabPosition = SlabPosition.BOTTOM  # For slabs: top or bottom half
-    
-    def copy(self) -> 'BlockProperties':
-        """Create a copy of this properties object"""
-        return BlockProperties(
-            facing=self.facing,
-            isOpen=self.isOpen,
-            slabPosition=self.slabPosition
-        )
+from engine.block_state import (
+    BlockProperties,
+    DoorHalf,
+    DoorHinge,
+    Facing,
+    SlabPosition,
+    StairShape,
+)
     
     
 @dataclass
@@ -910,6 +1018,116 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.RESPAWN_ANCHOR: BlockDefinition("Respawn Anchor", "respawn_anchor_top_off.png", "respawn_anchor_side0.png", "respawn_anchor_bottom.png"),
     BlockType.LODESTONE: BlockDefinition("Lodestone", "lodestone_top.png", "lodestone_side.png", "lodestone_top.png"),
     BlockType.TARGET: BlockDefinition("Target", "target_top.png", "target_side.png", "target_top.png"),
+    # Deep Dark / Ancient City
+    BlockType.DEEPSLATE: BlockDefinition("Deepslate", "deepslate_top.png", "deepslate.png", "deepslate_top.png"),
+    BlockType.COBBLED_DEEPSLATE: BlockDefinition("Cobbled Deepslate", "cobbled_deepslate.png", "cobbled_deepslate.png", "cobbled_deepslate.png"),
+    BlockType.POLISHED_DEEPSLATE: BlockDefinition("Polished Deepslate", "polished_deepslate.png", "polished_deepslate.png", "polished_deepslate.png"),
+    BlockType.DEEPSLATE_BRICKS: BlockDefinition("Deepslate Bricks", "deepslate_bricks.png", "deepslate_bricks.png", "deepslate_bricks.png"),
+    BlockType.CRACKED_DEEPSLATE_BRICKS: BlockDefinition("Cracked Deepslate Bricks", "cracked_deepslate_bricks.png", "cracked_deepslate_bricks.png", "cracked_deepslate_bricks.png"),
+    BlockType.DEEPSLATE_TILES: BlockDefinition("Deepslate Tiles", "deepslate_tiles.png", "deepslate_tiles.png", "deepslate_tiles.png"),
+    BlockType.CRACKED_DEEPSLATE_TILES: BlockDefinition("Cracked Deepslate Tiles", "cracked_deepslate_tiles.png", "cracked_deepslate_tiles.png", "cracked_deepslate_tiles.png"),
+    BlockType.CHISELED_DEEPSLATE: BlockDefinition("Chiseled Deepslate", "chiseled_deepslate.png", "chiseled_deepslate.png", "chiseled_deepslate.png"),
+    BlockType.REINFORCED_DEEPSLATE: BlockDefinition("Reinforced Deepslate", "reinforced_deepslate_top.png", "reinforced_deepslate_side.png", "reinforced_deepslate_bottom.png"),
+    BlockType.SCULK_CATALYST: BlockDefinition("Sculk Catalyst", "sculk_catalyst_top.png", "sculk_catalyst_side.png", "sculk_catalyst_bottom.png", lightLevel=6, lightColor=(50, 180, 180)),
+    BlockType.SCULK_SHRIEKER: BlockDefinition("Sculk Shrieker", "sculk_shrieker_top.png", "sculk_shrieker_side.png", "sculk_shrieker_bottom.png"),
+    # Trial Chamber and village materials retained from their source palettes
+    BlockType.TUFF: BlockDefinition("Tuff", "tuff.png", "tuff.png", "tuff.png"),
+    BlockType.POLISHED_TUFF: BlockDefinition("Polished Tuff", "polished_tuff.png", "polished_tuff.png", "polished_tuff.png"),
+    BlockType.TUFF_BRICKS: BlockDefinition("Tuff Bricks", "tuff_bricks.png", "tuff_bricks.png", "tuff_bricks.png"),
+    BlockType.CHISELED_TUFF: BlockDefinition("Chiseled Tuff", "chiseled_tuff_top.png", "chiseled_tuff.png", "chiseled_tuff_top.png"),
+    BlockType.CHISELED_TUFF_BRICKS: BlockDefinition("Chiseled Tuff Bricks", "chiseled_tuff_bricks_top.png", "chiseled_tuff_bricks.png", "chiseled_tuff_bricks_top.png"),
+    BlockType.DIRT_PATH: BlockDefinition("Dirt Path", "dirt_path_top.png", "dirt_path_side.png", "dirt.png"),
+    BlockType.FARMLAND: BlockDefinition("Farmland", "farmland_moist.png", "dirt.png", "dirt.png"),
+    BlockType.WHEAT: BlockDefinition("Wheat", "wheat_stage7.png", "wheat_stage7.png", "wheat_stage7.png", transparent=True, modelKind="plant"),
+    BlockType.SMOOTH_SANDSTONE: BlockDefinition("Smooth Sandstone", "sandstone_top.png", "sandstone_top.png", "sandstone_top.png"),
+    BlockType.CUT_SANDSTONE: BlockDefinition("Cut Sandstone", "sandstone_top.png", "cut_sandstone.png", "sandstone_top.png"),
+    BlockType.POWDER_SNOW: BlockDefinition("Powder Snow", "powder_snow.png", "powder_snow.png", "powder_snow.png"),
+    BlockType.GLASS_PANE: BlockDefinition("Glass Pane", "glass_pane_top.png", "glass.png", "glass_pane_top.png", transparent=True, modelKind="pane"),
+    BlockType.LADDER: BlockDefinition("Ladder", "ladder.png", "ladder.png", "ladder.png", transparent=True, modelKind="pane"),
+    BlockType.CHAIN: BlockDefinition("Chain", "chain.png", "chain.png", "chain.png", transparent=True, modelKind="plant"),
+    BlockType.LANTERN: BlockDefinition("Lantern", "lantern.png", "lantern.png", "lantern.png", transparent=True, lightLevel=15, modelKind="bulb"),
+    BlockType.SOUL_LANTERN: BlockDefinition("Soul Lantern", "soul_lantern.png", "soul_lantern.png", "soul_lantern.png", transparent=True, lightLevel=10, lightColor=(90, 220, 255), modelKind="bulb"),
+    BlockType.REDSTONE_LAMP: BlockDefinition("Redstone Lamp", "redstone_lamp_on.png", "redstone_lamp_on.png", "redstone_lamp_on.png", lightLevel=15),
+    BlockType.VAULT: BlockDefinition("Vault", "vault_top.png", "vault_side_off.png", "vault_bottom.png", textureFront="vault_front_off.png", transparent=True),
+    BlockType.DECORATED_POT: BlockDefinition("Decorated Pot", "terracotta.png", "terracotta.png", "terracotta.png"),
+    BlockType.SPRUCE_STAIRS: BlockDefinition("Spruce Stairs", "spruce_planks.png", "spruce_planks.png", "spruce_planks.png", isStair=True),
+    BlockType.ACACIA_STAIRS: BlockDefinition("Acacia Stairs", "acacia_planks.png", "acacia_planks.png", "acacia_planks.png", isStair=True),
+    BlockType.PURPUR_STAIRS: BlockDefinition("Purpur Stairs", "purpur_block.png", "purpur_block.png", "purpur_block.png", isStair=True),
+    BlockType.DEEPSLATE_BRICK_STAIRS: BlockDefinition("Deepslate Brick Stairs", "deepslate_bricks.png", "deepslate_bricks.png", "deepslate_bricks.png", isStair=True),
+    BlockType.DEEPSLATE_TILE_STAIRS: BlockDefinition("Deepslate Tile Stairs", "deepslate_tiles.png", "deepslate_tiles.png", "deepslate_tiles.png", isStair=True),
+    BlockType.COBBLED_DEEPSLATE_STAIRS: BlockDefinition("Cobbled Deepslate Stairs", "cobbled_deepslate.png", "cobbled_deepslate.png", "cobbled_deepslate.png", isStair=True),
+    BlockType.POLISHED_DEEPSLATE_STAIRS: BlockDefinition("Polished Deepslate Stairs", "polished_deepslate.png", "polished_deepslate.png", "polished_deepslate.png", isStair=True),
+    BlockType.BLACKSTONE_STAIRS: BlockDefinition("Blackstone Stairs", "blackstone_top.png", "blackstone.png", "blackstone_top.png", isStair=True),
+    BlockType.POLISHED_BLACKSTONE_BRICK_STAIRS: BlockDefinition("Polished Blackstone Brick Stairs", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png", isStair=True),
+    BlockType.SPRUCE_SLAB: BlockDefinition("Spruce Slab", "spruce_planks.png", "spruce_planks.png", "spruce_planks.png", isSlab=True),
+    BlockType.ACACIA_SLAB: BlockDefinition("Acacia Slab", "acacia_planks.png", "acacia_planks.png", "acacia_planks.png", isSlab=True),
+    BlockType.PURPUR_SLAB: BlockDefinition("Purpur Slab", "purpur_block.png", "purpur_block.png", "purpur_block.png", isSlab=True),
+    BlockType.DEEPSLATE_BRICK_SLAB: BlockDefinition("Deepslate Brick Slab", "deepslate_bricks.png", "deepslate_bricks.png", "deepslate_bricks.png", isSlab=True),
+    BlockType.DEEPSLATE_TILE_SLAB: BlockDefinition("Deepslate Tile Slab", "deepslate_tiles.png", "deepslate_tiles.png", "deepslate_tiles.png", isSlab=True),
+    BlockType.COBBLED_DEEPSLATE_SLAB: BlockDefinition("Cobbled Deepslate Slab", "cobbled_deepslate.png", "cobbled_deepslate.png", "cobbled_deepslate.png", isSlab=True),
+    BlockType.POLISHED_DEEPSLATE_SLAB: BlockDefinition("Polished Deepslate Slab", "polished_deepslate.png", "polished_deepslate.png", "polished_deepslate.png", isSlab=True),
+    BlockType.BLACKSTONE_SLAB: BlockDefinition("Blackstone Slab", "blackstone_top.png", "blackstone.png", "blackstone_top.png", isSlab=True),
+    BlockType.POLISHED_BLACKSTONE_BRICK_SLAB: BlockDefinition("Polished Blackstone Brick Slab", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png", "polished_blackstone_bricks.png", isSlab=True),
+    BlockType.SPRUCE_DOOR: BlockDefinition("Spruce Door", "spruce_door_top.png", "spruce_door_bottom.png", "spruce_door_bottom.png", textureFront="spruce_door_bottom.png", isThin=True, isDoor=True),
+    BlockType.ACACIA_DOOR: BlockDefinition("Acacia Door", "acacia_door_top.png", "acacia_door_bottom.png", "acacia_door_bottom.png", textureFront="acacia_door_bottom.png", isThin=True, isDoor=True),
+    BlockType.JUNGLE_DOOR: BlockDefinition("Jungle Door", "jungle_door_top.png", "jungle_door_bottom.png", "jungle_door_bottom.png", textureFront="jungle_door_bottom.png", isThin=True, isDoor=True),
+    BlockType.CHORUS_PLANT: BlockDefinition("Chorus Plant", "chorus_plant.png", "chorus_plant.png", "chorus_plant.png", transparent=True, modelKind="plant"),
+    BlockType.CHORUS_FLOWER: BlockDefinition("Chorus Flower", "chorus_flower.png", "chorus_flower.png", "chorus_flower.png", transparent=True, modelKind="plant"),
+    BlockType.CRIMSON_FUNGUS: BlockDefinition("Crimson Fungus", "crimson_fungus.png", "crimson_fungus.png", "crimson_fungus.png", transparent=True, modelKind="plant"),
+    BlockType.WARPED_FUNGUS: BlockDefinition("Warped Fungus", "warped_fungus.png", "warped_fungus.png", "warped_fungus.png", transparent=True, modelKind="plant"),
+    BlockType.NETHER_SPROUTS: BlockDefinition("Nether Sprouts", "nether_sprouts.png", "nether_sprouts.png", "nether_sprouts.png", transparent=True, modelKind="plant"),
+    BlockType.TWISTING_VINES: BlockDefinition("Twisting Vines", "twisting_vines.png", "twisting_vines.png", "twisting_vines.png", transparent=True, modelKind="plant"),
+    BlockType.WEEPING_VINES: BlockDefinition("Weeping Vines", "weeping_vines.png", "weeping_vines.png", "weeping_vines.png", transparent=True, modelKind="plant"),
+    BlockType.SMOOTH_SANDSTONE_SLAB: BlockDefinition("Smooth Sandstone Slab", "sandstone_top.png", "sandstone_top.png", "sandstone_top.png", isSlab=True),
+    BlockType.SANDSTONE_SLAB: BlockDefinition("Sandstone Slab", "sandstone_top.png", "sandstone.png", "sandstone_bottom.png", isSlab=True),
+    BlockType.SMOOTH_SANDSTONE_STAIRS: BlockDefinition("Smooth Sandstone Stairs", "sandstone_top.png", "sandstone_top.png", "sandstone_top.png", isStair=True),
+    BlockType.SANDSTONE_STAIRS: BlockDefinition("Sandstone Stairs", "sandstone_top.png", "sandstone.png", "sandstone_bottom.png", isStair=True),
+    BlockType.SMOOTH_STONE_SLAB: BlockDefinition("Smooth Stone Slab", "smooth_stone.png", "smooth_stone_slab_side.png", "smooth_stone.png", isSlab=True),
+    BlockType.POLISHED_TUFF_SLAB: BlockDefinition("Polished Tuff Slab", "polished_tuff.png", "polished_tuff.png", "polished_tuff.png", isSlab=True),
+    BlockType.SMOOTH_QUARTZ_SLAB: BlockDefinition("Smooth Quartz Slab", "quartz_block_bottom.png", "quartz_block_bottom.png", "quartz_block_bottom.png", isSlab=True),
+    BlockType.GRANITE_STAIRS: BlockDefinition("Granite Stairs", "granite.png", "granite.png", "granite.png", isStair=True),
+    BlockType.OXIDIZED_CUT_COPPER_STAIRS: BlockDefinition("Oxidized Cut Copper Stairs", "oxidized_cut_copper.png", "oxidized_cut_copper.png", "oxidized_cut_copper.png", isStair=True),
+    BlockType.CUT_COPPER_SLAB: BlockDefinition("Cut Copper Slab", "cut_copper.png", "cut_copper.png", "cut_copper.png", isSlab=True),
+    BlockType.POLISHED_DEEPSLATE_WALL: BlockDefinition("Polished Deepslate Wall", "polished_deepslate.png", "polished_deepslate.png", "polished_deepslate.png", modelKind="wall"),
+    BlockType.DEEPSLATE_TILE_WALL: BlockDefinition("Deepslate Tile Wall", "deepslate_tiles.png", "deepslate_tiles.png", "deepslate_tiles.png", modelKind="wall"),
+    BlockType.COBBLESTONE_WALL: BlockDefinition("Cobblestone Wall", "cobblestone.png", "cobblestone.png", "cobblestone.png", modelKind="wall"),
+    BlockType.SANDSTONE_WALL: BlockDefinition("Sandstone Wall", "sandstone_top.png", "sandstone.png", "sandstone_bottom.png", modelKind="wall"),
+    BlockType.DEEPSLATE_BRICK_WALL: BlockDefinition("Deepslate Brick Wall", "deepslate_bricks.png", "deepslate_bricks.png", "deepslate_bricks.png", modelKind="wall"),
+    BlockType.BLACKSTONE_WALL: BlockDefinition("Blackstone Wall", "blackstone_top.png", "blackstone.png", "blackstone_top.png", modelKind="wall"),
+    BlockType.DIORITE_WALL: BlockDefinition("Diorite Wall", "diorite.png", "diorite.png", "diorite.png", modelKind="wall"),
+    BlockType.GRANITE_WALL: BlockDefinition("Granite Wall", "granite.png", "granite.png", "granite.png", modelKind="wall"),
+    BlockType.SPRUCE_FENCE: BlockDefinition("Spruce Fence", "spruce_planks.png", "spruce_planks.png", "spruce_planks.png", modelKind="fence"),
+    BlockType.ACACIA_FENCE: BlockDefinition("Acacia Fence", "acacia_planks.png", "acacia_planks.png", "acacia_planks.png", modelKind="fence"),
+    BlockType.OAK_FENCE: BlockDefinition("Oak Fence", "oak_planks.png", "oak_planks.png", "oak_planks.png", modelKind="fence"),
+    BlockType.DARK_OAK_FENCE: BlockDefinition("Dark Oak Fence", "dark_oak_planks.png", "dark_oak_planks.png", "dark_oak_planks.png", modelKind="fence"),
+    BlockType.JUNGLE_FENCE: BlockDefinition("Jungle Fence", "jungle_planks.png", "jungle_planks.png", "jungle_planks.png", modelKind="fence"),
+    BlockType.OAK_FENCE_GATE: BlockDefinition("Oak Fence Gate", "oak_planks.png", "oak_planks.png", "oak_planks.png", modelKind="fence"),
+    BlockType.SPRUCE_TRAPDOOR: BlockDefinition("Spruce Trapdoor", "spruce_trapdoor.png", "spruce_trapdoor.png", "spruce_trapdoor.png", transparent=True, modelKind="trapdoor"),
+    BlockType.OAK_TRAPDOOR: BlockDefinition("Oak Trapdoor", "oak_trapdoor.png", "oak_trapdoor.png", "oak_trapdoor.png", transparent=True, modelKind="trapdoor"),
+    BlockType.OXIDIZED_COPPER_TRAPDOOR: BlockDefinition("Oxidized Copper Trapdoor", "oxidized_copper_trapdoor.png", "oxidized_copper_trapdoor.png", "oxidized_copper_trapdoor.png", transparent=True, modelKind="trapdoor"),
+    BlockType.COPPER_GRATE: BlockDefinition("Copper Grate", "copper_grate.png", "copper_grate.png", "copper_grate.png", transparent=True, modelKind="grate"),
+    BlockType.OXIDIZED_COPPER_GRATE: BlockDefinition("Oxidized Copper Grate", "oxidized_copper_grate.png", "oxidized_copper_grate.png", "oxidized_copper_grate.png", transparent=True, modelKind="grate"),
+    BlockType.COPPER_BULB: BlockDefinition("Copper Bulb", "copper_bulb_lit.png", "copper_bulb_lit.png", "copper_bulb_lit.png", lightLevel=15, modelKind="bulb"),
+    BlockType.EXPOSED_COPPER_BULB: BlockDefinition("Exposed Copper Bulb", "exposed_copper_bulb_lit.png", "exposed_copper_bulb_lit.png", "exposed_copper_bulb_lit.png", lightLevel=15, modelKind="bulb"),
+    BlockType.WEATHERED_COPPER_BULB: BlockDefinition("Weathered Copper Bulb", "weathered_copper_bulb_lit.png", "weathered_copper_bulb_lit.png", "weathered_copper_bulb_lit.png", lightLevel=15, modelKind="bulb"),
+    BlockType.OXIDIZED_COPPER_BULB: BlockDefinition("Oxidized Copper Bulb", "oxidized_copper_bulb_lit.png", "oxidized_copper_bulb_lit.png", "oxidized_copper_bulb_lit.png", lightLevel=15, modelKind="bulb"),
+    BlockType.CANDLE: BlockDefinition("Candle", "candle.png", "candle.png", "candle.png", transparent=True, lightLevel=6, modelKind="candle"),
+    BlockType.WHITE_CANDLE: BlockDefinition("White Candle", "white_candle.png", "white_candle.png", "white_candle.png", transparent=True, lightLevel=6, modelKind="candle"),
+    BlockType.RED_CANDLE: BlockDefinition("Red Candle", "red_candle.png", "red_candle.png", "red_candle.png", transparent=True, lightLevel=6, modelKind="candle"),
+    BlockType.WALL_TORCH: BlockDefinition("Wall Torch", "torch.png", "torch.png", "torch.png", transparent=True, lightLevel=14, modelKind="torch"),
+    BlockType.WHITE_BED: BlockDefinition("White Bed", "white_wool.png", "white_wool.png", "white_wool.png", modelKind="bed"),
+    BlockType.YELLOW_BED: BlockDefinition("Yellow Bed", "yellow_wool.png", "yellow_wool.png", "yellow_wool.png", modelKind="bed"),
+    BlockType.GREEN_BED: BlockDefinition("Green Bed", "green_wool.png", "green_wool.png", "green_wool.png", modelKind="bed"),
+    BlockType.RED_BED: BlockDefinition("Red Bed", "red_wool.png", "red_wool.png", "red_wool.png", modelKind="bed"),
+    BlockType.LIME_BED: BlockDefinition("Lime Bed", "lime_wool.png", "lime_wool.png", "lime_wool.png", modelKind="bed"),
+    BlockType.CYAN_BED: BlockDefinition("Cyan Bed", "cyan_wool.png", "cyan_wool.png", "cyan_wool.png", modelKind="bed"),
+    BlockType.BLUE_BED: BlockDefinition("Blue Bed", "blue_wool.png", "blue_wool.png", "blue_wool.png", modelKind="bed"),
+    BlockType.PURPLE_BED: BlockDefinition("Purple Bed", "purple_wool.png", "purple_wool.png", "purple_wool.png", modelKind="bed"),
+    BlockType.ORANGE_BED: BlockDefinition("Orange Bed", "orange_wool.png", "orange_wool.png", "orange_wool.png", modelKind="bed"),
+    BlockType.BROWN_BED: BlockDefinition("Brown Bed", "brown_wool.png", "brown_wool.png", "brown_wool.png", modelKind="bed"),
+    BlockType.BROWN_WALL_BANNER: BlockDefinition("Brown Wall Banner", "brown_wool.png", "brown_wool.png", "brown_wool.png", modelKind="banner"),
+    BlockType.MAGENTA_WALL_BANNER: BlockDefinition("Magenta Wall Banner", "magenta_wool.png", "magenta_wool.png", "magenta_wool.png", modelKind="banner"),
+    BlockType.REDSTONE_WALL_TORCH: BlockDefinition("Redstone Wall Torch", "redstone_torch.png", "redstone_torch.png", "redstone_torch.png", transparent=True, lightLevel=7, modelKind="torch"),
     # Cold blocks
     BlockType.SNOW: BlockDefinition("Snow Block", "snow.png", "snow.png", "snow.png"),
     BlockType.ICE: BlockDefinition("Ice", "ice.png", "ice.png", "ice.png", transparent=True),
@@ -1168,6 +1386,17 @@ BLOCK_SOUNDS: Dict[BlockType, SoundDefinition] = {
     BlockType.RESPAWN_ANCHOR: SoundDefinition("stone", "stone"),  # Uses stone sounds (block folder has ambient/charge only)
     BlockType.LODESTONE: SoundDefinition("stone", "stone"),  # Uses stone sounds (block folder has place/lock only)
     BlockType.TARGET: SoundDefinition("grass", "grass"),
+    BlockType.DEEPSLATE: SoundDefinition("stone", "stone"),
+    BlockType.COBBLED_DEEPSLATE: SoundDefinition("stone", "stone"),
+    BlockType.POLISHED_DEEPSLATE: SoundDefinition("stone", "stone"),
+    BlockType.DEEPSLATE_BRICKS: SoundDefinition("stone", "stone"),
+    BlockType.CRACKED_DEEPSLATE_BRICKS: SoundDefinition("stone", "stone"),
+    BlockType.DEEPSLATE_TILES: SoundDefinition("stone", "stone"),
+    BlockType.CRACKED_DEEPSLATE_TILES: SoundDefinition("stone", "stone"),
+    BlockType.CHISELED_DEEPSLATE: SoundDefinition("stone", "stone"),
+    BlockType.REINFORCED_DEEPSLATE: SoundDefinition("stone", "stone"),
+    BlockType.SCULK_CATALYST: SoundDefinition("sculk", "sculk"),
+    BlockType.SCULK_SHRIEKER: SoundDefinition("sculk", "sculk"),
     BlockType.SNOW: SoundDefinition("snow", "snow"),  # Snow has its own dig sounds
     BlockType.ICE: SoundDefinition("glass", "glass"),
     BlockType.PACKED_ICE: SoundDefinition("glass", "glass"),
@@ -1205,6 +1434,51 @@ BLOCK_SOUNDS: Dict[BlockType, SoundDefinition] = {
     BlockType.MATRIX: SoundDefinition("nether_bricks", "nether_bricks"),  # Matrix block sounds
 }
 
+for _structureBlock in (
+    BlockType.TUFF, BlockType.POLISHED_TUFF, BlockType.TUFF_BRICKS,
+    BlockType.CHISELED_TUFF, BlockType.CHISELED_TUFF_BRICKS,
+    BlockType.DIRT_PATH, BlockType.FARMLAND, BlockType.WHEAT,
+    BlockType.SMOOTH_SANDSTONE, BlockType.CUT_SANDSTONE, BlockType.POWDER_SNOW,
+    BlockType.GLASS_PANE, BlockType.LADDER, BlockType.CHAIN,
+    BlockType.LANTERN, BlockType.SOUL_LANTERN, BlockType.REDSTONE_LAMP,
+    BlockType.VAULT, BlockType.DECORATED_POT,
+    BlockType.SPRUCE_STAIRS, BlockType.ACACIA_STAIRS, BlockType.PURPUR_STAIRS,
+    BlockType.DEEPSLATE_BRICK_STAIRS, BlockType.DEEPSLATE_TILE_STAIRS,
+    BlockType.COBBLED_DEEPSLATE_STAIRS, BlockType.POLISHED_DEEPSLATE_STAIRS,
+    BlockType.BLACKSTONE_STAIRS, BlockType.POLISHED_BLACKSTONE_BRICK_STAIRS,
+    BlockType.SPRUCE_SLAB, BlockType.ACACIA_SLAB, BlockType.PURPUR_SLAB,
+    BlockType.DEEPSLATE_BRICK_SLAB, BlockType.DEEPSLATE_TILE_SLAB,
+    BlockType.COBBLED_DEEPSLATE_SLAB, BlockType.POLISHED_DEEPSLATE_SLAB,
+    BlockType.BLACKSTONE_SLAB, BlockType.POLISHED_BLACKSTONE_BRICK_SLAB,
+    BlockType.SPRUCE_DOOR, BlockType.ACACIA_DOOR, BlockType.JUNGLE_DOOR,
+    BlockType.CHORUS_PLANT, BlockType.CHORUS_FLOWER,
+    BlockType.CRIMSON_FUNGUS, BlockType.WARPED_FUNGUS, BlockType.NETHER_SPROUTS,
+    BlockType.TWISTING_VINES, BlockType.WEEPING_VINES,
+    BlockType.SMOOTH_SANDSTONE_SLAB, BlockType.SANDSTONE_SLAB,
+    BlockType.SMOOTH_SANDSTONE_STAIRS, BlockType.SANDSTONE_STAIRS,
+    BlockType.SMOOTH_STONE_SLAB, BlockType.POLISHED_TUFF_SLAB,
+    BlockType.SMOOTH_QUARTZ_SLAB, BlockType.GRANITE_STAIRS,
+    BlockType.OXIDIZED_CUT_COPPER_STAIRS, BlockType.CUT_COPPER_SLAB,
+    BlockType.POLISHED_DEEPSLATE_WALL, BlockType.DEEPSLATE_TILE_WALL,
+    BlockType.COBBLESTONE_WALL, BlockType.SANDSTONE_WALL,
+    BlockType.DEEPSLATE_BRICK_WALL, BlockType.BLACKSTONE_WALL,
+    BlockType.DIORITE_WALL, BlockType.GRANITE_WALL,
+    BlockType.SPRUCE_FENCE, BlockType.ACACIA_FENCE, BlockType.OAK_FENCE,
+    BlockType.DARK_OAK_FENCE, BlockType.JUNGLE_FENCE, BlockType.OAK_FENCE_GATE,
+    BlockType.SPRUCE_TRAPDOOR, BlockType.OAK_TRAPDOOR,
+    BlockType.OXIDIZED_COPPER_TRAPDOOR, BlockType.COPPER_GRATE,
+    BlockType.OXIDIZED_COPPER_GRATE, BlockType.COPPER_BULB,
+    BlockType.EXPOSED_COPPER_BULB, BlockType.WEATHERED_COPPER_BULB,
+    BlockType.OXIDIZED_COPPER_BULB, BlockType.CANDLE, BlockType.WHITE_CANDLE,
+    BlockType.RED_CANDLE, BlockType.WALL_TORCH, BlockType.WHITE_BED,
+    BlockType.YELLOW_BED, BlockType.GREEN_BED, BlockType.RED_BED,
+    BlockType.LIME_BED, BlockType.CYAN_BED, BlockType.BLUE_BED,
+    BlockType.PURPLE_BED, BlockType.ORANGE_BED, BlockType.BROWN_BED,
+    BlockType.BROWN_WALL_BANNER, BlockType.MAGENTA_WALL_BANNER,
+    BlockType.REDSTONE_WALL_TORCH,
+):
+    BLOCK_SOUNDS.setdefault(_structureBlock, SoundDefinition("stone", "stone"))
+
 
 # ============================================================================
 # BLOCK CATEGORIES (for dropdown UI)
@@ -1215,7 +1489,8 @@ BLOCK_CATEGORIES = {
     "Natural": [
         BlockType.GRASS, BlockType.DIRT, BlockType.STONE, BlockType.COBBLESTONE,
         BlockType.GRAVEL, BlockType.SAND, BlockType.CLAY,
-        BlockType.SNOW, BlockType.ICE, BlockType.PACKED_ICE,
+        BlockType.SNOW, BlockType.ICE, BlockType.PACKED_ICE, BlockType.POWDER_SNOW,
+        BlockType.DIRT_PATH, BlockType.FARMLAND, BlockType.WHEAT,
         BlockType.CACTUS, BlockType.PUMPKIN, BlockType.CARVED_PUMPKIN,
         BlockType.HAY_BLOCK, BlockType.MELON, BlockType.SPONGE, BlockType.WET_SPONGE
     ],
@@ -1227,7 +1502,10 @@ BLOCK_CATEGORIES = {
         BlockType.ACACIA_LOG, BlockType.ACACIA_PLANKS, BlockType.ACACIA_LEAVES,
         BlockType.JUNGLE_LOG, BlockType.JUNGLE_PLANKS, BlockType.JUNGLE_LEAVES,
         BlockType.STRIPPED_OAK_LOG, BlockType.STRIPPED_BIRCH_LOG, BlockType.STRIPPED_SPRUCE_LOG,
-        BlockType.STRIPPED_DARK_OAK_LOG, BlockType.STRIPPED_ACACIA_LOG, BlockType.STRIPPED_JUNGLE_LOG
+        BlockType.STRIPPED_DARK_OAK_LOG, BlockType.STRIPPED_ACACIA_LOG, BlockType.STRIPPED_JUNGLE_LOG,
+        BlockType.OAK_STAIRS, BlockType.SPRUCE_STAIRS, BlockType.ACACIA_STAIRS,
+        BlockType.SPRUCE_SLAB, BlockType.ACACIA_SLAB,
+        BlockType.OAK_DOOR, BlockType.SPRUCE_DOOR, BlockType.ACACIA_DOOR, BlockType.JUNGLE_DOOR
     ],
     "Stone & Brick": [
         BlockType.GRANITE, BlockType.POLISHED_GRANITE, BlockType.DIORITE, BlockType.POLISHED_DIORITE,
@@ -1236,7 +1514,19 @@ BLOCK_CATEGORIES = {
         BlockType.CRACKED_STONE_BRICKS, BlockType.MOSSY_COBBLESTONE,
         BlockType.BRICKS, BlockType.SANDSTONE, BlockType.RED_SANDSTONE,
         BlockType.PRISMARINE, BlockType.PRISMARINE_BRICKS, BlockType.DARK_PRISMARINE,
-        BlockType.PURPUR_BLOCK, BlockType.PURPUR_PILLAR
+        BlockType.PURPUR_BLOCK, BlockType.PURPUR_PILLAR,
+        BlockType.COBBLESTONE_STAIRS, BlockType.STONE_BRICK_STAIRS,
+        BlockType.DEEPSLATE, BlockType.COBBLED_DEEPSLATE, BlockType.POLISHED_DEEPSLATE,
+        BlockType.DEEPSLATE_BRICKS, BlockType.CRACKED_DEEPSLATE_BRICKS,
+        BlockType.DEEPSLATE_TILES, BlockType.CRACKED_DEEPSLATE_TILES,
+        BlockType.CHISELED_DEEPSLATE, BlockType.REINFORCED_DEEPSLATE
+        , BlockType.TUFF, BlockType.POLISHED_TUFF, BlockType.TUFF_BRICKS,
+        BlockType.CHISELED_TUFF, BlockType.CHISELED_TUFF_BRICKS,
+        BlockType.SMOOTH_SANDSTONE, BlockType.CUT_SANDSTONE,
+        BlockType.PURPUR_STAIRS, BlockType.DEEPSLATE_BRICK_STAIRS,
+        BlockType.DEEPSLATE_TILE_STAIRS, BlockType.COBBLED_DEEPSLATE_STAIRS,
+        BlockType.POLISHED_DEEPSLATE_STAIRS, BlockType.BLACKSTONE_STAIRS,
+        BlockType.POLISHED_BLACKSTONE_BRICK_STAIRS
     ],
     "Ores & Minerals": [
         BlockType.COAL_ORE, BlockType.IRON_ORE, BlockType.GOLD_ORE, BlockType.DIAMOND_ORE,
@@ -1263,14 +1553,16 @@ BLOCK_CATEGORIES = {
         BlockType.WHITE_CONCRETE, BlockType.RED_CONCRETE, BlockType.BLUE_CONCRETE
     ],
     "Decorative": [
-        BlockType.GLASS, BlockType.BOOKSHELF, BlockType.BONE_BLOCK, BlockType.SCULK,
+        BlockType.GLASS, BlockType.GLASS_PANE, BlockType.BOOKSHELF, BlockType.BONE_BLOCK, BlockType.SCULK,
         BlockType.SLIME_BLOCK, BlockType.HONEY_BLOCK, BlockType.TARGET,
+        BlockType.SCULK_CATALYST, BlockType.SCULK_SHRIEKER,
         BlockType.QUARTZ_BLOCK, BlockType.QUARTZ_PILLAR, BlockType.CHISELED_QUARTZ,
         BlockType.SMOOTH_QUARTZ, BlockType.QUARTZ_BRICKS,
-        BlockType.JACK_O_LANTERN
+        BlockType.JACK_O_LANTERN, BlockType.DECORATED_POT, BlockType.LADDER, BlockType.CHAIN
     ],
     "Light Sources": [
         BlockType.GLOWSTONE, BlockType.SEA_LANTERN, BlockType.SHROOMLIGHT,
+        BlockType.LANTERN, BlockType.SOUL_LANTERN, BlockType.REDSTONE_LAMP,
         BlockType.JACK_O_LANTERN, BlockType.MAGMA_BLOCK, BlockType.CRYING_OBSIDIAN
     ],
     "Nether": [
@@ -1297,14 +1589,17 @@ BLOCK_CATEGORIES = {
         BlockType.TNT, BlockType.BEDROCK, BlockType.RESPAWN_ANCHOR, BlockType.LODESTONE,
         BlockType.CHEST, BlockType.TRAPPED_CHEST, BlockType.ENDER_CHEST, BlockType.CHRISTMAS_CHEST,
         BlockType.COPPER_CHEST, BlockType.COPPER_CHEST_EXPOSED, BlockType.COPPER_CHEST_WEATHERED, BlockType.COPPER_CHEST_OXIDIZED,
-        BlockType.WATER, BlockType.LAVA, BlockType.MOB_SPAWNER, BlockType.TRIAL_SPAWNER
+        BlockType.WATER, BlockType.LAVA, BlockType.MOB_SPAWNER, BlockType.TRIAL_SPAWNER,
+        BlockType.IRON_DOOR, BlockType.VAULT
     ],
     "Slabs": [
-        BlockType.OAK_SLAB, BlockType.COBBLESTONE_SLAB, BlockType.STONE_BRICK_SLAB, BlockType.STONE_SLAB
+        BlockType.OAK_SLAB, BlockType.COBBLESTONE_SLAB, BlockType.STONE_BRICK_SLAB, BlockType.STONE_SLAB,
+        BlockType.SPRUCE_SLAB, BlockType.ACACIA_SLAB, BlockType.PURPUR_SLAB,
+        BlockType.DEEPSLATE_BRICK_SLAB, BlockType.DEEPSLATE_TILE_SLAB,
+        BlockType.COBBLED_DEEPSLATE_SLAB, BlockType.POLISHED_DEEPSLATE_SLAB,
+        BlockType.BLACKSTONE_SLAB, BlockType.POLISHED_BLACKSTONE_BRICK_SLAB
     ],
     "Experimental": [
-        BlockType.OAK_STAIRS, BlockType.COBBLESTONE_STAIRS, BlockType.STONE_BRICK_STAIRS,
-        BlockType.OAK_DOOR, BlockType.IRON_DOOR,
         BlockType.OXIDIZING_COPPER, BlockType.ENCHANTING_TABLE, BlockType.SCULK_SENSOR,
         BlockType.FIRE, BlockType.SOUL_FIRE, BlockType.MATRIX
     ],
@@ -2479,6 +2774,103 @@ PREMADE_STRUCTURES = {
     "block_showcase": STRUCTURE_BLOCK_SHOWCASE,
 }
 
+JSON_STRUCTURE_LIBRARY = {
+    "bastion_bridge_edge": "Housing Units Bastion Piece",
+    "bastion_remnant_no_lava": "Hoglin Stable Bastion Piece",
+    "bastion_remnant_with_lava": "Treasure Bastion Lava Basin",
+    "end_city_tower": "End City Tower",
+    "ruined_portal_accurate": "Ruined Portal",
+    "warped_forest_accurate": "Warped Forest",
+}
+
+
+def _propertiesFromStructureState(blockType: BlockType, stateData) -> Optional[BlockProperties]:
+    """Translate canonical Java block-state strings for cursor structures."""
+    if not isinstance(stateData, dict) or not stateData:
+        return None
+    definition = BLOCK_DEFINITIONS.get(blockType)
+    if not definition or not (
+        definition.isDoor or definition.isStair or definition.isSlab or definition.modelKind
+    ):
+        return None
+    props = BlockProperties()
+    props.facing = Facing.__members__.get(
+        str(stateData.get("facing", "south")).upper(), Facing.SOUTH
+    )
+    openValue = stateData.get("isOpen", stateData.get("open", False))
+    props.isOpen = openValue is True or str(openValue).casefold() == "true"
+    verticalHalf = stateData.get(
+        "slabPosition", stateData.get("half" if definition.isStair else "type", "bottom")
+    )
+    props.slabPosition = SlabPosition.__members__.get(
+        str(verticalHalf).upper(), SlabPosition.BOTTOM
+    )
+    props.stairShape = StairShape.__members__.get(
+        str(stateData.get("stairShape", stateData.get("shape", "straight"))).upper(),
+        StairShape.STRAIGHT,
+    )
+    props.doorHalf = DoorHalf.__members__.get(
+        str(stateData.get("doorHalf", stateData.get("half", "lower"))).upper(),
+        DoorHalf.LOWER,
+    )
+    props.doorHinge = DoorHinge.__members__.get(
+        str(stateData.get("doorHinge", stateData.get("hinge", "left"))).upper(),
+        DoorHinge.LEFT,
+    )
+    return props
+
+
+def _structureBlockParts(block):
+    """Return a uniform five-part cursor-structure cell tuple."""
+    x, y, z, blockType = block[:4]
+    properties = block[4] if len(block) > 4 else None
+    return x, y, z, blockType, properties
+
+
+def _loadJsonStructureLibrary() -> None:
+    """Load curated build JSON files as cursor-placeable structures."""
+    for structureKey, displayName in JSON_STRUCTURE_LIBRARY.items():
+        filepath = os.path.join(BUILTIN_STRUCTURES_DIR, f"{structureKey}.json")
+        if not os.path.isfile(filepath):
+            print(f"Built-in structure unavailable: {filepath}")
+            continue
+        try:
+            with open(filepath, 'r', encoding='utf-8') as handle:
+                saveData = json.load(handle)
+            rawBlocks = saveData.get("blocks", [])
+            converted = []
+            for block in rawBlocks:
+                blockType = BlockType[block["type"]]
+                converted.append((
+                    int(block["x"]), int(block["y"]), int(block["z"]), blockType,
+                    _propertiesFromStructureState(blockType, block.get("state", {})),
+                ))
+            if not converted:
+                continue
+
+            minX = min(block[0] for block in converted)
+            maxX = max(block[0] for block in converted)
+            minY = min(block[1] for block in converted)
+            maxY = max(block[1] for block in converted)
+            minZ = min(block[2] for block in converted)
+            centerX = (minX + maxX) // 2
+            centerY = (minY + maxY) // 2
+            normalized = [
+                (x - centerX, y - centerY, z - minZ, blockType, properties)
+                for x, y, z, blockType, properties in converted
+            ]
+            PREMADE_STRUCTURES[structureKey] = {
+                "name": displayName,
+                "blocks": normalized,
+                "dimension": saveData.get("dimension", DIMENSION_OVERWORLD),
+                "source_file": filepath,
+            }
+        except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+            print(f"Could not load built-in structure '{structureKey}': {error}")
+
+
+_loadJsonStructureLibrary()
+
 # Tutorial configuration file path
 TUTORIAL_CONFIG_FILE = os.path.join(BASE_DIR, ".tutorial_config.json")
 
@@ -3347,19 +3739,34 @@ class AssetManager:
     
     def __init__(self):
         """Initialize the asset manager"""
+        from engine.audio import AudioRouter
+        from engine.model_renderer import BlockModelRenderer
+        from engine.performance import SpriteCache
+
+        self.audioRouter = AudioRouter(pygame.mixer)
+        self.blockModelRenderer = BlockModelRenderer(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT)
+        self.zoomSpriteCache = SpriteCache(max_size=4096)
+        self.uiScaleCache: Dict[Tuple[int, int, int], pygame.Surface] = {}
+        self.uiTextCache: Dict[Tuple[int, str, Tuple[int, int, int]], pygame.Surface] = {}
         self.textures: Dict[str, pygame.Surface] = {}
         self.blockSprites: Dict[BlockType, pygame.Surface] = {}
         self.iconSprites: Dict[BlockType, pygame.Surface] = {}
         self.sounds: Dict[str, List[pygame.mixer.Sound]] = {}  # Category -> list of sound variants
         self.clickSound: Optional[pygame.mixer.Sound] = None
+        self.doorOpenSound: Optional[pygame.mixer.Sound] = None
+        self.doorCloseSound: Optional[pygame.mixer.Sound] = None
+        self.ironDoorOpenSounds: List[pygame.mixer.Sound] = []
+        self.ironDoorCloseSounds: List[pygame.mixer.Sound] = []
         
         # Special block sprite variants
-        # Doors: (blockType, facing, isOpen) -> sprite
-        self.doorSprites: Dict[Tuple[BlockType, bool], pygame.Surface] = {}
+        # Source-shaped variants are generated lazily and cached.
+        self.doorSprites: Dict[Tuple, pygame.Surface] = {}
         # Slabs: (blockType, position) -> sprite
         self.slabSprites: Dict[Tuple[BlockType, SlabPosition], pygame.Surface] = {}
         # Stairs: (blockType, facing) -> sprite
-        self.stairSprites: Dict[Tuple[BlockType, Facing], pygame.Surface] = {}
+        self.stairSprites: Dict[Tuple, pygame.Surface] = {}
+        self.detailSprites: Dict[Tuple, pygame.Surface] = {}
+        self.specialBlockTextures: Dict[BlockType, Tuple[pygame.Surface, pygame.Surface, pygame.Surface]] = {}
         
         # UI textures
         self.buttonNormal: Optional[pygame.Surface] = None
@@ -3367,6 +3774,8 @@ class AssetManager:
         self.buttonDisabled: Optional[pygame.Surface] = None
         self.slotFrame: Optional[pygame.Surface] = None
         self.backgroundTile: Optional[pygame.Surface] = None
+        self.backgroundSurfaceCacheKey = None
+        self.backgroundSurfaceCache = None
         self.checkboxTexture: Optional[pygame.Surface] = None
         self.checkboxSelectedTexture: Optional[pygame.Surface] = None
         
@@ -3884,25 +4293,21 @@ class AssetManager:
                         frontTex = self._tintLiquid(frontTex, LAVA_TINT)
             
             # Handle special block types
-            if blockDef.isThin:
-                # Thin blocks like doors - create open/closed variants
-                # Store default (closed) as the main sprite
-                self.blockSprites[blockType] = self._createDoorBlock(
-                    topTex, sideTex, frontTex, Facing.SOUTH, isOpen=False
+            if blockDef.modelKind:
+                self.specialBlockTextures[blockType] = (topTex, sideTex, frontTex)
+                self.blockSprites[blockType] = self.getDetailSprite(
+                    blockType, Facing.SOUTH, False, SlabPosition.BOTTOM
                 )
-                # Create open and closed variants
-                for isOpen in [False, True]:
-                    sprite = self._createDoorBlock(topTex, sideTex, frontTex, Facing.SOUTH, isOpen)
-                    self.doorSprites[(blockType, isOpen)] = sprite
+            elif blockDef.isThin:
+                self.specialBlockTextures[blockType] = (topTex, sideTex, frontTex)
+                self.blockSprites[blockType] = self.getDoorSprite(
+                    blockType, Facing.SOUTH, False, DoorHinge.LEFT, DoorHalf.LOWER
+                )
             elif blockDef.isStair:
-                # Stair blocks - create all facing variants
-                self.blockSprites[blockType] = self._createStairBlock(
-                    topTex, sideTex, frontTex, Facing.SOUTH
+                self.specialBlockTextures[blockType] = (topTex, sideTex, frontTex)
+                self.blockSprites[blockType] = self.getStairSprite(
+                    blockType, Facing.SOUTH, StairShape.STRAIGHT, SlabPosition.BOTTOM
                 )
-                # Create all stair variants
-                for facing in Facing:
-                    sprite = self._createStairBlock(topTex, sideTex, frontTex, facing)
-                    self.stairSprites[(blockType, facing)] = sprite
             elif blockDef.isSlab:
                 # Slab blocks - create top and bottom variants
                 self.blockSprites[blockType] = self._createSlabBlock(
@@ -5738,14 +6143,32 @@ class AssetManager:
         for blockType, blockDef in BLOCK_DEFINITIONS.items():
             # Special blocks get dedicated icon rendering (they're problematic)
             if blockDef.isThin:
-                # For doors, show just the door texture as a flat icon
-                icon = self._createDoorIcon(blockType, blockDef, ICON_SIZE)
+                # Compose both model cells so the preview matches a placed door.
+                lower = self.getDoorSprite(
+                    blockType, Facing.SOUTH, False, DoorHinge.LEFT, DoorHalf.LOWER
+                )
+                upper = self.getDoorSprite(
+                    blockType, Facing.SOUTH, False, DoorHinge.LEFT, DoorHalf.UPPER
+                )
+                model = pygame.Surface(
+                    (TILE_WIDTH, TILE_HEIGHT + BLOCK_HEIGHT * 2), pygame.SRCALPHA
+                )
+                if upper:
+                    model.blit(upper, (0, 0))
+                if lower:
+                    model.blit(lower, (0, BLOCK_HEIGHT))
+                icon = self._fitIconSprite(model, ICON_SIZE)
             elif blockDef.isSlab:
-                # For slabs, show half-height block
-                icon = self._createSlabIcon(blockType, blockDef, ICON_SIZE)
+                icon = self._fitIconSprite(
+                    self.slabSprites.get((blockType, SlabPosition.BOTTOM)), ICON_SIZE
+                )
             elif blockDef.isStair:
-                # For stairs, show stair shape
-                icon = self._createStairIcon(blockType, blockDef, ICON_SIZE)
+                icon = self._fitIconSprite(
+                    self.getStairSprite(
+                        blockType, Facing.SOUTH, StairShape.STRAIGHT, SlabPosition.BOTTOM
+                    ),
+                    ICON_SIZE,
+                )
             elif blockDef.isPortal:
                 # For portal, use animated frame or static texture
                 icon = self._createPortalIcon(blockType, blockDef, ICON_SIZE)
@@ -5768,6 +6191,28 @@ class AssetManager:
                     # Fallback: create icon from scratch if blockSprite missing
                     icon = self._createIconBlock(blockType, blockDef, ICON_SIZE)
             self.iconSprites[blockType] = icon
+
+    @staticmethod
+    def _fitIconSprite(sprite: Optional[pygame.Surface], size: int) -> pygame.Surface:
+        """Fit an already-rendered model into a square icon without smoothing."""
+        canvas = pygame.Surface((size, size), pygame.SRCALPHA)
+        if sprite is None:
+            return canvas
+        bounds = sprite.get_bounding_rect(min_alpha=1)
+        if not bounds.width or not bounds.height:
+            return canvas
+        cropped = sprite.subsurface(bounds)
+        scale = min(size / cropped.get_width(), size / cropped.get_height())
+        scaled_size = (
+            max(1, int(cropped.get_width() * scale)),
+            max(1, int(cropped.get_height() * scale)),
+        )
+        scaled = pygame.transform.scale(cropped, scaled_size)
+        canvas.blit(
+            scaled,
+            ((size - scaled.get_width()) // 2, (size - scaled.get_height()) // 2),
+        )
+        return canvas
     
     def _updateAnimatedIcon(self, blockType: BlockType):
         """Update icon sprite for animated blocks (water, lava, portals) to match current frame"""
@@ -6717,15 +7162,23 @@ class AssetManager:
             # Fallback to solid color
             self.backgroundTile = pygame.Surface((BG_TILE_SIZE, BG_TILE_SIZE))
             self.backgroundTile.fill(fallbackColor)
+        self.backgroundSurfaceCacheKey = None
+        self.backgroundSurfaceCache = None
     
     def drawBackground(self, screen: pygame.Surface):
         """Draw the tiled dirt background"""
         if self.backgroundTile:
             tileW = self.backgroundTile.get_width()
             tileH = self.backgroundTile.get_height()
-            for y in range(0, screen.get_height(), tileH):
-                for x in range(0, screen.get_width(), tileW):
-                    screen.blit(self.backgroundTile, (x, y))
+            key = (id(self.backgroundTile), screen.get_width(), screen.get_height())
+            if key != self.backgroundSurfaceCacheKey:
+                background = pygame.Surface(screen.get_size())
+                for y in range(0, screen.get_height(), tileH):
+                    for x in range(0, screen.get_width(), tileW):
+                        background.blit(self.backgroundTile, (x, y))
+                self.backgroundSurfaceCache = background
+                self.backgroundSurfaceCacheKey = key
+            screen.blit(self.backgroundSurfaceCache, (0, 0))
     
     def drawButton(self, screen: pygame.Surface, rect: pygame.Rect, 
                    text: str, font: pygame.font.Font, 
@@ -6771,8 +7224,11 @@ class AssetManager:
             borderColor = (255, 200, 50) if selected else ((180, 180, 180) if hovered else (80, 80, 80))
             pygame.draw.rect(screen, borderColor, rect, 2)
         elif texture:
-            # Scale texture to button size using 9-slice or simple scale
-            scaledBtn = pygame.transform.scale(texture, (rect.width, rect.height))
+            key = (id(texture), rect.width, rect.height)
+            scaledBtn = self.uiScaleCache.get(key)
+            if scaledBtn is None:
+                scaledBtn = pygame.transform.scale(texture, (rect.width, rect.height))
+                self.uiScaleCache[key] = scaledBtn
             screen.blit(scaledBtn, rect.topleft)
         else:
             # Fallback to simple rectangle
@@ -6782,18 +7238,30 @@ class AssetManager:
             pygame.draw.rect(screen, borderColor, rect, 2)
         
         # Draw text with shadow
-        shadowSurf = font.render(text, True, (30, 30, 30))
+        shadowKey = (id(font), text, (30, 30, 30))
+        shadowSurf = self.uiTextCache.get(shadowKey)
+        if shadowSurf is None:
+            shadowSurf = font.render(text, True, (30, 30, 30))
+            self.uiTextCache[shadowKey] = shadowSurf
         shadowRect = shadowSurf.get_rect(center=(rect.centerx + 1, rect.centery + 1))
         screen.blit(shadowSurf, shadowRect)
         
-        textSurf = font.render(text, True, (255, 255, 255))
+        textKey = (id(font), text, (255, 255, 255))
+        textSurf = self.uiTextCache.get(textKey)
+        if textSurf is None:
+            textSurf = font.render(text, True, (255, 255, 255))
+            self.uiTextCache[textKey] = textSurf
         textRect = textSurf.get_rect(center=rect.center)
         screen.blit(textSurf, textRect)
     
     def drawSlot(self, screen: pygame.Surface, rect: pygame.Rect, selected: bool = False):
         """Draw a Minecraft-style inventory slot"""
         if self.slotFrame:
-            scaledSlot = pygame.transform.scale(self.slotFrame, (rect.width, rect.height))
+            key = (id(self.slotFrame), rect.width, rect.height)
+            scaledSlot = self.uiScaleCache.get(key)
+            if scaledSlot is None:
+                scaledSlot = pygame.transform.scale(self.slotFrame, (rect.width, rect.height))
+                self.uiScaleCache[key] = scaledSlot
             screen.blit(scaledSlot, rect.topleft)
         else:
             # Fallback
@@ -6819,11 +7287,6 @@ class AssetManager:
             lastPlayed = self.soundLastPlayed.get(soundCategory, 0)
             if currentTime - lastPlayed < self.soundCooldown:
                 return  # Too soon, skip this sound
-            
-            # Check concurrent sound limit for this category
-            activeCount = self.soundActiveChannels.get(soundCategory, 0)
-            if activeCount >= self.maxSoundsPerCategory:
-                return  # Too many of this sound playing
             
             # Pick a random variant for natural variation
             sound = random.choice(self.sounds[soundCategory])
@@ -6859,20 +7322,16 @@ class AssetManager:
                 leftVol = volume * min(1.0, 1.0 - pan * 0.7)  # 0.7 for subtle panning
                 rightVol = volume * min(1.0, 1.0 + pan * 0.7)
             
-            # Use a channel for stereo panning control
-            channel = pygame.mixer.find_channel()
+            pan = 0.0
+            if leftVol != rightVol and max(leftVol, rightVol) > 0:
+                pan = (rightVol - leftVol) / max(leftVol, rightVol)
+            channel = self.audioRouter.play(
+                sound,
+                group="effects",
+                volume=max(leftVol, rightVol),
+                pan=pan,
+            )
             if channel:
-                channel.set_volume(leftVol, rightVol)
-                channel.play(sound)
-                # Track cooldown and active channels
-                self.soundLastPlayed[soundCategory] = currentTime
-                self.soundActiveChannels[soundCategory] = activeCount + 1
-                # Schedule decrement of active count when sound finishes
-                # (We'll use a simple approach: decrement after estimated duration)
-            else:
-                # Fallback to simple playback if no channel available
-                sound.set_volume(volume)
-                sound.play()
                 self.soundLastPlayed[soundCategory] = currentTime
     
     def playPlaceSound(self, worldPos: Tuple[int, int, int] = None):
@@ -6882,7 +7341,15 @@ class AssetManager:
     def playClickSound(self):
         """Play the UI click sound"""
         if self.clickSound:
-            self.clickSound.play()
+            self.audioRouter.play(self.clickSound, group="ui", volume=1.0)
+
+    def playOneShot(self, sound, group: str = "effects", volume: float = 1.0, replace: bool = False):
+        """Play a loaded sound through the bounded application mixer."""
+        return self.audioRouter.play(sound, group=group, volume=volume, replace=replace)
+
+    def playLoop(self, sound, group: str, volume: float):
+        """Start a loop on a dedicated group, replacing an older group loop."""
+        return self.audioRouter.play(sound, group=group, volume=volume, loops=-1, replace=True)
     
     def playDoorSound(self, isOpening: bool, blockType: BlockType = None):
         """Play door open or close sound - iron doors use metal door sounds"""
@@ -6890,18 +7357,18 @@ class AssetManager:
         # Iron doors use proper metal door sounds
         if blockType == BlockType.IRON_DOOR:
             if isOpening and self.ironDoorOpenSounds:
-                random.choice(self.ironDoorOpenSounds).play()
+                self.playOneShot(random.choice(self.ironDoorOpenSounds), volume=0.8)
             elif not isOpening and self.ironDoorCloseSounds:
-                random.choice(self.ironDoorCloseSounds).play()
+                self.playOneShot(random.choice(self.ironDoorCloseSounds), volume=0.8)
             else:
                 # Fallback to stone sound if iron door sounds not loaded
                 self.playSound("stone")
         else:
             # Wood doors use proper door sounds
             if isOpening and self.doorOpenSound:
-                self.doorOpenSound.play()
+                self.playOneShot(self.doorOpenSound, volume=0.8)
             elif not isOpening and self.doorCloseSound:
-                self.doorCloseSound.play()
+                self.playOneShot(self.doorCloseSound, volume=0.8)
     
     def playBlockSound(self, blockType: BlockType, isPlace: bool = True, worldPos: Tuple[int, int, int] = None, effectsVolume: float = 1.0):
         """Play the appropriate sound for a block type"""
@@ -6920,11 +7387,56 @@ class AssetManager:
             if blockType == BlockType.END_PORTAL and isPlace:
                 # Play the endportal.ogg sound specifically (first sound in end_portal category)
                 if "end_portal" in self.sounds and self.sounds["end_portal"]:
-                    self.sounds["end_portal"][0].play()  # endportal.ogg is loaded first
+                    self.playOneShot(self.sounds["end_portal"][0], group="ambient", volume=0.7)
                     return
             
             self.playSound(category, worldPos, effectsVolume)
     
+    def getDoorSprite(self, blockType: BlockType, facing: Facing, isOpen: bool,
+                      hinge: DoorHinge, half: DoorHalf) -> Optional[pygame.Surface]:
+        """Return a cached one-cell door model for its complete block state."""
+        key = (blockType, facing, isOpen, hinge, half)
+        if key not in self.doorSprites:
+            textures = self.specialBlockTextures.get(blockType)
+            if not textures:
+                return self.blockSprites.get(blockType)
+            topTexture, bottomTexture, _ = textures
+            texture = topTexture if half == DoorHalf.UPPER else bottomTexture
+            self.doorSprites[key] = self.blockModelRenderer.render_door(
+                texture, facing, isOpen, hinge, half
+            )
+        return self.doorSprites[key]
+
+    def getStairSprite(self, blockType: BlockType, facing: Facing,
+                       shape: StairShape, half: SlabPosition) -> Optional[pygame.Surface]:
+        """Return a cached source-shaped stair model variant."""
+        key = (blockType, facing, shape, half)
+        if key not in self.stairSprites:
+            textures = self.specialBlockTextures.get(blockType)
+            if not textures:
+                return self.blockSprites.get(blockType)
+            self.stairSprites[key] = self.blockModelRenderer.render_stair(
+                *textures, facing, shape, half
+            )
+        return self.stairSprites[key]
+
+    def getDetailSprite(self, blockType: BlockType, facing: Facing,
+                        isOpen: bool, half: SlabPosition) -> Optional[pygame.Surface]:
+        """Return a cached structure-detail model variant."""
+        definition = BLOCK_DEFINITIONS.get(blockType)
+        if not definition or not definition.modelKind:
+            return self.blockSprites.get(blockType)
+        key = (blockType, facing, bool(isOpen), half)
+        if key not in self.detailSprites:
+            textures = self.specialBlockTextures.get(blockType)
+            if not textures:
+                return self.blockSprites.get(blockType)
+            boxes = self.blockModelRenderer.detail_boxes(
+                definition.modelKind, facing, bool(isOpen), half
+            )
+            self.detailSprites[key] = self.blockModelRenderer.render_boxes(boxes, *textures)
+        return self.detailSprites[key]
+
     def getBlockSprite(self, blockType: BlockType) -> Optional[pygame.Surface]:
         """Get the isometric sprite for a block type"""
         return self.blockSprites.get(blockType)
@@ -6932,13 +7444,36 @@ class AssetManager:
     def getIconSprite(self, blockType: BlockType) -> Optional[pygame.Surface]:
         """Get the icon sprite for a block type"""
         return self.iconSprites.get(blockType)
+
+    def getScaledSprite(
+        self, sprite: pygame.Surface, zoom: float, *, flipped: bool = False
+    ) -> pygame.Surface:
+        """Return a cached, pixel-crisp view/zoom variant."""
+        zoomBucket = round(max(0.1, float(zoom)), 3)
+        if zoomBucket == 1.0 and not flipped:
+            return sprite
+        # Keep the Surface itself in the key. Temporary animated liquid
+        # surfaces can be destroyed and Python may reuse their id, which used
+        # to make water retrieve a cached lava sprite (and vice versa).
+        key = (sprite, zoomBucket, flipped)
+        cached = self.zoomSpriteCache.get(key)
+        if cached is not None:
+            return cached
+        transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
+        size = (
+            max(1, int(transformed.get_width() * zoomBucket)),
+            max(1, int(transformed.get_height() * zoomBucket)),
+        )
+        # Preserve vanilla pixel edges at every zoom.  Filtering tiny Nether
+        # and End structures made their dark palettes look lower-resolution
+        # than equally sized Overworld scenes.
+        scaled = pygame.transform.scale(transformed, size)
+        self.zoomSpriteCache.set(key, scaled)
+        return scaled
     
     def clearZoomCache(self):
-        """Clear cached sprites for zoom level change - sprites will be regenerated on next draw"""
-        # Currently sprites are pre-generated at fixed size
-        # For zoom, we scale them on-the-fly in the render pass instead of regenerating
-        # This method is a placeholder for future optimization
-        pass
+        """Clear cached sprite variants after source assets are replaced."""
+        self.zoomSpriteCache.clear()
 
 
 # ============================================================================
@@ -7635,19 +8170,63 @@ class BlocFantome:
         self.clock = pygame.time.Clock()
         self.running = True
         
-        # Initialize components
+        # Initialize the modular engine implementations. The legacy in-file
+        # classes remain temporarily for compatibility but are no longer active.
+        from engine.world import World as EngineWorld, init_world_module
+        from engine.renderer import IsometricRenderer as EngineRenderer, set_tile_dimensions
+        init_world_module(BlockType, BLOCK_DEFINITIONS)
+        set_tile_dimensions(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT)
         self.assetManager = AssetManager()
-        self.world = World(GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT)
+        self.world = EngineWorld(GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT)
+        self.cameraFocusZ = 0
+        self.sceneMetadata = {
+            "kind": "build",
+            "provider": "Bloc Fantome",
+            "version": "local",
+        }
+        self.sceneStructurePositions: Set[Tuple[int, int, int]] = set()
+        self.sceneExteriorGlassPositions: Set[Tuple[int, int, int]] = set()
+        self.sceneStructureBounds = None
+        self.sceneTerrainMode = "all"
         
         # Calculate center offset for rendering
         centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
         centerY = WINDOW_HEIGHT // 3
-        self.renderer = IsometricRenderer(centerX, centerY)
+        self.renderer = EngineRenderer(centerX, centerY)
+        from engine.performance import PerformanceMonitor
+        self.performanceMonitor = PerformanceMonitor(window_size=120)
+        self.renderDistanceChunks = 4
+        self._visibleOrderCacheKey = None
+        self._visibleOrderCache = []
+        self._screenPlanCacheKey = None
+        self._screenPlanCache = []
+        self._screenPlanOccluded = 0
+        self._worldSurfaceCacheKey = None
+        self._worldSurfaceCache = None
+        self._worldSurfaceCacheOffset = (0.0, 0.0)
+        self._worldSurfaceMargin = 640
+        self._cameraCacheStep = 256
+        self._screenCullAnchorOffset = None
+        self._renderChunkAnchor = None
+        self._renderChunkHysteresis = 2
+        self.renderStats = {"candidates": 0, "screen_candidates": 0, "drawn": 0, "occluded": 0}
+        self._fogSurfaceKey = None
+        self._fogSurface = None
+        self._zoomPreviewSurface = None
+        self._zoomPreviewPosition = (0, 0)
+        self._zoomPreviewUntil = 0
+        self._zoomPreviewSource = None
+        self._zoomPreviewSourceZoom = 1.0
+        self.fitWorldButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 112, 10, 100, 28)
+        self.shrinkCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 180, 10, 30, 28)
+        self.growCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 146, 10, 30, 28)
+        self.terrainViewButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 354, 10, 166, 28)
         
         # UI state
         self.selectedBlock = BlockType.GRASS
         self.hoveredCell: Optional[Tuple[int, int, int]] = None
         self.hoveredFace: Optional[str] = None  # 'top', 'left', 'right', or None for ground placement
+        self.hoveredSourceBlock: Optional[Tuple[int, int, int]] = None
         self.panelHovered = False
         
         # Brush size (1x1, 2x2, 3x3)
@@ -7665,6 +8244,12 @@ class BlocFantome:
         # Font
         self.font = pygame.font.Font(None, 26)  # Slightly larger for better readability
         self.smallFont = pygame.font.Font(None, 20)  # Slightly larger for better readability
+        from ui.build_library import BuildLibraryModal
+        from ui.world_library import WorldLibraryModal
+        self.buildLibrary = BuildLibraryModal(self.font, self.smallFont)
+        self.worldLibrary = WorldLibraryModal(self.font, self.smallFont, self.assetManager)
+        self.worldLoadExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="world-stage")
+        self.pendingWorldLoad = None
         
         # Panning state
         self.panning = False
@@ -7680,7 +8265,9 @@ class BlocFantome:
         # Structure preview thumbnails (pre-rendered at startup)
         self.structurePreviews: Dict[str, pygame.Surface] = {}
         self.hoveredStructure: Optional[str] = None  # For tooltip display
-        self.structureThumbnailBg: Optional[pygame.Surface] = None  # Cached cobblestone bg
+        self.structureThumbnailBg: Optional[pygame.Surface] = None  # Cached Nether-brick bg
+        self._panelBackgroundCacheKey = None
+        self._panelBackgroundCache = None
         
         # Liquid flow timing and optimization
         self.waterFlowDelay = WATER_FLOW_DELAY
@@ -7688,7 +8275,8 @@ class BlocFantome:
         self.lastWaterFlowTime = 0
         self.lastLavaFlowTime = 0
         self.liquidFlowEnabled = True  # Toggle liquid simulation
-        self.liquidUpdatesPerTick = 8  # Increased from 3 for faster flow
+        self.liquidUpdatesPerTick = 32
+        self.liquidLevelSpriteCache: Dict[Tuple[BlockType, int, int], pygame.Surface] = {}
         
         # Rain system state
         self.rainEnabled = False
@@ -7784,6 +8372,7 @@ class BlocFantome:
         self.blocksExpanded = False
         self.problemsExpanded = False
         self.experimentalExpanded = False
+        self.worldsExpanded = False
         self.structuresExpanded = False
         
         # Current dimension (affects background, floor, and music)
@@ -7802,7 +8391,7 @@ class BlocFantome:
         self.lightingEnabled = False
         self.lightMap: Dict[Tuple[int, int, int], int] = {}
         self.lightingDirty = True  # Flag to recalculate lighting
-        self.litBlockCache: Dict[Tuple[BlockType, int, float, float, float], pygame.Surface] = {}  # Cache lit sprites
+        self.litBlockCache = OrderedDict()  # O(1) LRU for lit sprite variants
         self.litBlockCacheMaxSize = 500  # LRU cache limit to prevent memory bloat
         self.litBlockCacheOrder = []  # Track access order for LRU eviction
         
@@ -7814,12 +8403,14 @@ class BlocFantome:
         
         # Zoom system
         self.zoomLevel = 1.0
-        self.zoomMin = 0.5
+        self.zoomMin = 0.05
         self.zoomMax = 2.0
         self.zoomStep = 0.1
+        self.overviewZoomThreshold = 0.18
         
         # Quick save slots (F5-F8)
         self.quickSaveSlots: Dict[int, str] = {}  # slot number -> filepath
+        self.currentBuildPath: Optional[str] = None
         
         # Block tooltip
         self.showBlockTooltip = True
@@ -7928,6 +8519,8 @@ class BlocFantome:
         # Minimap
         self.showMinimap = True
         self.minimapSize = 100  # Size of minimap in pixels
+        self._minimapCacheKey = None
+        self._minimapCache = None
         self.minimapMargin = 10  # Margin from screen edge
         
         # Replace mode (replace all blocks of type A with type B)
@@ -7992,13 +8585,41 @@ class BlocFantome:
         self.musicFadeTimer = 0
         self.musicFadeDuration = 2500  # 2.5 second fade
         self.pendingDimensionMusic = None  # Dimension to switch to after fade-out
+        from engine.audio import MusicController, PreloadedMusicBackend
+        executableName = os.path.basename(sys.executable).casefold()
+        requestedBackend = os.environ.get("BLOC_FANTOME_AUDIO_BACKEND", "").casefold()
+        if "--audio-stream" in sys.argv:
+            requestedBackend = "stream"
+        elif "--audio-preload" in sys.argv:
+            requestedBackend = "preload"
+        self.audioDiagnosticMode = "diagnostic" in executableName
+        self.audioDiagnosticLastLog = pygame.time.get_ticks()
+        if requestedBackend == "stream":
+            musicBackend = pygame.mixer.music
+            self.musicBackendName = "SDL_mixer streaming"
+        else:
+            musicBackend = PreloadedMusicBackend(pygame.mixer, channel_index=31, logger=print)
+            self.musicBackendName = "preloaded decoded track"
+        self.musicController = MusicController(
+            musicBackend,
+            volume=self.musicVolume,
+            output_headroom=0.65,
+            logger=print,
+        )
+        print(
+            f"Audio: {self.musicBackendName} | mixer={pygame.mixer.get_init()} "
+            f"| buffer={AUDIO_BUFFER_SIZE}"
+        )
         
         # ============ BLOCK PREVIEW GHOST ============
         self.showBlockPreview = True  # Show semi-transparent preview before placement
         self.previewAlpha = 120  # Transparency level for preview (0-255)
         
         # ============ HORROR SYSTEM ============
-        self.horrorEnabled = True  # Master toggle for all horror features
+        # Hidden horror ambience must be opt-in. It previously played cave
+        # one-shots in an otherwise empty Overworld and could be mistaken for
+        # clipped/static audio over the music stream.
+        self.horrorEnabled = False
         self.horrorRainEnabled = False  # Black rain with reversed sounds
         self.horrorRainSound = None  # Reversed/pitched rain sound
         self.horrorRainSoundChannel = None
@@ -8045,7 +8666,7 @@ class BlocFantome:
         # Load user preferences from config file
         self._loadAppConfig()
     
-    def _setAppIconEarly(self):
+    def _legacySetAppIconEarly(self):
         """Set app icon BEFORE display is created (critical for Windows taskbar)"""
         iconSize = 32
         icon = pygame.Surface((iconSize, iconSize), pygame.SRCALPHA)
@@ -8174,7 +8795,7 @@ class BlocFantome:
             return (total_r // count, total_g // count, total_b // count)
         return (128, 128, 128)
     
-    def _setAppIcon(self):
+    def _legacySetAppIcon(self):
         """Update app icon with high quality version (called after assets load)"""
         # On Windows, re-set the icon AFTER display is created to ensure taskbar shows it
         iconSize = 32
@@ -8268,6 +8889,21 @@ class BlocFantome:
             
             pygame.display.set_icon(icon)
     
+    def _setAppIconEarly(self):
+        """Set the same padded model used by the packaged multi-size icon."""
+        texture = None
+        texturePath = os.path.join(TEXTURES_DIR, "end_stone.png")
+        if os.path.isfile(texturePath):
+            try:
+                texture = pygame.image.load(texturePath)
+            except pygame.error:
+                texture = None
+        pygame.display.set_icon(render_app_icon_surface(texture, 64))
+
+    def _setAppIcon(self):
+        texture = self.assetManager.textures.get("end_stone")
+        pygame.display.set_icon(render_app_icon_surface(texture, 64))
+
     def _loadAppConfig(self) -> None:
         """Load app preferences from config file (expanded categories, hotbar, etc.)"""
         try:
@@ -8313,6 +8949,7 @@ class BlocFantome:
                     
                     # Restore search history
                     self.searchHistory = config.get("searchHistory", [])[:self.maxSearchHistory]
+                    self.musicController.last_track = config.get("lastMusicTrack")
                     
         except Exception as e:
             print(f"Could not load app config: {e}")
@@ -8332,6 +8969,10 @@ class BlocFantome:
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
                 "hotbar": [b.name for b in self.hotbar],
                 "searchHistory": self.searchHistory,
+                "lastMusicTrack": (
+                    os.path.basename(self.musicController.last_track)
+                    if self.musicController.last_track else None
+                ),
             }
             with open(APP_CONFIG_FILE, 'w') as f:
                 json.dump(config, f, indent=2)
@@ -8421,10 +9062,12 @@ class BlocFantome:
         
         # Main loop
         while self.running:
+            self.performanceMonitor.frame_start()
             self._handleEvents()
             self._update()
             self._render()
             self.clock.tick(60)
+            self.performanceMonitor.frame_end()
         
         # Save user preferences before quitting
         self._saveAppConfig()
@@ -8432,38 +9075,40 @@ class BlocFantome:
         # Clean up
         if self.rainEnabled:
             self._stopRain()
-        pygame.mixer.music.stop()
+        self.musicController.stop()
+        self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
         pygame.quit()
     
     def _rotateViewAndRecenter(self, direction: int):
-        """Rotate view and recenter on the grid at a lower position"""
+        """Rotate around the world point currently at the viewport center."""
+        centerX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
+        centerY = WINDOW_HEIGHT / 2.0
+        anchorX, anchorY = self.renderer.screenToWorld(
+            centerX, centerY, self.cameraFocusZ
+        )
         self.renderer.rotateView(direction)
-        
-        # Recenter the view on the middle of the grid - position lower on screen
-        centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
-        centerY = WINDOW_HEIGHT // 2 + 50  # Lower position (was // 3)
-        
-        # Calculate where the grid center should be in screen coords
-        gridCenterX = GRID_WIDTH // 2
-        gridCenterY = GRID_DEPTH // 2
-        
-        # Get screen position of grid center with new rotation
-        self.renderer.offsetX = centerX
-        self.renderer.offsetY = centerY
-        screenX, screenY = self.renderer.worldToScreen(gridCenterX, gridCenterY, 0)
-        
-        # Adjust offset so grid center is at screen center
-        self.renderer.offsetX = centerX - (screenX - centerX)
-        self.renderer.offsetY = centerY - (screenY - centerY)
-        
-        # Update smooth camera targets
+        screenX, screenY = self.renderer.worldToScreen(
+            anchorX, anchorY, self.cameraFocusZ
+        )
+        self.renderer.offsetX += centerX - screenX
+        self.renderer.offsetY += centerY - screenY
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
-        
+        self._invalidateViewCaches()
         print(f"View rotated: {self.renderer.viewRotation * 90}°")
+
+    def _invalidateViewCaches(self) -> None:
+        """Invalidate projection-dependent plans while preserving sprite mips."""
+        self._visibleOrderCacheKey = None
+        self._screenPlanCacheKey = None
+        self._worldSurfaceCacheKey = None
+        self._worldSurfaceCache = None
+        self._renderChunkAnchor = None
+        self._screenCullAnchorOffset = None
     
     def _centerOnCell(self, worldX: int, worldY: int, worldZ: int):
         """Center the view on a specific world cell"""
+        self.cameraFocusZ = worldZ
         centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
         centerY = WINDOW_HEIGHT // 2
         
@@ -8502,24 +9147,38 @@ class BlocFantome:
             self.tooltipTimer = 1000
         else:
             # Center on grid center
-            self._centerOnCell(GRID_WIDTH // 2, GRID_DEPTH // 2, 0)
+            self._centerOnCell(self.world.width // 2, self.world.depth // 2, self.world.min_y)
             self.tooltipText = "Centered on grid"
             self.tooltipTimer = 1000
     
     def _playMenuMusic(self, dimension: str = None):
-        """Play a random song based on dimension with crossfade transition"""
+        """Activate the shuffled playlist for a dimension."""
         if dimension is None:
             dimension = self.currentDimension
-        
-        # If music is playing, start fade-out and queue the new dimension
-        if pygame.mixer.music.get_busy() and not self.musicFadingOut:
-            self.pendingDimensionMusic = dimension
-            self.musicFadingOut = True
-            self.musicFadingIn = False
-            self.musicFadeTimer = 0
-            return
-        
-        # Choose music directory based on dimension
+
+        musicFiles = self._dimensionMusicFiles(dimension)
+
+        # Also include custom user music (.ogg and .mp3 files)
+        if os.path.exists(CUSTOM_MUSIC_DIR):
+            for f in os.listdir(CUSTOM_MUSIC_DIR):
+                if f.lower().endswith(('.ogg', '.mp3', '.wav')):
+                    musicFiles.append(os.path.join(CUSTOM_MUSIC_DIR, f))
+            customCount = len([f for f in os.listdir(CUSTOM_MUSIC_DIR) if f.lower().endswith(('.ogg', '.mp3', '.wav'))])
+            if customCount > 0:
+                print(f"  Added {customCount} custom music track(s) from saves/custom_music")
+
+        self.musicFiles = musicFiles
+        if musicFiles:
+            musicFiles.sort(key=lambda path: os.path.basename(path).casefold())
+            self.musicController.set_endevent(pygame.USEREVENT + 1)
+            # Dimension changes must never leave a long or failed silent fade.
+            # The preloaded backend swaps the decoded track atomically.
+            self.musicController.set_playlist(musicFiles, fade=False)
+
+    @staticmethod
+    def _dimensionMusicFiles(dimension: str) -> List[str]:
+        """Return a dimension playlist without leaking Nether/End tracks."""
+
         if dimension == DIMENSION_NETHER:
             musicDir = MUSIC_DIR_NETHER
         elif dimension == DIMENSION_END:
@@ -8528,66 +9187,27 @@ class BlocFantome:
             musicDir = MUSIC_DIR
         
         # Collect all ogg files recursively (for nether subdirectories)
-        self.musicFiles = []
+        musicFiles = []
         if os.path.exists(musicDir):
             for root, dirs, files in os.walk(musicDir):
+                if dimension == DIMENSION_OVERWORLD and os.path.normcase(root) == os.path.normcase(MUSIC_DIR):
+                    dirs[:] = [folder for folder in dirs if folder.lower() not in ("nether", "end")]
                 for f in files:
-                    if f.endswith('.ogg'):
-                        self.musicFiles.append(os.path.join(root, f))
-        
-        # Also include custom user music (.ogg and .mp3 files)
-        if os.path.exists(CUSTOM_MUSIC_DIR):
-            for f in os.listdir(CUSTOM_MUSIC_DIR):
-                if f.lower().endswith(('.ogg', '.mp3', '.wav')):
-                    self.musicFiles.append(os.path.join(CUSTOM_MUSIC_DIR, f))
-            customCount = len([f for f in os.listdir(CUSTOM_MUSIC_DIR) if f.lower().endswith(('.ogg', '.mp3', '.wav'))])
-            if customCount > 0:
-                print(f"  Added {customCount} custom music track(s) from saves/custom_music")
-        
-        if self.musicFiles:
-            # Shuffle playlist
-            random.shuffle(self.musicFiles)
-            self.currentMusicIndex = 0
-            self._playNextSong()
-            
-            # Set up end event for continuous playback
-            pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
+                    if f.lower().endswith(('.ogg', '.mp3', '.wav')):
+                        musicFiles.append(os.path.join(root, f))
+        return musicFiles
     
     def _playNextSong(self):
-        """Play the next song in the playlist with fade"""
-        if not hasattr(self, 'musicFiles') or not self.musicFiles:
-            return
-        
-        # Get next song
-        selectedPath = self.musicFiles[self.currentMusicIndex]
-        selectedName = os.path.basename(selectedPath)
-        
-        try:
-            pygame.mixer.music.load(selectedPath)
-            pygame.mixer.music.set_volume(0)  # Start silent for fade-in
-            pygame.mixer.music.play()
-            
-            # Start fade-in (faster fade so music is heard sooner)
-            self.musicFadingIn = True
-            self.musicFadeTimer = 0
-            self.musicFadeDuration = 1500  # 1.5 second fade (was 3s)
-            
-            print(f"Now playing: {selectedName}")
-            
-            # Move to next song (loop around)
-            self.currentMusicIndex = (self.currentMusicIndex + 1) % len(self.musicFiles)
-        except Exception as e:
-            print(f"Could not play music: {e}")
-            # Try next song
-            self.currentMusicIndex = (self.currentMusicIndex + 1) % len(self.musicFiles)
+        """Compatibility wrapper for natural playlist progression."""
+        return self.musicController.play_next()
     
     def _generateStructurePreviews(self):
         """
-        Pre-render isometric thumbnail previews for all structures.
-        Creates 115x75 thumbnails with the same isometric view as the main grid.
+        Pre-render detailed previews for all structures. The panel scales these
+        down to thumbnails, while hover uses the full-size inspectable flyout.
         """
-        PREVIEW_WIDTH = 115
-        PREVIEW_HEIGHT = 75
+        PREVIEW_WIDTH = 360
+        PREVIEW_HEIGHT = 240
         
         for structName, structData in PREMADE_STRUCTURES.items():
             # Create transparent surface for preview
@@ -8628,7 +9248,8 @@ class BlocFantome:
             # Calculate actual rendered bounds to center vertically
             # First pass: find the actual screen Y range after scaling
             allScreenY = []
-            for bx, by, bz, blockType in blocks:
+            for block in blocks:
+                bx, by, bz, blockType, _ = _structureBlockParts(block)
                 nx = bx - minX
                 ny = by - minY
                 nz = bz - minZ
@@ -8653,7 +9274,8 @@ class BlocFantome:
             sortedBlocks = sorted(blocks, key=lambda b: b[0] + b[1] + b[2])
             
             # Draw each block
-            for bx, by, bz, blockType in sortedBlocks:
+            for block in sortedBlocks:
+                bx, by, bz, blockType, _ = _structureBlockParts(block)
                 # Normalize coordinates relative to structure min
                 nx = bx - minX
                 ny = by - minY
@@ -8698,9 +9320,42 @@ class BlocFantome:
         else:
             floorBlock = BlockType.GRASS
         
-        for x in range(GRID_WIDTH):
-            for y in range(GRID_DEPTH):
+        for x in range(self.world.width):
+            for y in range(self.world.depth):
                 self.world.setBlock(x, y, 0, floorBlock)
+
+    def _addTutorialEndIsland(self) -> None:
+        """Place the tutorial tower on a compact, editable End-stone island."""
+        width = max(16, self.world.width)
+        depth = max(16, self.world.depth)
+        height = max(20, self.world.height)
+        if (width, depth, height) != (self.world.width, self.world.depth, self.world.height):
+            self.world.resize(width, depth, height, min_y=0, preserve=True)
+
+        centerX = (width - 1) / 2.0
+        centerY = (depth - 1) / 2.0
+        with self.world.bulkUpdate():
+            for x in range(width):
+                for y in range(depth):
+                    dx = (x - centerX) / 7.2
+                    dy = (y - centerY) / 6.7
+                    edgeNoise = (((x * 37 + y * 19) % 11) - 5) * 0.018
+                    distance = dx * dx + dy * dy + edgeNoise
+                    if distance > 1.0:
+                        continue
+                    top = 2 if distance < 0.78 else 1
+                    bottom = 0 if distance < 0.58 else 1
+                    for z in range(bottom, top + 1):
+                        if self.world.getBlock(x, y, z) == BlockType.AIR:
+                            self.world.setBlock(x, y, z, BlockType.END_STONE)
+
+            for x, y, plantHeight in ((1, 7, 3), (13, 5, 4), (12, 13, 3)):
+                top = self.world.getHighestBlock(x, y)
+                if top < 0:
+                    continue
+                for offset in range(1, plantHeight + 1):
+                    self.world.setBlock(x, y, top + offset, BlockType.CHORUS_PLANT)
+                self.world.setBlock(x, y, top + plantHeight + 1, BlockType.CHORUS_FLOWER)
     
     def _switchDimension(self, newDimension: str):
         """Switch to a different dimension (changes background, floor, and music)"""
@@ -8726,6 +9381,8 @@ class BlocFantome:
             self._stopCelestial()
         
         self.currentDimension = newDimension
+        if hasattr(self.world, 'setDimension'):
+            self.world.setDimension(newDimension)
         
         # Update background
         self.assetManager._createBackground(newDimension)
@@ -8733,6 +9390,11 @@ class BlocFantome:
         # Clear and recreate floor
         self.world.clear()
         self._createInitialFloor(newDimension)
+        self.sceneStructurePositions.clear()
+        self.sceneExteriorGlassPositions.clear()
+        self.sceneStructureBounds = None
+        self.sceneTerrainMode = "all"
+        self._frameCurrentCanvas()
         
         # Switch music
         self._playMenuMusic(newDimension)
@@ -8751,7 +9413,7 @@ class BlocFantome:
         is_horror = step.get("is_horror", False)
         
         # First, always unpause music to ensure clean state for dimension switches
-        pygame.mixer.music.unpause()
+        self.musicController.unpause()
         
         # ===== Determine required dimension for this step =====
         # Default to Overworld unless specified otherwise
@@ -8941,13 +9603,15 @@ class BlocFantome:
             self._createInitialFloor()
             print(f"Tutorial step {stepIndex + 1}: Cleared world")
         elif demo and demo.startswith("save:"):
-            # Load a save file using _loadBuilding
+            # Tutorial showcases are bundled read-only structures, not user saves.
             saveName = demo[5:]  # Remove "save:" prefix
             saveFilename = f"{saveName}.json"
             try:
-                success = self._loadBuilding(saveFilename, silent=True)
+                showcasePath = os.path.join(BUILTIN_STRUCTURES_DIR, saveFilename)
+                success = self._loadBuildingFromPath(showcasePath, silent=True)
                 if success:
-                    pass  # Silent load for tutorial
+                    if title == "The End":
+                        self._addTutorialEndIsland()
                 else:
                     # Fallback to empty world
                     self.world.clear()
@@ -8971,8 +9635,8 @@ class BlocFantome:
                 minZ = min(b[2] for b in structure["blocks"])
                 
                 # Center at grid center (around middle of grid)
-                centerX = GRID_WIDTH // 2 - (maxX + minX) // 2
-                centerY = GRID_DEPTH // 2 - (maxY + minY) // 2
+                centerX = self.world.width // 2 - (maxX + minX) // 2
+                centerY = self.world.depth // 2 - (maxY + minY) // 2
                 
                 # Only for Structures Library panel (empty_platform): don't create floor since it has its own
                 # All other panels: create floor and place structure on top
@@ -8984,12 +9648,15 @@ class BlocFantome:
                     self._createInitialFloor()
                     centerZ = 1
                 
-                for x, y, z, blockType in structure["blocks"]:
+                for block in structure["blocks"]:
+                    x, y, z, blockType, properties = _structureBlockParts(block)
                     placeX = x + centerX
                     placeY = y + centerY
                     placeZ = z + centerZ
-                    if 0 <= placeX < GRID_WIDTH and 0 <= placeY < GRID_DEPTH and 0 <= placeZ < GRID_HEIGHT:
+                    if self.world.isInBounds(placeX, placeY, placeZ):
                         self.world.setBlock(placeX, placeY, placeZ, blockType)
+                        if properties is not None:
+                            self.world.setBlockProperties(placeX, placeY, placeZ, properties.copy())
                 
                 print(f"Tutorial step {stepIndex + 1}: Loaded '{demo}' structure")
                 
@@ -9010,7 +9677,7 @@ class BlocFantome:
                     ]
                     
                     for mx, my, mz, mBlockType in mistakeBlocks:
-                        if 0 <= mx < GRID_WIDTH and 0 <= my < GRID_DEPTH and 0 <= mz < GRID_HEIGHT:
+                        if self.world.isInBounds(mx, my, mz):
                             self._placeBlockWithUndo(mx, my, mz, mBlockType)
                     
                     print(f"Tutorial: Pre-placed {len(mistakeBlocks)} undoable 'mistake' blocks")
@@ -9018,10 +9685,23 @@ class BlocFantome:
             # Don't clear - let user keep their work
             pass
         
+        self._normalizeSpecialBlockTopology()
+
+        if title in ("The Nether", "The End") and self.world.blocks:
+            # These tutorial showcases are tall silhouettes. Fit them first,
+            # then bias the occupied bounds below screen center so their roofs
+            # do not start underneath the tutorial card.
+            self._fitWorldToViewport(notify=False)
+            tutorialClearance = 82
+            self.renderer.offsetY += tutorialClearance
+            self.targetOffsetX = self.renderer.offsetX
+            self.targetOffsetY = self.renderer.offsetY
+            self._invalidateViewCaches()
+
         # Horror mode: pause music AFTER demo is loaded (so dimension music starts first)
         if is_horror:
             # Give music a moment to start, then pause for eerie effect
-            pygame.mixer.music.pause()
+            self.musicController.pause()
             print("Tutorial: Paused music for horror effect")
     
     def _onTutorialEnd(self) -> None:
@@ -9031,7 +9711,7 @@ class BlocFantome:
             self._switchDimension(DIMENSION_OVERWORLD)
         
         # Make sure music is unpaused (in case horror mode paused it)
-        pygame.mixer.music.unpause()
+        self.musicController.unpause()
         
         # Reset lighting when tutorial ends
         if self.lightingEnabled:
@@ -9061,6 +9741,19 @@ class BlocFantome:
     def _handleEvents(self) -> None:
         """Handle pygame events"""
         for event in pygame.event.get():
+            if self.worldLibrary.visible:
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    continue
+                self._handleWorldLibraryAction(self.worldLibrary.handle_event(event))
+                continue
+            if self.buildLibrary.visible:
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    continue
+                self._handleBuildLibraryAction(self.buildLibrary.handle_event(event))
+                continue
+
             # Let tutorial handle events first if visible
             if self.tutorialScreen.handleEvent(event):
                 continue
@@ -9069,8 +9762,7 @@ class BlocFantome:
                 self.running = False
             
             elif event.type == pygame.USEREVENT + 1:
-                # Music ended event - play next song
-                self._playNextSong()
+                self.musicController.handle_end_event()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self._handleMouseDown(event)
@@ -9122,6 +9814,35 @@ class BlocFantome:
         # If settings menu is open, handle settings clicks
         if self.settingsMenuOpen:
             self._handleSettingsClick(mouseX, mouseY)
+            return
+
+        if event.button == 1 and self.fitWorldButtonRect.collidepoint(mouseX, mouseY):
+            self._fitWorldToViewport()
+            self.assetManager.playClickSound()
+            return
+        if (
+            event.button == 1
+            and self.sceneStructurePositions
+            and self.terrainViewButtonRect.collidepoint(mouseX, mouseY)
+        ):
+            modes = ("all", "transparent", "hidden")
+            self.sceneTerrainMode = modes[(modes.index(self.sceneTerrainMode) + 1) % len(modes)]
+            self._invalidateViewCaches()
+            self.tooltipText = {
+                "all": "Terrain opaque",
+                "transparent": "Terrain transparent",
+                "hidden": "Structure only",
+            }[self.sceneTerrainMode]
+            self.tooltipTimer = 1400
+            self.assetManager.playClickSound()
+            return
+        if event.button == 1 and self.shrinkCanvasButtonRect.collidepoint(mouseX, mouseY):
+            self._resizeCanvas(-16)
+            self.assetManager.playClickSound()
+            return
+        if event.button == 1 and self.growCanvasButtonRect.collidepoint(mouseX, mouseY):
+            self._resizeCanvas(16)
+            self.assetManager.playClickSound()
             return
         
         # Check if clicking on hotbar
@@ -9180,16 +9901,10 @@ class BlocFantome:
         
         elif event.button == 3:  # Right click - interact or remove block
             # First try to interact with doors
-            if self.hoveredCell:
-                x, y, z = self.hoveredCell
-                # Check if there's a door at or below the hover position
-                for checkZ in range(z, -1, -1):
-                    blockType = self.world.getBlock(x, y, checkZ)
-                    if blockType != BlockType.AIR:
-                        # Try to toggle door first
-                        if self._toggleDoor(x, y, checkZ):
-                            return
-                        break
+            if self.hoveredSourceBlock:
+                x, y, z = self.hoveredSourceBlock
+                if self._toggleDoor(x, y, z):
+                    return
             # If not a door, remove the block
             self._removeBlockAtMouse(mouseX, mouseY)
         
@@ -9250,6 +9965,7 @@ class BlocFantome:
         else:
             self.hoveredCell = None
             self.hoveredFace = None
+            self.hoveredSourceBlock = None
             # Update panel hover
             self._updatePanelHover(mouseX, mouseY)
     
@@ -9369,10 +10085,10 @@ class BlocFantome:
         # Layer view toggle
         elif event.key == pygame.K_PERIOD:  # > key (without shift is .)
             if self.layerViewEnabled:
-                self.currentViewLayer = min(self.currentViewLayer + 1, GRID_HEIGHT - 1)
+                self.currentViewLayer = min(self.currentViewLayer + 1, self.world.max_y_exclusive - 1)
         elif event.key == pygame.K_COMMA:  # < key (without shift is ,)
             if self.layerViewEnabled and not (mods & pygame.KMOD_CTRL):  # Not Ctrl+, for settings
-                self.currentViewLayer = max(self.currentViewLayer - 1, 0)
+                self.currentViewLayer = max(self.currentViewLayer - 1, self.world.min_y)
         elif event.key == pygame.K_SLASH:  # / key - toggle layer view
             self.layerViewEnabled = not self.layerViewEnabled
             if self.layerViewEnabled:
@@ -9385,6 +10101,8 @@ class BlocFantome:
         elif event.key == pygame.K_e:
             # Rotate view clockwise
             self._rotateViewAndRecenter(1)
+        elif event.key == pygame.K_HOME:
+            self._fitWorldToViewport()
         
         # Fill tool (F key, without ctrl)
         elif event.key == pygame.K_f and not (mods & pygame.KMOD_CTRL):
@@ -9401,7 +10119,7 @@ class BlocFantome:
             if self.hoveredCell:
                 x, y, z = self.hoveredCell
                 # Find the block at or below hover
-                for checkZ in range(z, -1, -1):
+                for checkZ in range(z, self.world.min_y - 1, -1):
                     blockType = self.world.getBlock(x, y, checkZ)
                     if blockType != BlockType.AIR:
                         # Replace all blocks of this type with selected block
@@ -9433,12 +10151,15 @@ class BlocFantome:
                         centerX = GRID_WIDTH // 2 - 3
                         centerY = GRID_DEPTH // 2 - 3
                         centerZ = 3  # Place on elevated terrain
-                        for x, y, z, blockType in structure["blocks"]:
+                        for block in structure["blocks"]:
+                            x, y, z, blockType, properties = _structureBlockParts(block)
                             placeX = x + centerX
                             placeY = y + centerY
                             placeZ = z + centerZ
-                            if 0 <= placeX < GRID_WIDTH and 0 <= placeY < GRID_DEPTH and 0 <= placeZ < GRID_HEIGHT:
+                            if self.world.isInBounds(placeX, placeY, placeZ):
                                 self.world.setBlock(placeX, placeY, placeZ, blockType)
+                                if properties is not None:
+                                    self.world.setBlockProperties(placeX, placeY, placeZ, properties.copy())
                         self.assetManager.playSound("stone")
                         print("Tutorial: Placed watchtower structure")
                     return
@@ -9450,8 +10171,7 @@ class BlocFantome:
         elif event.key == pygame.K_c:
             if not (mods & pygame.KMOD_CTRL):  # Plain C to clear
                 self.world.clear()
-                if hasattr(self, 'liquidSpriteCache'):
-                    self.liquidSpriteCache.clear()
+                self.liquidLevelSpriteCache.clear()
                 self._createInitialFloor()
                 self.assetManager.playSound("stone")
                 print("World cleared")
@@ -9479,30 +10199,27 @@ class BlocFantome:
         elif event.key == pygame.K_f:
             # Toggle slab position (top/bottom) for preview or existing block
             blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
-            if blockDef and blockDef.isSlab:
-                # Toggle preview slab position
+            if blockDef and (blockDef.isSlab or blockDef.isStair):
+                # Slabs and stairs both support top/bottom placement.
                 if self.previewSlabPosition == SlabPosition.BOTTOM:
                     self.previewSlabPosition = SlabPosition.TOP
                 else:
                     self.previewSlabPosition = SlabPosition.BOTTOM
-                print(f"Preview slab: {self.previewSlabPosition.name}")
+                print(f"Preview half: {self.previewSlabPosition.name}")
             else:
                 # Try to toggle existing slab
                 self._toggleSlabPosition()
         
         elif event.key == pygame.K_s and mods & pygame.KMOD_CTRL:
-            # Save build (Ctrl+S)
-            self._saveBuilding()
+            if mods & pygame.KMOD_SHIFT:
+                self._openSaveAsDialog()
+            else:
+                self._saveBuilding()
             self.assetManager.playClickSound()
         
         elif event.key == pygame.K_o and mods & pygame.KMOD_CTRL:
-            # Load build (Ctrl+O) - loads most recent save
-            saveFiles = self._getSaveFiles()
-            if saveFiles:
-                self._loadBuilding(saveFiles[0])
-                self.assetManager.playClickSound()
-            else:
-                print("No saved builds found")
+            self._openLoadDialog()
+            self.assetManager.playClickSound()
         
         elif event.key == pygame.K_SLASH and mods & pygame.KMOD_SHIFT:
             # Toggle shortcuts panel (? key = Shift+/)
@@ -9825,7 +10542,12 @@ class BlocFantome:
                     self._switchDimension(dimKey)
                     return
                 dimY += 35
-            
+
+            if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+                self._generateTerrainSlice()
+                return
+            dimY += 35
+
             # Check Show Tutorial button
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
                 self.tutorialScreen.show()
@@ -9870,6 +10592,14 @@ class BlocFantome:
             
             currentY = dimY + 5
         
+        # ===== CHECK WORLDS MAIN BUTTON =====
+        worldsTop = currentY
+        worldsBottom = currentY + mainButtonHeight
+        if worldsTop <= panelY <= worldsBottom and ICON_MARGIN <= panelX <= PANEL_WIDTH - ICON_MARGIN:
+            self._openWorldLibrary()
+            return
+        currentY += mainButtonHeight + 5
+
         # ===== CHECK STRUCTURES MAIN BUTTON =====
         structuresTop = currentY
         structuresBottom = currentY + mainButtonHeight
@@ -9911,9 +10641,13 @@ class BlocFantome:
             numRows = (len(structureList) + PREVIEWS_PER_ROW - 1) // PREVIEWS_PER_ROW
             currentY = structureY + numRows * (PREVIEW_HEIGHT + PREVIEW_MARGIN) + 5
         
-        # ===== CHECK SAVE/LOAD BUTTONS (using stored rects from render) =====
+        # ===== CHECK BUILD FILE BUTTONS (using stored rects from render) =====
         if hasattr(self, 'saveBtnRect') and self.saveBtnRect.collidepoint(mouseX, mouseY):
             self._saveBuilding()
+            self.assetManager.playClickSound()
+            return
+        if hasattr(self, 'saveAsBtnRect') and self.saveAsBtnRect.collidepoint(mouseX, mouseY):
+            self._openSaveAsDialog()
             self.assetManager.playClickSound()
             return
         if hasattr(self, 'loadBtnRect') and self.loadBtnRect.collidepoint(mouseX, mouseY):
@@ -9942,9 +10676,9 @@ class BlocFantome:
             if relMuteX <= panelX <= relMuteX + muteSize and sliderY <= mouseY <= sliderY + 20:
                 self.musicMuted = not getattr(self, 'musicMuted', False)
                 if self.musicMuted:
-                    pygame.mixer.music.set_volume(0)
+                    self.musicController.set_volume(0)
                 else:
-                    pygame.mixer.music.set_volume(self.musicVolume)
+                    self.musicController.set_volume(self.musicVolume)
                 self.assetManager.playClickSound()
                 return
             # Music slider track - start dragging
@@ -9994,7 +10728,7 @@ class BlocFantome:
                 self.assetManager.playClickSound()
                 return
     
-    def _detectBlockFace(self, mouseX: int, mouseY: int, blockX: int, blockY: int, blockZ: int) -> Optional[str]:
+    def _legacyDetectBlockFace(self, mouseX: int, mouseY: int, blockX: int, blockY: int, blockZ: int) -> Optional[str]:
         """
         Detect which face of an isometric block was clicked.
         
@@ -10068,7 +10802,7 @@ class BlocFantome:
         
         return None
     
-    def _updateHoveredCell(self, mouseX: int, mouseY: int):
+    def _legacyUpdateHoveredCell(self, mouseX: int, mouseY: int):
         """Update the currently hovered cell based on face detection for 3D building"""
         # We need to find which block face the mouse is over
         # The challenge: side faces of blocks behind can overlap with top faces in front
@@ -10080,7 +10814,7 @@ class BlocFantome:
         # Check blocks at each Z level, using screenToWorld at that level for accuracy
         # Increased search range for better accuracy at edges
         searchRange = 3
-        for z in range(GRID_HEIGHT - 1, -1, -1):
+        for z in range(self.world.max_y_exclusive - 1, self.world.min_y - 1, -1):
             # Get approximate world position at this Z level
             baseX, baseY = self.renderer.screenToWorld(mouseX, mouseY, z)
             
@@ -10141,7 +10875,7 @@ class BlocFantome:
             # The visual "left" and "right" sides change as we rotate
             if face == 'top':
                 # Place block on top of this block
-                if bz + 1 < GRID_HEIGHT:
+                if bz + 1 < self.world.max_y_exclusive:
                     self.hoveredCell = (bx, by, bz + 1)
                 else:
                     self.hoveredCell = (bx, by, bz)
@@ -10162,7 +10896,7 @@ class BlocFantome:
                     self.hoveredCell = (newX, newY, bz)
                 else:
                     # Fallback to top
-                    if bz + 1 < GRID_HEIGHT:
+                    if bz + 1 < self.world.max_y_exclusive:
                         self.hoveredCell = (bx, by, bz + 1)
                     else:
                         self.hoveredCell = (bx, by, bz)
@@ -10183,7 +10917,7 @@ class BlocFantome:
                     self.hoveredCell = (newX, newY, bz)
                 else:
                     # Fallback to top
-                    if bz + 1 < GRID_HEIGHT:
+                    if bz + 1 < self.world.max_y_exclusive:
                         self.hoveredCell = (bx, by, bz + 1)
                     else:
                         self.hoveredCell = (bx, by, bz)
@@ -10191,15 +10925,134 @@ class BlocFantome:
         
         # No block found - default to ground level placement
         self.hoveredFace = None
-        worldX, worldY = self.renderer.screenToWorld(mouseX, mouseY, 0)
-        if self.world.isInBounds(worldX, worldY, 0):
+        worldX, worldY = self.renderer.screenToWorld(mouseX, mouseY, self.world.min_y)
+        if self.world.isInBounds(worldX, worldY, self.world.min_y):
             highestZ = self.world.getHighestBlock(worldX, worldY)
-            targetZ = min(highestZ + 1, GRID_HEIGHT - 1)
+            targetZ = min(highestZ + 1, self.world.max_y_exclusive - 1)
             self.hoveredCell = (worldX, worldY, targetZ)
         else:
             self.hoveredCell = None
             self.hoveredFace = None
     
+    def _detectBlockFace(self, mouseX: int, mouseY: int, blockX: int, blockY: int, blockZ: int) -> Optional[str]:
+        return self.renderer.detectBlockFace(mouseX, mouseY, blockX, blockY, blockZ)
+
+    def _targetForBlockFace(self, x: int, y: int, z: int, face: str) -> Optional[Tuple[int, int, int]]:
+        if face == 'top':
+            target = (x, y, z + 1)
+        else:
+            viewRot = self.renderer.viewRotation
+            faceDirections = {
+                'left': ((0, 1), (1, 0), (0, -1), (-1, 0)),
+                'right': ((1, 0), (0, -1), (-1, 0), (0, 1)),
+            }
+            dx, dy = faceDirections[face][viewRot]
+            target = (x + dx, y + dy, z)
+        if self.world.isInBounds(*target) and self.world.getBlock(*target) == BlockType.AIR:
+            return target
+        return None
+
+    def _pickRenderedBlockFace(
+        self, mouseX: int, mouseY: int, x: int, y: int, z: int, blockType: BlockType
+    ) -> Optional[str]:
+        """Pick the actual visible model pixel and return its rendered face."""
+        blockDef = BLOCK_DEFINITIONS.get(blockType)
+        props = self.world.getBlockProperties(x, y, z)
+        viewRot = self.renderer.viewRotation
+        modelRenderer = self.assetManager.blockModelRenderer
+        boxes = modelRenderer.cube_boxes()
+        alreadyViewOriented = False
+
+        if blockDef and blockDef.modelKind:
+            props = props or BlockProperties()
+            facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+            relativeFacing = Facing((facing.value - viewRot) % 4)
+            sprite = self.assetManager.getDetailSprite(
+                blockType, relativeFacing, props.isOpen, props.slabPosition
+            )
+            boxes = modelRenderer.detail_boxes(
+                blockDef.modelKind, relativeFacing, props.isOpen, props.slabPosition
+            )
+            alreadyViewOriented = True
+        elif blockDef and blockDef.isDoor and props:
+            facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+            relativeFacing = Facing((facing.value - viewRot) % 4)
+            sprite = self.assetManager.getDoorSprite(
+                blockType, relativeFacing, props.isOpen, props.doorHinge, props.doorHalf
+            )
+            boxes = modelRenderer.door_boxes(relativeFacing, props.isOpen, props.doorHinge)
+            alreadyViewOriented = True
+        elif blockDef and blockDef.isStair and props:
+            facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+            relativeFacing = Facing((facing.value - viewRot) % 4)
+            sprite = self.assetManager.getStairSprite(
+                blockType, relativeFacing, props.stairShape, props.slabPosition
+            )
+            boxes = modelRenderer.stair_boxes(
+                relativeFacing, props.stairShape, props.slabPosition
+            )
+            alreadyViewOriented = True
+        elif blockDef and blockDef.isSlab:
+            half = props.slabPosition if props else SlabPosition.BOTTOM
+            sprite = self.assetManager.slabSprites.get((blockType, half))
+            boxes = modelRenderer.slab_boxes(half)
+        elif blockType in (BlockType.WATER, BlockType.LAVA):
+            level = self.world.getLiquidLevel(x, y, z)
+            if 0 < level < 8:
+                sprite = self.assetManager.createLiquidAtLevel(blockType == BlockType.WATER, level)
+            else:
+                sprite = self.assetManager.getBlockSprite(blockType)
+            liquidHeight = max(2.0, 14.0 * max(1, level) / 8.0)
+            boxes = ((0, 0, 0, 16, 16, liquidHeight),)
+        else:
+            sprite = self.assetManager.getBlockSprite(blockType)
+
+        if sprite is None:
+            return None
+
+        screenX, screenY = self.renderer.worldToScreen(x, y, z)
+        drawX = screenX - int(TILE_WIDTH * self.zoomLevel) // 2
+        localX = int((mouseX - drawX) / self.zoomLevel)
+        localY = int((mouseY - screenY) / self.zoomLevel)
+        if not (0 <= localX < sprite.get_width() and 0 <= localY < sprite.get_height()):
+            return None
+
+        sampleX = localX
+        if viewRot in (1, 3) and not alreadyViewOriented:
+            sampleX = sprite.get_width() - 1 - localX
+        if sprite.get_at((sampleX, localY)).a < 8:
+            return None
+
+        face = modelRenderer.pick_box_face(localX, localY, boxes)
+        if face is not None:
+            return face
+        # Rasterized edge pixels can sit one pixel outside the analytical box
+        # polygon. They are still visibly owned by this block, so retain the
+        # renderer's cube-face classifier as an edge-only fallback.
+        return self.renderer.detectBlockFace(mouseX, mouseY, x, y, z)
+
+    def _updateHoveredCell(self, mouseX: int, mouseY: int):
+        """Pick the topmost visible model pixel using the render draw order."""
+        for _sortKey, x, y, z, blockType in reversed(self._visibleBlocksInDrawOrder()):
+            face = self._pickRenderedBlockFace(mouseX, mouseY, x, y, z, blockType)
+            if face is None:
+                continue
+            self.hoveredSourceBlock = (x, y, z)
+            self.hoveredFace = face
+            self.hoveredCell = self._targetForBlockFace(x, y, z, face)
+            return
+
+        self.hoveredSourceBlock = None
+        self.hoveredFace = None
+        worldX, worldY = self.renderer.screenToWorld(mouseX, mouseY, self.world.min_y)
+        if self.world.isInBounds(worldX, worldY, self.world.min_y):
+            highestZ = self.world.getHighestBlock(worldX, worldY)
+            targetZ = min(highestZ + 1, self.world.max_y_exclusive - 1)
+            target = (worldX, worldY, targetZ)
+            self.hoveredCell = target if self.world.getBlock(*target) == BlockType.AIR else None
+        else:
+            self.hoveredCell = None
+
     def _placeBlockAtMouse(self, mouseX: int, mouseY: int):
         """Place a block at the mouse position with undo support"""
         if self.hoveredCell:
@@ -10225,19 +11078,36 @@ class BlocFantome:
                     placeY = y - brushOffset + by
                     
                     # Check bounds
-                    if not (0 <= placeX < GRID_WIDTH and 0 <= placeY < GRID_DEPTH):
+                    if not (0 <= placeX < self.world.width and 0 <= placeY < self.world.depth):
                         continue
                     
                     # For brush sizes > 1, find the appropriate Z level for each cell
                     if self.brushSize > 1:
                         placeZ = self.world.getHighestBlock(placeX, placeY) + 1
-                        placeZ = min(placeZ, GRID_HEIGHT - 1)
+                        placeZ = min(placeZ, self.world.max_y_exclusive - 1)
                     else:
                         placeZ = z
                     
-                    # Use undo-enabled placement
-                    if self._placeBlockWithUndo(placeX, placeY, placeZ, self.selectedBlock):
+                    blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
+                    properties = None
+                    if blockDef and (blockDef.isStair or blockDef.isSlab):
+                        properties = BlockProperties(
+                            facing=self.previewFacing,
+                            slabPosition=self.previewSlabPosition,
+                        )
+                    if blockDef and blockDef.isDoor:
+                        placed = self._placeDoorWithUndo(
+                            placeX, placeY, placeZ, self.selectedBlock, self.previewFacing
+                        )
+                    else:
+                        placed = self._placeBlockWithUndo(
+                            placeX, placeY, placeZ, self.selectedBlock, properties
+                        )
+
+                    if placed:
                         blocksPlacedCount += 1
+                        if blockDef and blockDef.isStair:
+                            self._refreshStairTopologyAround(placeX, placeY, placeZ)
                         
                         # Mirror mode placement
                         if self.mirrorModeX or self.mirrorModeY:
@@ -10247,16 +11117,6 @@ class BlocFantome:
                         if self.radialSymmetry > 0:
                             self._placeWithRadialSymmetry(placeX, placeY, placeZ, self.selectedBlock)
                         
-                        # Set properties for special blocks
-                        blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
-                        if blockDef:
-                            if blockDef.isDoor or blockDef.isStair or blockDef.isSlab:
-                                props = BlockProperties(
-                                    facing=self.previewFacing,
-                                    isOpen=False,
-                                    slabPosition=self.previewSlabPosition
-                                )
-                                self.world.setBlockProperties(placeX, placeY, placeZ, props)
             
             if blocksPlacedCount > 0:
                 # Friday 13th horror - 13% chance blocks make no sound
@@ -10298,6 +11158,7 @@ class BlocFantome:
                         newFacing = Facing((props.facing.value + 1) % 4)
                         props.facing = newFacing
                         self.world.setBlockProperties(x, y, checkZ, props)
+                        self._refreshStairTopologyAround(x, y, checkZ)
                         self.assetManager.playClickSound()
                         print(f"Rotated {blockType.name} to face {newFacing.name}")
                 return
@@ -10331,35 +11192,33 @@ class BlocFantome:
         blockType = self.world.getBlock(x, y, z)
         blockDef = BLOCK_DEFINITIONS.get(blockType)
         if blockDef and blockDef.isDoor:
-            props = self.world.getBlockProperties(x, y, z)
-            if props:
-                props.isOpen = not props.isOpen
-                self.world.setBlockProperties(x, y, z, props)
-                # Play proper door open/close sound (pass blockType for iron/wood)
-                self.assetManager.playDoorSound(props.isOpen, blockType)
-                print(f"Door {'opened' if props.isOpen else 'closed'}")
-                return True
+            props = self.world.getBlockProperties(x, y, z) or BlockProperties()
+            lowerZ = z if props.doorHalf == DoorHalf.LOWER else z - 1
+            upperZ = lowerZ + 1
+            newOpen = not props.isOpen
+            for cellZ, half in ((lowerZ, DoorHalf.LOWER), (upperZ, DoorHalf.UPPER)):
+                if self.world.isInBounds(x, y, cellZ) and self.world.getBlock(x, y, cellZ) == blockType:
+                    cellProps = self.world.getBlockProperties(x, y, cellZ) or props.copy()
+                    cellProps.isOpen = newOpen
+                    cellProps.doorHalf = half
+                    self.world.setBlockProperties(x, y, cellZ, cellProps)
+            self.assetManager.playDoorSound(newOpen, blockType)
+            print(f"Door {'opened' if newOpen else 'closed'}")
+            return True
         return False
     
     def _removeBlockAtMouse(self, mouseX: int, mouseY: int):
         """Remove a block at the mouse position with undo support"""
-        # First, try the hoveredCell approach - it already found the block
-        if self.hoveredCell:
-            x, y, z = self.hoveredCell
-            # The hovered cell points to where we'd place a new block (one above the existing)
-            # So check the block at z-1 first
-            for checkZ in range(z, -1, -1):
-                blockType = self.world.getBlock(x, y, checkZ)
-                if blockType != BlockType.AIR:
-                    # Get screen position for particles before removing
-                    screenX, screenY = self.renderer.worldToScreen(x, y, checkZ)
-                    
-                    # Use undo-enabled removal
-                    if self._removeBlockWithUndo(x, y, checkZ):
+        if self.hoveredSourceBlock:
+            x, y, z = self.hoveredSourceBlock
+            blockType = self.world.getBlock(x, y, z)
+            if blockType != BlockType.AIR:
+                screenX, screenY = self.renderer.worldToScreen(x, y, z)
+                if self._removeBlockWithUndo(x, y, z):
                         # Clean up liquid sprite cache
-                        if hasattr(self, 'liquidSpriteCache') and (x, y, checkZ) in self.liquidSpriteCache:
-                            del self.liquidSpriteCache[(x, y, checkZ)]
-                        self.assetManager.playBlockSound(blockType, isPlace=False, worldPos=(x, y, checkZ), effectsVolume=self.effectsVolume)
+                        if hasattr(self, 'liquidSpriteCache') and (x, y, z) in self.liquidSpriteCache:
+                            del self.liquidSpriteCache[(x, y, z)]
+                        self.assetManager.playBlockSound(blockType, isPlace=False, worldPos=(x, y, z), effectsVolume=self.effectsVolume)
                         
                         # Track statistics
                         self.blocksRemoved += 1
@@ -10370,12 +11229,12 @@ class BlocFantome:
                         # Spawn breaking particles
                         self._spawnBlockParticles(screenX, screenY + TILE_HEIGHT // 2, blockType)
                         
-                        print(f"Removed {blockType.name} at ({x}, {y}, {checkZ})")
-                    return
+                        print(f"Removed {blockType.name} at ({x}, {y}, {z})")
+                return
         
         # Fallback: Try all blocks in a small area around where we clicked
         # Check multiple possible world coordinates at each Z level
-        for z in range(GRID_HEIGHT - 1, -1, -1):
+        for z in range(self.world.max_y_exclusive - 1, self.world.min_y - 1, -1):
             worldX, worldY = self.renderer.screenToWorld(mouseX, mouseY, z)
             
             # Check the exact position and neighboring cells
@@ -10413,13 +11272,79 @@ class BlocFantome:
         if self.hoveredCell and self.selectedStructure:
             x, y, z = self.hoveredCell
             structure = PREMADE_STRUCTURES.get(self.selectedStructure)
-            if structure:
-                self.world.placeStructure(structure, x, y, z)
+            if structure and structure.get("blocks"):
+                blocks = structure["blocks"]
+                sourceTypes = {
+                    (relX, relY, relZ): blockType
+                    for relX, relY, relZ, blockType, _ in map(_structureBlockParts, blocks)
+                }
+                minX, maxX = min(block[0] for block in blocks), max(block[0] for block in blocks)
+                minY, maxY = min(block[1] for block in blocks), max(block[1] for block in blocks)
+                minZ, maxZ = min(block[2] for block in blocks), max(block[2] for block in blocks)
+                # A legacy structure may represent a door with only its lower
+                # cell. Reserve room for the generated upper cell up front.
+                for block in blocks:
+                    relX, relY, relZ, blockType, _ = _structureBlockParts(block)
+                    definition = BLOCK_DEFINITIONS.get(blockType)
+                    if (definition and definition.isDoor and
+                            sourceTypes.get((relX, relY, relZ - 1)) != blockType and
+                            sourceTypes.get((relX, relY, relZ + 1)) != blockType):
+                        maxZ = max(maxZ, relZ + 1)
+                requiredDimensions = (
+                    max(self.world.width, maxX - minX + 1),
+                    max(self.world.depth, maxY - minY + 1),
+                    max(self.world.height, maxZ - minZ + 1),
+                )
+                if requiredDimensions != (self.world.width, self.world.depth, self.world.height):
+                    self.world.resize(
+                        *requiredDimensions, min_y=self.world.min_y, preserve=True
+                    )
+                    self.lightingDirty = True
+                offsetX = max(-minX, min(x, self.world.width - 1 - maxX))
+                offsetY = max(-minY, min(y, self.world.depth - 1 - maxY))
+                offsetZ = max(self.world.min_y - minZ, min(z, self.world.max_y_exclusive - 1 - maxZ))
+
+                from engine.undo import BatchCommand, PlaceBlockCommand
+                commands = []
+                for block in blocks:
+                    relX, relY, relZ, blockType, sourceProperties = _structureBlockParts(block)
+                    placeX, placeY, placeZ = relX + offsetX, relY + offsetY, relZ + offsetZ
+                    if not self.world.isInBounds(placeX, placeY, placeZ):
+                        continue
+                    properties = sourceProperties.copy() if sourceProperties is not None else None
+                    definition = BLOCK_DEFINITIONS.get(blockType)
+                    if definition and definition.isDoor and properties is None:
+                        hasLower = sourceTypes.get((relX, relY, relZ - 1)) == blockType
+                        properties = BlockProperties(
+                            doorHalf=DoorHalf.UPPER if hasLower else DoorHalf.LOWER
+                        )
+                    elif definition and definition.isStair and properties is None:
+                        properties = BlockProperties()
+                    commands.append(PlaceBlockCommand(
+                        self.world, placeX, placeY, placeZ, blockType, properties
+                    ))
+                    if (definition and definition.isDoor and
+                            properties.doorHalf == DoorHalf.LOWER and
+                            sourceTypes.get((relX, relY, relZ + 1)) != blockType and
+                            self.world.isInBounds(placeX, placeY, placeZ + 1)):
+                        upper = properties.copy()
+                        upper.doorHalf = DoorHalf.UPPER
+                        commands.append(PlaceBlockCommand(
+                            self.world, placeX, placeY, placeZ + 1, blockType, upper
+                        ))
+                batch = BatchCommand(commands, f"Place {structure['name']}")
+                self.undoManager.execute(batch)
+                self._normalizeSpecialBlockTopology()
+                self.lightingDirty = True
                 # Play appropriate sound for structure type
                 if self.selectedStructure == "end_portal":
                     # Play the portal complete sound (endportal.ogg)
                     if "end_portal" in self.assetManager.sounds and self.assetManager.sounds["end_portal"]:
-                        self.assetManager.sounds["end_portal"][0].play()
+                        self.assetManager.playOneShot(
+                            self.assetManager.sounds["end_portal"][0],
+                            group="ambient",
+                            volume=self.ambientVolume,
+                        )
                     else:
                         self.assetManager.playSound("end_portal")
                 elif self.selectedStructure == "nether_portal":
@@ -10430,6 +11355,7 @@ class BlocFantome:
     
     def _update(self):
         """Update game state"""
+        self._pollWorldLoad()
         # Update liquid animations
         dt = self.clock.get_time()  # Time since last frame in ms
         self.assetManager.updateAnimation(dt)
@@ -10479,6 +11405,17 @@ class BlocFantome:
         
         # Update music fade-in
         self._updateMusicFade(dt)
+
+        if self.audioDiagnosticMode:
+            now = pygame.time.get_ticks()
+            if now - self.audioDiagnosticLastLog >= 1000:
+                self.audioDiagnosticLastLog = now
+                print(
+                    "Audio diagnostic: "
+                    f"busy={self.musicController.get_busy()} frame={dt}ms "
+                    f"water_queue={len(self.world.waterUpdateQueue)} "
+                    f"lava_queue={len(self.world.lavaUpdateQueue)}"
+                )
         
         # Update horror ambient system
         self._updateHorrorSystem(dt)
@@ -10499,14 +11436,14 @@ class BlocFantome:
             self.lastWaterFlowTime = currentTime
         
         # Update lava if enough time has passed (slower)
-        if currentTime - self.lastLavaFlowTime >= self.lavaFlowDelay:
+        lavaDelay = 500 if self.currentDimension == DIMENSION_NETHER else self.lavaFlowDelay
+        if currentTime - self.lastLavaFlowTime >= lavaDelay:
             lavaChanges = self.world.updateLiquids(BlockType.LAVA, self.liquidUpdatesPerTick)
             allChanges.extend(lavaChanges)
             self.lastLavaFlowTime = currentTime
         
-        # Ensure sprite cache exists
-        if not hasattr(self, 'liquidSpriteCache'):
-            self.liquidSpriteCache = {}
+        if not hasattr(self, 'liquidLevelSpriteCache'):
+            self.liquidLevelSpriteCache = {}
         
         # Track last animation frames to only regenerate when animation changes
         if not hasattr(self, 'lastWaterFrame'):
@@ -10514,29 +11451,14 @@ class BlocFantome:
         if not hasattr(self, 'lastLavaFrame'):
             self.lastLavaFrame = -1
         
-        # Only regenerate sprites when animation frame changes (much more efficient)
+        # Level sprites are shared by every cell with the same type/level/frame.
         waterFrameChanged = self.assetManager.currentWaterFrame != self.lastWaterFrame
         lavaFrameChanged = self.assetManager.currentLavaFrame != self.lastLavaFrame
         
         if waterFrameChanged or lavaFrameChanged:
-            for pos in list(self.liquidSpriteCache.keys()):
-                x, y, z = pos
-                blockType = self.world.getBlock(x, y, z)
-                if blockType == BlockType.WATER and waterFrameChanged:
-                    level = self.world.getLiquidLevel(x, y, z)
-                    self.liquidSpriteCache[pos] = self.assetManager.createLiquidAtLevel(True, level)
-                elif blockType == BlockType.LAVA and lavaFrameChanged:
-                    level = self.world.getLiquidLevel(x, y, z)
-                    self.liquidSpriteCache[pos] = self.assetManager.createLiquidAtLevel(False, level)
-            
+            self.liquidLevelSpriteCache.clear()
             self.lastWaterFrame = self.assetManager.currentWaterFrame
             self.lastLavaFrame = self.assetManager.currentLavaFrame
-        
-        # Update sprites for new flowing blocks only
-        for x, y, z, blockType, level in allChanges:
-            isWater = blockType == BlockType.WATER
-            sprite = self.assetManager.createLiquidAtLevel(isWater, level)
-            self.liquidSpriteCache[(x, y, z)] = sprite
     
     def _updatePortalSound(self) -> None:
         """Check for portal blocks and play/stop ambient sound accordingly"""
@@ -10547,7 +11469,11 @@ class BlocFantome:
             # Start playing portal ambient sound if not already playing
             if self.assetManager.portalAmbientSound:
                 if self.assetManager.portalSoundChannel is None or not self.assetManager.portalSoundChannel.get_busy():
-                    self.assetManager.portalSoundChannel = self.assetManager.portalAmbientSound.play(-1)  # Loop forever
+                    self.assetManager.portalSoundChannel = self.assetManager.playLoop(
+                        self.assetManager.portalAmbientSound,
+                        group="portal",
+                        volume=self.ambientVolume * 0.6,
+                    )
         else:
             # Stop portal sound if no portals exist
             if self.assetManager.portalSoundChannel and self.assetManager.portalSoundChannel.get_busy():
@@ -10656,9 +11582,7 @@ class BlocFantome:
         """Clear all water and lava blocks from the world to reduce lag"""
         removed = self.world.clearLiquids()
         
-        # Clear liquid sprite cache
-        if hasattr(self, 'liquidSpriteCache'):
-            self.liquidSpriteCache.clear()
+        self.liquidLevelSpriteCache.clear()
         
         # Play a satisfying water drain sound
         self.assetManager.playSound("water", effectsVolume=self.effectsVolume)
@@ -10713,7 +11637,11 @@ class BlocFantome:
             try:
                 # Use pre-loaded Sound object to avoid loading delay/stutter
                 self.rainSound = self.assetManager.relaxingRainSound
-                self.rainSoundChannel = self.rainSound.play(loops=-1)  # Loop forever
+                self.rainSoundChannel = self.assetManager.playLoop(
+                    self.rainSound,
+                    group="weather",
+                    volume=self.ambientVolume * 0.55,
+                )
                 print("    Playing relaxing rain track (on sound channel)")
             except Exception as e:
                 print(f"    Could not play rain track: {e}")
@@ -10816,7 +11744,11 @@ class BlocFantome:
         # Play the horror rain sound
         if self.horrorRainSound:
             try:
-                self.horrorRainSoundChannel = self.horrorRainSound.play(loops=-1)
+                self.horrorRainSoundChannel = self.assetManager.playLoop(
+                    self.horrorRainSound,
+                    group="horror",
+                    volume=self.ambientVolume * 0.35,
+                )
             except Exception as e:
                 print(f"Could not play horror rain sound: {e}")
     
@@ -10979,12 +11911,13 @@ class BlocFantome:
         # Play horror sound (use thunder but louder and lower)
         if self.assetManager.thunderSounds:
             thunderSound = random.choice(self.assetManager.thunderSounds)
-            # Play multiple times slightly offset for chaotic effect
-            for i in range(3):
-                channel = pygame.mixer.find_channel()
-                if channel:
-                    channel.play(thunderSound)
-                    channel.set_volume(1.0)  # Full volume for horror effect
+            # A single bounded hit keeps the effect forceful without clipping.
+            self.assetManager.playOneShot(
+                thunderSound,
+                group="horror",
+                volume=self.ambientVolume * 0.7,
+                replace=True,
+            )
     
     def _renderHorrorRain(self):
         """Render horror rain (dark drops with subtle blue glow, splash particles, fog, and red lightning)"""
@@ -11085,8 +12018,8 @@ class BlocFantome:
             uniquePositions.add((x, y))
         
         # Also add positions within the grid even if empty
-        for x in range(GRID_WIDTH):
-            for y in range(GRID_DEPTH):
+        for x in range(self.world.width):
+            for y in range(self.world.depth):
                 uniquePositions.add((x, y))
         
         # Sort positions for proper isometric rendering (back to front)
@@ -11178,10 +12111,10 @@ class BlocFantome:
         #   - Left corner is at world (0, GRID_DEPTH-1)
         
         # Get screen positions of platform corners at z=0 (ground level)
-        backCorner = self.renderer.worldToScreen(0, 0, 0)  # Back (top-center visually)
-        rightCorner = self.renderer.worldToScreen(GRID_WIDTH - 1, 0, 0)  # Right
-        frontCorner = self.renderer.worldToScreen(GRID_WIDTH - 1, GRID_DEPTH - 1, 0)  # Front (bottom visually)
-        leftCorner = self.renderer.worldToScreen(0, GRID_DEPTH - 1, 0)  # Left
+        backCorner = self.renderer.worldToScreen(0, 0, self.world.min_y)
+        rightCorner = self.renderer.worldToScreen(self.world.width - 1, 0, self.world.min_y)
+        frontCorner = self.renderer.worldToScreen(self.world.width - 1, self.world.depth - 1, self.world.min_y)
+        leftCorner = self.renderer.worldToScreen(0, self.world.depth - 1, self.world.min_y)
         
         # Store corners for isometric bounds checking
         self.platformCorners = [backCorner, rightCorner, frontCorner, leftCorner]
@@ -11750,20 +12683,20 @@ class BlocFantome:
         gridSurface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         
         # Draw lines along the X axis (constant Y values)
-        for y in range(GRID_DEPTH + 1):
+        for y in range(self.world.depth + 1):
             # Line from (0, y, 1) to (GRID_WIDTH, y, 1) at z=1 (top of floor blocks)
-            startX, startY = self.renderer.worldToScreen(0, y, 1)
-            endX, endY = self.renderer.worldToScreen(GRID_WIDTH, y, 1)
+            startX, startY = self.renderer.worldToScreen(0, y, self.world.min_y + 1)
+            endX, endY = self.renderer.worldToScreen(self.world.width, y, self.world.min_y + 1)
             # Adjust to draw on top face of blocks
             startY -= BLOCK_HEIGHT
             endY -= BLOCK_HEIGHT
             pygame.draw.line(gridSurface, gridColor, (startX, startY), (endX, endY), 1)
         
         # Draw lines along the Y axis (constant X values)
-        for x in range(GRID_WIDTH + 1):
+        for x in range(self.world.width + 1):
             # Line from (x, 0, 1) to (x, GRID_DEPTH, 1) at z=1 (top of floor blocks)
-            startX, startY = self.renderer.worldToScreen(x, 0, 1)
-            endX, endY = self.renderer.worldToScreen(x, GRID_DEPTH, 1)
+            startX, startY = self.renderer.worldToScreen(x, 0, self.world.min_y + 1)
+            endX, endY = self.renderer.worldToScreen(x, self.world.depth, self.world.min_y + 1)
             # Adjust to draw on top face of blocks
             startY -= BLOCK_HEIGHT
             endY -= BLOCK_HEIGHT
@@ -11773,7 +12706,14 @@ class BlocFantome:
     
     def _renderBlockHighlight(self) -> None:
         """Render outline around the brush area (all blocks that would be placed)"""
-        if not self.hoveredCell or self.panelHovered:
+        if self.panelHovered:
+            return
+
+        if self.hoveredSourceBlock and self.hoveredFace:
+            sourcePolygons = self.renderer.getBlockFacePolygons(*self.hoveredSourceBlock)
+            pygame.draw.polygon(self.screen, HIGHLIGHT_COLOR, sourcePolygons[self.hoveredFace], 3)
+
+        if not self.hoveredCell:
             return
         
         baseX, baseY, baseZ = self.hoveredCell
@@ -11865,24 +12805,27 @@ class BlocFantome:
         
         self.highlightedBlock = (baseX, baseY, baseZ)
 
-    def _saveBuilding(self, filename: str = None, silent: bool = False):
+    def _saveBuilding(self, filename: str = None, silent: bool = False, filepath: str = None):
         """Save the current building to a compressed JSON file (gzip) with atomic write"""
         import json
         import gzip
         from datetime import datetime
-        
-        if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"build_{timestamp}.json.gz"
-        
-        # Ensure filename has .gz extension for new saves
-        if not filename.endswith('.gz'):
-            filename = filename + '.gz'
-        
-        # Create saves directory if it doesn't exist
-        os.makedirs(SAVES_DIR, exist_ok=True)
-        
-        filepath = os.path.join(SAVES_DIR, filename)
+        trackCurrentPath = filepath is not None or (filename is None and not silent)
+
+        if filepath is None:
+            if filename is None and self.currentBuildPath:
+                filepath = self.currentBuildPath
+            else:
+                if filename is None:
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"build_{timestamp}.json.gz"
+                if not filename.endswith('.gz'):
+                    filename = filename + '.gz'
+                filepath = os.path.join(SAVES_DIR, filename)
+        elif not filepath.endswith('.gz'):
+            filepath = filepath + '.gz'
+
+        os.makedirs(os.path.dirname(filepath) or SAVES_DIR, exist_ok=True)
         tempPath = filepath + '.tmp'
         
         # Collect block data with proper enum serialization
@@ -11892,20 +12835,38 @@ class BlocFantome:
                 "x": x, "y": y, "z": z,
                 "type": blockType.name
             }
+            if blockType in (BlockType.WATER, BlockType.LAVA):
+                blockData["liquidLevel"] = self.world.getLiquidLevel(x, y, z)
+                blockData["liquidSource"] = (x, y, z) in getattr(self.world, 'liquidSources', set())
+                blockData["liquidFalling"] = (x, y, z) in getattr(self.world, 'liquidFalling', set())
+            if (x, y, z) in self.sceneStructurePositions:
+                blockData["role"] = "structure"
             # Include properties if present - serialize enums as names
             props = self.world.getBlockProperties(x, y, z)
             if props:
+                definition = BLOCK_DEFINITIONS.get(blockType)
                 if props.facing:
                     blockData["facing"] = props.facing.name if hasattr(props.facing, 'name') else str(props.facing)
-                if props.isOpen:
+                if definition and definition.isDoor:
                     blockData["isOpen"] = props.isOpen
+                    blockData["doorHalf"] = props.doorHalf.name
+                    blockData["doorHinge"] = props.doorHinge.name
+                if definition and definition.isStair:
+                    blockData["stairShape"] = props.stairShape.name
                 if props.slabPosition:
                     blockData["slabPosition"] = props.slabPosition.name if hasattr(props.slabPosition, 'name') else str(props.slabPosition)
             blocks.append(blockData)
         
         saveData = {
-            "version": 3,  # Version 3 = atomic writes + proper enum serialization
+            "version": 5,  # Version 5 = scalable bounds and scene provenance
             "dimension": self.currentDimension,
+            "bounds": {
+                "width": self.world.width,
+                "depth": self.world.depth,
+                "height": self.world.height,
+                "min_y": self.world.min_y,
+            },
+            "scene": dict(getattr(self, "sceneMetadata", {}) or {}),
             "blocks": blocks
         }
         
@@ -11917,6 +12878,8 @@ class BlocFantome:
             # Atomic rename - prevents corruption if write fails mid-way
             os.replace(tempPath, filepath)
             if not silent:
+                if trackCurrentPath:
+                    self.currentBuildPath = filepath
                 print(f"Build saved to {filepath} (compressed)")
                 self.tooltipText = "Build saved!"
                 self.tooltipTimer = 1500
@@ -11934,7 +12897,7 @@ class BlocFantome:
                     pass
             return False
     
-    def _loadBuilding(self, filename: str, silent: bool = False):
+    def _legacyLoadBuilding(self, filename: str, silent: bool = False):
         """Load a building from a JSON file (supports both compressed .gz and plain .json)"""
         import json
         import gzip
@@ -12039,48 +13002,352 @@ class BlocFantome:
             return False
     
     def _openLoadDialog(self):
-        """Open a file dialog to select and load a save file"""
+        """Open the categorized library containing user and bundled builds."""
+        from engine.build_catalog import build_catalog
+
+        entries = build_catalog(
+            SAVES_DIR,
+            BUILTIN_STRUCTURES_DIR,
+            TutorialScreen.TUTORIAL_STEPS,
+        )
+        self.buildLibrary.open(entries)
+
+    def _openWorldLibrary(self) -> None:
+        """Open the version-labelled large-world scene picker."""
+        from engine.world_catalog import world_catalog
+        self.worldLibrary.open(world_catalog(WORLDS_DIR))
+
+    def _generateTerrainSlice(self) -> None:
+        """Replace the canvas with a large editable terrain habitat."""
+        from engine.terrain import terrain_cells
+
+        seed = random.randint(0, 0x7FFFFFFF)
+        width = min(256, max(128, self.world.width))
+        depth = min(256, max(128, self.world.depth))
+        minY = self.world.min_y if self.world.width > GRID_WIDTH else 0
+        height = max(256, self.world.height if self.world.width > GRID_WIDTH else 256)
+        self.world.resize(width, depth, height, min_y=minY, preserve=False)
+        self.world.setDimension(self.currentDimension)
+        highest = minY
+        with self.world.bulkUpdate():
+            for x, y, z, blockName in terrain_cells(
+                self.currentDimension, width, depth, seed, minY
+            ):
+                if not self.world.isInBounds(x, y, z):
+                    continue
+                blockType = BlockType[blockName]
+                self.world._storeBlock((x, y, z), blockType)
+                if blockType == BlockType.WATER:
+                    self.world.liquidLevels[(x, y, z)] = 8
+                    self.world.liquidSources.add((x, y, z))
+                highest = max(highest, z)
+        self.sceneMetadata = {
+            "kind": "terrain",
+            "provider": "Bloc Fantome source-informed slice",
+            "version": "Java 1.16.1 ruleset",
+            "seed": seed,
+            "accuracy": "representative editor terrain; import Java chunks for block parity",
+        }
+        self.sceneStructurePositions.clear()
+        self.sceneExteriorGlassPositions.clear()
+        self.sceneStructureBounds = None
+        self.sceneTerrainMode = "all"
+        self.currentBuildPath = None
+        self.undoManager.undo_stack.clear()
+        self.undoManager.redo_stack.clear()
+        self.currentBuildHeight = highest
+        self.currentViewLayer = highest
+        self._frameCurrentCanvas()
+        self.lightingDirty = True
+        self.tooltipText = f"Terrain loaded | {width} x {depth} | seed {seed}"
+        self.tooltipTimer = 3500
+
+    def _handleWorldLibraryAction(self, action) -> None:
+        if not action:
+            return
+        actionName, entry = action
+        if actionName == "import":
+            self.worldLibrary.close()
+            self._openJavaWorldDialog()
+            return
+        if actionName != "open" or entry is None:
+            return
+        if self.pendingWorldLoad is not None:
+            self.tooltipText = "A world is already loading"
+            self.tooltipTimer = 1800
+            return
+        path = os.path.join(WORLDS_DIR, entry.filename)
+        future = self.worldLoadExecutor.submit(self._readBuildFile, path)
+        self.pendingWorldLoad = (future, entry, path)
+        self.tooltipText = f"Loading {entry.name}..."
+        self.tooltipTimer = 60000
+
+    def _pollWorldLoad(self) -> None:
+        if self.pendingWorldLoad is None:
+            return
+        future, entry, path = self.pendingWorldLoad
+        if not future.done():
+            return
+        self.pendingWorldLoad = None
+        try:
+            dimension, bounds, metadata, staged, skipped = future.result()
+            opened = self._applyStagedBuild(
+                dimension, bounds, metadata, staged, path, silent=True
+            )
+        except Exception as error:
+            print(f"World load failed: {error}")
+            opened = False
+            skipped = 0
+        if opened:
+            self.currentBuildPath = None
+            self.undoManager.undo_stack.clear()
+            self.undoManager.redo_stack.clear()
+            self.tooltipText = f"Opened {entry.name} | {entry.subtitle}"
+            self.tooltipTimer = 3500
+            print(
+                f"World opened: {entry.name} ({len(self.world.blocks)} cells, "
+                f"{skipped} skipped)"
+            )
+        else:
+            self.tooltipText = f"Could not open {entry.name}"
+            self.tooltipTimer = 3000
+
+    @staticmethod
+    def _resolveJavaBlockType(canonicalName: str):
+        """Map a canonical Java block name to the closest editable app model."""
+        name = canonicalName.split(":", 1)[-1].upper()
+        direct = BlockType.__members__.get(name)
+        if direct is not None:
+            return direct
+        aliases = {
+            "CAVE_AIR": None,
+            "VOID_AIR": None,
+            "GRASS_BLOCK": BlockType.GRASS,
+            "OAK_WOOD": BlockType.OAK_LOG,
+            "STRIPPED_OAK_LOG": BlockType.OAK_LOG,
+            "STRIPPED_OAK_WOOD": BlockType.OAK_LOG,
+            "NETHER_BRICK": BlockType.NETHER_BRICKS,
+            "RED_NETHER_BRICKS": BlockType.NETHER_BRICKS,
+            "END_STONE_BRICK": BlockType.END_STONE_BRICKS,
+            "GLOWSTONE": BlockType.GLOWSTONE,
+            "QUARTZ_BLOCK": BlockType.QUARTZ_BLOCK,
+            "SMOOTH_QUARTZ": BlockType.SMOOTH_QUARTZ,
+        }
+        if name in aliases:
+            return aliases[name]
+
+        modelFallbacks = (
+            ("OAK_STAIRS", BlockType.OAK_STAIRS),
+            ("COBBLESTONE_STAIRS", BlockType.COBBLESTONE_STAIRS),
+            ("STONE_BRICK_STAIRS", BlockType.STONE_BRICK_STAIRS),
+            ("OAK_SLAB", BlockType.OAK_SLAB),
+            ("COBBLESTONE_SLAB", BlockType.COBBLESTONE_SLAB),
+            ("STONE_BRICK_SLAB", BlockType.STONE_BRICK_SLAB),
+            ("STONE_SLAB", BlockType.STONE_SLAB),
+        )
+        for exact, blockType in modelFallbacks:
+            if name == exact:
+                return blockType
+
+        materialAliases = {
+            "NETHER_BRICK": "NETHER_BRICKS",
+            "RED_NETHER_BRICK": "NETHER_BRICKS",
+            "END_STONE_BRICK": "END_STONE_BRICKS",
+            "PURPUR": "PURPUR_BLOCK",
+            "QUARTZ": "QUARTZ_BLOCK",
+            "POLISHED_BLACKSTONE_BRICK": "POLISHED_BLACKSTONE_BRICKS",
+            "DEEPSLATE_BRICK": "DEEPSLATE_BRICKS",
+            "DEEPSLATE_TILE": "DEEPSLATE_TILES",
+            "POLISHED_DEEPSLATE": "POLISHED_DEEPSLATE",
+            "BLACKSTONE": "BLACKSTONE",
+            "COBBLED_DEEPSLATE": "COBBLED_DEEPSLATE",
+            "STONE_BRICK": "STONE_BRICKS",
+            "MOSSY_STONE_BRICK": "MOSSY_STONE_BRICKS",
+            "OAK": "OAK_PLANKS",
+            "STONE": "STONE",
+        }
+        for suffix in ("_STAIRS", "_SLAB", "_WALL", "_FENCE", "_FENCE_GATE"):
+            if name.endswith(suffix):
+                material = name[:-len(suffix)]
+                resolved = materialAliases.get(material, material)
+                return BlockType.__members__.get(resolved)
+        return None
+
+    def _stageJavaBlocks(self, javaBlocks):
+        staged = []
+        skipped = 0
+        facingMap = {name.lower(): facing for name, facing in Facing.__members__.items()}
+        for block in javaBlocks:
+            blockType = self._resolveJavaBlockType(block.name)
+            if blockType is None:
+                skipped += 1
+                continue
+            x, y, z = block.x, block.z, block.y
+            definition = BLOCK_DEFINITIONS.get(blockType)
+            props = None
+            if definition and (definition.isDoor or definition.isStair or definition.isSlab):
+                props = BlockProperties()
+                props.facing = facingMap.get(block.properties.get("facing", "south"), Facing.SOUTH)
+                props.isOpen = block.properties.get("open", "false") == "true"
+                verticalHalf = (
+                    block.properties.get("half")
+                    if definition.isStair
+                    else block.properties.get("type")
+                )
+                props.slabPosition = (
+                    SlabPosition.TOP if verticalHalf == "top" else SlabPosition.BOTTOM
+                )
+                props.stairShape = StairShape.__members__.get(
+                    block.properties.get("shape", "straight").upper(), StairShape.STRAIGHT
+                )
+                props.doorHalf = DoorHalf.__members__.get(
+                    block.properties.get("half", "lower").upper(), DoorHalf.LOWER
+                )
+                props.doorHinge = DoorHinge.__members__.get(
+                    block.properties.get("hinge", "left").upper(), DoorHinge.LEFT
+                )
+            liquidState = (8, True, False) if blockType in (BlockType.WATER, BlockType.LAVA) else None
+            staged.append((x, y, z, blockType, props, liquidState))
+        return staged, skipped
+
+    def _openJavaWorldDialog(self) -> None:
+        """Choose an official Java save and import a 4-chunk-radius slice."""
+        root = None
+        try:
+            import tkinter as tk
+            from tkinter import filedialog, messagebox, simpledialog
+            from engine.anvil import import_slice
+
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes('-topmost', True)
+            worldPath = filedialog.askdirectory(title="Choose Minecraft Java World Folder")
+            if not worldPath:
+                return
+            chunkX = simpledialog.askinteger(
+                "Java World Import", "Center chunk X:", initialvalue=0, parent=root
+            )
+            if chunkX is None:
+                return
+            chunkZ = simpledialog.askinteger(
+                "Java World Import", "Center chunk Z:", initialvalue=0, parent=root
+            )
+            if chunkZ is None:
+                return
+            if not messagebox.askyesno(
+                "Replace Canvas",
+                f"Replace the current canvas with a 4-chunk-radius {self.currentDimension} slice?",
+                parent=root,
+            ):
+                return
+            javaBlocks, bounds, metadata = import_slice(
+                worldPath, self.currentDimension, chunkX, chunkZ, self.renderDistanceChunks
+            )
+            staged, skipped = self._stageJavaBlocks(javaBlocks)
+            if not staged:
+                raise ValueError("the selected chunks contain no supported blocks")
+            self._applyStagedBuild(
+                self.currentDimension, bounds, metadata, staged, worldPath, silent=True
+            )
+            self.currentBuildPath = None
+            self.undoManager.undo_stack.clear()
+            self.undoManager.redo_stack.clear()
+            self.tooltipText = f"Java chunks imported | {len(staged)} blocks | {skipped} unsupported"
+            self.tooltipTimer = 4500
+        except Exception as error:
+            print(f"Java world import failed: {error}")
+            self.tooltipText = f"Java import failed: {error}"
+            self.tooltipTimer = 4000
+        finally:
+            if root is not None:
+                try:
+                    root.destroy()
+                except Exception:
+                    pass
+
+    def _handleBuildLibraryAction(self, action) -> None:
+        """Apply a Build Library selection after the modal consumes an event."""
+        if not action:
+            return
+        actionName, entry = action
+        if actionName == "browse":
+            self.buildLibrary.close()
+            self._openNativeLoadDialog()
+        elif actionName == "open" and entry:
+            if entry.kind == "tutorial":
+                self.tutorialScreen.currentStep = entry.tutorial_index
+                self.tutorialScreen.visible = True
+                self._onTutorialStepChange(entry.tutorial_index)
+            elif entry.path:
+                self._loadBuildingFromPath(entry.path)
+
+    def _openNativeLoadDialog(self):
+        """Open the native filesystem chooser as an explicit fallback."""
+        root = None
         try:
             import tkinter as tk
             from tkinter import filedialog
-            
+
             # Create a hidden root window
             root = tk.Tk()
             root.withdraw()
             root.attributes('-topmost', True)  # Bring dialog to front
-            
+
             # Set the initial directory to saves folder
             os.makedirs(SAVES_DIR, exist_ok=True)
             
             # Open file dialog
             filepath = filedialog.askopenfilename(
-                title="Load Build",
+                title="Open Build",
                 initialdir=SAVES_DIR,
                 filetypes=[("Build files", "*.json *.json.gz"), ("JSON files", "*.json"), ("Compressed", "*.json.gz"), ("All files", "*.*")]
             )
-            
-            root.destroy()
-            
-            # Load the selected file
             if filepath:
-                filename = os.path.basename(filepath)
-                # If the file is in the saves directory, just use the filename
-                if os.path.dirname(filepath) == SAVES_DIR:
-                    self._loadBuilding(filename)
-                else:
-                    # If it's from elsewhere, load directly from the full path
-                    self._loadBuildingFromPath(filepath)
+                self._loadBuildingFromPath(filepath)
         except Exception as e:
             print(f"Error opening load dialog: {e}")
-            # Fallback: try to load most recent save from saves folder
-            saveFiles = self._getSaveFiles()
-            if saveFiles:
-                print(f"Loading most recent save: {saveFiles[0]}")
-                self._loadBuilding(saveFiles[0])
-            else:
-                print("No save files found in saves folder")
+            self.tooltipText = f"Open dialog failed: {e}"
+            self.tooltipTimer = 3000
+        finally:
+            if root is not None:
+                try:
+                    root.destroy()
+                except Exception:
+                    pass
+
+    def _openSaveAsDialog(self):
+        """Choose a persistent path for the current build."""
+        root = None
+        try:
+            import tkinter as tk
+            from tkinter import filedialog
+
+            os.makedirs(SAVES_DIR, exist_ok=True)
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes('-topmost', True)
+            initialName = os.path.basename(self.currentBuildPath) if self.currentBuildPath else "build.json.gz"
+            filepath = filedialog.asksaveasfilename(
+                title="Save Build As",
+                initialdir=SAVES_DIR,
+                initialfile=initialName,
+                defaultextension=".json.gz",
+                filetypes=[("Compressed build", "*.json.gz"), ("All files", "*.*")],
+            )
+            if filepath:
+                self._saveBuilding(filepath=filepath)
+        except Exception as error:
+            print(f"Error opening save dialog: {error}")
+            self.tooltipText = f"Save As failed: {error}"
+            self.tooltipTimer = 3000
+        finally:
+            if root is not None:
+                try:
+                    root.destroy()
+                except Exception:
+                    pass
     
-    def _loadBuildingFromPath(self, filepath: str):
+    def _legacyLoadBuildingFromPath(self, filepath: str, silent: bool = False):
         """Load a building from a full file path with proper enum deserialization"""
         if not os.path.exists(filepath):
             print(f"Save file not found: {filepath}")
@@ -12167,6 +13434,316 @@ class BlocFantome:
             self.tooltipTimer = 3000
             return False
     
+    def _readBuildFile(self, filepath: str):
+        """Parse and stage a build completely before the live world is changed."""
+        import gzip
+        cacheDigest = None
+        cachePath = None
+        try:
+            bundledWorld = os.path.commonpath((
+                os.path.abspath(filepath), os.path.abspath(WORLDS_DIR)
+            )) == os.path.abspath(WORLDS_DIR)
+        except ValueError:
+            bundledWorld = False
+        if bundledWorld:
+            from engine import scene_cache
+            cacheDigest = scene_cache.source_digest(filepath)
+            cachePath = scene_cache.cache_path(
+                DERIVED_WORLD_CACHE_DIR, filepath, cacheDigest
+            )
+            try:
+                cached = scene_cache.load(cachePath, cacheDigest, BlockType)
+                dimension, bounds, metadata, stagedBlocks, skippedCount = cached
+                metadata = dict(metadata)
+                structurePositions = set(metadata.get("_structure_positions", set()))
+                metadata["_exterior_glass_positions"] = self._findExteriorGlassPositions(
+                    metadata, stagedBlocks, structurePositions
+                )
+                print(f"World cache hit: {os.path.basename(filepath)}")
+                return dimension, bounds, metadata, stagedBlocks, skippedCount
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+        try:
+            with gzip.open(filepath, 'rt', encoding='utf-8') as handle:
+                saveData = json.load(handle)
+        except (gzip.BadGzipFile, OSError):
+            with open(filepath, 'r', encoding='utf-8') as handle:
+                saveData = json.load(handle)
+
+        if not isinstance(saveData, dict) or not isinstance(saveData.get("blocks"), list):
+            raise ValueError("Invalid build file format")
+        saveVersion = int(saveData.get("version", 1))
+        dimension = saveData.get("dimension", DIMENSION_OVERWORLD)
+        if dimension not in (DIMENSION_OVERWORLD, DIMENSION_NETHER, DIMENSION_END):
+            raise ValueError(f"Unknown dimension: {dimension}")
+
+        boundsData = saveData.get("bounds") if saveVersion >= 5 else None
+        if boundsData is None:
+            bounds = (GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT, 0)
+        else:
+            if not isinstance(boundsData, dict):
+                raise ValueError("Invalid build bounds")
+            bounds = (
+                int(boundsData.get("width", GRID_WIDTH)),
+                int(boundsData.get("depth", GRID_DEPTH)),
+                int(boundsData.get("height", GRID_HEIGHT)),
+                int(boundsData.get("min_y", 0)),
+            )
+            width, depth, height, minY = bounds
+            if not (1 <= width <= 256 and 1 <= depth <= 256 and 1 <= height <= 512):
+                raise ValueError("Build bounds exceed the supported 256 x 256 x 512 canvas")
+            if minY < -128 or minY + height > 512:
+                raise ValueError("Build vertical bounds are unsupported")
+
+        width, depth, height, minY = bounds
+        maxYExclusive = minY + height
+        sceneMetadata = saveData.get("scene", {})
+        if not isinstance(sceneMetadata, dict):
+            sceneMetadata = {}
+
+        stagedBlocks = []
+        structurePositions = set()
+        skippedCount = 0
+        for blockData in saveData["blocks"]:
+            try:
+                if not all(key in blockData for key in ("x", "y", "z", "type")):
+                    raise ValueError("missing block field")
+                blockType = BlockType[blockData["type"]]
+                x, y, z = int(blockData["x"]), int(blockData["y"]), int(blockData["z"])
+                if not (0 <= x < width and 0 <= y < depth and minY <= z < maxYExclusive):
+                    raise ValueError("block outside build bounds")
+
+                stateData = blockData.get("state", {})
+                if not isinstance(stateData, dict):
+                    stateData = {}
+                stateData = dict(stateData)
+                for key in ("facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge"):
+                    if key in blockData:
+                        stateData[key] = blockData[key]
+
+                definition = BLOCK_DEFINITIONS.get(blockType)
+                props = None
+                if stateData and definition and (
+                    definition.isDoor or definition.isStair or definition.isSlab or definition.modelKind
+                ):
+                    props = BlockProperties()
+                    facingName = str(stateData.get("facing", "south")).upper()
+                    props.facing = Facing.__members__.get(facingName, Facing.SOUTH)
+                    openValue = stateData.get("isOpen", stateData.get("open", False))
+                    props.isOpen = openValue is True or str(openValue).casefold() == "true"
+                    verticalHalf = stateData.get(
+                        "slabPosition",
+                        stateData.get("half" if definition.isStair else "type", "bottom"),
+                    )
+                    props.slabPosition = SlabPosition.__members__.get(
+                        str(verticalHalf).upper(), SlabPosition.BOTTOM
+                    )
+                    shapeName = stateData.get("stairShape", stateData.get("shape", "straight"))
+                    props.stairShape = StairShape.__members__.get(
+                        str(shapeName).upper(), StairShape.STRAIGHT
+                    )
+                    doorHalfName = stateData.get("doorHalf", stateData.get("half", "lower"))
+                    props.doorHalf = DoorHalf.__members__.get(
+                        str(doorHalfName).upper(), DoorHalf.LOWER
+                    )
+                    hingeName = stateData.get("doorHinge", stateData.get("hinge", "left"))
+                    props.doorHinge = DoorHinge.__members__.get(
+                        str(hingeName).upper(), DoorHinge.LEFT
+                    )
+
+                liquidState = None
+                if blockType in (BlockType.WATER, BlockType.LAVA):
+                    liquidState = (
+                        max(1, min(8, int(blockData.get("liquidLevel", 8)))),
+                        bool(blockData.get("liquidSource", True)),
+                        bool(blockData.get("liquidFalling", False)),
+                    )
+                stagedBlocks.append((x, y, z, blockType, props, liquidState))
+                if blockData.get("role") == "structure":
+                    structurePositions.add((x, y, z))
+            except (KeyError, TypeError, ValueError):
+                skippedCount += 1
+        # Version 1-3 represented a two-block-tall door as one cell. Expand it
+        # transactionally while preserving files that already contain an upper
+        # cell despite lacking a version marker.
+        if saveVersion < 4:
+            occupied = {(x, y, z) for x, y, z, *_ in stagedBlocks}
+            migrated = []
+            for index, (x, y, z, blockType, props, liquidState) in enumerate(stagedBlocks):
+                definition = BLOCK_DEFINITIONS.get(blockType)
+                if not (definition and definition.isDoor):
+                    continue
+                props = props or BlockProperties()
+                props.doorHalf = DoorHalf.LOWER
+                stagedBlocks[index] = (x, y, z, blockType, props, liquidState)
+                upper = (x, y, z + 1)
+                if z + 1 < maxYExclusive and upper not in occupied:
+                    upperProps = props.copy()
+                    upperProps.doorHalf = DoorHalf.UPPER
+                    migrated.append((x, y, z + 1, blockType, upperProps, None))
+                    occupied.add(upper)
+            stagedBlocks.extend(migrated)
+        if cachePath is not None and cacheDigest is not None:
+            try:
+                from engine import scene_cache
+                scene_cache.write(
+                    cachePath, cacheDigest, dimension, bounds, sceneMetadata,
+                    stagedBlocks, structurePositions,
+                )
+                scene_cache.prune(DERIVED_WORLD_CACHE_DIR)
+            except (OSError, ValueError, struct.error) as error:
+                print(f"World cache skipped: {error}")
+        sceneMetadata = dict(sceneMetadata)
+        sceneMetadata["_structure_positions"] = structurePositions
+        sceneMetadata["_exterior_glass_positions"] = self._findExteriorGlassPositions(
+            sceneMetadata, stagedBlocks, structurePositions
+        )
+        return dimension, bounds, sceneMetadata, stagedBlocks, skippedCount
+
+    @staticmethod
+    def _findExteriorGlassPositions(sceneMetadata, stagedBlocks, structurePositions):
+        """Find masonry on the six outer silhouettes, leaving room walls intact."""
+        if sceneMetadata.get("exterior_shell_view") != "glass" or not structurePositions:
+            return set()
+
+        masonry = {
+            BlockType.TUFF_BRICKS,
+            BlockType.POLISHED_TUFF,
+            BlockType.CHISELED_TUFF,
+            BlockType.CHISELED_TUFF_BRICKS,
+            BlockType.STONE,
+            BlockType.COBBLED_DEEPSLATE,
+        }
+        blockTypes = {
+            (x, y, z): blockType
+            for x, y, z, blockType, _props, _liquidState in stagedBlocks
+        }
+        silhouettes = [dict(), dict(), dict()]
+        for position in structurePositions:
+            for axis in range(3):
+                line = tuple(position[index] for index in range(3) if index != axis)
+                coordinate = position[axis]
+                limits = silhouettes[axis].get(line)
+                if limits is None:
+                    silhouettes[axis][line] = [coordinate, coordinate]
+                else:
+                    limits[0] = min(limits[0], coordinate)
+                    limits[1] = max(limits[1], coordinate)
+        return {
+            position
+            for position in structurePositions
+            if blockTypes.get(position) in masonry
+            and any(
+                position[axis] in silhouettes[axis][tuple(
+                    position[index] for index in range(3) if index != axis
+                )]
+                for axis in range(3)
+            )
+        }
+
+    def _applyStagedBuild(self, dimension: str, bounds, sceneMetadata,
+                          stagedBlocks, filepath: str, silent: bool) -> bool:
+        if dimension != self.currentDimension:
+            self._switchDimension(dimension)
+        width, depth, height, minY = bounds
+        self.world.resize(width, depth, height, min_y=minY, preserve=False)
+        if hasattr(self.world, 'setDimension'):
+            self.world.setDimension(dimension)
+        self.liquidLevelSpriteCache.clear()
+
+        with self.world.bulkUpdate():
+            for x, y, z, blockType, props, liquidState in stagedBlocks:
+                self.world.setBlock(x, y, z, blockType)
+                if props is not None:
+                    self.world.setBlockProperties(x, y, z, props)
+                if liquidState is not None:
+                    level, isSource, isFalling = liquidState
+                    pos = (x, y, z)
+                    self.world.liquidLevels[pos] = level
+                    if isSource:
+                        self.world.liquidSources.add(pos)
+                    else:
+                        self.world.liquidSources.discard(pos)
+                    if isFalling:
+                        self.world.liquidFalling.add(pos)
+                    else:
+                        self.world.liquidFalling.discard(pos)
+
+        if (sceneMetadata or {}).get("kind") != "world":
+            self._normalizeSpecialBlockTopology()
+
+        self.currentDimension = dimension
+        loadedMetadata = dict(sceneMetadata or {})
+        self.sceneStructurePositions = set(loadedMetadata.pop("_structure_positions", set()))
+        self.sceneExteriorGlassPositions = set(
+            loadedMetadata.pop("_exterior_glass_positions", set())
+        )
+        if self.sceneStructurePositions:
+            self.sceneStructureBounds = tuple(
+                (min(pos[axis] for pos in self.sceneStructurePositions),
+                 max(pos[axis] for pos in self.sceneStructurePositions))
+                for axis in range(3)
+            )
+        else:
+            self.sceneStructureBounds = None
+        self.sceneMetadata = loadedMetadata
+        self.sceneTerrainMode = (
+            str(self.sceneMetadata.get("default_terrain_view", "transparent"))
+            if self.sceneStructurePositions else "all"
+        )
+        if self.sceneTerrainMode not in ("all", "transparent", "hidden"):
+            self.sceneTerrainMode = "transparent" if self.sceneStructurePositions else "all"
+        if self.sceneMetadata.get("kind") == "world":
+            # Packaged habitats describe an already-settled Minecraft scene.
+            # Do not immediately resimulate every imported source liquid at
+            # 4 Hz; later player edits still enqueue their affected cells.
+            self.world.waterUpdateQueue.clear()
+            self.world.lavaUpdateQueue.clear()
+            self.world._waterQueued.clear()
+            self.world._lavaQueued.clear()
+        self.lightingDirty = True
+        self.currentViewLayer = min(
+            max(getattr(self, "currentViewLayer", minY), minY),
+            self.world.max_y_exclusive - 1,
+        )
+        self.currentBuildHeight = max(
+            (position[2] for position in self.world.blocks),
+            default=self.world.min_y,
+        )
+        if self.sceneStructurePositions:
+            self._fitPositionsToViewport(self.sceneStructurePositions, notify=False)
+        else:
+            self._frameCurrentCanvas()
+        if not silent:
+            self.currentBuildPath = filepath
+            self.tooltipText = f"Opened {len(stagedBlocks)} blocks"
+            self.tooltipTimer = 2000
+            print(f"Build opened from {filepath} ({len(stagedBlocks)} blocks)")
+        return True
+
+    def _loadBuilding(self, filename: str, silent: bool = False):
+        return self._loadBuildingFromPath(os.path.join(SAVES_DIR, filename), silent=silent)
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, stagedBlocks, skippedCount = self._readBuildFile(filepath)
+            if skippedCount and not silent:
+                print(f"Skipped {skippedCount} invalid block entries while opening {filepath}")
+            return self._applyStagedBuild(
+                dimension, bounds, sceneMetadata, stagedBlocks, filepath, silent
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+                self.tooltipTimer = 3000
+            return False
+
     def _getSaveFiles(self) -> List[str]:
         """Get list of saved build files (both .json and .json.gz)"""
         if not os.path.exists(SAVES_DIR):
@@ -12211,7 +13788,8 @@ class BlocFantome:
         else:
             print(f"No quick save in slot {slot}")
     
-    def _placeBlockWithUndo(self, x: int, y: int, z: int, blockType: BlockType):
+    def _placeBlockWithUndo(self, x: int, y: int, z: int, blockType: BlockType,
+                            properties: BlockProperties = None):
         """Place a block with undo support"""
         from engine.undo import PlaceBlockCommand
         
@@ -12220,7 +13798,8 @@ class BlocFantome:
             world=self.world,
             x=x, y=y, z=z,
             block_type=blockType,
-            properties=BlockProperties() if self._isSpecialBlock(blockType) else None
+            properties=(properties.copy() if properties else
+                        BlockProperties() if self._isSpecialBlock(blockType) else None)
         )
         
         if self.undoManager.execute(cmd):
@@ -12228,13 +13807,116 @@ class BlocFantome:
             self.currentBuildHeight = max(self.currentBuildHeight, z)
             return True
         return False
+
+    def _isStairType(self, blockType: BlockType) -> bool:
+        definition = BLOCK_DEFINITIONS.get(blockType)
+        return bool(definition and definition.isStair)
+
+    def _refreshStairTopologyAround(self, x: int, y: int, z: int) -> None:
+        """Refresh a stair and its horizontal neighbors after a state change."""
+        from engine.topology import stair_shape
+
+        positions = [(x, y, z), (x + 1, y, z), (x - 1, y, z),
+                     (x, y + 1, z), (x, y - 1, z)]
+        for position in positions:
+            if not self.world.isInBounds(*position):
+                continue
+            blockType = self.world.getBlock(*position)
+            if not self._isStairType(blockType):
+                continue
+            props = self.world.getBlockProperties(*position) or BlockProperties()
+            props.stairShape = stair_shape(self.world, position, self._isStairType)
+            self.world.setBlockProperties(*position, props)
+
+    def _normalizeSpecialBlockTopology(self) -> None:
+        """Upgrade raw structure cells to complete stair and door state."""
+        doorCells = []
+        stairCells = []
+        for position, blockType in list(self.world.blocks.items()):
+            definition = BLOCK_DEFINITIONS.get(blockType)
+            if definition and definition.isDoor:
+                doorCells.append((position, blockType))
+            elif definition and definition.isStair:
+                stairCells.append(position)
+
+        for (x, y, z), blockType in sorted(doorCells, key=lambda item: item[0][2]):
+            props = self.world.getBlockProperties(x, y, z)
+            if props is not None:
+                continue
+            if z > 0 and self.world.getBlock(x, y, z - 1) == blockType:
+                lower = self.world.getBlockProperties(x, y, z - 1) or BlockProperties()
+                upper = lower.copy()
+                upper.doorHalf = DoorHalf.UPPER
+                self.world.setBlockProperties(x, y, z, upper)
+                continue
+            lower = BlockProperties(doorHalf=DoorHalf.LOWER)
+            self.world.setBlockProperties(x, y, z, lower)
+            if z + 1 < self.world.max_y_exclusive and self.world.getBlock(x, y, z + 1) == BlockType.AIR:
+                upper = lower.copy()
+                upper.doorHalf = DoorHalf.UPPER
+                self.world.setBlock(x, y, z + 1, blockType)
+                self.world.setBlockProperties(x, y, z + 1, upper)
+
+        for position in stairCells:
+            if self.world.getBlockProperties(*position) is None:
+                self.world.setBlockProperties(*position, BlockProperties())
+        for position in stairCells:
+            self._refreshStairTopologyAround(*position)
+
+    def _chooseDoorHinge(self, x: int, y: int, z: int, facing: Facing) -> DoorHinge:
+        """Choose a hinge from neighboring occupancy, matching vanilla bias."""
+        left = facing.counterclockwise()
+        right = facing.clockwise()
+        leftScore = sum(
+            self.world.getBlock(x + left.offset[0], y + left.offset[1], z + dz) != BlockType.AIR
+            for dz in (0, 1)
+        )
+        rightScore = sum(
+            self.world.getBlock(x + right.offset[0], y + right.offset[1], z + dz) != BlockType.AIR
+            for dz in (0, 1)
+        )
+        return DoorHinge.RIGHT if leftScore > rightScore else DoorHinge.LEFT
+
+    def _placeDoorWithUndo(self, x: int, y: int, z: int, blockType: BlockType,
+                           facing: Facing) -> bool:
+        """Place synchronized lower and upper door cells as one undo command."""
+        from engine.undo import BatchCommand, PlaceBlockCommand
+
+        if not self.world.isInBounds(x, y, z + 1):
+            return False
+        if self.world.getBlock(x, y, z) != BlockType.AIR or self.world.getBlock(x, y, z + 1) != BlockType.AIR:
+            return False
+        hinge = self._chooseDoorHinge(x, y, z, facing)
+        lower = BlockProperties(facing=facing, doorHalf=DoorHalf.LOWER, doorHinge=hinge)
+        upper = BlockProperties(facing=facing, doorHalf=DoorHalf.UPPER, doorHinge=hinge)
+        command = BatchCommand([
+            PlaceBlockCommand(self.world, x, y, z, blockType, lower),
+            PlaceBlockCommand(self.world, x, y, z + 1, blockType, upper),
+        ], "Place door")
+        if self.undoManager.execute(command):
+            self.currentBuildHeight = max(self.currentBuildHeight, z + 1)
+            return True
+        return False
     
     def _removeBlockWithUndo(self, x: int, y: int, z: int):
         """Remove a block with undo support"""
-        from engine.undo import RemoveBlockCommand
+        from engine.undo import BatchCommand, RemoveBlockCommand
+
+        blockType = self.world.getBlock(x, y, z)
+        definition = BLOCK_DEFINITIONS.get(blockType)
+        if definition and definition.isDoor:
+            props = self.world.getBlockProperties(x, y, z) or BlockProperties()
+            otherZ = z + 1 if props.doorHalf == DoorHalf.LOWER else z - 1
+            commands = [RemoveBlockCommand(self.world, x, y, z)]
+            if self.world.isInBounds(x, y, otherZ) and self.world.getBlock(x, y, otherZ) == blockType:
+                commands.append(RemoveBlockCommand(self.world, x, y, otherZ))
+            return self.undoManager.execute(BatchCommand(commands, "Remove door"))
         
         cmd = RemoveBlockCommand(world=self.world, x=x, y=y, z=z)
-        return self.undoManager.execute(cmd)
+        result = self.undoManager.execute(cmd)
+        if result:
+            self._refreshStairTopologyAround(x, y, z)
+        return result
     
     def _isSpecialBlock(self, blockType: BlockType) -> bool:
         """Check if a block type needs special properties"""
@@ -12559,17 +14241,51 @@ class BlocFantome:
                 if existingBlock == self.selectedBlock:
                     return False
                 
-                # Record undo action (old block -> new block)
-                self.undoManager.recordPlacement(x, y, checkZ, existingBlock, self.selectedBlock)
-                
-                # Replace with selected block
-                self.world.setBlock(x, y, checkZ, self.selectedBlock)
-                
-                # Handle block properties if needed (e.g., doors)
+                from engine.undo import BatchCommand, PlaceBlockCommand, RemoveBlockCommand
+
+                existingDef = BLOCK_DEFINITIONS.get(existingBlock)
+                baseZ = checkZ
+                removePositions = [(x, y, checkZ)]
+                if existingDef and existingDef.isDoor:
+                    existingProps = self.world.getBlockProperties(x, y, checkZ) or BlockProperties()
+                    baseZ = checkZ - 1 if existingProps.doorHalf == DoorHalf.UPPER else checkZ
+                    otherZ = baseZ + 1
+                    removePositions = [(x, y, baseZ)]
+                    if (self.world.isInBounds(x, y, otherZ) and
+                            self.world.getBlock(x, y, otherZ) == existingBlock):
+                        removePositions.append((x, y, otherZ))
+
                 blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
                 if blockDef and blockDef.isDoor:
-                    # Set default facing and closed state
-                    self.world.setBlockProperties(x, y, checkZ, BlockProperties(facing="south", isOpen=False))
+                    upperZ = baseZ + 1
+                    removable = set(removePositions)
+                    if (not self.world.isInBounds(x, y, upperZ) or
+                            (self.world.getBlock(x, y, upperZ) != BlockType.AIR and
+                             (x, y, upperZ) not in removable)):
+                        return False
+
+                commands = [RemoveBlockCommand(self.world, *position) for position in removePositions]
+                if blockDef and blockDef.isDoor:
+                    hinge = self._chooseDoorHinge(x, y, baseZ, Facing.SOUTH)
+                    lower = BlockProperties(
+                        facing=Facing.SOUTH, doorHalf=DoorHalf.LOWER, doorHinge=hinge
+                    )
+                    upper = lower.copy()
+                    upper.doorHalf = DoorHalf.UPPER
+                    commands.extend([
+                        PlaceBlockCommand(self.world, x, y, baseZ, self.selectedBlock, lower),
+                        PlaceBlockCommand(self.world, x, y, baseZ + 1, self.selectedBlock, upper),
+                    ])
+                else:
+                    properties = BlockProperties() if blockDef and (blockDef.isStair or blockDef.isSlab) else None
+                    commands.append(PlaceBlockCommand(
+                        self.world, x, y, baseZ, self.selectedBlock, properties
+                    ))
+
+                if not self.undoManager.execute(BatchCommand(commands, "Quick swap block")):
+                    return False
+                self._refreshStairTopologyAround(x, y, baseZ)
+                self.lightingDirty = True
                 
                 # Visual feedback
                 self.assetManager.playPlaceSound()
@@ -12701,7 +14417,7 @@ class BlocFantome:
             checked.add((x, y, z))
             
             # Check bounds
-            if not (0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT):
+            if not self.world.isInBounds(x, y, z):
                 continue
             
             # Check if same block type
@@ -12729,7 +14445,7 @@ class BlocFantome:
             checked.add((x, y, z))
             
             # Check bounds
-            if not (0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT):
+            if not self.world.isInBounds(x, y, z):
                 continue
             
             # Only fill AIR blocks
@@ -12826,7 +14542,7 @@ class BlocFantome:
             z = baseZ + relZ
             
             # Check bounds
-            if not (0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT):
+            if not self.world.isInBounds(x, y, z):
                 continue
             
             # Record for undo and place
@@ -13048,63 +14764,8 @@ class BlocFantome:
         return False
     
     def _updateMusicFade(self, dt: float):
-        """Update music crossfade effect (fade-in and fade-out)"""
-        targetVolume = self.musicVolume if hasattr(self, 'musicVolume') else 0.3
-        
-        # Handle fade-out (when switching dimensions)
-        if hasattr(self, 'musicFadingOut') and self.musicFadingOut:
-            self.musicFadeTimer += dt
-            progress = min(1.0, self.musicFadeTimer / self.musicFadeDuration)
-            
-            # Fade out current track
-            currentVolume = targetVolume * (1.0 - progress)
-            pygame.mixer.music.set_volume(currentVolume)
-            
-            if progress >= 1.0:
-                self.musicFadingOut = False
-                pygame.mixer.music.stop()
-                
-                # Start the new dimension's music if pending
-                if hasattr(self, 'pendingDimensionMusic') and self.pendingDimensionMusic:
-                    dimension = self.pendingDimensionMusic
-                    self.pendingDimensionMusic = None
-                    
-                    # Choose music directory based on dimension
-                    if dimension == DIMENSION_NETHER:
-                        musicDir = MUSIC_DIR_NETHER
-                    elif dimension == DIMENSION_END:
-                        musicDir = MUSIC_DIR_END
-                    else:
-                        musicDir = MUSIC_DIR
-                    
-                    # Collect all ogg files
-                    self.musicFiles = []
-                    if os.path.exists(musicDir):
-                        for root, dirs, files in os.walk(musicDir):
-                            for f in files:
-                                if f.endswith('.ogg'):
-                                    self.musicFiles.append(os.path.join(root, f))
-                    
-                    if self.musicFiles:
-                        random.shuffle(self.musicFiles)
-                        self.currentMusicIndex = 0
-                        self._playNextSong()
-            return
-        
-        # Handle fade-in
-        if not hasattr(self, 'musicFadingIn') or not self.musicFadingIn:
-            return
-        
-        self.musicFadeTimer += dt
-        progress = min(1.0, self.musicFadeTimer / self.musicFadeDuration)
-        
-        # Apply eased volume (quadratic ease-in for smoother fade)
-        easedProgress = progress * progress
-        pygame.mixer.music.set_volume(targetVolume * easedProgress)
-        
-        if progress >= 1.0:
-            self.musicFadingIn = False
-            pygame.mixer.music.set_volume(targetVolume)
+        """Advance the single music-stream transition state machine."""
+        self.musicController.update(dt)
     
     def _updateHorrorSystem(self, dt: float):
         """Update horror ambient system - plays random cave sounds and visual glitches"""
@@ -13161,19 +14822,29 @@ class BlocFantome:
             # 0.0005% chance per frame (~once per 30 minutes at 60fps)
             if random.random() < 0.000005 * (1 + self.horrorIntensity * 0.3):
                 sound = random.choice(self.assetManager.phantomFootsteps)
-                sound.play()
+                self.assetManager.playOneShot(
+                    sound, group="horror", volume=self.ambientVolume * 0.12
+                )
         
         # Distant knock sound - very rare
         if hasattr(self.assetManager, 'knockSound') and self.assetManager.knockSound:
             # 0.0002% chance per frame (~once per hour)
             if random.random() < 0.000002 * (1 + self.horrorIntensity * 0.2):
-                self.assetManager.knockSound.play()
+                self.assetManager.playOneShot(
+                    self.assetManager.knockSound,
+                    group="horror",
+                    volume=self.ambientVolume * 0.12,
+                )
         
         # Breathing sound - extremely rare
         if hasattr(self.assetManager, 'breathSound') and self.assetManager.breathSound:
             # 0.0001% chance per frame (~once per 2 hours)
             if random.random() < 0.000001 * (1 + self.horrorIntensity * 0.3):
-                self.assetManager.breathSound.play()
+                self.assetManager.playOneShot(
+                    self.assetManager.breathSound,
+                    group="horror",
+                    volume=self.ambientVolume * 0.1,
+                )
         
         # Subliminal message timer
         if self.subliminalMessageTimer > 0:
@@ -13226,7 +14897,7 @@ class BlocFantome:
                 self.screenTearActive = True
                 self.screenTearFrames = 10
                 # Brief pause in music (if playing)
-                pygame.mixer.music.pause()
+                self.musicController.pause()
                 # Schedule music resume after 3 seconds
                 pygame.time.set_timer(pygame.USEREVENT + 10, 3000, loops=1)
         elif now.hour != 3 or now.minute != 0:
@@ -13284,13 +14955,17 @@ class BlocFantome:
             if hasattr(self.assetManager, 'ghastMoans') and self.assetManager.ghastMoans:
                 if random.random() < 0.15:  # 15% chance in Nether
                     ghast = random.choice(self.assetManager.ghastMoans)
-                    ghast.play()
+                    self.assetManager.playOneShot(
+                        ghast, group="horror", volume=self.ambientVolume * 0.3
+                    )
         elif self.currentDimension == DIMENSION_END:
             # In End, use enderman sounds and cave sounds
             if hasattr(self.assetManager, 'endermanSounds') and self.assetManager.endermanSounds:
                 if random.random() < 0.3:  # 30% chance for enderman sound in End
                     enderman = random.choice(self.assetManager.endermanSounds)
-                    enderman.play()
+                    self.assetManager.playOneShot(
+                        enderman, group="horror", volume=self.ambientVolume * 0.3
+                    )
             if hasattr(self.assetManager, 'caveSounds') and self.assetManager.caveSounds:
                 sounds = self.assetManager.caveSounds
         else:
@@ -13300,7 +14975,9 @@ class BlocFantome:
         
         if sounds:
             sound = random.choice(sounds)
-            sound.play()
+            self.assetManager.playOneShot(
+                sound, group="horror", volume=self.ambientVolume * 0.35
+            )
     
     def _triggerRandomVisualGlitch(self):
         """Trigger a random visual glitch effect"""
@@ -13422,22 +15099,22 @@ class BlocFantome:
             
             # Mirror X
             if self.mirrorModeX:
-                mirrorX = GRID_WIDTH - 1 - x
+                mirrorX = self.world.width - 1 - x
                 if self.world.isInBounds(mirrorX, y, z):
                     self._placeBlockWithUndo(mirrorX, y, z, blockType)
                     self.blocksPlaced += 1
             
             # Mirror Y
             if self.mirrorModeY:
-                mirrorY = GRID_DEPTH - 1 - y
+                mirrorY = self.world.depth - 1 - y
                 if self.world.isInBounds(x, mirrorY, z):
                     self._placeBlockWithUndo(x, mirrorY, z, blockType)
                     self.blocksPlaced += 1
             
             # Mirror both (diagonal)
             if self.mirrorModeX and self.mirrorModeY:
-                mirrorX = GRID_WIDTH - 1 - x
-                mirrorY = GRID_DEPTH - 1 - y
+                mirrorX = self.world.width - 1 - x
+                mirrorY = self.world.depth - 1 - y
                 if self.world.isInBounds(mirrorX, mirrorY, z):
                     self._placeBlockWithUndo(mirrorX, mirrorY, z, blockType)
                     self.blocksPlaced += 1
@@ -13450,8 +15127,8 @@ class BlocFantome:
         import math
         
         # Calculate center of grid
-        centerX = GRID_WIDTH / 2
-        centerY = GRID_DEPTH / 2
+        centerX = self.world.width / 2
+        centerY = self.world.depth / 2
         
         # Calculate position relative to center
         relX = x - centerX
@@ -13592,7 +15269,7 @@ class BlocFantome:
         if sliderX <= mouseX <= sliderX + sliderWidth and sliderY <= mouseY <= sliderY + sliderHeight + 8:
             newVol = (mouseX - sliderX) / sliderWidth
             self.musicVolume = max(0, min(1, newVol))
-            pygame.mixer.music.set_volume(self.musicVolume)
+            self.musicController.set_volume(0 if self.musicMuted else self.musicVolume)
         
         # Ambient volume slider (y + 50)
         y += 50
@@ -13677,7 +15354,7 @@ class BlocFantome:
                 pygame.draw.rect(self.screen, (60, 60, 70), (slotX, slotY, slotSize, slotSize))
             
             # Block icon - use the full isometric block sprite like placed/right panel blocks
-            sprite = self.assetManager.getBlockSprite(blockType)
+            sprite = self.assetManager.getIconSprite(blockType)
             if sprite:
                 # Scale the sprite to fit the slot while preserving aspect ratio
                 spriteW, spriteH = sprite.get_size()
@@ -13687,8 +15364,7 @@ class BlocFantome:
                 newW = int(spriteW * scale)
                 newH = int(spriteH * scale)
                 
-                # Use smoothscale for better quality
-                scaled = pygame.transform.smoothscale(sprite, (newW, newH))
+                scaled = pygame.transform.scale(sprite, (newW, newH))
                 
                 # Center the sprite in the slot
                 offsetX = slotX + (slotSize - newW) // 2
@@ -13902,7 +15578,7 @@ class BlocFantome:
         if not self.layerViewEnabled:
             return
         
-        text = f"Layer: {self.currentViewLayer} / {GRID_HEIGHT - 1}"
+        text = f"Layer: {self.currentViewLayer} / {self.world.max_y_exclusive - 1}"
         textSurf = self.smallFont.render(text, True, (255, 200, 100))
         
         x = 10
@@ -13925,81 +15601,48 @@ class BlocFantome:
         mapX = self.minimapMargin
         mapY = WINDOW_HEIGHT - self.minimapSize - self.minimapMargin - 30  # Above stats
         
-        # Create minimap surface with dimension-appropriate background color
-        mapSurf = pygame.Surface((self.minimapSize, self.minimapSize), pygame.SRCALPHA)
-        
-        # Background color based on current dimension
-        if self.currentDimension == DIMENSION_END:
-            # End stone yellowish color
-            mapBgColor = (219, 222, 158, 200)
-        elif self.currentDimension == DIMENSION_NETHER:
-            # Netherrack reddish color
-            mapBgColor = (111, 54, 52, 200)
-        else:
-            # Overworld - grass greenish (tinted)
-            mapBgColor = (60, 90, 50, 200)
-        
-        mapSurf.fill(mapBgColor)
-        
         # Calculate scale (grid to minimap)
-        scaleX = self.minimapSize / GRID_WIDTH
-        scaleY = self.minimapSize / GRID_DEPTH
+        scaleX = self.minimapSize / self.world.width
+        scaleY = self.minimapSize / self.world.depth
         pixelSize = max(1, int(min(scaleX, scaleY)))
-        
-        # Draw blocks (top-down view - highest Z at each X,Y)
-        for x in range(GRID_WIDTH):
-            for y in range(GRID_DEPTH):
-                # Find the highest block at this position
-                for z in range(GRID_HEIGHT - 1, -1, -1):
-                    blockType = self.world.getBlock(x, y, z)
-                    if blockType != BlockType.AIR:
-                        # Get color from block definition or use default
-                        blockDef = BLOCK_DEFINITIONS.get(blockType)
-                        mapColor = getattr(blockDef, 'mapColor', None) if blockDef else None
-                        if mapColor:
-                            color = mapColor
-                        else:
-                            # Fallback: extract dominant color from name
-                            name = blockType.name.lower()
-                            if 'grass' in name:
-                                color = (100, 180, 80)
-                            elif 'dirt' in name:
-                                color = (130, 90, 60)
-                            elif 'end_stone' in name or 'end' in name:
-                                # Check end_stone BEFORE generic stone to avoid grey
-                                color = (219, 222, 158)  # End stone yellowish
-                            elif 'stone' in name or 'cobble' in name:
-                                color = (120, 120, 120)
-                            elif 'water' in name:
-                                color = (50, 100, 200)
-                            elif 'lava' in name:
-                                color = (255, 100, 0)
-                            elif 'wood' in name or 'log' in name or 'plank' in name:
-                                color = (150, 100, 50)
-                            elif 'sand' in name:
-                                color = (220, 200, 150)
-                            elif 'glass' in name:
-                                color = (200, 220, 255)
-                            elif 'iron' in name:
-                                color = (200, 200, 200)
-                            elif 'gold' in name:
-                                color = (255, 215, 0)
-                            elif 'diamond' in name:
-                                color = (100, 220, 255)
-                            elif 'netherrack' in name or 'nether' in name:
-                                color = (120, 50, 50)
-                            else:
-                                color = (100, 100, 100)
-                        
-                        # Darken based on depth (lower Z = darker)
-                        darken = 1.0 - (z / GRID_HEIGHT) * 0.3
-                        color = (int(color[0] * darken), int(color[1] * darken), int(color[2] * darken))
-                        
-                        # Draw pixel on minimap
-                        px = int(x * scaleX)
-                        py = int(y * scaleY)
-                        pygame.draw.rect(mapSurf, color, (px, py, pixelSize, pixelSize))
-                        break
+        cacheKey = (
+            self.world.revision, self.currentDimension,
+            self.world.width, self.world.depth, self.minimapSize,
+        )
+        if cacheKey != self._minimapCacheKey:
+            baseMap = pygame.Surface((self.minimapSize, self.minimapSize), pygame.SRCALPHA)
+            mapBgColor = {
+                DIMENSION_END: (219, 222, 158, 200),
+                DIMENSION_NETHER: (111, 54, 52, 200),
+            }.get(self.currentDimension, (60, 90, 50, 200))
+            baseMap.fill(mapBgColor)
+            for (x, y), z in self.world.heightIndex.items():
+                blockType = self.world.getBlock(x, y, z)
+                blockDef = BLOCK_DEFINITIONS.get(blockType)
+                color = getattr(blockDef, 'mapColor', None) if blockDef else None
+                if color is None:
+                    name = blockType.name.lower()
+                    color = next((value for token, value in (
+                        ('grass', (100, 180, 80)), ('dirt', (130, 90, 60)),
+                        ('end_stone', (219, 222, 158)), ('stone', (120, 120, 120)),
+                        ('cobble', (120, 120, 120)), ('water', (50, 100, 200)),
+                        ('lava', (255, 100, 0)), ('wood', (150, 100, 50)),
+                        ('log', (150, 100, 50)), ('plank', (150, 100, 50)),
+                        ('sand', (220, 200, 150)), ('glass', (200, 220, 255)),
+                        ('iron', (200, 200, 200)), ('gold', (255, 215, 0)),
+                        ('diamond', (100, 220, 255)), ('nether', (120, 50, 50)),
+                    ) if token in name), (100, 100, 100))
+                relativeHeight = (z - self.world.min_y) / max(1, self.world.height - 1)
+                brightness = 0.7 + relativeHeight * 0.3
+                color = tuple(int(channel * brightness) for channel in color)
+                pygame.draw.rect(
+                    baseMap, color,
+                    (int(x * scaleX), int(y * scaleY), pixelSize, pixelSize),
+                )
+            pygame.draw.rect(baseMap, (100, 100, 120), baseMap.get_rect(), 2)
+            self._minimapCache = baseMap
+            self._minimapCacheKey = cacheKey
+        mapSurf = self._minimapCache.copy()
         
         # Draw hovered cell indicator
         if self.hoveredCell:
@@ -14007,9 +15650,6 @@ class BlocFantome:
             px = int(hx * scaleX)
             py = int(hy * scaleY)
             pygame.draw.rect(mapSurf, (255, 255, 255), (px - 1, py - 1, pixelSize + 2, pixelSize + 2), 1)
-        
-        # Draw border
-        pygame.draw.rect(mapSurf, (100, 100, 120), (0, 0, self.minimapSize, self.minimapSize), 2)
         
         # Blit to screen
         self.screen.blit(mapSurf, (mapX, mapY))
@@ -14568,7 +16208,24 @@ class BlocFantome:
     def _handleZoom(self, delta: float, cursorX: int = None, cursorY: int = None):
         """Handle zoom in/out, centered on cursor position"""
         oldZoom = self.zoomLevel
-        self.zoomLevel = max(self.zoomMin, min(self.zoomMax, self.zoomLevel + delta))
+        now = pygame.time.get_ticks()
+        viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
+        if (
+            self._worldSurfaceCache is not None
+            and (self._zoomPreviewSource is None or now >= self._zoomPreviewUntil)
+        ):
+            sourceRect = pygame.Rect(
+                self._worldSurfaceMargin, self._worldSurfaceMargin,
+                viewportWidth, WINDOW_HEIGHT,
+            )
+            self._zoomPreviewSource = self._worldSurfaceCache.subsurface(sourceRect).copy()
+            self._zoomPreviewSourceZoom = oldZoom
+        requested = self.zoomLevel + delta
+        # Keep useful intermediate overview buckets instead of jumping from
+        # 15% directly to the 5% floor with the normal 10% wheel step.
+        if self.zoomLevel <= 0.2 or requested <= 0.2:
+            requested = self.zoomLevel + math.copysign(0.025, delta)
+        self.zoomLevel = round(max(self.zoomMin, min(self.zoomMax, requested)), 3)
         
         if oldZoom != self.zoomLevel:
             # Calculate zoom factor change
@@ -14581,8 +16238,8 @@ class BlocFantome:
                 # cursorX = worldX * newZoom + newOffset
                 # Solving: newOffset = cursorX * (1 - zoomFactor) + oldOffset * zoomFactor
                 
-                self.renderer.offsetX = int(cursorX * (1 - zoomFactor) + self.renderer.offsetX * zoomFactor)
-                self.renderer.offsetY = int(cursorY * (1 - zoomFactor) + self.renderer.offsetY * zoomFactor)
+                self.renderer.offsetX = cursorX * (1 - zoomFactor) + self.renderer.offsetX * zoomFactor
+                self.renderer.offsetY = cursorY * (1 - zoomFactor) + self.renderer.offsetY * zoomFactor
                 
                 # Update smooth camera targets too
                 self.targetOffsetX = self.renderer.offsetX
@@ -14590,8 +16247,141 @@ class BlocFantome:
             
             # Update renderer zoom level
             self.renderer.setZoom(self.zoomLevel)
-            # Clear sprite caches to regenerate at new zoom level
-            self.assetManager.clearZoomCache()
+            if self._zoomPreviewSource is not None:
+                ratio = self.zoomLevel / max(0.001, self._zoomPreviewSourceZoom)
+                previewSize = (
+                    max(1, round(viewportWidth * ratio)),
+                    max(1, round(WINDOW_HEIGHT * ratio)),
+                )
+                self._zoomPreviewSurface = pygame.transform.scale(
+                    self._zoomPreviewSource, previewSize
+                )
+                anchorX = cursorX if cursorX is not None else viewportWidth // 2
+                anchorY = cursorY if cursorY is not None else WINDOW_HEIGHT // 2
+                self._zoomPreviewPosition = (
+                    round(anchorX * (1.0 - ratio)),
+                    round(anchorY * (1.0 - ratio)),
+                )
+                self._zoomPreviewUntil = now + 140
+            self._invalidateViewCaches()
+
+    def _fitWorldToViewport(self, notify: bool = True) -> None:
+        """Fit the occupied editable world into the canvas with safe padding."""
+        if not self.world.blocks:
+            return
+        self._fitPositionsToViewport(self.world.blocks.keys(), notify=notify)
+
+    def _fitPositionsToViewport(self, positions, notify: bool = True) -> None:
+        """Fit an occupied subset while leaving every world cell editable."""
+        positions = tuple(positions)
+        if not positions:
+            return
+        minX = min(pos[0] for pos in positions)
+        maxX = max(pos[0] for pos in positions)
+        minY = min(pos[1] for pos in positions)
+        maxY = max(pos[1] for pos in positions)
+        minZ = min(pos[2] for pos in positions)
+        maxZ = max(pos[2] for pos in positions)
+
+        oldZoom = self.zoomLevel
+        oldOffset = (self.renderer.offsetX, self.renderer.offsetY)
+        self.renderer.setZoom(1.0)
+        self.renderer.offsetX = 0.0
+        self.renderer.offsetY = 0.0
+        projected = [
+            self.renderer.worldToScreen(x, y, z)
+            for x in (minX, maxX)
+            for y in (minY, maxY)
+            for z in (minZ, maxZ)
+        ]
+        width = max(point[0] for point in projected) - min(point[0] for point in projected) + TILE_WIDTH
+        height = max(point[1] for point in projected) - min(point[1] for point in projected) + TILE_HEIGHT + BLOCK_HEIGHT
+        availableWidth = WINDOW_WIDTH - PANEL_WIDTH - 56
+        availableHeight = WINDOW_HEIGHT - 92
+        self.zoomLevel = round(max(self.zoomMin, min(self.zoomMax, min(
+            availableWidth / max(1, width),
+            availableHeight / max(1, height),
+        ))), 3)
+        self.renderer.setZoom(self.zoomLevel)
+        self.renderer.offsetX, self.renderer.offsetY = oldOffset
+
+        centerWorld = (
+            (minX + maxX) / 2.0,
+            (minY + maxY) / 2.0,
+            (minZ + maxZ) / 2.0,
+        )
+        screenX, screenY = self.renderer.worldToScreen(*centerWorld)
+        targetX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
+        targetY = WINDOW_HEIGHT / 2.0
+        self.renderer.offsetX += targetX - screenX
+        self.renderer.offsetY += targetY - screenY
+        self.targetOffsetX = self.renderer.offsetX
+        self.targetOffsetY = self.renderer.offsetY
+        self.cameraFocusZ = round(centerWorld[2])
+        self._invalidateViewCaches()
+        if notify:
+            self.tooltipText = f"Fit world ({round(self.zoomLevel * 100)}%)"
+            self.tooltipTimer = 1400
+
+    def _frameCurrentCanvas(self) -> None:
+        """Choose a sensible camera when canvas dimensions are replaced."""
+        if self.world.width > 64 or self.world.depth > 64:
+            self._fitWorldToViewport(notify=False)
+            return
+        self.zoomLevel = 1.0
+        self.renderer.setZoom(self.zoomLevel)
+        centerX = self.world.width // 2
+        centerY = self.world.depth // 2
+        focusZ = max(
+            self.world.min_y,
+            self.world.getHighestBlock(centerX, centerY),
+        )
+        self._centerOnCell(centerX, centerY, focusZ)
+        self.renderer.offsetX = self.targetOffsetX
+        self.renderer.offsetY = self.targetOffsetY
+        self._invalidateViewCaches()
+
+    def _canvasResizeImpact(self, delta: int) -> Tuple[Tuple[int, int, int], int]:
+        """Return requested dimensions and the number of occupied cells clipped."""
+        width = max(GRID_WIDTH, self.world.width + delta)
+        depth = max(GRID_DEPTH, self.world.depth + delta)
+        height = max(GRID_HEIGHT, self.world.height + delta)
+        maxY = self.world.min_y + height
+        clipped = sum(
+            1 for x, y, z in self.world.blocks
+            if x >= width or y >= depth or z >= maxY
+        )
+        return (width, depth, height), clipped
+
+    def _resizeCanvas(self, delta: int) -> None:
+        """Grow or shrink all editable axes in one chunk-sized step."""
+        dimensions, clipped = self._canvasResizeImpact(delta)
+        if dimensions == (self.world.width, self.world.depth, self.world.height):
+            self.tooltipText = "Canvas is already at the default minimum"
+            self.tooltipTimer = 1800
+            return
+        oldWidth, oldDepth = self.world.width, self.world.depth
+        self.world.resize(*dimensions, min_y=self.world.min_y, preserve=True)
+        if delta > 0:
+            floorBlock = {
+                DIMENSION_NETHER: BlockType.NETHERRACK,
+                DIMENSION_END: BlockType.END_STONE,
+            }.get(self.currentDimension, BlockType.GRASS)
+            with self.world.bulkUpdate():
+                for x in range(dimensions[0]):
+                    for y in range(dimensions[1]):
+                        if x < oldWidth and y < oldDepth:
+                            continue
+                        if self.world.getBlock(x, y, self.world.min_y) == BlockType.AIR:
+                            self.world.setBlock(x, y, self.world.min_y, floorBlock)
+        self.undoManager.clear()
+        self.lightingDirty = True
+        self._frameCurrentCanvas()
+        self.tooltipText = (
+            f"Canvas {dimensions[0]} x {dimensions[1]} x {dimensions[2]}"
+            + (f" | {clipped} blocks removed" if clipped else "")
+        )
+        self.tooltipTimer = 2600
     
     def _getUndoRedoStatus(self) -> str:
         """Get status string for undo/redo"""
@@ -14770,7 +16560,7 @@ class BlocFantome:
             z = baseZ + relPos[2]
             
             # Ensure in bounds
-            if 0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT:
+            if self.world.isInBounds(x, y, z):
                 cmd = PlaceBlockCommand(
                     world=self.world,
                     x=x, y=y, z=z,
@@ -14918,7 +16708,7 @@ class BlocFantome:
         
         if volumeType == "music":
             self.musicVolume = value
-            pygame.mixer.music.set_volume(value)
+            self.musicController.set_volume(0 if self.musicMuted else value)
         elif volumeType == "ambient":
             self.ambientVolume = value
             # Update ambient sound volumes (portal, rain, etc.)
@@ -15227,8 +17017,7 @@ class BlocFantome:
         elif self.rainIntensity > self.rainIntensityTarget:
             self.rainIntensity = max(self.rainIntensityTarget, self.rainIntensity - 0.005)
         
-        # Rain sound is handled by pygame.mixer.music (single long track)
-        # No complex channel management needed
+        # Rain ambience uses its own preloaded, bounded weather channel.
         
         # Update rain drops with wind angle and intensity
         dropSpeed = int(20 * self.rainIntensity)
@@ -15298,27 +17087,32 @@ class BlocFantome:
         if self.assetManager.horrorSounds.get('cave'):
             # Use cave ambient sounds as "whispers" - they're eerie
             whisperSound = random.choice(self.assetManager.horrorSounds['cave'])
-            channel = pygame.mixer.find_channel()
-            if channel:
-                channel.play(whisperSound)
-                # Very quiet - barely audible under rain
-                channel.set_volume(random.uniform(0.03, 0.08) * self.ambientVolume)
+            self.assetManager.playOneShot(
+                whisperSound,
+                group="horror",
+                volume=random.uniform(0.03, 0.08) * self.ambientVolume,
+            )
     
     def _playThunderAmbient(self):
         """Play distant thunder ambient sound (no lightning flash)"""
         if self.assetManager.thunderAmbientSounds:
             ambientSound = random.choice(self.assetManager.thunderAmbientSounds)
-            # Play on a channel if available
-            channel = pygame.mixer.find_channel()
-            if channel:
-                channel.play(ambientSound)
-                channel.set_volume(random.uniform(0.15, 0.3))  # Quieter distant rumble
+            self.assetManager.playOneShot(
+                ambientSound,
+                group="weather",
+                volume=random.uniform(0.15, 0.3) * self.ambientVolume,
+            )
     
     def _triggerLightning(self):
         """Trigger lightning flash with bolt and play thunder sound"""
         if self.assetManager.thunderSounds:
             thunderSound = random.choice(self.assetManager.thunderSounds)
-            thunderSound.play()
+            self.assetManager.playOneShot(
+                thunderSound,
+                group="weather",
+                volume=self.ambientVolume,
+                replace=True,
+            )
         # Trigger lightning flash
         self.lightningFlash = 100  # Moderate flash that will fade out
         
@@ -15548,6 +17342,9 @@ class BlocFantome:
         
         # Draw grid and blocks
         self._renderWorld()
+
+        # Lightweight dimension atmosphere stays outside the block loop.
+        self._renderDimensionFog()
         
         # Draw grid overlay if enabled
         self._renderGrid()
@@ -15603,6 +17400,9 @@ class BlocFantome:
         
         # Draw coordinate display
         self._renderCoordinates()
+
+        self._renderFitWorldButton()
+        self._renderCanvasResizeControls()
         
         # Draw dimension indicator (top left)
         self._renderDimensionIndicator()
@@ -15651,9 +17451,31 @@ class BlocFantome:
         
         # Draw horror visual effects (very last, for maximum creepiness)
         self._renderHorrorEffects()
+
+        # The Build Library is modal and always renders above the world UI.
+        self.buildLibrary.render(self.screen)
+        self.worldLibrary.render(self.screen)
+        self._renderWorldLoadingOverlay()
         
         # Update display
         pygame.display.flip()
+
+    def _renderWorldLoadingOverlay(self) -> None:
+        if self.pendingWorldLoad is None:
+            return
+        _future, entry, _path = self.pendingWorldLoad
+        panel = pygame.Rect(0, 0, 360, 92)
+        panel.center = ((WINDOW_WIDTH - PANEL_WIDTH) // 2, WINDOW_HEIGHT // 2)
+        shade = pygame.Surface(panel.size, pygame.SRCALPHA)
+        shade.fill((18, 18, 22, 232))
+        self.screen.blit(shade, panel)
+        pygame.draw.rect(self.screen, (138, 138, 148), panel, 2)
+        title = self.font.render(f"Loading {entry.name}", True, (255, 255, 255))
+        detail = self.smallFont.render(
+            "Staging editable cells and derived cache...", True, (205, 205, 215)
+        )
+        self.screen.blit(title, title.get_rect(center=(panel.centerx, panel.y + 30)))
+        self.screen.blit(detail, detail.get_rect(center=(panel.centerx, panel.y + 62)))
     
     def _applyLighting(self, sprite: pygame.Surface, x: int, y: int, z: int, blockType: BlockType) -> pygame.Surface:
         """
@@ -15689,75 +17511,135 @@ class BlocFantome:
         # Calculate ambient occlusion
         topAO, leftAO, rightAO = self.world.calculateAmbientOcclusion(x, y, z)
         
-        # Create cache key with rounded AO values and light color for better cache hits
+        columnTop = self.world.heightIndex.get((x, y), self.world.min_y - 1)
+        exposedTop = z >= columnTop
+        exposedSide = any(
+            self.world.heightIndex.get((x + dx, y + dy), self.world.min_y - 1) < z
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+        )
+        skyExposure = 1.0 if exposedTop else 0.65 if exposedSide else 0.0
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            ambientBrightness = 0.42
+            skyBrightness = (0.58 + 0.4 * self.dayBrightness) * skyExposure
+        elif self.currentDimension == DIMENSION_NETHER:
+            ambientBrightness = 0.48
+            skyBrightness = 0.12 * skyExposure
+            if lightLevel == 0:
+                lightColor = (210, 105, 80)
+        else:
+            ambientBrightness = 0.52
+            skyBrightness = 0.16 * skyExposure
+            if lightLevel == 0:
+                lightColor = (185, 170, 220)
+
+        # Create cache key with rounded AO and exposure values for cache hits.
         aoKey = (round(topAO, 1), round(leftAO, 1), round(rightAO, 1))
-        cacheKey = (blockType, lightLevel, lightColor, aoKey[0], aoKey[1], aoKey[2])
+        cacheKey = (
+            blockType, self.currentDimension, lightLevel, lightColor,
+            round(ambientBrightness, 2), round(skyBrightness, 2),
+            aoKey[0], aoKey[1], aoKey[2],
+        )
         
         # Check cache first (LRU cache)
         if cacheKey in self.litBlockCache:
-            # Move to end (most recently used)
-            if cacheKey in self.litBlockCacheOrder:
-                self.litBlockCacheOrder.remove(cacheKey)
-            self.litBlockCacheOrder.append(cacheKey)
+            self.litBlockCache.move_to_end(cacheKey)
             return self.litBlockCache[cacheKey]
         
-        # Calculate brightness (0.0 to 1.0)
-        # Minecraft uses exponential falloff: each level is ~80% of the previous
-        # Level 15 = 100%, Level 0 = ~5%
-        baseBrightness = 0.05 + (lightLevel / 15.0) * 0.95
+        blockBrightness = 0.18 + (lightLevel / 15.0) * 0.82
+        baseBrightness = max(ambientBrightness, skyBrightness, blockBrightness)
         
         # Apply AO by averaging (simplified - real MC does per-vertex)
         avgAO = (topAO + leftAO + rightAO) / 3.0
-        finalBrightness = baseBrightness * avgAO
-        
+        finalBrightness = baseBrightness * (0.78 + avgAO * 0.22)
+
         # Clamp brightness
-        finalBrightness = max(0.15, min(1.0, finalBrightness))
-        
-        # Create new surface with lighting applied
-        litSprite = sprite.copy()
-        
-        # Calculate color tint intensity (stronger tint at moderate light levels)
-        # At full brightness, less tint; at low brightness, tint is dimmed anyway
-        tintStrength = min(1.0, lightLevel / 15.0) * 0.4 if lightLevel > 0 else 0
-        
-        # Normalize light color to tint values (-1 to 1 range for each channel)
-        lr, lg, lb = lightColor
-        tintR = (lr - 200) / 100.0 * tintStrength  # How much to shift red
-        tintG = (lg - 200) / 100.0 * tintStrength  # How much to shift green
-        tintB = (lb - 200) / 100.0 * tintStrength  # How much to shift blue
-        
-        # Apply lighting as a color overlay
-        w, h = litSprite.get_size()
-        for py in range(h):
-            for px in range(w):
-                color = litSprite.get_at((px, py))
-                if color.a > 0:  # Only modify non-transparent pixels
-                    r, g, b, a = color
-                    
-                    # Apply brightness
-                    r = int(r * finalBrightness)
-                    g = int(g * finalBrightness)
-                    b = int(b * finalBrightness)
-                    
-                    # Apply colored light tint
-                    if lightLevel > 0:
-                        r = max(0, min(255, int(r + tintR * 60)))
-                        g = max(0, min(255, int(g + tintG * 40)))
-                        b = max(0, min(255, int(b + tintB * 60)))
-                    
-                    litSprite.set_at((px, py), (r, g, b, a))
-        
+        finalBrightness = max(ambientBrightness * 0.72, min(1.0, finalBrightness))
+
+        from engine.lighting import shade_sprite
+        litSprite = shade_sprite(sprite, finalBrightness, lightLevel, lightColor)
+
         # Cache the result with LRU eviction
         self.litBlockCache[cacheKey] = litSprite
-        self.litBlockCacheOrder.append(cacheKey)
-        
-        # Evict oldest entries if cache is full
-        while len(self.litBlockCacheOrder) > self.litBlockCacheMaxSize:
-            oldestKey = self.litBlockCacheOrder.pop(0)
-            if oldestKey in self.litBlockCache:
-                del self.litBlockCache[oldestKey]
+        self.litBlockCache.move_to_end(cacheKey)
+        while len(self.litBlockCache) > self.litBlockCacheMaxSize:
+            self.litBlockCache.popitem(last=False)
         
         return litSprite
+
+    def _renderDimensionFog(self) -> None:
+        """Blend a cached horizon fog over the world viewport."""
+        if not self.lightingEnabled:
+            return
+        fogColor, maxAlpha = {
+            DIMENSION_OVERWORLD: ((184, 210, 224), 34),
+            DIMENSION_NETHER: ((94, 25, 20), 52),
+            DIMENSION_END: ((58, 40, 78), 42),
+        }[self.currentDimension]
+        viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
+        key = (viewportWidth, WINDOW_HEIGHT, self.currentDimension, fogColor, maxAlpha)
+        if key != self._fogSurfaceKey:
+            fog = pygame.Surface((viewportWidth, WINDOW_HEIGHT), pygame.SRCALPHA)
+            fadeEnd = int(WINDOW_HEIGHT * 0.68)
+            for y in range(fadeEnd):
+                distance = 1.0 - y / max(1, fadeEnd)
+                alpha = round(maxAlpha * distance * distance)
+                pygame.draw.line(fog, (*fogColor, alpha), (0, y), (viewportWidth, y))
+            self._fogSurface = fog
+            self._fogSurfaceKey = key
+        self.screen.blit(self._fogSurface, (0, 0))
+
+    def _renderFitWorldButton(self) -> None:
+        mouseX, mouseY = pygame.mouse.get_pos()
+        if self.sceneStructurePositions:
+            terrainLabel = {
+                "all": "Terrain: Opaque",
+                "transparent": "Terrain: Transparent",
+                "hidden": "Terrain: Hidden",
+            }[self.sceneTerrainMode]
+            terrainHovered = self.terrainViewButtonRect.collidepoint(mouseX, mouseY)
+            self.assetManager.drawButton(
+                self.screen, self.terrainViewButtonRect, terrainLabel,
+                self.smallFont, terrainHovered, self.sceneTerrainMode != "all",
+            )
+        hovered = self.fitWorldButtonRect.collidepoint(mouseX, mouseY)
+        label = f"Fit World  {round(self.zoomLevel * 100)}%"
+        self.assetManager.drawButton(
+            self.screen, self.fitWorldButtonRect, label, self.smallFont, hovered, False
+        )
+
+    def _renderCanvasResizeControls(self) -> None:
+        mouse = pygame.mouse.get_pos()
+        for rect, label in (
+            (self.shrinkCanvasButtonRect, "−"),
+            (self.growCanvasButtonRect, "+"),
+        ):
+            self.assetManager.drawButton(
+                self.screen, rect, label, self.font, rect.collidepoint(mouse), False
+            )
+        hoveredDelta = None
+        if self.shrinkCanvasButtonRect.collidepoint(mouse):
+            hoveredDelta = -16
+        elif self.growCanvasButtonRect.collidepoint(mouse):
+            hoveredDelta = 16
+        if hoveredDelta is None:
+            return
+        dimensions, clipped = self._canvasResizeImpact(hoveredDelta)
+        action = "Shrink" if hoveredDelta < 0 else "Extend"
+        warning = (
+            f"{action} to {dimensions[0]} x {dimensions[1]} x {dimensions[2]}"
+            + (f" | removes {clipped} blocks" if clipped else " | no blocks affected")
+        )
+        textSurface = self.smallFont.render(warning, True, (255, 235, 205))
+        box = textSurface.get_rect(midtop=(
+            (self.shrinkCanvasButtonRect.left + self.growCanvasButtonRect.right) // 2,
+            self.growCanvasButtonRect.bottom + 6,
+        )).inflate(14, 10)
+        box.clamp_ip(pygame.Rect(4, 4, WINDOW_WIDTH - PANEL_WIDTH - 8, WINDOW_HEIGHT - 8))
+        backdrop = pygame.Surface(box.size, pygame.SRCALPHA)
+        backdrop.fill((25, 18, 14, 205 if clipped else 178))
+        self.screen.blit(backdrop, box)
+        pygame.draw.rect(self.screen, (198, 142, 72), box, 1)
+        self.screen.blit(textSurface, textSurface.get_rect(center=box.center))
     
     def _toggleLighting(self):
         """Toggle experimental lighting on/off"""
@@ -15770,8 +17652,274 @@ class BlocFantome:
         else:
             print("Lighting: OFF")
 
+    def _cameraWorldCenter(self) -> Tuple[int, int]:
+        viewportCenterX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
+        viewportCenterY = WINDOW_HEIGHT // 2
+        return self.renderer.screenToWorld(
+            viewportCenterX, viewportCenterY, self.cameraFocusZ
+        )
+
+    def _visibleBlocksInDrawOrder(self):
+        """Return a cached painter order for visible chunks near the camera."""
+        centerX, centerY = self._cameraWorldCenter()
+        chunkSize = self.world.chunkStorage.chunk_size
+        actualCenterChunk = (centerX // chunkSize, centerY // chunkSize)
+        if (
+            self._renderChunkAnchor is None
+            or abs(actualCenterChunk[0] - self._renderChunkAnchor[0]) > self._renderChunkHysteresis
+            or abs(actualCenterChunk[1] - self._renderChunkAnchor[1]) > self._renderChunkHysteresis
+        ):
+            self._renderChunkAnchor = actualCenterChunk
+        centerChunk = self._renderChunkAnchor
+        if (
+            self._screenCullAnchorOffset is None
+            or abs(self.renderer.offsetX - self._screenCullAnchorOffset[0]) > self._worldSurfaceMargin / 2
+            or abs(self.renderer.offsetY - self._screenCullAnchorOffset[1]) > self._worldSurfaceMargin / 2
+        ):
+            self._screenCullAnchorOffset = (
+                self.renderer.offsetX,
+                self.renderer.offsetY,
+            )
+        offsetBucket = self._screenCullAnchorOffset
+        overview = self.zoomLevel <= self.overviewZoomThreshold
+        cacheKey = (
+            self.world.revision,
+            self.renderer.viewRotation,
+            self.zoomLevel,
+            None if overview else centerChunk,
+            None if overview else offsetBucket,
+            None if overview else self.renderDistanceChunks,
+            self.layerViewEnabled,
+            self.currentViewLayer if self.layerViewEnabled else None,
+            self.sceneTerrainMode,
+        )
+        if cacheKey == self._visibleOrderCacheKey:
+            return self._visibleOrderCache
+        blocksToDraw = []
+        addedPositions = set()
+        if overview:
+            # Terrain can use a cheap top-cell silhouette, but canonical
+            # structure cells must never disappear merely because the camera
+            # crossed a zoom threshold.
+            if self.sceneTerrainMode != "hidden":
+                for (x, y), z in self.world.heightIndex.items():
+                    blockType = self.world.getBlock(x, y, z)
+                    if blockType == BlockType.AIR:
+                        continue
+                    position = (x, y, z)
+                    addedPositions.add(position)
+                    blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
+            for x, y, z in self.sceneStructurePositions:
+                if self.layerViewEnabled and z > self.currentViewLayer:
+                    continue
+                position = (x, y, z)
+                if position in addedPositions:
+                    continue
+                blockType = self.world.getBlock(x, y, z)
+                if blockType == BlockType.AIR:
+                    continue
+                if not self._isStructureSurfaceForView(x, y, z, blockType):
+                    continue
+                addedPositions.add(position)
+                blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
+            blocksToDraw.sort(key=lambda block: (block[0], block[3], block[1], block[2]))
+            self._visibleOrderCacheKey = cacheKey
+            self._visibleOrderCache = blocksToDraw
+            return blocksToDraw
+
+        # Two prefetched chunk rings prevent an expensive cache rebuild when
+        # the camera merely crosses a chunk edge. Screen culling still limits
+        # what is actually rasterized.
+        radius = self.renderDistanceChunks + self._renderChunkHysteresis
+        for (chunkX, chunkY, chunkZ), surfacePositions in self.world.iterSurfaceChunks():
+            if abs(chunkX - centerChunk[0]) > radius or abs(chunkY - centerChunk[1]) > radius:
+                continue
+            if not self._chunkIsOnScreen(chunkX, chunkY, chunkZ, self._worldSurfaceMargin):
+                continue
+            for x, y, z in surfacePositions:
+                blockType = self.world.getBlock(x, y, z)
+                if self.layerViewEnabled and z > self.currentViewLayer:
+                    continue
+                position = (x, y, z)
+                if self.sceneTerrainMode == "hidden" and position not in self.sceneStructurePositions:
+                    continue
+                if (
+                    self.sceneTerrainMode == "transparent"
+                    and position not in self.sceneStructurePositions
+                    and self.world.heightIndex.get((x, y)) != z
+                ):
+                    continue
+                addedPositions.add(position)
+                blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
+        if self.sceneTerrainMode != "all":
+            for x, y, z in self.sceneStructurePositions:
+                position = (x, y, z)
+                if position in addedPositions:
+                    continue
+                if self.layerViewEnabled and z > self.currentViewLayer:
+                    continue
+                chunkX, chunkY = x // chunkSize, y // chunkSize
+                if abs(chunkX - centerChunk[0]) > radius or abs(chunkY - centerChunk[1]) > radius:
+                    continue
+                if not self._blockIsOnScreen(x, y, z, self._worldSurfaceMargin):
+                    continue
+                blockType = self.world.getBlock(x, y, z)
+                if blockType == BlockType.AIR:
+                    continue
+                if not self._isStructureSurfaceForView(x, y, z, blockType):
+                    continue
+                addedPositions.add(position)
+                blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
+        blocksToDraw.sort(key=lambda block: (block[0], block[3], block[1], block[2]))
+        self._visibleOrderCacheKey = cacheKey
+        self._visibleOrderCache = blocksToDraw
+        return blocksToDraw
+
+    @staticmethod
+    def _isOpaqueCubeDefinition(blockDef) -> bool:
+        return bool(
+            blockDef
+            and not blockDef.transparent
+            and not blockDef.isLiquid
+            and not blockDef.isThin
+            and not blockDef.isSlab
+            and not blockDef.isStair
+            and not blockDef.isPortal
+            and not blockDef.modelKind
+        )
+
+    def _isFullyOccluded(self, x: int, y: int, z: int, blockType: BlockType) -> bool:
+        """Cull cubes hidden by the top and both camera-facing neighbors."""
+        if not self._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(blockType)):
+            return False
+        viewRot = self.renderer.viewRotation
+        sideDirections = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )[viewRot]
+        neighbors = [(x, y, z + 1)] + [
+            (x + dx, y + dy, z) for dx, dy in sideDirections
+        ]
+        structureCutaway = (
+            self.sceneTerrainMode != "all"
+            and (x, y, z) in self.sceneStructurePositions
+        )
+        return all(
+            (not structureCutaway or pos in self.sceneStructurePositions)
+            and self._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(self.world.getBlock(*pos)))
+            for pos in neighbors
+        )
+
+    def _isStructureSurfaceForView(self, x: int, y: int, z: int,
+                                   blockType: BlockType) -> bool:
+        """Reject structure interiors using only the faces this camera can see."""
+        if not self._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(blockType)):
+            return True
+        if self.sceneMetadata.get("exterior_shell_view") == "glass":
+            return any(
+                (x + dx, y + dy, z + dz) not in self.sceneStructurePositions
+                for dx, dy, dz in (
+                    (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0),
+                    (0, 0, 1), (0, 0, -1),
+                )
+            )
+        sideDirections = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )[self.renderer.viewRotation]
+        neighbors = [(x, y, z + 1)] + [
+            (x + dx, y + dy, z) for dx, dy in sideDirections
+        ]
+        return any(pos not in self.sceneStructurePositions for pos in neighbors)
+
+    def _usesExteriorShellGlass(self, x: int, y: int, z: int,
+                                blockType: BlockType) -> bool:
+        """Visually replace exposed Trial Chamber masonry without changing data."""
+        return (x, y, z) in self.sceneExteriorGlassPositions
+
+    def _chunkIsOnScreen(self, chunkX: int, chunkY: int, chunkZ: int, margin: int = 0) -> bool:
+        """Conservatively reject 16-cube storage chunks outside the viewport."""
+        size = self.world.chunkStorage.chunk_size
+        x0, x1 = chunkX * size, chunkX * size + size - 1
+        y0, y1 = chunkY * size, chunkY * size + size - 1
+        z0, z1 = chunkZ * size, chunkZ * size + size - 1
+        corners = [
+            self.renderer.worldToScreen(x, y, z)
+            for x in (x0, x1)
+            for y in (y0, y1)
+            for z in (z0, z1)
+        ]
+        minX = min(point[0] for point in corners)
+        maxX = max(point[0] for point in corners)
+        minY = min(point[1] for point in corners)
+        maxY = max(point[1] for point in corners)
+        halfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
+        spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
+        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        return not (
+            maxX + halfWidth < -margin
+            or minX - halfWidth > viewportRight + margin
+            or maxY + spriteHeight < -margin
+            or minY > WINDOW_HEIGHT + margin
+        )
+
+    def _blockIsOnScreen(self, x: int, y: int, z: int, margin: int = 0) -> bool:
+        screenX, screenY = self.renderer.worldToScreen(x, y, z)
+        halfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
+        spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
+        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        return not (
+            screenX + halfWidth < -margin
+            or screenX - halfWidth > viewportRight + margin
+            or screenY + spriteHeight < -margin
+            or screenY > WINDOW_HEIGHT + margin
+        )
+
+    def _visibleScreenRenderPlan(self):
+        """Cache screen culling and solid-cube occlusion until view state changes."""
+        blocksToDraw = self._visibleBlocksInDrawOrder()
+        key = (
+            self._visibleOrderCacheKey,
+            self.zoomLevel,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+        )
+        if key == self._screenPlanCacheKey:
+            return self._screenPlanCache, self._screenPlanOccluded, len(blocksToDraw)
+
+        plan = []
+        occluded = 0
+        for item in blocksToDraw:
+            _, x, y, z, blockType = item
+            if (
+                self.zoomLevel > self.overviewZoomThreshold
+                and not self._blockIsOnScreen(x, y, z, self._worldSurfaceMargin)
+            ):
+                continue
+            if self._isFullyOccluded(x, y, z, blockType):
+                occluded += 1
+                continue
+            plan.append(item)
+        self._screenPlanCacheKey = key
+        self._screenPlanCache = plan
+        self._screenPlanOccluded = occluded
+        return plan, occluded, len(blocksToDraw)
+
     def _renderWorld(self) -> None:
         """Render the world blocks in correct order"""
+        if (
+            self._zoomPreviewSurface is not None
+            and pygame.time.get_ticks() < self._zoomPreviewUntil
+        ):
+            self.screen.blit(self._zoomPreviewSurface, self._zoomPreviewPosition)
+            return
+        if self._zoomPreviewSurface is not None:
+            self._zoomPreviewSurface = None
+            self._zoomPreviewSource = None
         # Update lighting if needed
         if self.lightingEnabled and self.lightingDirty:
             self.lightMap = self.world.calculateLighting()
@@ -15780,29 +17928,73 @@ class BlocFantome:
             self.litBlockCache.clear()
             self.litBlockCacheOrder.clear()
         
-        # Collect all blocks with their sort keys
-        blocksToDraw = []
-        
-        # Sort key depends on view rotation for correct painter's algorithm
         viewRot = self.renderer.viewRotation
-        
-        for (x, y, z), blockType in self.world.blocks.items():
-            # Calculate sort key based on view rotation
-            # For each view, we need to sort from back to front
-            if viewRot == 0:
-                sortKey = x + y + z  # Default: back-left is far
-            elif viewRot == 1:
-                sortKey = -y + x + z  # Rotated 90° CW
-            elif viewRot == 2:
-                sortKey = -x - y + z  # Rotated 180°
-            elif viewRot == 3:
-                sortKey = y - x + z  # Rotated 270° CW
-            else:
-                sortKey = x + y + z
-            blocksToDraw.append((sortKey, x, y, z, blockType))
-        
-        # Sort by depth (furthest first)
-        blocksToDraw.sort(key=lambda b: b[0])
+        blocksToDraw, occludedCount, allCandidateCount = self._visibleScreenRenderPlan()
+        animatedTypes = {
+            BlockType.WATER,
+            BlockType.LAVA,
+            BlockType.NETHER_PORTAL,
+            BlockType.FIRE,
+            BlockType.SOUL_FIRE,
+        }
+        # Rebuilding an entire cached terrain surface for one liquid frame is
+        # more expensive than the animation is worth. Keep animation live for
+        # ordinary builds and focused subsections, but freeze it while a very
+        # large screen plan is being navigated.
+        visibleAnimated = (
+            self.zoomLevel > self.overviewZoomThreshold
+            and len(blocksToDraw) <= 8000
+            and any(item[4] in animatedTypes for item in blocksToDraw)
+        )
+        animationKey = None
+        if visibleAnimated:
+            animationKey = (
+                self.assetManager.currentWaterFrame,
+                self.assetManager.currentLavaFrame,
+                self.assetManager.currentPortalFrame,
+                self.assetManager.currentFireFrame,
+            )
+        surfaceKey = (
+            self._screenPlanCacheKey,
+            self.zoomLevel,
+            self.lightingEnabled,
+            self.xrayEnabled,
+            tuple(sorted(block.value for block in self.xrayBlocks)) if self.xrayEnabled else (),
+            self.xrayAlpha if self.xrayEnabled else None,
+            animationKey,
+        )
+        canCacheSurface = not self.horrorEnabled
+        if (
+            canCacheSurface
+            and self._worldSurfaceCache is not None
+            and surfaceKey == self._worldSurfaceCacheKey
+        ):
+            deltaX = self.renderer.offsetX - self._worldSurfaceCacheOffset[0]
+            deltaY = self.renderer.offsetY - self._worldSurfaceCacheOffset[1]
+            self.screen.blit(
+                self._worldSurfaceCache,
+                (deltaX - self._worldSurfaceMargin, deltaY - self._worldSurfaceMargin),
+            )
+            self.renderStats = {
+                "candidates": allCandidateCount,
+                "screen_candidates": len(blocksToDraw),
+                "drawn": len(blocksToDraw),
+                "occluded": occludedCount,
+            }
+            self.world.dirtyRegions.clear_dirty()
+            self._renderSpawnerParticles()
+            return
+
+        targetSurface = self.screen
+        if canCacheSurface:
+            targetSurface = pygame.Surface(
+                (
+                    WINDOW_WIDTH - PANEL_WIDTH + self._worldSurfaceMargin * 2,
+                    WINDOW_HEIGHT + self._worldSurfaceMargin * 2,
+                ),
+                pygame.SRCALPHA,
+            )
+        drawnCount = 0
         
         # Draw blocks
         for _, x, y, z, blockType in blocksToDraw:
@@ -15816,20 +18008,21 @@ class BlocFantome:
                 wrongBlocks = [b for b in allBlocks if b != blockType and b != BlockType.AIR]
                 if wrongBlocks:
                     displayBlockType = random.choice(wrongBlocks)
-            
+            elif self._usesExteriorShellGlass(x, y, z, blockType):
+                displayBlockType = BlockType.GLASS
+
+            blockDef = BLOCK_DEFINITIONS.get(displayBlockType)
+
             # Check if this is a liquid with a specific level
             if displayBlockType in (BlockType.WATER, BlockType.LAVA):
                 level = self.world.getLiquidLevel(x, y, z)
                 if level < 8 and level > 0:
-                    # Use cached level sprite or generate one
-                    if hasattr(self, 'liquidSpriteCache') and (x, y, z) in self.liquidSpriteCache:
-                        sprite = self.liquidSpriteCache[(x, y, z)]
-                    else:
-                        isWater = displayBlockType == BlockType.WATER
-                        sprite = self.assetManager.createLiquidAtLevel(isWater, level)
-                        if not hasattr(self, 'liquidSpriteCache'):
-                            self.liquidSpriteCache = {}
-                        self.liquidSpriteCache[(x, y, z)] = sprite
+                    frame = self.assetManager.currentWaterFrame if displayBlockType == BlockType.WATER else self.assetManager.currentLavaFrame
+                    cacheKey = (displayBlockType, level, frame)
+                    sprite = self.liquidLevelSpriteCache.get(cacheKey)
+                    if sprite is None:
+                        sprite = self.assetManager.createLiquidAtLevel(displayBlockType == BlockType.WATER, level)
+                        self.liquidLevelSpriteCache[cacheKey] = sprite
                 else:
                     sprite = self.assetManager.getBlockSprite(displayBlockType)
             else:
@@ -15837,18 +18030,32 @@ class BlocFantome:
                 blockDef = BLOCK_DEFINITIONS.get(displayBlockType)
                 props = self.world.getBlockProperties(x, y, z)
                 
-                if blockDef and blockDef.isDoor and props:
-                    # Door - use open/closed state only
-                    key = (displayBlockType, props.isOpen)
-                    sprite = self.assetManager.doorSprites.get(key)
-                    if not sprite:
-                        sprite = self.assetManager.getBlockSprite(displayBlockType)
+                if blockDef and blockDef.modelKind:
+                    props = props or BlockProperties()
+                    facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    sprite = self.assetManager.getDetailSprite(
+                        displayBlockType, relativeFacing, props.isOpen, props.slabPosition
+                    )
+                elif blockDef and blockDef.isDoor and props:
+                    facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    sprite = self.assetManager.getDoorSprite(
+                        displayBlockType,
+                        relativeFacing,
+                        props.isOpen,
+                        props.doorHinge,
+                        props.doorHalf,
+                    )
                 elif blockDef and blockDef.isStair and props:
-                    # Stair - use facing
-                    key = (displayBlockType, props.facing)
-                    sprite = self.assetManager.stairSprites.get(key)
-                    if not sprite:
-                        sprite = self.assetManager.getBlockSprite(displayBlockType)
+                    facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    sprite = self.assetManager.getStairSprite(
+                        displayBlockType,
+                        relativeFacing,
+                        props.stairShape,
+                        props.slabPosition,
+                    )
                 elif blockDef and blockDef.isSlab and props:
                     # Slab - use position
                     key = (displayBlockType, props.slabPosition)
@@ -15859,24 +18066,17 @@ class BlocFantome:
                     sprite = self.assetManager.getBlockSprite(displayBlockType)
             
             if sprite:
-                # Apply view rotation flip (views 1 and 3 need horizontal flip)
-                viewRot = self.renderer.viewRotation
-                if viewRot == 1 or viewRot == 3:
-                    sprite = pygame.transform.flip(sprite, True, False)
-                
                 # Apply lighting if enabled
                 if self.lightingEnabled:
                     sprite = self._applyLighting(sprite, x, y, z, blockType)
-                
-                # Apply zoom scaling if not at default zoom
-                if self.zoomLevel != 1.0:
-                    newW = int(sprite.get_width() * self.zoomLevel)
-                    newH = int(sprite.get_height() * self.zoomLevel)
-                    # Use smoothscale for better quality when zooming in
-                    if self.zoomLevel > 1.0:
-                        sprite = pygame.transform.smoothscale(sprite, (newW, newH))
-                    else:
-                        sprite = pygame.transform.scale(sprite, (newW, newH))
+
+                flipped = (
+                    viewRot in (1, 3)
+                    and not (blockDef and (blockDef.isDoor or blockDef.isStair))
+                )
+                sprite = self.assetManager.getScaledSprite(
+                    sprite, self.zoomLevel, flipped=flipped
+                )
                 
                 # worldToScreen returns the TOP vertex of the tile diamond
                 # Sprite's top vertex is at (TILE_WIDTH // 2, 0), so offset to align
@@ -15885,17 +18085,48 @@ class BlocFantome:
                 drawX = screenX - scaledTileWidth // 2
                 drawY = screenY
                 
-                # Doors are 2 blocks tall - shift up by one block height
-                blockDef = BLOCK_DEFINITIONS.get(blockType)
-                if blockDef and blockDef.isDoor:
-                    drawY -= scaledBlockHeight
-                
                 # Apply X-Ray transparency for solid blocks
+                if (
+                    self.sceneTerrainMode == "transparent"
+                    and (x, y, z) not in self.sceneStructurePositions
+                ):
+                    sprite = sprite.copy()
+                    sprite.set_alpha(40)
                 if self.xrayEnabled and blockType in self.xrayBlocks:
                     sprite = sprite.copy()
                     sprite.set_alpha(self.xrayAlpha)
                 
-                self.screen.blit(sprite, (drawX, drawY))
+                targetSurface.blit(
+                    sprite,
+                    (
+                        drawX + (self._worldSurfaceMargin if canCacheSurface else 0),
+                        drawY + (self._worldSurfaceMargin if canCacheSurface else 0),
+                    ),
+                )
+                drawnCount += 1
+
+        if canCacheSurface:
+            self._worldSurfaceCacheKey = surfaceKey
+            self._worldSurfaceCache = targetSurface
+            self._worldSurfaceCacheOffset = (
+                self.renderer.offsetX,
+                self.renderer.offsetY,
+            )
+            self.screen.blit(
+                targetSurface,
+                (-self._worldSurfaceMargin, -self._worldSurfaceMargin),
+            )
+        else:
+            self._worldSurfaceCacheKey = None
+            self._worldSurfaceCache = None
+
+        self.renderStats = {
+            "candidates": allCandidateCount,
+            "screen_candidates": len(blocksToDraw),
+            "drawn": drawnCount,
+            "occluded": occludedCount,
+        }
+        self.world.dirtyRegions.clear_dirty()
         
         # Render spawner particles
         self._renderSpawnerParticles()
@@ -15936,8 +18167,20 @@ class BlocFantome:
         
         baseX, baseY, baseZ = self.hoveredCell
         
-        # Get sprite and prepare it
-        sprite = self.assetManager.getBlockSprite(self.selectedBlock)
+        blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
+        viewRot = self.renderer.viewRotation
+        relativeFacing = Facing((self.previewFacing.value - viewRot) % 4)
+        if blockDef and blockDef.isDoor:
+            sprite = self.assetManager.getDoorSprite(
+                self.selectedBlock, relativeFacing, False, DoorHinge.LEFT, DoorHalf.LOWER
+            )
+        elif blockDef and blockDef.isStair:
+            sprite = self.assetManager.getStairSprite(
+                self.selectedBlock, relativeFacing, StairShape.STRAIGHT,
+                self.previewSlabPosition,
+            )
+        else:
+            sprite = self.assetManager.getBlockSprite(self.selectedBlock)
         if not sprite:
             return
         
@@ -15946,8 +18189,7 @@ class BlocFantome:
         ghostSprite.set_alpha(self.ghostPreviewAlpha)
         
         # Apply view rotation flip (views 1 and 3 need horizontal flip)
-        viewRot = self.renderer.viewRotation
-        if viewRot == 1 or viewRot == 3:
+        if (viewRot == 1 or viewRot == 3) and not (blockDef and (blockDef.isDoor or blockDef.isStair)):
             ghostSprite = pygame.transform.flip(ghostSprite, True, False)
         
         # Apply zoom scaling
@@ -15959,8 +18201,7 @@ class BlocFantome:
         scaledTileWidth = int(TILE_WIDTH * self.zoomLevel)
         scaledBlockHeight = int(BLOCK_HEIGHT * self.zoomLevel)
         
-        # Check if block is a door (2 blocks tall)
-        blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
+        # Doors preview both occupied world cells.
         isDoor = blockDef and blockDef.isDoor
         
         # Render ghost for each block in brush area
@@ -15972,7 +18213,7 @@ class BlocFantome:
                 z = baseZ
                 
                 # Check bounds
-                if not (0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT):
+                if not self.world.isInBounds(x, y, z):
                     continue
                 
                 # Don't show ghost over existing solid blocks
@@ -15984,11 +18225,21 @@ class BlocFantome:
                 drawX = screenX - scaledTileWidth // 2
                 drawY = screenY
                 
-                # Doors are 2 blocks tall - shift up
-                if isDoor:
-                    drawY -= scaledBlockHeight
-                
                 self.screen.blit(ghostSprite, (drawX, drawY))
+                if isDoor and z + 1 < self.world.max_y_exclusive:
+                    upper = self.assetManager.getDoorSprite(
+                        self.selectedBlock, relativeFacing, False,
+                        DoorHinge.LEFT, DoorHalf.UPPER,
+                    ).copy()
+                    upper.set_alpha(self.ghostPreviewAlpha)
+                    if self.zoomLevel != 1.0:
+                        upper = pygame.transform.scale(
+                            upper,
+                            (int(upper.get_width() * self.zoomLevel),
+                             int(upper.get_height() * self.zoomLevel)),
+                        )
+                    upperX, upperY = self.renderer.worldToScreen(x, y, z + 1)
+                    self.screen.blit(upper, (upperX - scaledTileWidth // 2, upperY))
     
     def _renderStampPreview(self) -> None:
         """Render a transparent preview of the stamp to be placed"""
@@ -16003,7 +18254,7 @@ class BlocFantome:
             z = baseZ + relZ
             
             # Check bounds
-            if not (0 <= x < GRID_WIDTH and 0 <= y < GRID_DEPTH and 0 <= z < GRID_HEIGHT):
+            if not self.world.isInBounds(x, y, z):
                 continue
             
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
@@ -16036,14 +18287,24 @@ class BlocFantome:
         panelRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH, 0, PANEL_WIDTH, WINDOW_HEIGHT)
         panelX = WINDOW_WIDTH - PANEL_WIDTH
         
-        # Panel background - darker dirt-style
+        # Panel background - cached because copying and tinting every tile cost
+        # several milliseconds on otherwise stable large-world frames.
         if self.assetManager.backgroundTile:
-            tileSize = self.assetManager.backgroundTile.get_width()
-            for y in range(0, WINDOW_HEIGHT, tileSize):
-                for x in range(panelX, WINDOW_WIDTH, tileSize):
-                    darkTile = self.assetManager.backgroundTile.copy()
-                    darkTile.fill((70, 70, 70), special_flags=pygame.BLEND_RGB_MULT)
-                    self.screen.blit(darkTile, (x, y))
+            cacheKey = (
+                id(self.assetManager.backgroundTile), self.currentDimension,
+                PANEL_WIDTH, WINDOW_HEIGHT,
+            )
+            if cacheKey != self._panelBackgroundCacheKey:
+                background = pygame.Surface((PANEL_WIDTH, WINDOW_HEIGHT))
+                tileSize = self.assetManager.backgroundTile.get_width()
+                darkTile = self.assetManager.backgroundTile.copy()
+                darkTile.fill((70, 70, 70), special_flags=pygame.BLEND_RGB_MULT)
+                for y in range(0, WINDOW_HEIGHT, tileSize):
+                    for x in range(0, PANEL_WIDTH, tileSize):
+                        background.blit(darkTile, (x, y))
+                self._panelBackgroundCache = background
+                self._panelBackgroundCacheKey = cacheKey
+            self.screen.blit(self._panelBackgroundCache, (panelX, 0))
         else:
             pygame.draw.rect(self.screen, PANEL_COLOR, panelRect)
         
@@ -16085,8 +18346,11 @@ class BlocFantome:
         # Features main button + content (3 dimension buttons + Show Tutorial + Rain + Snow + Sun/Moon + Clouds + Lighting + Horror Rain + Save/Load)
         totalHeight += mainButtonHeight
         if self.experimentalExpanded:
-            totalHeight += 9 * 35 + 25 + 3 * 30 + 40 + 15  # 9 buttons + volume header + 3 sliders + save/load row
-        
+            totalHeight += 10 * 35 + 25 + 3 * 30 + 40 + 15
+
+        # Worlds opens a modal and has no inline content.
+        totalHeight += mainButtonHeight
+
         # Structures main button + content
         totalHeight += mainButtonHeight
         if self.structuresExpanded:
@@ -16284,6 +18548,15 @@ class BlocFantome:
                     )
                 
                 dimY += 35
+
+            terrainBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
+            if dimY + 30 >= startY and dimY <= startY + availableHeight:
+                terrainHovered = terrainBtnRect.collidepoint(mouseX, mouseY)
+                self.assetManager.drawButton(
+                    self.screen, terrainBtnRect, "Terrain Slice",
+                    self.smallFont, terrainHovered, False, bgTexture="grass_block_top.png"
+                )
+            dimY += 35
             
             # Show Tutorial button
             tutorialBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
@@ -16382,7 +18655,7 @@ class BlocFantome:
             lightingBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 lightingHovered = lightingBtnRect.collidepoint(mouseX, mouseY)
-                lightingLabel = "Lighting: ON" if self.lightingEnabled else "Lighting: OFF"
+                lightingLabel = "Lighting + Fog: ON" if self.lightingEnabled else "Lighting + Fog: OFF"
                 self.assetManager.drawButton(
                     self.screen, lightingBtnRect, lightingLabel,
                     self.smallFont, lightingHovered, self.lightingEnabled, bgTexture="jack_o_lantern.png"
@@ -16406,6 +18679,12 @@ class BlocFantome:
             
             currentY = dimY + 5
         
+        # ===== WORLDS MAIN BUTTON =====
+        worldsRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
+        worldsHovered = worldsRect.collidepoint(mouseX, mouseY)
+        self.assetManager.drawButton(self.screen, worldsRect, "Worlds", self.font, worldsHovered, False)
+        currentY += mainButtonHeight + 5
+
         # ===== STRUCTURES MAIN BUTTON =====
         structuresRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         structuresHovered = structuresRect.collidepoint(mouseX, mouseY)
@@ -16449,21 +18728,21 @@ class BlocFantome:
                     if self.structureThumbnailBg is None:
                         # Create and cache the background once
                         self.structureThumbnailBg = pygame.Surface((PREVIEW_WIDTH, PREVIEW_HEIGHT), pygame.SRCALPHA)
-                        cobbleTex = self.assetManager.textures.get("cobblestone.png")
-                        if cobbleTex:
-                            texW, texH = cobbleTex.get_size()
+                        netherBrickTex = self.assetManager.textures.get("nether_bricks.png")
+                        if netherBrickTex:
+                            texW, texH = netherBrickTex.get_size()
                             for ty in range(0, PREVIEW_HEIGHT, texH):
                                 for tx in range(0, PREVIEW_WIDTH, texW):
                                     clipW = min(texW, PREVIEW_WIDTH - tx)
                                     clipH = min(texH, PREVIEW_HEIGHT - ty)
-                                    clippedTex = cobbleTex.subsurface((0, 0, clipW, clipH))
+                                    clippedTex = netherBrickTex.subsurface((0, 0, clipW, clipH))
                                     self.structureThumbnailBg.blit(clippedTex, (tx, ty))
                             # Pre-apply darkening
                             darkOverlay = pygame.Surface((PREVIEW_WIDTH, PREVIEW_HEIGHT), pygame.SRCALPHA)
                             darkOverlay.fill((0, 0, 0, 80))
                             self.structureThumbnailBg.blit(darkOverlay, (0, 0))
                         else:
-                            self.structureThumbnailBg.fill((50, 50, 60))
+                            self.structureThumbnailBg.fill((48, 22, 25))
                     
                     # Blit cached background
                     self.screen.blit(self.structureThumbnailBg, (thumbX, thumbY))
@@ -16477,12 +18756,14 @@ class BlocFantome:
                     # Draw structure preview (centered in the slot)
                     preview = self.structurePreviews.get(structName)
                     if preview:
-                        # Center the preview in the thumbnail slot
-                        previewW = preview.get_width()
-                        previewH = preview.get_height()
+                        thumbnail = pygame.transform.smoothscale(
+                            preview, (PREVIEW_WIDTH, PREVIEW_HEIGHT)
+                        )
+                        previewW = thumbnail.get_width()
+                        previewH = thumbnail.get_height()
                         centerX = thumbX + (PREVIEW_WIDTH - previewW) // 2
                         centerY = thumbY + (PREVIEW_HEIGHT - previewH) // 2
-                        self.screen.blit(preview, (centerX, centerY))
+                        self.screen.blit(thumbnail, (centerX, centerY))
                     
                     # Draw border (yellow/gold for selected, gray otherwise)
                     if isSelected:
@@ -16510,20 +18791,25 @@ class BlocFantome:
         )
         currentY = sepY + 10
         
-        # ===== SAVE/LOAD BUTTONS =====
+        # ===== BUILD FILE BUTTONS =====
         saveLoadY = currentY
-        saveBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, saveLoadY, (PANEL_WIDTH - 2 * ICON_MARGIN - 30) // 2, 30)
-        loadBtnRect = pygame.Rect(saveBtnRect.right + 10, saveLoadY, saveBtnRect.width, 30)
+        buttonWidth = (PANEL_WIDTH - 2 * ICON_MARGIN - 30) // 3
+        saveBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, saveLoadY, buttonWidth, 30)
+        saveAsBtnRect = pygame.Rect(saveBtnRect.right + 5, saveLoadY, buttonWidth, 30)
+        loadBtnRect = pygame.Rect(saveAsBtnRect.right + 5, saveLoadY, buttonWidth, 30)
         
         # Store button rects for click detection
         self.saveBtnRect = saveBtnRect
+        self.saveAsBtnRect = saveAsBtnRect
         self.loadBtnRect = loadBtnRect
         
         if saveLoadY + 30 >= startY and saveLoadY <= startY + availableHeight:
             saveHovered = saveBtnRect.collidepoint(mouseX, mouseY)
+            saveAsHovered = saveAsBtnRect.collidepoint(mouseX, mouseY)
             loadHovered = loadBtnRect.collidepoint(mouseX, mouseY)
             self.assetManager.drawButton(self.screen, saveBtnRect, "Save", self.smallFont, saveHovered, False)
-            self.assetManager.drawButton(self.screen, loadBtnRect, "Load", self.smallFont, loadHovered, False)
+            self.assetManager.drawButton(self.screen, saveAsBtnRect, "Save As", self.smallFont, saveAsHovered, False)
+            self.assetManager.drawButton(self.screen, loadBtnRect, "Open", self.smallFont, loadHovered, False)
         currentY += 40
         
         # ===== VIEW INDICATOR (no buttons - use Q/E hotkeys) =====
@@ -16813,7 +19099,7 @@ class BlocFantome:
             self.screen.blit(posText, (10, WINDOW_HEIGHT - 30))
     
     def _renderStructureTooltip(self) -> None:
-        """Render tooltip showing structure name when hovering over structure thumbnail"""
+        """Render a large structure inspection flyout beside the library panel."""
         if not self.hoveredStructure or not self.structuresExpanded:
             return
         
@@ -16824,42 +19110,28 @@ class BlocFantome:
         
         displayName = structData.get("name", self.hoveredStructure)
         
-        # Render tooltip near mouse position
-        mouseX, mouseY = pygame.mouse.get_pos()
-        
-        # Create tooltip text
+        _, mouseY = pygame.mouse.get_pos()
         tooltipText = self.smallFont.render(displayName, True, (255, 255, 255))
-        textWidth = tooltipText.get_width()
-        textHeight = tooltipText.get_height()
-        
-        # Padding around text
-        padding = 6
-        tooltipWidth = textWidth + padding * 2
-        tooltipHeight = textHeight + padding * 2
-        
-        # Position tooltip near mouse, but offset to not obscure
-        tooltipX = mouseX + 15
-        tooltipY = mouseY - tooltipHeight - 5
-        
-        # Keep tooltip on screen
-        if tooltipX + tooltipWidth > WINDOW_WIDTH:
-            tooltipX = mouseX - tooltipWidth - 5
-        if tooltipY < 0:
-            tooltipY = mouseY + 20
-        
-        # Draw tooltip background with border
+        preview = self.structurePreviews.get(self.hoveredStructure)
+        padding = 10
+        previewWidth = min(360, WINDOW_WIDTH - PANEL_WIDTH - 40)
+        previewHeight = 240
+        tooltipWidth = previewWidth + padding * 2
+        tooltipHeight = previewHeight + tooltipText.get_height() + padding * 3
+        tooltipX = max(10, WINDOW_WIDTH - PANEL_WIDTH - tooltipWidth - 12)
+        tooltipY = max(10, min(WINDOW_HEIGHT - tooltipHeight - 10, mouseY - tooltipHeight // 2))
         tooltipRect = pygame.Rect(tooltipX, tooltipY, tooltipWidth, tooltipHeight)
-        
-        # Dark semi-transparent background
         tooltipBg = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
-        tooltipBg.fill((30, 30, 40, 230))
+        tooltipBg.fill((20, 20, 28, 242))
         self.screen.blit(tooltipBg, (tooltipX, tooltipY))
-        
-        # Border
-        pygame.draw.rect(self.screen, (100, 100, 120), tooltipRect, 1)
-        
-        # Text
+        pygame.draw.rect(self.screen, (190, 160, 72), tooltipRect, 2)
         self.screen.blit(tooltipText, (tooltipX + padding, tooltipY + padding))
+        if preview:
+            fitted = pygame.transform.smoothscale(preview, (previewWidth, previewHeight))
+            self.screen.blit(
+                fitted,
+                (tooltipX + padding, tooltipY + padding * 2 + tooltipText.get_height()),
+            )
     
     def _renderVolumeSlider(self, x: int, y: int, label: str, value: float, mouseX: int, mouseY: int):
         """Render a volume slider with mute toggle"""

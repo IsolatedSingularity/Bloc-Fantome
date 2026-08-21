@@ -14,24 +14,30 @@ Features:
 """
 
 from collections import deque
-from typing import Dict, List, Tuple, Optional, TYPE_CHECKING
+from contextlib import contextmanager
+from typing import Deque, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
+
+from engine.block_state import BlockProperties
+from engine.performance import ChunkStorage, DirtyRegionTracker
 
 if TYPE_CHECKING:
-    from blocFantome import BlockType, BlockProperties, BlockDefinition
+    from blocFantome import BlockType, BlockDefinition
 
 # These will be imported from the main module at runtime
 # to avoid circular imports
 BlockType = None
-BlockProperties = None
 BLOCK_DEFINITIONS = None
 
 
-def init_world_module(block_type, block_properties, block_definitions):
-    """Initialize module-level references to avoid circular imports."""
-    global BlockType, BlockProperties, BLOCK_DEFINITIONS
+def init_world_module(block_type, block_properties_or_definitions, block_definitions=None):
+    """Provide the application block enum and registry.
+
+    The three-argument form remains accepted for older callers; shared block
+    properties now come from `engine.block_state` directly.
+    """
+    global BlockType, BLOCK_DEFINITIONS
     BlockType = block_type
-    BlockProperties = block_properties
-    BLOCK_DEFINITIONS = block_definitions
+    BLOCK_DEFINITIONS = block_definitions or block_properties_or_definitions
 
 
 class World:
@@ -42,7 +48,8 @@ class World:
     storing only non-air blocks.
     """
     
-    def __init__(self, width: int, depth: int, height: int):
+    def __init__(self, width: int, depth: int, height: int, *, min_y: int = 0,
+                 chunk_size: int = 16):
         """
         Initialize the world.
         
@@ -54,14 +61,37 @@ class World:
         self.width = width
         self.depth = depth
         self.height = height
+        self.min_y = int(min_y)
+        self.max_y_exclusive = self.min_y + self.height
         self.blocks: Dict[Tuple[int, int, int], 'BlockType'] = {}
+        self.chunkStorage = ChunkStorage(chunk_size)
+        self.dirtyRegions = DirtyRegionTracker(chunk_size)
+        self._columnLevels: Dict[Tuple[int, int], Set[int]] = {}
+        self.heightIndex: Dict[Tuple[int, int], int] = {}
+        # Conservative render index: blocks with at least one air neighbor.
+        # It removes buried terrain cells from large-world candidate scans
+        # without changing the editable sparse world representation.
+        self.surfaceBlocks: Set[Tuple[int, int, int]] = set()
+        self.surfaceChunks: Dict[Tuple[int, int, int], Set[Tuple[int, int, int]]] = {}
+        self.revision = 0
+        self._bulkDepth = 0
+        self._bulkChanged = False
         # Block properties for special blocks (doors, slabs, stairs)
         self.blockProperties: Dict[Tuple[int, int, int], 'BlockProperties'] = {}
-        # Water/lava levels (1-8, where 8 = source)
+        # Fluid state mirrors the 1.16.1 source model: level, still/source,
+        # and falling are separate properties.
         self.liquidLevels: Dict[Tuple[int, int, int], int] = {}
-        # Separate queues for water and lava flow updates
-        self.waterUpdateQueue: List[Tuple[int, int, int]] = []
-        self.lavaUpdateQueue: List[Tuple[int, int, int]] = []
+        self.liquidSources: Set[Tuple[int, int, int]] = set()
+        self.liquidFalling: Set[Tuple[int, int, int]] = set()
+        self.waterUpdateQueue: Deque[Tuple[int, int, int]] = deque()
+        self.lavaUpdateQueue: Deque[Tuple[int, int, int]] = deque()
+        self._waterQueued: Set[Tuple[int, int, int]] = set()
+        self._lavaQueued: Set[Tuple[int, int, int]] = set()
+        self.dimension = "overworld"
+
+    def setDimension(self, dimension: str) -> None:
+        """Set the dimension used by Nether-specific lava rules."""
+        self.dimension = dimension
     
     def getBlock(self, x: int, y: int, z: int) -> 'BlockType':
         """Get the block type at a position"""
@@ -77,89 +107,213 @@ class World:
         """Set properties for a block at a position"""
         if self.isInBounds(x, y, z):
             self.blockProperties[(x, y, z)] = props
+            if self._bulkDepth:
+                self._bulkChanged = True
+            else:
+                self.revision += 1
+                self.dirtyRegions.mark_block_and_neighbors(x, y, z)
+
+    def _storeBlock(self, pos: Tuple[int, int, int], blockType: 'BlockType') -> bool:
+        """Synchronize sparse, chunk, height, and dirty indexes for one edit."""
+        oldBlock = self.blocks.get(pos, BlockType.AIR)
+        if oldBlock == blockType:
+            return False
+        x, y, z = pos
+        column = (x, y)
+        levels = self._columnLevels.get(column)
+        if oldBlock != BlockType.AIR:
+            self.blocks.pop(pos, None)
+            self.chunkStorage.set_block(x, y, z, None)
+            if levels is not None:
+                levels.discard(z)
+                if not levels:
+                    self._columnLevels.pop(column, None)
+                    self.heightIndex.pop(column, None)
+                elif self.heightIndex.get(column) == z:
+                    self.heightIndex[column] = max(levels)
+        if blockType != BlockType.AIR:
+            self.blocks[pos] = blockType
+            self.chunkStorage.set_block(x, y, z, blockType)
+            levels = self._columnLevels.setdefault(column, set())
+            levels.add(z)
+            if z > self.heightIndex.get(column, self.min_y - 1):
+                self.heightIndex[column] = z
+        if self._bulkDepth:
+            self._bulkChanged = True
+        else:
+            self._refreshSurfaceNeighborhood(pos)
+            self.revision += 1
+            self.dirtyRegions.mark_block_and_neighbors(x, y, z)
+        return True
+
+    @staticmethod
+    def _neighborPositions(pos: Tuple[int, int, int]):
+        x, y, z = pos
+        for dx, dy, dz in (
+            (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0),
+            (0, 0, 1), (0, 0, -1),
+        ):
+            yield (x + dx, y + dy, z + dz)
+
+    def _isSurfaceBlock(self, pos: Tuple[int, int, int]) -> bool:
+        if self.blocks.get(pos, BlockType.AIR) == BlockType.AIR:
+            return False
+        return any(self.getBlock(*neighbor) == BlockType.AIR for neighbor in self._neighborPositions(pos))
+
+    def _refreshSurfaceNeighborhood(self, pos: Tuple[int, int, int]) -> None:
+        for candidate in (pos, *self._neighborPositions(pos)):
+            if self._isSurfaceBlock(candidate):
+                if candidate not in self.surfaceBlocks:
+                    self.surfaceBlocks.add(candidate)
+                    chunk = tuple(value // self.chunkStorage.chunk_size for value in candidate)
+                    self.surfaceChunks.setdefault(chunk, set()).add(candidate)
+            else:
+                if candidate in self.surfaceBlocks:
+                    self.surfaceBlocks.discard(candidate)
+                    chunk = tuple(value // self.chunkStorage.chunk_size for value in candidate)
+                    cells = self.surfaceChunks.get(chunk)
+                    if cells is not None:
+                        cells.discard(candidate)
+                        if not cells:
+                            self.surfaceChunks.pop(chunk, None)
+
+    def _rebuildSurfaceIndex(self) -> None:
+        self.surfaceBlocks = {
+            pos for pos in self.blocks if self._isSurfaceBlock(pos)
+        }
+        self.surfaceChunks.clear()
+        size = self.chunkStorage.chunk_size
+        for pos in self.surfaceBlocks:
+            chunk = tuple(value // size for value in pos)
+            self.surfaceChunks.setdefault(chunk, set()).add(pos)
+
+    @contextmanager
+    def bulkUpdate(self):
+        """Coalesce revision and redraw work for scene imports/generation."""
+        self._bulkDepth += 1
+        try:
+            yield self
+        finally:
+            self._bulkDepth -= 1
+            if self._bulkDepth == 0 and self._bulkChanged:
+                self._bulkChanged = False
+                self._rebuildSurfaceIndex()
+                self.revision += 1
+                self.dirtyRegions.request_full_redraw()
     
     def getLiquidLevel(self, x: int, y: int, z: int) -> int:
         """Get the liquid level at a position (0 = no liquid, 8 = source)"""
         return self.liquidLevels.get((x, y, z), 0)
     
     def setBlock(self, x: int, y: int, z: int, blockType: 'BlockType') -> bool:
-        """
-        Set a block at a position.
-        
-        Args:
-            x, y, z: Position coordinates
-            blockType: Type of block to place
-            
-        Returns:
-            True if block was placed successfully
-        """
+        """Set a block and schedule any affected fluid cells."""
         if not self.isInBounds(x, y, z):
             return False
-        
+        pos = (x, y, z)
+        oldBlock = self.blocks.get(pos, BlockType.AIR)
         if blockType == BlockType.AIR:
-            # Remove block
-            if (x, y, z) in self.blocks:
-                del self.blocks[(x, y, z)]
-            # Also remove liquid level
-            if (x, y, z) in self.liquidLevels:
-                del self.liquidLevels[(x, y, z)]
-                # Queue neighbors for update (liquid might flow in)
-                self._queueNeighborUpdates(x, y, z)
-            else:
-                # Solid block removed - check if there's liquid above that should fall
-                self._queueLiquidAbove(x, y, z)
-            # Remove block properties
-            if (x, y, z) in self.blockProperties:
-                del self.blockProperties[(x, y, z)]
+            self._storeBlock(pos, BlockType.AIR)
+            self.blockProperties.pop(pos, None)
+            self._clearLiquidState(pos)
+            self._queueNeighborUpdates(x, y, z)
+            self._queueLiquidAbove(x, y, z)
         else:
-            # Place block
-            self.blocks[(x, y, z)] = blockType
-            # Set liquid level for water/lava
-            if blockType == BlockType.WATER:
-                self.liquidLevels[(x, y, z)] = 8  # Source block
-                self.waterUpdateQueue.append((x, y, z))
-            elif blockType == BlockType.LAVA:
-                self.liquidLevels[(x, y, z)] = 8  # Source block
-                self.lavaUpdateQueue.append((x, y, z))
-        
+            self._storeBlock(pos, blockType)
+            self.blockProperties.pop(pos, None)
+            self._clearLiquidState(pos)
+            if blockType in (BlockType.WATER, BlockType.LAVA):
+                self.liquidLevels[pos] = 8
+                self.liquidSources.add(pos)
+                self._enqueueLiquid(pos, blockType)
+                self._queueNeighborUpdates(x, y, z)
+            elif oldBlock in (BlockType.WATER, BlockType.LAVA):
+                self._queueNeighborUpdates(x, y, z)
         return True
+
+    def _queueFor(self, liquidType: 'BlockType'):
+        if liquidType == BlockType.WATER:
+            return self.waterUpdateQueue, self._waterQueued
+        return self.lavaUpdateQueue, self._lavaQueued
+
+    def _enqueueLiquid(self, pos: Tuple[int, int, int], liquidType: 'BlockType', front: bool = False) -> None:
+        if not self.isInBounds(*pos):
+            return
+        queue, queued = self._queueFor(liquidType)
+        if pos in queued:
+            return
+        queued.add(pos)
+        if front:
+            queue.appendleft(pos)
+        else:
+            queue.append(pos)
+
+    def _clearLiquidState(self, pos: Tuple[int, int, int]) -> None:
+        self.liquidLevels.pop(pos, None)
+        self.liquidSources.discard(pos)
+        self.liquidFalling.discard(pos)
+
+    def _setFlowingLiquid(
+        self,
+        pos: Tuple[int, int, int],
+        liquidType: 'BlockType',
+        level: int,
+        falling: bool,
+    ) -> bool:
+        if not self.isInBounds(*pos) or level <= 0:
+            return False
+        oldBlock = self.blocks.get(pos, BlockType.AIR)
+        oldLevel = self.liquidLevels.get(pos, 0)
+        oldFalling = pos in self.liquidFalling
+        if oldBlock not in (BlockType.AIR, liquidType):
+            return False
+        if oldBlock == liquidType and oldLevel > level:
+            return False
+        self._storeBlock(pos, liquidType)
+        self.liquidLevels[pos] = max(1, min(8, level))
+        self.liquidSources.discard(pos)
+        if falling:
+            self.liquidFalling.add(pos)
+        else:
+            self.liquidFalling.discard(pos)
+        changed = oldBlock != liquidType or oldLevel != level or oldFalling != falling
+        if changed:
+            self._enqueueLiquid(pos, liquidType)
+        return changed
     
     def _queueNeighborUpdates(self, x: int, y: int, z: int):
         """Queue neighboring liquid blocks for update"""
-        neighbors = [(x+1, y, z), (x-1, y, z), (x, y+1, z), (x, y-1, z), (x, y, z+1)]
+        neighbors = [
+            (x + 1, y, z), (x - 1, y, z),
+            (x, y + 1, z), (x, y - 1, z),
+            (x, y, z + 1), (x, y, z - 1),
+        ]
         for nx, ny, nz in neighbors:
             block = self.getBlock(nx, ny, nz)
             if block == BlockType.WATER:
-                if (nx, ny, nz) not in self.waterUpdateQueue:
-                    self.waterUpdateQueue.append((nx, ny, nz))
+                self._enqueueLiquid((nx, ny, nz), block)
             elif block == BlockType.LAVA:
-                if (nx, ny, nz) not in self.lavaUpdateQueue:
-                    self.lavaUpdateQueue.append((nx, ny, nz))
+                self._enqueueLiquid((nx, ny, nz), block)
     
     def _queueLiquidAbove(self, x: int, y: int, z: int):
         """Queue liquid blocks above and adjacent for update when solid block is removed"""
         # Check block directly above
-        if z + 1 < self.height:
+        if z + 1 < self.max_y_exclusive:
             blockAbove = self.getBlock(x, y, z + 1)
             if blockAbove == BlockType.WATER:
-                if (x, y, z + 1) not in self.waterUpdateQueue:
-                    self.waterUpdateQueue.insert(0, (x, y, z + 1))
+                self._enqueueLiquid((x, y, z + 1), blockAbove, front=True)
             elif blockAbove == BlockType.LAVA:
-                if (x, y, z + 1) not in self.lavaUpdateQueue:
-                    self.lavaUpdateQueue.insert(0, (x, y, z + 1))
+                self._enqueueLiquid((x, y, z + 1), blockAbove, front=True)
         
         # Also check horizontal neighbors at same level
         for nx, ny in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
             if self.isInBounds(nx, ny, z):
                 block = self.getBlock(nx, ny, z)
                 if block == BlockType.WATER:
-                    if (nx, ny, z) not in self.waterUpdateQueue:
-                        self.waterUpdateQueue.append((nx, ny, z))
+                    self._enqueueLiquid((nx, ny, z), block)
                 elif block == BlockType.LAVA:
-                    if (nx, ny, z) not in self.lavaUpdateQueue:
-                        self.lavaUpdateQueue.append((nx, ny, z))
+                    self._enqueueLiquid((nx, ny, z), block)
     
-    def updateLiquids(self, liquidType: 'BlockType' = None, maxUpdates: int = 8) -> List[Tuple[int, int, int, 'BlockType', int]]:
+    def _legacyUpdateLiquids(self, liquidType: 'BlockType' = None, maxUpdates: int = 8) -> List[Tuple[int, int, int, 'BlockType', int]]:
         """
         Process liquid flow updates for a specific type (water or lava).
         Returns list of (x, y, z, blockType, level) for changed blocks.
@@ -221,8 +375,8 @@ class World:
                     continue
                 
                 # PRIORITY 1: Flow down first
-                if z > 0 and self.getBlock(x, y, z-1) == BlockType.AIR:
-                    self.blocks[(x, y, z-1)] = block
+                if z > self.min_y and self.getBlock(x, y, z-1) == BlockType.AIR:
+                    self._storeBlock((x, y, z - 1), block)
                     self.liquidLevels[(x, y, z-1)] = 8
                     changes.append((x, y, z-1, block, 8))
                     queue.append((x, y, z-1))
@@ -248,12 +402,12 @@ class World:
                         neighborLevel = self.getLiquidLevel(nx, ny, nz)
                         
                         if neighborBlock == BlockType.AIR:
-                            self.blocks[(nx, ny, nz)] = block
+                            self._storeBlock((nx, ny, nz), block)
                             self.liquidLevels[(nx, ny, nz)] = newLevel
                             changes.append((nx, ny, nz, block, newLevel))
                             if newLevel > 1:
                                 queue.append((nx, ny, nz))
-                            if nz > 0 and self.getBlock(nx, ny, nz - 1) == BlockType.AIR:
+                            if nz > self.min_y and self.getBlock(nx, ny, nz - 1) == BlockType.AIR:
                                 queue.insert(0, (nx, ny, nz))
                         elif neighborBlock == block and neighborLevel < newLevel:
                             self.liquidLevels[(nx, ny, nz)] = newLevel
@@ -265,7 +419,7 @@ class World:
         
         return changes
     
-    def _findHoleDirections(self, startX: int, startY: int, z: int, 
+    def _legacyFindHoleDirections(self, startX: int, startY: int, z: int,
                             liquidType: 'BlockType', maxRange: int) -> List[Tuple[int, int]]:
         """Use BFS to find directions leading to holes within range."""
         directionHoles = {}
@@ -283,7 +437,7 @@ class World:
             
             visited.add((nx, ny))
             
-            if z > 0 and self.getBlock(nx, ny, z - 1) == BlockType.AIR:
+            if z > self.min_y and self.getBlock(nx, ny, z - 1) == BlockType.AIR:
                 directionHoles[(dx, dy)] = 1
             
             bfsQueue.append((nx, ny, dx, dy, 1))
@@ -310,7 +464,7 @@ class World:
                 visited.add((nx, ny))
                 newDist = dist + 1
                 
-                if z > 0 and self.getBlock(nx, ny, z - 1) == BlockType.AIR:
+                if z > self.min_y and self.getBlock(nx, ny, z - 1) == BlockType.AIR:
                     if (initDx, initDy) not in directionHoles:
                         directionHoles[(initDx, initDy)] = newDist
                 
@@ -324,18 +478,280 @@ class World:
         goodDirections.sort(key=lambda x: x[1])
         
         return [d for d, _ in goodDirections]
+
+    def updateLiquids(self, liquidType: 'BlockType' = None, maxUpdates: int = 32) -> List[Tuple[int, int, int, 'BlockType', int]]:
+        """Process a deduplicated batch of source-style scheduled fluid updates."""
+        if liquidType not in (BlockType.WATER, BlockType.LAVA):
+            return []
+        queue, queued = self._queueFor(liquidType)
+        changes: List[Tuple[int, int, int, 'BlockType', int]] = []
+        updatesThisTick = 0
+
+        while queue and updatesThisTick < maxUpdates:
+            pos = queue.popleft()
+            queued.discard(pos)
+            updatesThisTick += 1
+            if self.getBlock(*pos) != liquidType:
+                continue
+
+            reaction = self._reactLavaWithWater(pos)
+            if reaction is not None:
+                changes.append(reaction)
+                continue
+
+            stabilized = self._stabilizeLiquid(pos, liquidType)
+            if stabilized is not None:
+                changes.append(stabilized)
+            if self.getBlock(*pos) != liquidType:
+                continue
+
+            x, y, z = pos
+            level = self.getLiquidLevel(x, y, z)
+            falling = pos in self.liquidFalling
+            flowedDown = False
+            if z > self.min_y:
+                below = (x, y, z - 1)
+                belowBlock = self.getBlock(*below)
+                if liquidType == BlockType.LAVA and belowBlock == BlockType.WATER:
+                    self._replaceLiquidWithSolid(below, BlockType.STONE)
+                    changes.append((*below, BlockType.STONE, 0))
+                    flowedDown = True
+                elif belowBlock in (BlockType.AIR, liquidType):
+                    if self._setFlowingLiquid(below, liquidType, 8, True):
+                        changes.append((*below, liquidType, 8))
+                        self._queueNeighborUpdates(*below)
+                    flowedDown = True
+
+            # Vanilla only spreads sideways while falling when surrounded by
+            # at least three still neighbors.
+            if flowedDown and self._sourceNeighborCount(pos, liquidType) < 3:
+                continue
+
+            spreadLevel = 7 if falling else level - self._levelDecrease(liquidType)
+            if spreadLevel <= 0:
+                continue
+            for dx, dy in self._bestSpreadDirections(pos, liquidType):
+                target = (x + dx, y + dy, z)
+                if self._setFlowingLiquid(target, liquidType, spreadLevel, False):
+                    changes.append((*target, liquidType, spreadLevel))
+                    self._queueNeighborUpdates(*target)
+
+        return changes
+
+    def _sourceNeighborCount(self, pos: Tuple[int, int, int], liquidType: 'BlockType') -> int:
+        x, y, z = pos
+        return sum(
+            (x + dx, y + dy, z) in self.liquidSources
+            and self.getBlock(x + dx, y + dy, z) == liquidType
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+        )
+
+    def _levelDecrease(self, liquidType: 'BlockType') -> int:
+        if liquidType == BlockType.WATER:
+            return 1
+        return 1 if self.dimension == "nether" else 2
+
+    def _flowSearchDepth(self, liquidType: 'BlockType') -> int:
+        if liquidType == BlockType.WATER or self.dimension == "nether":
+            return 4
+        return 2
+
+    def _stabilizeLiquid(self, pos: Tuple[int, int, int], liquidType: 'BlockType'):
+        if pos in self.liquidSources:
+            self.liquidLevels[pos] = 8
+            self.liquidFalling.discard(pos)
+            return None
+
+        x, y, z = pos
+        above = (x, y, z + 1)
+        if z + 1 < self.max_y_exclusive and self.getBlock(*above) == liquidType:
+            desiredLevel, falling = 8, True
+        else:
+            neighborLevels = []
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                neighbor = (x + dx, y + dy, z)
+                if self.getBlock(*neighbor) == liquidType:
+                    neighborLevels.append(self.getLiquidLevel(*neighbor))
+
+            if liquidType == BlockType.WATER and self._sourceNeighborCount(pos, liquidType) >= 2:
+                below = self.getBlock(x, y, z - 1) if z > self.min_y else BlockType.AIR
+                if below not in (BlockType.AIR, BlockType.LAVA):
+                    self.liquidSources.add(pos)
+                    self.liquidLevels[pos] = 8
+                    self.liquidFalling.discard(pos)
+                    return (*pos, liquidType, 8)
+
+            desiredLevel = (max(neighborLevels) if neighborLevels else 0) - self._levelDecrease(liquidType)
+            falling = False
+
+        if desiredLevel <= 0:
+            self._storeBlock(pos, BlockType.AIR)
+            self._clearLiquidState(pos)
+            self._queueNeighborUpdates(*pos)
+            return (*pos, BlockType.AIR, 0)
+
+        oldLevel = self.liquidLevels.get(pos, 0)
+        oldFalling = pos in self.liquidFalling
+        self.liquidLevels[pos] = desiredLevel
+        if falling:
+            self.liquidFalling.add(pos)
+        else:
+            self.liquidFalling.discard(pos)
+        if oldLevel != desiredLevel or oldFalling != falling:
+            self._queueNeighborUpdates(*pos)
+            return (*pos, liquidType, desiredLevel)
+        return None
+
+    def _canFlowHorizontally(self, pos: Tuple[int, int, int], liquidType: 'BlockType') -> bool:
+        block = self.getBlock(*pos)
+        return block == BlockType.AIR or (block == liquidType and pos not in self.liquidSources)
+
+    def _dropDistance(
+        self,
+        start: Tuple[int, int, int],
+        liquidType: 'BlockType',
+        blockedDirection: Tuple[int, int],
+    ) -> int:
+        maxDepth = self._flowSearchDepth(liquidType)
+        queue = deque([(start[0], start[1], 1)])
+        visited = {(start[0], start[1])}
+        while queue:
+            x, y, distance = queue.popleft()
+            if start[2] > 0 and self.getBlock(x, y, start[2] - 1) == BlockType.AIR:
+                return distance
+            if distance >= maxDepth:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if distance == 1 and (dx, dy) == blockedDirection:
+                    continue
+                target = (x + dx, y + dy, start[2])
+                key = (target[0], target[1])
+                if key in visited or not self.isInBounds(*target):
+                    continue
+                if not self._canFlowHorizontally(target, liquidType):
+                    continue
+                visited.add(key)
+                queue.append((target[0], target[1], distance + 1))
+        return 1000
+
+    def _bestSpreadDirections(self, pos: Tuple[int, int, int], liquidType: 'BlockType') -> List[Tuple[int, int]]:
+        x, y, z = pos
+        candidates = []
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            target = (x + dx, y + dy, z)
+            if not self.isInBounds(*target) or not self._canFlowHorizontally(target, liquidType):
+                continue
+            distance = (
+                0
+                if z > self.min_y and self.getBlock(target[0], target[1], z - 1) == BlockType.AIR
+                else self._dropDistance(target, liquidType, (-dx, -dy))
+            )
+            candidates.append((distance, dx, dy))
+        if not candidates:
+            return []
+        best = min(item[0] for item in candidates)
+        return [(dx, dy) for distance, dx, dy in candidates if distance == best]
+
+    def _replaceLiquidWithSolid(self, pos: Tuple[int, int, int], blockType: 'BlockType') -> None:
+        self._storeBlock(pos, blockType)
+        self._clearLiquidState(pos)
+        self._queueNeighborUpdates(*pos)
+
+    def _reactLavaWithWater(self, pos: Tuple[int, int, int]):
+        if self.getBlock(*pos) != BlockType.LAVA:
+            return None
+        x, y, z = pos
+        neighbors = (
+            (x + 1, y, z), (x - 1, y, z),
+            (x, y + 1, z), (x, y - 1, z),
+            (x, y, z + 1),
+        )
+        if any(
+            self.isInBounds(*neighbor) and self.getBlock(*neighbor) == BlockType.WATER
+            for neighbor in neighbors
+        ):
+            result = BlockType.OBSIDIAN if pos in self.liquidSources else BlockType.COBBLESTONE
+            self._replaceLiquidWithSolid(pos, result)
+            return (*pos, result, 0)
+        return None
+
+    def _findHoleDirections(self, startX: int, startY: int, z: int,
+                            liquidType: 'BlockType', maxRange: int) -> List[Tuple[int, int]]:
+        """Compatibility wrapper around the source-style slope search."""
+        return self._bestSpreadDirections((startX, startY, z), liquidType)
     
     def isInBounds(self, x: int, y: int, z: int) -> bool:
         """Check if coordinates are within world bounds"""
-        return 0 <= x < self.width and 0 <= y < self.depth and 0 <= z < self.height
+        return (
+            0 <= x < self.width
+            and 0 <= y < self.depth
+            and self.min_y <= z < self.max_y_exclusive
+        )
+
+    def iterBlocks(self):
+        """Iterate all blocks without materializing a compatibility dictionary."""
+        return self.chunkStorage.iter_blocks()
+
+    def iterSurfaceBlocks(self):
+        """Iterate conservative visible candidates for large-world rendering."""
+        for pos in self.surfaceBlocks:
+            block = self.blocks.get(pos)
+            if block is not None:
+                yield pos, block
+
+    def iterSurfaceChunks(self):
+        """Iterate chunk keys and their conservative surface positions."""
+        return self.surfaceChunks.items()
+
+    def iterBlocksInChunkRadius(self, centerX: int, centerY: int, chunkRadius: int):
+        """Iterate blocks inside the horizontal render distance."""
+        return self.chunkStorage.iter_horizontal_radius(centerX, centerY, chunkRadius)
+
+    def resize(self, width: int, depth: int, height: int, *, min_y: int = 0,
+               preserve: bool = True) -> None:
+        """Change world bounds while preserving in-range state when requested."""
+        oldBlocks = dict(self.blocks) if preserve else {}
+        oldProperties = dict(self.blockProperties) if preserve else {}
+        oldLiquidLevels = dict(self.liquidLevels) if preserve else {}
+        oldLiquidSources = set(self.liquidSources) if preserve else set()
+        oldLiquidFalling = set(self.liquidFalling) if preserve else set()
+        self.clear()
+        self.width = max(1, int(width))
+        self.depth = max(1, int(depth))
+        self.height = max(1, int(height))
+        self.min_y = int(min_y)
+        self.max_y_exclusive = self.min_y + self.height
+        for pos, blockType in oldBlocks.items():
+            if self.isInBounds(*pos):
+                self._storeBlock(pos, blockType)
+                if pos in oldProperties:
+                    self.blockProperties[pos] = oldProperties[pos]
+                if pos in oldLiquidLevels:
+                    self.liquidLevels[pos] = oldLiquidLevels[pos]
+                if pos in oldLiquidSources:
+                    self.liquidSources.add(pos)
+                if pos in oldLiquidFalling:
+                    self.liquidFalling.add(pos)
+        self.dirtyRegions.request_full_redraw()
     
     def clear(self):
         """Clear all blocks from the world"""
         self.blocks.clear()
+        self.chunkStorage.clear()
+        self._columnLevels.clear()
+        self.heightIndex.clear()
+        self.surfaceBlocks.clear()
+        self.surfaceChunks.clear()
         self.blockProperties.clear()
         self.liquidLevels.clear()
+        self.liquidSources.clear()
+        self.liquidFalling.clear()
         self.waterUpdateQueue.clear()
         self.lavaUpdateQueue.clear()
+        self._waterQueued.clear()
+        self._lavaQueued.clear()
+        self.revision += 1
+        self.dirtyRegions.request_full_redraw()
     
     def clearLiquids(self) -> int:
         """Clear all water and lava blocks. Returns count of removed blocks."""
@@ -346,13 +762,14 @@ class World:
                 toRemove.append(pos)
         
         for pos in toRemove:
-            del self.blocks[pos]
-            if pos in self.liquidLevels:
-                del self.liquidLevels[pos]
+            self._storeBlock(pos, BlockType.AIR)
+            self._clearLiquidState(pos)
             removed += 1
         
         self.waterUpdateQueue.clear()
         self.lavaUpdateQueue.clear()
+        self._waterQueued.clear()
+        self._lavaQueued.clear()
         
         return removed
     
@@ -365,10 +782,7 @@ class World:
     
     def getHighestBlock(self, x: int, y: int) -> int:
         """Get the height of the highest block at (x, y)"""
-        for z in range(self.height - 1, -1, -1):
-            if self.getBlock(x, y, z) != BlockType.AIR:
-                return z
-        return -1
+        return self.heightIndex.get((x, y), self.min_y - 1)
     
     def calculateLighting(self) -> Dict[Tuple[int, int, int], Tuple[int, Tuple[int, int, int]]]:
         """
