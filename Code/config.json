@@ -17,9 +17,9 @@
         "block_height": 38
     },
     "sound": {
-        "music_volume": 0.3,
-        "ambient_volume": 0.5,
-        "effects_volume": 0.7,
+        "music_volume": 0.8,
+        "ambient_volume": 0.8,
+        "effects_volume": 0.8,
         "ui_volume": 0.4,
         "door_volume": 0.7
     },

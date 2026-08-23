@@ -27,12 +27,16 @@ class Block(Enum):
     OBSIDIAN = 4
     COBBLESTONE = 5
     DOOR = 6
+    REPEATER = 7
 
 
 DEFINITIONS = {
     block: BlockDefinition(block.name, "", "", "", isDoor=block is Block.DOOR)
     for block in Block
 }
+DEFINITIONS[Block.REPEATER] = BlockDefinition(
+    "Repeater", "", "", "", transparent=True, modelKind="repeater"
+)
 CATALOG = WorldCatalog(
     block_type=Block,
     air=Block.AIR,
@@ -111,3 +115,26 @@ def test_write_build_is_atomic_v5_and_round_trips_state(tmp_path):
     assert loaded.liquid_levels == {(5, 6, 0): 7}
     assert loaded.liquid_falling == {(5, 6, 0)}
     assert loaded.structure_positions == {(2, 3, 4)}
+
+
+def test_redstone_component_state_round_trips(tmp_path):
+    path = tmp_path / "redstone.json.gz"
+    properties = BlockProperties(
+        facing=Facing.NORTH,
+        powered=True,
+        redstonePower=15,
+        repeaterDelay=4,
+        repeaterLocked=True,
+    )
+    snapshot = WorldSnapshot(
+        width=8, depth=8, height=8,
+        blocks={(2, 2, 1): Block.REPEATER},
+        properties={(2, 2, 1): properties},
+    )
+
+    write_build(path, snapshot, DEFINITIONS)
+    loaded = read_build(path, CATALOG, BuildReadPolicy()).snapshot
+    restored = loaded.properties[(2, 2, 1)]
+    assert restored.facing is Facing.NORTH
+    assert restored.powered and restored.redstonePower == 15
+    assert restored.repeaterDelay == 4 and restored.repeaterLocked

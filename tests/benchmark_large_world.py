@@ -46,6 +46,10 @@ def surface_bytes(surface):
 
 
 def benchmark_scene(app, path, repetitions):
+    # Headless SDL reports the pointer at (0, 0). Use the explicit deterministic
+    # rotation mode so this benchmark measures rendering/cache work, not a
+    # synthetic off-canvas cursor fallback.
+    app.worldCenteredRotation = True
     load = measure(
         lambda: app._loadBuildingFromPath(str(path), silent=True),
         repetitions=repetitions,

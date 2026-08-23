@@ -69,6 +69,16 @@ def properties_from_structure_state(
         str(state_data.get("doorHinge", state_data.get("hinge", "left"))).upper(),
         DoorHinge.LEFT,
     )
+    powered_value = state_data.get("powered", False)
+    properties.powered = powered_value is True or str(powered_value).casefold() == "true"
+    properties.redstonePower = max(0, min(15, int(state_data.get("redstonePower", 0))))
+    properties.repeaterDelay = max(1, min(4, int(state_data.get("repeaterDelay", 1))))
+    locked_value = state_data.get("repeaterLocked", False)
+    properties.repeaterLocked = locked_value is True or str(locked_value).casefold() == "true"
+    extended_value = state_data.get("pistonExtended", False)
+    properties.pistonExtended = extended_value is True or str(extended_value).casefold() == "true"
+    sticky_value = state_data.get("sticky", False)
+    properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
     return properties
 
 

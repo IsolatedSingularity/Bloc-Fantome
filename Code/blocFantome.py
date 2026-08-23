@@ -48,7 +48,7 @@ if sys.platform == 'win32':
         import ctypes
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.3.2'
+        myappid = 'blocfantome.builder.2.4.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -97,6 +97,7 @@ SOUND_VOLUME_AMBIENT = 0.5    # Ambient sounds (water, lava, etc.)
 SOUND_VOLUME_UI = 0.4         # UI click sounds
 SOUND_VOLUME_DOOR = 0.7       # Door sounds
 SOUND_MAX_VARIANTS = 10       # Max sound variants to search for (1-9)
+BLOCK_ACTION_GAIN_SCALE = 0.875  # Keep place/break near the former 70% default
 
 # Animation settings
 PORTAL_FRAME_DELAY = 50       # ms between portal animation frames
@@ -131,6 +132,8 @@ PANEL_WIDTH = 260
 ICON_SIZE = 72  # Higher resolution icons for clarity
 ICON_MARGIN = 10
 ICONS_PER_ROW = 3
+PANEL_SUBMENU_ROW_HEIGHT = 30
+PANEL_SUBMENU_ROW_STRIDE = 35
 
 # Background tile size (larger for less busy look)
 BG_TILE_SIZE = 64
@@ -540,6 +543,13 @@ class _LegacyBlockType(Enum):
     BROWN_WALL_BANNER = 530
     MAGENTA_WALL_BANNER = 531
     REDSTONE_WALL_TORCH = 532
+    REDSTONE_DUST = 540
+    REDSTONE_TORCH = 541
+    LEVER = 542
+    REPEATER = 543
+    PISTON = 544
+    STICKY_PISTON = 545
+    PISTON_HEAD = 546
 
 
 from domain.blocks import BlockType
@@ -817,7 +827,7 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.CHAIN: BlockDefinition("Chain", "chain.png", "chain.png", "chain.png", transparent=True, modelKind="chain"),
     BlockType.LANTERN: BlockDefinition("Lantern", "lantern.png", "lantern.png", "lantern.png", transparent=True, lightLevel=15, modelKind="lantern"),
     BlockType.SOUL_LANTERN: BlockDefinition("Soul Lantern", "soul_lantern.png", "soul_lantern.png", "soul_lantern.png", transparent=True, lightLevel=10, lightColor=(90, 220, 255), modelKind="lantern"),
-    BlockType.REDSTONE_LAMP: BlockDefinition("Redstone Lamp", "redstone_lamp_on.png", "redstone_lamp_on.png", "redstone_lamp_on.png", lightLevel=15),
+    BlockType.REDSTONE_LAMP: BlockDefinition("Redstone Lamp", "redstone_lamp.png", "redstone_lamp.png", "redstone_lamp.png"),
     BlockType.VAULT: BlockDefinition("Vault", "vault_top.png", "vault_side_off.png", "vault_bottom.png", textureFront="vault_front_off.png", transparent=True),
     BlockType.DECORATED_POT: BlockDefinition("Decorated Pot", "terracotta.png", "terracotta.png", "terracotta.png"),
     BlockType.SPRUCE_STAIRS: BlockDefinition("Spruce Stairs", "spruce_planks.png", "spruce_planks.png", "spruce_planks.png", isStair=True),
@@ -897,7 +907,14 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.BROWN_BED: BlockDefinition("Brown Bed", "brown_wool.png", "brown_wool.png", "brown_wool.png", modelKind="bed"),
     BlockType.BROWN_WALL_BANNER: BlockDefinition("Brown Wall Banner", "brown_wool.png", "brown_wool.png", "brown_wool.png", modelKind="banner"),
     BlockType.MAGENTA_WALL_BANNER: BlockDefinition("Magenta Wall Banner", "magenta_wool.png", "magenta_wool.png", "magenta_wool.png", modelKind="banner"),
-    BlockType.REDSTONE_WALL_TORCH: BlockDefinition("Redstone Wall Torch", "redstone_torch.png", "redstone_torch.png", "redstone_torch.png", transparent=True, lightLevel=7, modelKind="torch"),
+    BlockType.REDSTONE_WALL_TORCH: BlockDefinition("Redstone Wall Torch", "redstone_torch.png", "redstone_torch.png", "redstone_torch.png", transparent=True, modelKind="redstone_torch"),
+    BlockType.REDSTONE_DUST: BlockDefinition("Redstone Dust", "redstone_dust_dot.png", "redstone_dust_dot.png", "redstone_dust_dot.png", transparent=True, modelKind="redstone_dust"),
+    BlockType.REDSTONE_TORCH: BlockDefinition("Redstone Torch", "redstone_torch.png", "redstone_torch.png", "redstone_torch.png", transparent=True, modelKind="redstone_torch"),
+    BlockType.LEVER: BlockDefinition("Lever", "lever.png", "lever.png", "lever.png", transparent=True, modelKind="lever"),
+    BlockType.REPEATER: BlockDefinition("Redstone Repeater", "repeater.png", "repeater.png", "repeater.png", transparent=True, modelKind="repeater"),
+    BlockType.PISTON: BlockDefinition("Piston", "piston_top.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
+    BlockType.STICKY_PISTON: BlockDefinition("Sticky Piston", "piston_top_sticky.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
+    BlockType.PISTON_HEAD: BlockDefinition("Piston Head", "piston_top.png", "piston_side.png", "piston_inner.png", transparent=True, modelKind="piston_head"),
     # Cold blocks
     BlockType.SNOW: BlockDefinition("Snow Block", "snow.png", "snow.png", "snow.png"),
     BlockType.ICE: BlockDefinition("Ice", "ice.png", "ice.png", "ice.png", transparent=True),
@@ -1372,6 +1389,13 @@ for _plantBlock in (BlockType.CHORUS_PLANT, BlockType.CHORUS_FLOWER):
 
 BLOCK_SOUNDS[BlockType.WALL_TORCH] = SoundDefinition("wood", "wood")
 BLOCK_SOUNDS[BlockType.REDSTONE_WALL_TORCH] = SoundDefinition("wood", "wood")
+BLOCK_SOUNDS[BlockType.REDSTONE_DUST] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.REDSTONE_TORCH] = SoundDefinition("wood", "wood")
+BLOCK_SOUNDS[BlockType.LEVER] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.REPEATER] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.PISTON] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.STICKY_PISTON] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.PISTON_HEAD] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.POLISHED_TUFF_SLAB] = SoundDefinition("tuff", "tuff")
 
 
@@ -1427,7 +1451,7 @@ BLOCK_CATEGORIES = {
         BlockType.COAL_ORE, BlockType.IRON_ORE, BlockType.GOLD_ORE, BlockType.DIAMOND_ORE,
         BlockType.LAPIS_ORE, BlockType.EMERALD_ORE, BlockType.REDSTONE_ORE,
         BlockType.COAL_BLOCK, BlockType.IRON_BLOCK, BlockType.GOLD_BLOCK, BlockType.DIAMOND_BLOCK,
-        BlockType.LAPIS_BLOCK, BlockType.EMERALD_BLOCK, BlockType.REDSTONE_BLOCK,
+        BlockType.LAPIS_BLOCK, BlockType.EMERALD_BLOCK,
         BlockType.COPPER_BLOCK, BlockType.EXPOSED_COPPER, BlockType.WEATHERED_COPPER, BlockType.OXIDIZED_COPPER,
         BlockType.CUT_COPPER, BlockType.EXPOSED_CUT_COPPER, BlockType.WEATHERED_CUT_COPPER, BlockType.OXIDIZED_CUT_COPPER
     ],
@@ -1457,7 +1481,7 @@ BLOCK_CATEGORIES = {
     ],
     "Light Sources": [
         BlockType.GLOWSTONE, BlockType.SEA_LANTERN, BlockType.SHROOMLIGHT,
-        BlockType.LANTERN, BlockType.SOUL_LANTERN, BlockType.REDSTONE_LAMP,
+        BlockType.LANTERN, BlockType.SOUL_LANTERN,
         BlockType.JACK_O_LANTERN, BlockType.MAGMA_BLOCK, BlockType.CRYING_OBSIDIAN,
         BlockType.FIRE
     ],
@@ -1489,6 +1513,11 @@ BLOCK_CATEGORIES = {
         BlockType.IRON_DOOR, BlockType.VAULT, BlockType.ENCHANTING_TABLE,
         BlockType.SCULK_SENSOR
     ],
+    "Redstone": [
+        BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH, BlockType.LEVER,
+        BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
+        BlockType.REDSTONE_LAMP, BlockType.REDSTONE_BLOCK,
+    ],
     "Slabs": [
         BlockType.OAK_SLAB, BlockType.COBBLESTONE_SLAB, BlockType.STONE_BRICK_SLAB, BlockType.STONE_SLAB,
         BlockType.SPRUCE_SLAB, BlockType.ACACIA_SLAB, BlockType.PURPUR_SLAB,
@@ -1501,7 +1530,22 @@ BLOCK_CATEGORIES = {
 BLOCK_CATEGORIES["Ores & Minerals"].append(BlockType.OXIDIZING_COPPER)
 
 # Order of categories in the UI
-CATEGORY_ORDER = ["Natural", "Wood", "Stone & Brick", "Ores & Minerals", "Colored Blocks", "Decorative", "Light Sources", "Nether", "End", "Functional", "Slabs"]
+CATEGORY_ORDER = ["Natural", "Wood", "Stone & Brick", "Ores & Minerals", "Colored Blocks", "Decorative", "Light Sources", "Redstone", "Nether", "End", "Functional", "Slabs"]
+
+CATEGORY_PREVIEW_BLOCKS = {
+    "Natural": BlockType.GRASS,
+    "Wood": BlockType.OAK_LOG,
+    "Stone & Brick": BlockType.STONE_BRICKS,
+    "Ores & Minerals": BlockType.DIAMOND_ORE,
+    "Colored Blocks": BlockType.RED_WOOL,
+    "Decorative": BlockType.BOOKSHELF,
+    "Light Sources": BlockType.GLOWSTONE,
+    "Redstone": BlockType.REDSTONE_DUST,
+    "Nether": BlockType.NETHERRACK,
+    "End": BlockType.END_STONE,
+    "Functional": BlockType.CRAFTING_TABLE,
+    "Slabs": BlockType.STONE_SLAB,
+}
 
 
 # ============================================================================
@@ -2621,7 +2665,38 @@ STRUCTURE_HORROR_MONOLITH = {
     ]
 }
 
+STRUCTURE_PISTON_DOOR = {
+    "name": "2x2 Piston Door",
+    "blocks": [
+        # Compact 6x4 stone foundation and a raised wiring shelf.
+        *[(x, y, 0, BlockType.STONE_BRICKS) for x in range(6) for y in range(4)],
+        *[(x, 1, 1, BlockType.STONE_BRICKS) for x in range(6)],
+        # Four visible sticky pistons, already extended so the door starts closed.
+        *[(0, 2, z, BlockType.STICKY_PISTON,
+           BlockProperties(facing=Facing.EAST, pistonExtended=True, sticky=True))
+          for z in (1, 2)],
+        *[(5, 2, z, BlockType.STICKY_PISTON,
+           BlockProperties(facing=Facing.WEST, pistonExtended=True, sticky=True))
+          for z in (1, 2)],
+        *[(1, 2, z, BlockType.PISTON_HEAD,
+           BlockProperties(facing=Facing.EAST, pistonExtended=True, sticky=True))
+          for z in (1, 2)],
+        *[(4, 2, z, BlockType.PISTON_HEAD,
+           BlockProperties(facing=Facing.WEST, pistonExtended=True, sticky=True))
+          for z in (1, 2)],
+        # The two sticky halves pull these four door blocks outward when opened.
+        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (2, 3) for z in (1, 2)],
+        # Lever interrupts the compact dust bus and powers both directions.
+        (5, 1, 2, BlockType.LEVER,
+         BlockProperties(facing=Facing.SOUTH, powered=True, redstonePower=15)),
+        *[(x, 1, 2, BlockType.REDSTONE_DUST,
+           BlockProperties(powered=True, redstonePower=max(10, 10 + x)))
+          for x in range(5)],
+    ],
+}
+
 PREMADE_STRUCTURES = {
+    "piston_door": STRUCTURE_PISTON_DOOR,
     "house": STRUCTURE_HOUSE,
     "tree": STRUCTURE_TREE,
     "villager_house": STRUCTURE_VILLAGER_HOUSE,
@@ -2844,7 +2919,7 @@ class TutorialScreen:
             "content": [
                 "Enter the dangerous Nether!",
                 "",
-                "- Click 'Nether' in Features",
+                "- Click 'Nether' in Toggles",
                 "- Fiery atmosphere and lava",
                 "- Soul sand and netherrack",
                 "",
@@ -2858,7 +2933,7 @@ class TutorialScreen:
             "content": [
                 "Reach The End dimension!",
                 "",
-                "- Click 'End' in Features",
+                "- Click 'End' in Toggles",
                 "- Void and end stone",
                 "- Eerie purple atmosphere",
                 "",
@@ -2886,7 +2961,7 @@ class TutorialScreen:
             "content": [
                 "See dynamic lighting effects:",
                 "",
-                "- Toggle Lighting in Features",
+                "- Toggle Lighting in Toggles",
                 "- Light sources glow realistically",
                 "- Creates depth and shadows",
                 "",
@@ -3549,8 +3624,10 @@ class AssetManager:
         self.blockModelRenderer = BlockModelRenderer(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT)
         self.zoomSpriteCache = SpriteCache(max_size=4096, max_bytes=256 * 1024 * 1024)
         self.alphaSpriteCache = SpriteCache(max_size=2048, max_bytes=32 * 1024 * 1024)
-        self.uiScaleCache: Dict[Tuple[int, int, int], pygame.Surface] = {}
+        self.uiScaleCache: Dict[Tuple, pygame.Surface] = {}
         self.uiTextCache: Dict[Tuple[int, str, Tuple[int, int, int]], pygame.Surface] = {}
+        self.uiEffectSurfaces: Dict[Tuple[int, int], pygame.Surface] = {}
+        self.panelPreviewIcons: Dict[BlockType, pygame.Surface] = {}
         self.textures: Dict[str, pygame.Surface] = {}
         self.blockSprites: Dict[BlockType, pygame.Surface] = {}
         # Flyweight intern pool: source textures/render flags -> shared Surface
@@ -3572,6 +3649,7 @@ class AssetManager:
         # Stairs: (blockType, facing) -> sprite
         self.stairSprites: Dict[Tuple, pygame.Surface] = {}
         self.detailSprites: Dict[Tuple, pygame.Surface] = {}
+        self.redstoneLampSprites: Dict[bool, pygame.Surface] = {}
         self.specialBlockTextures: Dict[BlockType, Tuple[pygame.Surface, pygame.Surface, pygame.Surface]] = {}
         
         # UI textures
@@ -3744,6 +3822,12 @@ class AssetManager:
             "sculk_sensor_tendril_inactive.png",
             "sculk_sensor_tendril_active.png",
             "end_portal_frame_eye.png",
+            "redstone_lamp_on.png",
+            "redstone_torch_off.png",
+            "repeater_on.png",
+            "redstone_dust_line0.png",
+            "redstone_dust_line1.png",
+            "redstone_dust_overlay.png",
         })
         
         for textureName in textureFiles:
@@ -4136,7 +4220,13 @@ class AssetManager:
             if blockDef.modelKind:
                 self.specialBlockTextures[blockType] = (topTex, sideTex, frontTex)
                 self.blockSprites[blockType] = self.getDetailSprite(
-                    blockType, Facing.SOUTH, False, SlabPosition.BOTTOM
+                    blockType, Facing.SOUTH, False, SlabPosition.BOTTOM,
+                    powered=blockType in (
+                        BlockType.REDSTONE_TORCH, BlockType.REDSTONE_WALL_TORCH,
+                    ),
+                    power=15 if blockType in (
+                        BlockType.REDSTONE_TORCH, BlockType.REDSTONE_WALL_TORCH,
+                    ) else 0,
                 )
             elif blockDef.isThin:
                 self.specialBlockTextures[blockType] = (topTex, sideTex, frontTex)
@@ -4162,6 +4252,12 @@ class AssetManager:
                 self.blockSprites[blockType] = self._createLiquidBlock(
                     topTex, sideTex, frontTex, blockType == BlockType.WATER
                 )
+            elif blockType == BlockType.REDSTONE_LAMP:
+                off = self.textures.get("redstone_lamp.png", topTex)
+                on = self.textures.get("redstone_lamp_on.png", off)
+                self.redstoneLampSprites[False] = self._createIsometricBlock(off, off, off)
+                self.redstoneLampSprites[True] = self._createIsometricBlock(on, on, on)
+                self.blockSprites[blockType] = self.redstoneLampSprites[False]
             elif blockType == BlockType.END_PORTAL_FRAME:
                 self.blockSprites[blockType] = (
                     self.blockModelRenderer.render_end_portal_frame(
@@ -6777,6 +6873,16 @@ class AssetManager:
         )
         if self.clickSound:
             print(f"    Loaded click sound")
+
+        pistonDir = os.path.join(SOUNDS_DIR, "tile", "piston")
+        pistonOut = self._loadSingleSound(os.path.join(pistonDir, "out.ogg"))
+        pistonIn = self._loadSingleSound(os.path.join(pistonDir, "in.ogg"))
+        self.sounds["piston_out"] = [pistonOut] if pistonOut else []
+        self.sounds["piston_in"] = [pistonIn] if pistonIn else []
+        leverClick = self._loadSingleSound(
+            os.path.join(randomDir, "click.ogg"), SOUND_VOLUME_UI
+        )
+        self.sounds["redstone_click"] = [leverClick] if leverClick else []
         
         # Load block-specific sounds from block/ folder (break sounds)
         blockSoundCategories = [
@@ -7207,6 +7313,158 @@ class AssetManager:
             self.uiTextCache[textKey] = textSurf
         textRect = textSurf.get_rect(center=rect.center)
         screen.blit(textSurf, textRect)
+
+    def drawPanelRow(
+        self,
+        screen: pygame.Surface,
+        rect: pygame.Rect,
+        text: str,
+        font: pygame.font.Font,
+        *,
+        hovered: bool = False,
+        active: bool = False,
+        icon: Optional[pygame.Surface] = None,
+        expanded: Optional[bool] = None,
+        effectStyle: Optional[str] = None,
+        effectColors=(),
+        effectTint: Optional[Tuple[int, int, int]] = None,
+    ) -> None:
+        """Draw one consistent Minecraft-style submenu row."""
+        texture = self.buttonHover if hovered else self.buttonNormal
+        tint = tuple(effectTint[:3]) if active and effectTint else None
+        cacheKey = ("panel-row", id(texture), rect.width, rect.height)
+        row = self.uiScaleCache.get(cacheKey)
+        if row is None:
+            if texture:
+                row = pygame.transform.scale(texture, rect.size)
+            else:
+                row = pygame.Surface(rect.size)
+                row.fill((92, 92, 92) if hovered else (74, 74, 74))
+                pygame.draw.rect(row, (32, 32, 32), row.get_rect(), 2)
+            self.uiScaleCache[cacheKey] = row
+        screen.blit(row, rect.topleft)
+
+        iconRect = None
+        if icon is not None:
+            iconSize = max(12, rect.height - 6)
+            iconKey = ("panel-row-icon", icon, iconSize)
+            fittedIcon = self.uiScaleCache.get(iconKey)
+            if fittedIcon is None:
+                scale = min(
+                    iconSize / max(1, icon.get_width()),
+                    iconSize / max(1, icon.get_height()),
+                )
+                fittedIcon = pygame.transform.smoothscale(
+                    icon,
+                    (
+                        max(1, round(icon.get_width() * scale)),
+                        max(1, round(icon.get_height() * scale)),
+                    ),
+                )
+                self.uiScaleCache[iconKey] = fittedIcon
+            iconRect = fittedIcon.get_rect(
+                midright=(rect.right - 5, rect.centery)
+            )
+
+        # Effects cover the complete grey button body. Text and the preview
+        # icon are deliberately drawn afterward so both remain crisp on top.
+        if tint or (effectStyle and effectColors):
+            effectWidth = max(1, rect.width - 4)
+            phase = pygame.time.get_ticks() // 70
+            effectSize = (effectWidth, rect.height - 4)
+            effectLayer = self.uiEffectSurfaces.get(effectSize)
+            if effectLayer is None:
+                effectLayer = pygame.Surface(effectSize, pygame.SRCALPHA)
+                self.uiEffectSurfaces[effectSize] = effectLayer
+            effectLayer.fill((0, 0, 0, 0))
+            if tint:
+                effectLayer.fill((*tint, 38))
+            if effectStyle and effectColors:
+                for index in range(8):
+                    x = (index * 29 + phase * 3) % effectWidth
+                    y = (index * 13 + phase * 4) % max(1, effectSize[1])
+                    color = effectColors[index % len(effectColors)]
+                    color = color if len(color) == 4 else (*color, 170)
+                    if effectStyle == "embers":
+                        emberY = effectSize[1] - 1 - y
+                        pygame.draw.circle(effectLayer, color, (x, emberY), 1 + index % 2)
+                        pygame.draw.line(effectLayer, color, (x, emberY + 3), (x, emberY + 1), 1)
+                    elif effectStyle == "void":
+                        cx, cy = effectWidth // 2, effectSize[1] // 2
+                        radius = 4 + (index * 5 + phase) % max(6, effectWidth // 3)
+                        angle = (phase * 0.22 + index * 0.9)
+                        vx = round(cx + math.cos(angle) * radius)
+                        vy = round(cy + math.sin(angle) * min(radius, effectSize[1] // 2 - 1))
+                        pygame.draw.circle(effectLayer, color, (vx, vy), 1 + index % 2)
+                    elif effectStyle in ("snow", "souls"):
+                        if effectStyle == "souls":
+                            pygame.draw.circle(
+                                effectLayer, (*color[:3], 35), (x, y), 3 + index % 2
+                            )
+                        pygame.draw.circle(effectLayer, color, (x, y), 1 + index % 2)
+                    elif effectStyle == "shards":
+                        pygame.draw.polygon(
+                            effectLayer, color,
+                            ((x, y - 4), (x + 3, y), (x, y + 4), (x - 2, y)),
+                        )
+                    elif effectStyle == "clouds":
+                        pygame.draw.ellipse(effectLayer, color, (x - 4, y - 2, 9, 4))
+                    elif effectStyle == "celestial":
+                        if index == 0:
+                            pygame.draw.circle(effectLayer, color, (x, y), 6)
+                            pygame.draw.circle(effectLayer, (*color[:3], 70), (x, y), 9, 1)
+                        else:
+                            pygame.draw.circle(effectLayer, color, (x, y), 1)
+                    elif effectStyle == "lighting":
+                        pygame.draw.line(effectLayer, color, (x, y - 4), (x + 2, y + 4), 2)
+                    elif effectStyle == "overworld":
+                        pygame.draw.circle(effectLayer, color, (x, y), 1 + index % 2)
+                        if index % 3 == 0:
+                            pygame.draw.line(effectLayer, color, (x - 2, y + 3), (x + 2, y - 2), 1)
+                    elif effectStyle == "pulse":
+                        radius = 2 + (phase + index * 3) % 12
+                        pygame.draw.circle(effectLayer, color, (x, y), radius, 1)
+                    elif effectStyle == "rain":
+                        pygame.draw.line(effectLayer, color, (x, y), (x + 2, y + 7), 1)
+                    else:
+                        pygame.draw.circle(effectLayer, color, (x, y), 1)
+            screen.blit(effectLayer, (rect.left + 5, rect.top + 2))
+
+        left = rect.left + 7
+        if expanded is not None:
+            indicatorX = rect.left + 11
+            indicatorY = rect.centery
+            if expanded:
+                points = [
+                    (indicatorX - 4, indicatorY - 2),
+                    (indicatorX + 4, indicatorY - 2),
+                    (indicatorX, indicatorY + 3),
+                ]
+            else:
+                points = [
+                    (indicatorX - 2, indicatorY - 4),
+                    (indicatorX + 3, indicatorY),
+                    (indicatorX - 2, indicatorY + 4),
+                ]
+            pygame.draw.polygon(screen, (225, 225, 225), points)
+            left += 15
+
+        right = (iconRect.left - 4) if iconRect else rect.right - 5
+        textArea = pygame.Rect(left, rect.top, max(1, right - left), rect.height)
+        shadowKey = (id(font), text, (30, 30, 30))
+        shadow = self.uiTextCache.get(shadowKey)
+        if shadow is None:
+            shadow = font.render(text, True, (30, 30, 30))
+            self.uiTextCache[shadowKey] = shadow
+        screen.blit(shadow, shadow.get_rect(center=textArea.center).move(1, 1))
+        textKey = (id(font), text, (255, 255, 255))
+        label = self.uiTextCache.get(textKey)
+        if label is None:
+            label = font.render(text, True, (255, 255, 255))
+            self.uiTextCache[textKey] = label
+        screen.blit(label, label.get_rect(center=textArea.center))
+        if iconRect is not None:
+            screen.blit(fittedIcon, iconRect)
     
     def drawSlot(self, screen: pygame.Surface, rect: pygame.Rect, selected: bool = False):
         """Draw a Minecraft-style inventory slot"""
@@ -7368,16 +7626,47 @@ class AssetManager:
         return self.stairSprites[key]
 
     def getDetailSprite(self, blockType: BlockType, facing: Facing,
-                        isOpen: bool, half: SlabPosition) -> Optional[pygame.Surface]:
+                        isOpen: bool, half: SlabPosition, *, powered: bool = False,
+                        power: int = 0, delay: int = 1,
+                        connections: int = 0) -> Optional[pygame.Surface]:
         """Return a cached structure-detail model variant."""
         definition = BLOCK_DEFINITIONS.get(blockType)
         if not definition or not definition.modelKind:
             return self.blockSprites.get(blockType)
-        key = (blockType, facing, bool(isOpen), half)
+        stateful = definition.modelKind in {
+            "redstone_dust", "redstone_torch", "lever", "repeater",
+            "piston", "piston_head",
+        }
+        key = (
+            blockType, facing, bool(isOpen), half,
+            bool(powered) if stateful else False,
+            max(0, min(15, int(power))) if stateful else 0,
+            max(1, min(4, int(delay))) if definition.modelKind == "repeater" else 1,
+            int(connections) if definition.modelKind == "redstone_dust" else 0,
+        )
         if key not in self.detailSprites:
             textures = self.specialBlockTextures.get(blockType)
             if not textures:
                 return self.blockSprites.get(blockType)
+            if definition.modelKind == "redstone_torch":
+                texture = self.textures.get(
+                    "redstone_torch.png" if powered else "redstone_torch_off.png",
+                    textures[0],
+                )
+                textures = (texture, texture, texture)
+            elif definition.modelKind == "repeater":
+                texture = self.textures.get(
+                    "repeater_on.png" if powered else "repeater.png", textures[0]
+                )
+                textures = (texture, texture, texture)
+            elif definition.modelKind == "redstone_dust":
+                texture = self.textures.get(
+                    "redstone_dust_line0.png" if connections else "redstone_dust_dot.png",
+                    textures[0],
+                )
+                tint = (255, 46 + max(0, min(15, int(power))) * 10, 32) if powered else (90, 12, 10)
+                texture = self._tintTexture(texture, tint)
+                textures = (texture, texture, texture)
             if definition.modelKind == "ladder":
                 sprite = self.blockModelRenderer.render_ladder(textures[0], facing)
             elif definition.modelKind == "chain":
@@ -7401,6 +7690,17 @@ class AssetManager:
     def getIconSprite(self, blockType: BlockType) -> Optional[pygame.Surface]:
         """Get the icon sprite for a block type"""
         return self.iconSprites.get(blockType)
+
+    def getPanelPreviewIcon(self, blockType: BlockType) -> Optional[pygame.Surface]:
+        """Return one stable snapshot for a submenu preview icon."""
+        cached = self.panelPreviewIcons.get(blockType)
+        if cached is not None:
+            return cached
+        icon = self.getIconSprite(blockType)
+        if icon is not None:
+            cached = icon.copy()
+            self.panelPreviewIcons[blockType] = cached
+        return cached
 
     def getScaledSprite(
         self, sprite: pygame.Surface, zoom: float, *, flipped: bool = False
@@ -8199,6 +8499,12 @@ class BlocFantome:
                 definitions=BLOCK_DEFINITIONS,
             ),
         )
+        from engine.redstone import RedstoneSimulator
+        self.redstone = RedstoneSimulator(
+            self.world, BLOCK_DEFINITIONS, sound=self._playRedstoneSound
+        )
+        self.redstoneParticles: List[Dict] = []
+        self.redstoneParticleTimer = 0
         self.cameraFocusZ = 0
         self.sceneMetadata = {
             "kind": "build",
@@ -8332,6 +8638,13 @@ class BlocFantome:
         self.rainIntensity = 1.0  # 0.5 to 1.5 multiplier
         self.rainIntensityTimer = 0
         self.rainIntensityTarget = 1.0
+        self.weatherInteractionTimer = 0
+        self.weatherImpactSoundAt = 0
+        self._weatherSurfaceRevision = -1
+        self._weatherSurfaceCache = ()
+        self._weatherParticleSurface = None
+        self._weatherDarkOverlaySurface = None
+        self._weatherDarkOverlayKey = None
         # Multiple rain sound channels for layered ambient effect (Minecraft-style)
         self.rainSoundChannels: List[Dict] = []  # {channel, sound, timer, nextSwitch, volume, targetVolume}
         
@@ -8366,6 +8679,8 @@ class BlocFantome:
         self.snowSkyDarkness = 0  # Separate from rain
         self.snowLayers: Dict[Tuple[int, int, int], int] = {}  # {(x, y, z): height} thin snow layers
         self.snowAccumulateTimer = 0
+        self.snowImpactTimer = 0
+        self.snowImpacts: List[Dict] = []
         
         # Thunder ambient background system (separate from lightning strikes)
         self.thunderAmbientChannel = None
@@ -8392,9 +8707,9 @@ class BlocFantome:
         self.ghostPreviewAlpha = 100  # Transparency level
         
         # Volume controls (0.0 to 1.0)
-        self.musicVolume = 0.3
-        self.ambientVolume = 0.5
-        self.effectsVolume = 0.7
+        self.musicVolume = 0.8
+        self.ambientVolume = 0.8
+        self.effectsVolume = 0.8
         
         # Mute toggles
         self.musicMuted = False
@@ -8413,6 +8728,7 @@ class BlocFantome:
         self.experimentalExpanded = False
         self.worldsExpanded = False
         self.structuresExpanded = False
+        self.toggleActionPulseUntil: Dict[str, int] = {}
         
         # Current dimension (affects background, floor, and music)
         self.currentDimension = DIMENSION_OVERWORLD
@@ -8594,6 +8910,9 @@ class BlocFantome:
         
         # Settings menu
         self.settingsMenuOpen = False
+        # Q/E follows the cursor by default. The gear setting switches to the
+        # fixed vertical axis through the editable world's X/Y center.
+        self.worldCenteredRotation = False
         
         # Undo history panel
         self.historyPanelOpen = False
@@ -8644,7 +8963,7 @@ class BlocFantome:
         self.musicController = MusicController(
             musicBackend,
             volume=self.musicVolume,
-            output_headroom=0.65,
+            output_headroom=0.80,
             logger=print,
         )
         print(
@@ -8930,7 +9249,7 @@ class BlocFantome:
     
     def _setAppIconEarly(self):
         """Set the dedicated runtime icon before the display is created."""
-        runtimePath = os.path.join(ICONS_DIR, "Taskbar_End_Stone.png")
+        runtimePath = os.path.join(ICONS_DIR, "Taskbar_Respawn_Anchor.png")
         if os.path.isfile(runtimePath):
             try:
                 pygame.display.set_icon(pygame.image.load(runtimePath))
@@ -8938,7 +9257,7 @@ class BlocFantome:
             except pygame.error:
                 pass
         texture = None
-        texturePath = os.path.join(TEXTURES_DIR, "end_stone.png")
+        texturePath = os.path.join(ICONS_DIR, "Respawn_Anchor.png")
         if os.path.isfile(texturePath):
             try:
                 texture = pygame.image.load(texturePath)
@@ -8948,14 +9267,20 @@ class BlocFantome:
 
     def _setAppIcon(self):
         """Reapply the exact same textured runtime asset after display setup."""
-        runtimePath = os.path.join(ICONS_DIR, "Taskbar_End_Stone.png")
+        runtimePath = os.path.join(ICONS_DIR, "Taskbar_Respawn_Anchor.png")
         if os.path.isfile(runtimePath):
             try:
                 pygame.display.set_icon(pygame.image.load(runtimePath).convert_alpha())
                 return
             except pygame.error:
                 pass
-        texture = self.assetManager.textures.get("end_stone.png")
+        texture = None
+        artworkPath = os.path.join(ICONS_DIR, "Respawn_Anchor.png")
+        if os.path.isfile(artworkPath):
+            try:
+                texture = pygame.image.load(artworkPath).convert_alpha()
+            except pygame.error:
+                texture = None
         pygame.display.set_icon(render_runtime_icon_surface(texture, 256))
 
     def _loadAppConfig(self) -> None:
@@ -8981,6 +9306,9 @@ class BlocFantome:
                     self.showGrid = config.get("showGrid", True)
                     self.lightingEnabled = config.get("lightingEnabled", False)
                     self.showBlockTooltip = config.get("showBlockTooltip", True)
+                    self.worldCenteredRotation = config.get(
+                        "worldCenteredRotation", False
+                    )
                     
                     # Restore favorites (by block name)
                     savedFavorites = config.get("favoriteBlocks", [])
@@ -9020,6 +9348,7 @@ class BlocFantome:
                 "showGrid": self.showGrid,
                 "lightingEnabled": self.lightingEnabled,
                 "showBlockTooltip": self.showBlockTooltip,
+                "worldCenteredRotation": self.worldCenteredRotation,
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
                 "hotbar": [b.name for b in self.hotbar],
                 "searchHistory": self.searchHistory,
@@ -9158,25 +9487,49 @@ class BlocFantome:
         pygame.quit()
     
     def _rotateViewAndRecenter(self, direction: int):
-        """Rotate around the world point currently at the viewport center."""
-        centerX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
-        centerY = WINDOW_HEIGHT / 2.0
-        anchorX, anchorY = self.renderer.screenToWorld(
-            centerX, centerY, self.cameraFocusZ
-        )
+        """Rotate around the cursor, or the fixed world center when configured."""
+        if self.worldCenteredRotation:
+            anchorX = (self.world.width - 1) / 2.0
+            anchorY = (self.world.depth - 1) / 2.0
+            anchorZ = self.cameraFocusZ
+            anchorScreenX, anchorScreenY = self.renderer.worldToScreen(
+                anchorX, anchorY, anchorZ
+            )
+            rotationMode = "world center"
+        else:
+            anchorScreenX, anchorScreenY = pygame.mouse.get_pos()
+            viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+            cursorOnCanvas = (
+                0 <= anchorScreenX < viewportRight
+                and 0 <= anchorScreenY < WINDOW_HEIGHT
+            )
+            if not cursorOnCanvas:
+                anchorScreenX = viewportRight / 2.0
+                anchorScreenY = WINDOW_HEIGHT / 2.0
+            anchorZ = (
+                self.hoveredSourceBlock[2]
+                if cursorOnCanvas and self.hoveredSourceBlock is not None
+                else self.cameraFocusZ
+            )
+            anchorX, anchorY = self.renderer._screenToWorldPoint(
+                anchorScreenX, anchorScreenY, anchorZ
+            )
         if self._worldSurfaceCache is not None:
             self._worldZoomFallback = self._worldSurfaceCache
             self._worldTransitionKind = "rotation"
         self.renderer.rotateView(direction)
         screenX, screenY = self.renderer.worldToScreen(
-            anchorX, anchorY, self.cameraFocusZ
+            anchorX, anchorY, anchorZ
         )
-        self.renderer.offsetX += centerX - screenX
-        self.renderer.offsetY += centerY - screenY
+        self.renderer.offsetX += anchorScreenX - screenX
+        self.renderer.offsetY += anchorScreenY - screenY
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
         self._invalidateViewCaches(keepZoomFallback=True)
-        print(f"View rotated: {self.renderer.viewRotation * 90}°")
+        print(
+            f"View rotated: {self.renderer.viewRotation * 90}° around "
+            f"{'world center' if self.worldCenteredRotation else 'cursor'}"
+        )
 
     def _invalidateViewCaches(
         self, *, keepWorldOrder: bool = False, keepZoomFallback: bool = False
@@ -9444,9 +9797,10 @@ class BlocFantome:
         else:
             floorBlock = BlockType.GRASS
         
-        for x in range(self.world.width):
-            for y in range(self.world.depth):
-                self.world.setBlock(x, y, 0, floorBlock)
+        with self.world.bulkUpdate():
+            for x in range(self.world.width):
+                for y in range(self.world.depth):
+                    self.world.setBlock(x, y, 0, floorBlock)
 
     def _addTutorialEndIsland(self) -> None:
         """Place the tutorial tower on a compact, editable End-stone island."""
@@ -9510,13 +9864,21 @@ class BlocFantome:
         # Update background
         self.assetManager._createBackground(newDimension)
         
-        # Clear and recreate floor
-        self.world.clear()
+        # A dimension selection is a fresh normal building canvas. Worlds can
+        # be 256 x 256, so retaining their bounds here used to create 65,536
+        # floor cells one at a time and stall for several seconds.
+        self.world.resize(
+            GRID_WIDTH, GRID_DEPTH, GRID_HEIGHT, min_y=0, preserve=False
+        )
         self._createInitialFloor(newDimension)
+        self.undoManager.clear()
         self.sceneStructurePositions.clear()
         self.sceneExteriorGlassPositions.clear()
         self.sceneStructureBounds = None
+        self.sceneMetadata = {}
         self.sceneTerrainMode = "all"
+        self.currentBuildHeight = 0
+        self.currentViewLayer = 0
         self._frameCurrentCanvas()
         
         # Switch music
@@ -10028,12 +10390,12 @@ class BlocFantome:
                 self._placeBlockAtMouse(mouseX, mouseY)
         
         elif event.button == 3:  # Right click - interact or remove block
-            # First try to interact with doors
-            if self.hoveredSourceBlock:
+            # Shift+right-click always removes interactable blocks. Plain
+            # right-click mirrors Minecraft's use action.
+            if self.hoveredSourceBlock and not (mods & pygame.KMOD_SHIFT):
                 x, y, z = self.hoveredSourceBlock
-                if self._toggleDoor(x, y, z):
+                if self._interactBlock(x, y, z):
                     return
-            # If not a door, remove the block
             self._removeBlockAtMouse(mouseX, mouseY)
         
         elif event.button == 2:  # Middle click - start panning
@@ -10657,7 +11019,8 @@ class BlocFantome:
         
         # Layout settings matching _renderPanel
         mainButtonHeight = 35
-        subCategoryHeight = 24
+        subCategoryHeight = PANEL_SUBMENU_ROW_HEIGHT
+        subCategoryStride = PANEL_SUBMENU_ROW_STRIDE
         slotSize = ICON_SIZE + 8
         headerHeight = 10
         startY = headerHeight
@@ -10692,7 +11055,7 @@ class BlocFantome:
                     self.expandedCategories[category] = not self.expandedCategories[category]
                     return
                 
-                currentY += subCategoryHeight
+                currentY += subCategoryStride
                 
                 # Check block buttons if sub-category expanded
                 if isExpanded:
@@ -10727,7 +11090,7 @@ class BlocFantome:
             
             currentY += 5
         
-        # ===== CHECK FEATURES MAIN BUTTON =====
+        # ===== CHECK TOGGLES MAIN BUTTON =====
         experimentalTop = currentY
         experimentalBottom = currentY + mainButtonHeight
         
@@ -10753,12 +11116,14 @@ class BlocFantome:
                 dimY += 35
 
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+                self.toggleActionPulseUntil["terrain"] = pygame.time.get_ticks() + 450
                 self._generateTerrainSlice()
                 return
             dimY += 35
 
             # Check Show Tutorial button
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+                self.toggleActionPulseUntil["tutorial"] = pygame.time.get_ticks() + 450
                 self.tutorialScreen.show()
                 return
             dimY += 35
@@ -11178,7 +11543,9 @@ class BlocFantome:
             facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
             relativeFacing = Facing((facing.value - viewRot) % 4)
             sprite = self.assetManager.getDetailSprite(
-                blockType, relativeFacing, props.isOpen, props.slabPosition
+                blockType, relativeFacing, props.isOpen, props.slabPosition,
+                powered=props.powered, power=props.redstonePower,
+                delay=props.repeaterDelay,
             )
             boxes = modelRenderer.detail_boxes(
                 blockDef.modelKind, relativeFacing, props.isOpen, props.slabPosition
@@ -11317,6 +11684,13 @@ class BlocFantome:
                         properties = BlockProperties(
                             facing=self._determineFacing(placeX, placeY)
                         )
+                        if self.selectedBlock in (
+                            BlockType.REDSTONE_TORCH, BlockType.REDSTONE_WALL_TORCH,
+                        ):
+                            properties.powered = True
+                            properties.redstonePower = 15
+                        if self.selectedBlock == BlockType.STICKY_PISTON:
+                            properties.sticky = True
                         if blockDef.modelKind == "lantern":
                             supportedBelow = (
                                 placeZ > self.world.min_y
@@ -11360,7 +11734,10 @@ class BlocFantome:
                         shouldPlaySound = False
                 
                 if shouldPlaySound:
-                    self.assetManager.playBlockSound(self.selectedBlock, isPlace=True, worldPos=(x, y, z), effectsVolume=self.effectsVolume)
+                    self.assetManager.playBlockSound(
+                        self.selectedBlock, isPlace=True, worldPos=(x, y, z),
+                        effectsVolume=self.effectsVolume * BLOCK_ACTION_GAIN_SCALE,
+                    )
                 self.blocksPlaced += blocksPlacedCount
                 self._addToRecentBlocks(self.selectedBlock)
                 self._trackBlockUsage(self.selectedBlock)  # Track usage statistics
@@ -11382,6 +11759,24 @@ class BlocFantome:
                 (-1, 0): Facing.WEST,
             }[(dx, dy)]
         return self.previewFacing
+
+    def _redstoneConnectionCount(self, x: int, y: int, z: int) -> int:
+        """Return a compact visual connection count for a dust cell."""
+        if self.world.getBlock(x, y, z) != BlockType.REDSTONE_DUST:
+            return 0
+        connectable = {
+            BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH,
+            BlockType.REDSTONE_WALL_TORCH, BlockType.LEVER,
+            BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
+            BlockType.REDSTONE_LAMP, BlockType.REDSTONE_BLOCK,
+        }
+        count = 0
+        for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
+            for dz in (0, 1, -1):
+                if self.world.getBlock(x + dx, y + dy, z + dz) in connectable:
+                    count += 1
+                    break
+        return count
     
     def _rotateHoveredBlock(self):
         """Rotate the block under the cursor (stairs only - doors use right-click to open/close)"""
@@ -11431,6 +11826,31 @@ class BlocFantome:
                         print(f"Toggled slab to {props.slabPosition.name}")
                 return
     
+    def _playRedstoneSound(self, category: str, position: Tuple[int, int, int]) -> None:
+        """Route component sounds through the normal positional effects mix."""
+        self.assetManager.playSound(category, position, self.effectsVolume)
+
+    def _interactBlock(self, x: int, y: int, z: int) -> bool:
+        blockType = self.world.getBlock(x, y, z)
+        if blockType == BlockType.LEVER:
+            props = self.world.getBlockProperties(x, y, z) or BlockProperties()
+            props.powered = not props.powered
+            props.redstonePower = 15 if props.powered else 0
+            self.world.setBlockProperties(x, y, z, props)
+            self.redstone.mark_dirty()
+            self.redstone.update(0)
+            self._playRedstoneSound("redstone_click", (x, y, z))
+            self.lightingDirty = True
+            return True
+        if blockType == BlockType.REPEATER:
+            props = self.world.getBlockProperties(x, y, z) or BlockProperties()
+            props.repeaterDelay = props.repeaterDelay % 4 + 1
+            self.world.setBlockProperties(x, y, z, props)
+            self.redstone.mark_dirty()
+            self._playRedstoneSound("redstone_click", (x, y, z))
+            return True
+        return self._toggleDoor(x, y, z)
+
     def _toggleDoor(self, x: int, y: int, z: int):
         """Toggle a door open/closed at the given position"""
         blockType = self.world.getBlock(x, y, z)
@@ -11462,7 +11882,10 @@ class BlocFantome:
                         # Clean up liquid sprite cache
                         if hasattr(self, 'liquidSpriteCache') and (x, y, z) in self.liquidSpriteCache:
                             del self.liquidSpriteCache[(x, y, z)]
-                        self.assetManager.playBlockSound(blockType, isPlace=False, worldPos=(x, y, z), effectsVolume=self.effectsVolume)
+                        self.assetManager.playBlockSound(
+                            blockType, isPlace=False, worldPos=(x, y, z),
+                            effectsVolume=self.effectsVolume * BLOCK_ACTION_GAIN_SCALE,
+                        )
                         
                         # Track statistics
                         self.blocksRemoved += 1
@@ -11500,7 +11923,10 @@ class BlocFantome:
                                 # Clean up liquid sprite cache
                                 if hasattr(self, 'liquidSpriteCache') and (checkX, checkY, z) in self.liquidSpriteCache:
                                     del self.liquidSpriteCache[(checkX, checkY, z)]
-                                self.assetManager.playBlockSound(blockType, isPlace=False, worldPos=(checkX, checkY, z), effectsVolume=self.effectsVolume)
+                                self.assetManager.playBlockSound(
+                                    blockType, isPlace=False, worldPos=(checkX, checkY, z),
+                                    effectsVolume=self.effectsVolume * BLOCK_ACTION_GAIN_SCALE,
+                                )
                                 
                                 # Mark lighting as dirty for recalculation
                                 self.lightingDirty = True
@@ -11597,6 +12023,36 @@ class BlocFantome:
                     self.assetManager.playSound("wood")
                 print(f"Placed {structure['name']} at ({x}, {y}, {z})")
     
+    def _updateRedstoneParticles(self, dt: int) -> None:
+        self.redstoneParticleTimer += dt
+        if self.redstoneParticleTimer >= 120:
+            self.redstoneParticleTimer %= 120
+            powered = list(self.redstone.powered_dust)
+            random.shuffle(powered)
+            for x, y, z in powered[:24]:
+                if random.random() < 0.42:
+                    self.redstoneParticles.append({
+                        "position": (x, y, z),
+                        "ox": random.uniform(-0.28, 0.28),
+                        "oy": random.uniform(-0.28, 0.28),
+                        "rise": 0.0,
+                        "life": random.randint(260, 520),
+                    })
+        for particle in self.redstoneParticles:
+            particle["life"] -= dt
+            particle["rise"] += dt * 0.0007
+        self.redstoneParticles = [p for p in self.redstoneParticles if p["life"] > 0][-160:]
+
+    def _renderRedstoneParticles(self) -> None:
+        for particle in self.redstoneParticles:
+            x, y, z = particle["position"]
+            sx, sy = self.renderer.worldToScreen(
+                x + particle["ox"], y + particle["oy"], z + 0.12 + particle["rise"]
+            )
+            alpha = max(60, min(220, particle["life"]))
+            pygame.draw.circle(self.screen, (255, 62, 40, alpha), (round(sx), round(sy)), 2)
+            pygame.draw.circle(self.screen, (255, 178, 92, alpha), (round(sx), round(sy)), 1)
+
     def _update(self):
         """Update game state"""
         self._pollWorldLoad()
@@ -11605,6 +12061,9 @@ class BlocFantome:
         self._updatePanelScroll(dt)
         self.assetManager.updateAnimation(dt)
         self._updateSpecialBlocks(dt)
+        if self.redstone.update(dt):
+            self.lightingDirty = True
+        self._updateRedstoneParticles(dt)
         
         # Update liquid flow
         self._updateLiquidFlow()
@@ -11896,8 +12355,10 @@ class BlocFantome:
         self.rainIntensity = 1.0
         self.rainIntensityTimer = 0
         self.rainIntensityTarget = 1.0
+        self.weatherInteractionTimer = 0
+        self.weatherImpactSoundAt = 0
         
-        particleCount = 110 if config["style"] == "embers" else 150
+        particleCount = config.get("particles", RAIN_DROP_COUNT_BASE)
         for _ in range(particleCount):
             self.rainDrops.append({
                 "x": random.randint(0, WINDOW_WIDTH),
@@ -11948,6 +12409,7 @@ class BlocFantome:
         self.lightningFlash = 0
         self.lightningBolt = []
         self.lightningBoltTimer = 0
+        self.weatherInteractionTimer = 0
         
         # Stop rain sound channel (not music)
         if self.rainSoundChannel:
@@ -12369,12 +12831,15 @@ class BlocFantome:
         self.snowFlakes = []
         self.snowSkyDarkness = 0
         self.snowAccumulateTimer = 0
+        self.snowImpactTimer = 0
+        self.snowImpacts = []
+        self.weatherImpactSoundAt = 0
         
         # Calculate platform screen bounds for constraining snow
         self._updatePlatformBounds()
         
         # Create initial snowflakes within platform bounds
-        for _ in range(80):
+        for _ in range(config.get("particles", 80)):
             x = self._getRandomSnowPosition()
             self.snowFlakes.append({
                 "x": x,
@@ -12391,6 +12856,73 @@ class BlocFantome:
     def _getDimensionWeatherConfig(self):
         """Return weather presentation and motion settings for this dimension."""
         return DIMENSION_WEATHER.get(self.currentDimension, DIMENSION_WEATHER[DIMENSION_OVERWORLD])
+
+    def _weatherSurfaceCandidates(self):
+        """Cache exposed columns until an actual world edit changes them."""
+        if self._weatherSurfaceRevision != self.world.revision:
+            self._weatherSurfaceRevision = self.world.revision
+            self._weatherSurfaceCache = tuple(self.world.heightIndex.items())
+        return self._weatherSurfaceCache
+
+    def _playWeatherImpactSound(self, kind: str, worldPos) -> None:
+        """Play sparse dimension-specific impacts through the bounded router."""
+        now = pygame.time.get_ticks()
+        if now < self.weatherImpactSoundAt:
+            return
+        categories = {
+            "rain": {
+                DIMENSION_OVERWORLD: "water",
+                DIMENSION_NETHER: "fire_ambient",
+                DIMENSION_END: "amethyst",
+            },
+            "snow": {
+                DIMENSION_OVERWORLD: "snow",
+                DIMENSION_NETHER: "soul_sand",
+                DIMENSION_END: "amethyst",
+            },
+        }
+        category = categories[kind][self.currentDimension]
+        self.assetManager.playSound(
+            category, worldPos, self.effectsVolume * (0.22 if kind == "rain" else 0.16)
+        )
+        self.weatherImpactSoundAt = now + random.randint(650, 1100)
+
+    def _spawnWeatherImpacts(self, kind: str, minimum: int, maximum: int) -> None:
+        """Spawn bounded visible impacts without scanning every World column."""
+        candidates = self._weatherSurfaceCandidates()
+        if not candidates:
+            return
+        config = self._getDimensionWeatherConfig()[kind]
+        destination = self.rainSplashes if kind == "rain" else self.snowImpacts
+        requested = random.randint(minimum, maximum)
+        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        spawned = 0
+        firstWorldPos = None
+        for _ in range(requested * 6):
+            if spawned >= requested:
+                break
+            (x, y), z = random.choice(candidates)
+            screenX, screenY = self.renderer.worldToScreen(x, y, z)
+            screenX += self.panOffsetX
+            screenY += self.panOffsetY + TILE_HEIGHT // 2
+            if not (-20 <= screenX < panelLeft and -20 <= screenY < WINDOW_HEIGHT + 20):
+                continue
+            impact = {
+                "x": screenX + random.randint(-6, 6),
+                "y": screenY + random.randint(-3, 3),
+                "size": random.randint(2, 5),
+                "style": config["style"],
+                "color": random.choice(config["colors"]),
+            }
+            if kind == "rain":
+                impact["life"] = 12
+            else:
+                impact["life"] = impact["maxLife"] = random.randint(260, 380)
+            destination.append(impact)
+            firstWorldPos = firstWorldPos or (x, y, z)
+            spawned += 1
+        if firstWorldPos is not None:
+            self._playWeatherImpactSound(kind, firstWorldPos)
     
     def _updatePlatformBounds(self):
         """Calculate the screen bounds of the platform for weather effects"""
@@ -12451,6 +12983,9 @@ class BlocFantome:
     
     def _getRandomSnowPosition(self):
         """Get a random X position within the platform bounds"""
+        config = self._getDimensionWeatherConfig()["snow"]
+        if config.get("screenwide"):
+            return random.randint(0, WINDOW_WIDTH - PANEL_WIDTH)
         if hasattr(self, 'platformMinX') and hasattr(self, 'platformMaxX'):
             return random.randint(int(self.platformMinX), int(self.platformMaxX))
         else:
@@ -12461,6 +12996,7 @@ class BlocFantome:
         self.snowFlakes = []
         self.snowSkyDarkness = 0
         self.snowLayers = {}  # Clear accumulated snow when turned off
+        self.snowImpacts = []
     
     def _clearSnowLayers(self):
         """Clear all accumulated snow layers"""
@@ -12504,9 +13040,12 @@ class BlocFantome:
                 self._updatePlatformBounds()
             
             # If flake goes off platform bounds or screen, reset to top within bounds
-            minX = getattr(self, 'platformMinX', 0)
-            maxX = getattr(self, 'platformMaxX', panelLeft)
-            maxY = getattr(self, 'platformMaxY', WINDOW_HEIGHT)
+            if config.get("screenwide"):
+                minX, maxX, maxY = 0, panelLeft, WINDOW_HEIGHT
+            else:
+                minX = getattr(self, 'platformMinX', 0)
+                maxX = getattr(self, 'platformMaxX', panelLeft)
+                maxY = getattr(self, 'platformMaxY', WINDOW_HEIGHT)
             
             if flake["y"] > maxY or flake["x"] < minX - 20 or flake["x"] > maxX + 20:
                 flake["y"] = random.randint(-30, -5)
@@ -12516,6 +13055,17 @@ class BlocFantome:
                 flake["drift"] = random.uniform(-0.5, 0.5)
                 flake["driftPhase"] = random.uniform(0, math.tau)
                 flake["color"] = random.choice(config["colors"])
+
+        self.snowImpactTimer += dt
+        impactInterval = 115 if self.currentDimension == DIMENSION_END else 170
+        if self.snowImpactTimer >= impactInterval:
+            self.snowImpactTimer %= impactInterval
+            self._spawnWeatherImpacts("snow", 1, 3)
+        for impact in self.snowImpacts:
+            impact["life"] -= dt
+        self.snowImpacts = [
+            impact for impact in self.snowImpacts if impact["life"] > 0
+        ]
         
         # Snow accumulation on blocks (like Minecraft)
         if self.currentDimension == DIMENSION_OVERWORLD:
@@ -12549,113 +13099,95 @@ class BlocFantome:
             if currentHeight < 8:  # Max 8 layers (half a block)
                 self.snowLayers[snowPos] = min(8, currentHeight + random.randint(1, 2))
     
+    def _weatherParticleLayer(self) -> pygame.Surface:
+        size = (WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT)
+        if self._weatherParticleSurface is None or self._weatherParticleSurface.get_size() != size:
+            self._weatherParticleSurface = pygame.Surface(size, pygame.SRCALPHA)
+        self._weatherParticleSurface.fill((0, 0, 0, 0))
+        return self._weatherParticleSurface
+
+    def _weatherDarkOverlay(self, color, alpha: int) -> pygame.Surface:
+        key = (WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT, tuple(color), int(alpha))
+        if self._weatherDarkOverlaySurface is None or self._weatherDarkOverlaySurface.get_size() != key[:2]:
+            self._weatherDarkOverlaySurface = pygame.Surface(key[:2], pygame.SRCALPHA)
+            self._weatherDarkOverlayKey = None
+        if key != self._weatherDarkOverlayKey:
+            self._weatherDarkOverlaySurface.fill((*color, alpha))
+            self._weatherDarkOverlayKey = key
+        return self._weatherDarkOverlaySurface
+
     def _renderSnow(self) -> None:
-        """Render snow overlay effects and accumulated snow layers"""
+        """Render all snow-family particles through one reusable overlay."""
         config = self._getDimensionWeatherConfig()["snow"]
-        # Calculate panel boundary
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
-        
-        # Draw snow darkening overlay (lighter than rain)
+        layer = self._weatherParticleLayer()
         if self.snowSkyDarkness > 0:
-            darkOverlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            darkOverlay.fill((*config["overlay"], self.snowSkyDarkness))
-            self.screen.blit(darkOverlay, (0, 0))
-        
-        # Draw accumulated snow layers on blocks (thin white layer covering block top)
-        if self.snowLayers:
-            # Sort snow layers by depth for proper rendering (same as blocks)
-            sortedLayers = sorted(self.snowLayers.items(), key=lambda item: item[0][0] + item[0][1] + item[0][2])
-            
-            for (x, y, z), height in sortedLayers:
-                # Get screen position at the snow's Z level (on top of block at z-1)
-                # worldToScreen returns the TOP VERTEX of the isometric tile
-                screenX, screenY = self.renderer.worldToScreen(x, y, z)
-                
-                # Skip if off screen
-                if screenX < -50 or screenX > panelLeft + 50:
-                    continue
-                
-                # Snow layer thickness (2-5 pixels based on accumulation)
-                layerThickness = max(2, min(5, height))
-                
-                # The top face diamond matches _createIsometricBlock exactly:
-                # topPoints = [(halfW, 0), (W-1, halfH), (halfW, TILE_HEIGHT-1), (0, halfH)]
-                # Where halfW = TILE_WIDTH//2 = 32, halfH = TILE_HEIGHT//2 = 16
-                # screenX,screenY is the top vertex (center top of diamond)
-                
-                halfW = TILE_WIDTH // 2  # 32
-                halfH = TILE_HEIGHT // 2  # 16
-                
-                # Top surface diamond - matches block top face exactly
-                topPoints = [
-                    (screenX, screenY),                      # Top vertex (0, 0 in local)
-                    (screenX + halfW, screenY + halfH),      # Right vertex (32, 16)
-                    (screenX, screenY + TILE_HEIGHT),        # Bottom vertex (0, 32)
-                    (screenX - halfW, screenY + halfH)       # Left vertex (-32, 16)
-                ]
-                
-                # Bottom of snow layer (offset down by thickness)
-                bottomOffset = layerThickness
-                
-                # Left side face - thin edge matching isometric projection
-                leftSidePoints = [
-                    (screenX - halfW, screenY + halfH),
-                    (screenX, screenY + TILE_HEIGHT),
-                    (screenX, screenY + TILE_HEIGHT + bottomOffset),
-                    (screenX - halfW, screenY + halfH + bottomOffset),
-                ]
-                
-                # Right side face - thin edge matching isometric projection
-                rightSidePoints = [
-                    (screenX, screenY + TILE_HEIGHT),
-                    (screenX + halfW, screenY + halfH),
-                    (screenX + halfW, screenY + halfH + bottomOffset),
-                    (screenX, screenY + TILE_HEIGHT + bottomOffset),
-                ]
-                
-                # Snow colors (white with slight blue tint)
-                topColor = (250, 252, 255)  # Bright white top
-                leftColor = (200, 210, 225)  # Shaded left
-                rightColor = (225, 235, 245)  # Medium shaded right
-                
-                # Draw sides first, then top (proper painter's algorithm)
-                pygame.draw.polygon(self.screen, leftColor, leftSidePoints)
-                pygame.draw.polygon(self.screen, rightColor, rightSidePoints)
-                pygame.draw.polygon(self.screen, topColor, topPoints)
-        
-        # Draw falling snowflakes as small white circles/dots
-        if self.snowEnabled or self.snowFlakes:
-            for flake in self.snowFlakes:
-                # Skip flakes over the UI panel
-                if flake["x"] > panelLeft:
-                    continue
-                
-                # Skip flakes outside the isometric platform diamond (prevents floating appearance)
-                if not self._isPointInPlatformDiamond(flake["x"], flake["y"]):
-                    continue
-                
-                size = flake["size"]
-                color = flake.get("color", config["colors"][0])
-                snowSurf = pygame.Surface((size * 4, size * 4), pygame.SRCALPHA)
-                center = size * 2
-                if config["style"] == "shards":
-                    angle = flake["rotation"]
-                    dx = math.cos(angle) * size
-                    dy = math.sin(angle) * size
-                    points = [
-                        (center + dx, center + dy),
-                        (center - dy * 0.5, center + dx * 0.5),
-                        (center - dx, center - dy),
-                        (center + dy * 0.5, center - dx * 0.5),
-                    ]
-                    pygame.draw.polygon(snowSurf, color, points)
-                else:
-                    if config["style"] == "souls":
-                        pulse = 0.65 + 0.35 * math.sin(flake["driftPhase"] * 2)
-                        color = (*color[:3], int(color[3] * pulse))
-                        pygame.draw.circle(snowSurf, (*color[:3], 35), (center, center), size + 2)
-                    pygame.draw.circle(snowSurf, color, (center, center), size)
-                self.screen.blit(snowSurf, (int(flake["x"]) - center, int(flake["y"]) - center))
+            self.screen.blit(self._weatherDarkOverlay(config["overlay"], self.snowSkyDarkness), (0, 0))
+
+        for (x, y, z), height in sorted(
+            self.snowLayers.items(), key=lambda item: sum(item[0])
+        ):
+            screenX, screenY = self.renderer.worldToScreen(x, y, z)
+            if not -50 <= screenX <= panelLeft + 50:
+                continue
+            thickness = max(2, min(5, height))
+            halfW, halfH = TILE_WIDTH // 2, TILE_HEIGHT // 2
+            top = [(screenX, screenY), (screenX + halfW, screenY + halfH),
+                   (screenX, screenY + TILE_HEIGHT), (screenX - halfW, screenY + halfH)]
+            left = [top[3], top[2], (top[2][0], top[2][1] + thickness),
+                    (top[3][0], top[3][1] + thickness)]
+            right = [top[2], top[1], (top[1][0], top[1][1] + thickness),
+                     (top[2][0], top[2][1] + thickness)]
+            pygame.draw.polygon(self.screen, (200, 210, 225), left)
+            pygame.draw.polygon(self.screen, (225, 235, 245), right)
+            pygame.draw.polygon(self.screen, (250, 252, 255), top)
+
+        for flake in self.snowFlakes:
+            if flake["x"] > panelLeft:
+                continue
+            if not config.get("screenwide") and not self._isPointInPlatformDiamond(flake["x"], flake["y"]):
+                continue
+            size = flake["size"]
+            color = flake.get("color", config["colors"][0])
+            center = (round(flake["x"]), round(flake["y"]))
+            if config["style"] == "shards":
+                angle = flake["rotation"]
+                dx, dy = math.cos(angle) * size * 1.35, math.sin(angle) * size * 1.35
+                points = [(center[0] + dx, center[1] + dy),
+                          (center[0] - dy * .42, center[1] + dx * .42),
+                          (center[0] - dx, center[1] - dy),
+                          (center[0] + dy * .42, center[1] - dx * .42)]
+                pygame.draw.polygon(layer, (*color[:3], 75), points)
+                pygame.draw.line(layer, color, points[0], points[2], max(2, size // 3))
+                pygame.draw.circle(layer, (255, 255, 255, 245), center, 1)
+            else:
+                if config["style"] == "souls":
+                    pulse = .65 + .35 * math.sin(flake["driftPhase"] * 2)
+                    color = (*color[:3], int(color[3] * pulse))
+                    pygame.draw.circle(layer, (*color[:3], 35), center, size + 2)
+                pygame.draw.circle(layer, color, center, size)
+
+        for impact in self.snowImpacts:
+            if impact["x"] > panelLeft:
+                continue
+            ratio = impact["life"] / impact["maxLife"]
+            size, color = impact["size"], impact["color"]
+            alpha = int(color[3] * ratio)
+            center = (round(impact["x"]), round(impact["y"]))
+            if impact["style"] == "shards":
+                for offset in (-2, 0, 2):
+                    pygame.draw.line(layer, (*color[:3], alpha),
+                                     (center[0] + offset, center[1] + 3),
+                                     (center[0] + offset * 2, center[1] - size - abs(offset)), 1)
+            elif impact["style"] == "souls":
+                pygame.draw.ellipse(layer, (*color[:3], max(20, alpha // 2)),
+                                    pygame.Rect(center[0] - size * 2, center[1] - size,
+                                                size * 4, size * 2), 1)
+            else:
+                for dx, dy in ((-size, 0), (0, -1), (size, 0)):
+                    pygame.draw.circle(layer, (*color[:3], alpha),
+                                       (center[0] + dx, center[1] + dy), max(1, size // 2))
+        self.screen.blit(layer, (0, 0))
     
     def _generateStars(self):
         """Generate random star positions for night sky"""
@@ -14440,7 +14972,8 @@ class BlocFantome:
         
         # Calculate approximate Y position of block in panel
         mainButtonHeight = 35
-        subCategoryHeight = 24
+        subCategoryHeight = PANEL_SUBMENU_ROW_HEIGHT
+        subCategoryStride = PANEL_SUBMENU_ROW_STRIDE
         slotSize = ICON_SIZE + 8
         headerHeight = 10
         slotsPerRow = (PANEL_WIDTH - 20) // slotSize
@@ -14454,7 +14987,7 @@ class BlocFantome:
             blocks = BLOCK_CATEGORIES.get(category, [])
             isExpanded = self.expandedCategories.get(category, False)
             
-            yPos += subCategoryHeight  # Category header
+            yPos += subCategoryStride  # Category header and spacing
             
             if category == targetCategory:
                 # Found the category, now find block position within it
@@ -14504,7 +15037,8 @@ class BlocFantome:
         
         # Match panel layout
         mainButtonHeight = 35
-        subCategoryHeight = 24
+        subCategoryHeight = PANEL_SUBMENU_ROW_HEIGHT
+        subCategoryStride = PANEL_SUBMENU_ROW_STRIDE
         slotSize = ICON_SIZE + 8
         headerHeight = 10
         currentY = headerHeight - self.inventoryScroll
@@ -14523,7 +15057,7 @@ class BlocFantome:
             blocks = BLOCK_CATEGORIES.get(category, [])
             isExpanded = self.expandedCategories.get(category, False)
             
-            currentY += subCategoryHeight
+            currentY += subCategoryStride
             
             if isExpanded:
                 blocksStartY = currentY + 2
@@ -15717,6 +16251,7 @@ class BlocFantome:
             "showGrid",
             "showBlockOutline",
             "showBlockTooltip",
+            "worldCenteredRotation",
         ]
         
         for attr in toggles:
@@ -16185,6 +16720,11 @@ class BlocFantome:
             ("Show Grid", self.showGrid, "showGrid"),
             ("Show Block Outline", self.showBlockOutline, "showBlockOutline"),
             ("Show Block Tooltip", self.showBlockTooltip, "showBlockTooltip"),
+            (
+                "World-Centered Rotation",
+                self.worldCenteredRotation,
+                "worldCenteredRotation",
+            ),
         ]
         
         for label, value, attr in toggles:
@@ -17546,13 +18086,17 @@ class BlocFantome:
                 drop["angle"] = random.uniform(*config["angle"])
                 drop["color"] = random.choice(config["colors"])
         
-        # Spawn splashes directly on random blocks (scaled by intensity)
-        if self.currentDimension == DIMENSION_OVERWORLD:
-            self.splashSpawnTimer += dt
-            splashInterval = int(50 / self.rainIntensity)
-            if self.splashSpawnTimer >= splashInterval:
-                self.splashSpawnTimer = 0
-                self._spawnSplashesOnBlocks()
+        # Every dimension gets bounded impacts on visible exposed surfaces.
+        self.splashSpawnTimer += dt
+        baseInterval = {
+            "rain": 50, "embers": 85, "void": 75,
+        }.get(config["style"], 70)
+        splashInterval = max(25, int(baseInterval / self.rainIntensity))
+        if self.splashSpawnTimer >= splashInterval:
+            self.splashSpawnTimer %= splashInterval
+            self._spawnWeatherImpacts("rain", 3, 6)
+
+        self._updateWeatherFireInteractions(dt)
         
         # Update splashes
         for splash in self.rainSplashes:
@@ -17597,6 +18141,50 @@ class BlocFantome:
         # Subtle whispers during rain (horror feature)
         if self.currentDimension == DIMENSION_OVERWORLD and self.horrorEnabled:
             self._updateRainWhispers(dt)
+
+    def _updateWeatherFireInteractions(self, dt: int) -> None:
+        """Extinguish exposed dimension-appropriate fire in undoable batches."""
+        targetType = {
+            DIMENSION_OVERWORLD: BlockType.FIRE,
+            DIMENSION_NETHER: BlockType.SOUL_FIRE,
+        }.get(self.currentDimension)
+        if targetType is None:
+            return
+        self.weatherInteractionTimer += dt
+        if self.weatherInteractionTimer < 650:
+            return
+        self.weatherInteractionTimer %= 650
+        exposed = tuple(
+            position
+            for position in self.world.positionsOfType(targetType)
+            if self.world.heightIndex.get(position[:2]) == position[2]
+        )
+        if not exposed:
+            return
+        selected = random.sample(exposed, min(len(exposed), random.randint(1, 3)))
+        from engine.undo import BatchCommand, RemoveBlockCommand
+
+        command = BatchCommand(
+            [RemoveBlockCommand(self.world, *position) for position in selected],
+            "Weather extinguished fire",
+        )
+        if not self.undoManager.execute(command):
+            return
+        config = self._getDimensionWeatherConfig()["rain"]
+        for x, y, z in selected:
+            screenX, screenY = self.renderer.worldToScreen(x, y, z)
+            self.rainSplashes.append({
+                "x": screenX + self.panOffsetX,
+                "y": screenY + self.panOffsetY + TILE_HEIGHT // 2,
+                "life": 12,
+                "size": 5,
+                "style": config["style"],
+                "color": random.choice(config["colors"]),
+            })
+        self.assetManager.playSound(
+            "fire_extinguish", selected[0], self.effectsVolume * 0.5
+        )
+        self._afterWorldEdit(selected)
     
     def _updateRainWhispers(self, dt: int):
         """Update subtle whisper sounds that play rarely during rain"""
@@ -17710,41 +18298,8 @@ class BlocFantome:
         self.lightningBoltTimer = 150  # Visible for 150ms
     
     def _spawnSplashesOnBlocks(self):
-        """Spawn splash effects directly on random blocks in the world"""
-        # Find the highest block at each (x, y) position
-        topBlocks = self.world.heightIndex
-        
-        if not topBlocks:
-            return
-        
-        # Spawn 3-6 splashes per update on random top blocks (scaled by intensity)
-        blockList = list(topBlocks.items())
-        numSplashes = min(len(blockList), int(random.randint(3, 6) * self.rainIntensity))
-        
-        for _ in range(numSplashes):
-            (x, y), z = random.choice(blockList)
-            
-            # worldToScreen returns the TOP VERTEX (apex) of the tile diamond
-            # This is already the center X position of the block
-            screenX, screenY = self.renderer.worldToScreen(x, y, z)
-            
-            # screenX is the center X of the diamond's top vertex
-            # screenY is the Y of the top vertex
-            # The diamond center (middle of top face) is at screenY + TILE_HEIGHT/2
-            # Keep offsets very small to stay within the visible block top
-            offsetX = random.randint(-6, 6)
-            offsetY = random.randint(-3, 3)
-            
-            # Add panning offset - screenX is already the center
-            splashX = screenX + self.panOffsetX + offsetX
-            splashY = screenY + self.panOffsetY + TILE_HEIGHT // 4 + offsetY  # Move down to center of top face
-            
-            self.rainSplashes.append({
-                "x": splashX,
-                "y": splashY,
-                "life": 12,  # Longer life for more visible splashes
-                "size": random.randint(3, 6)  # Larger splashes
-            })
+        """Compatibility wrapper for callers expecting normal rain splashes."""
+        self._spawnWeatherImpacts("rain", 3, 6)
     
     def _renderRain(self) -> None:
         """Render rain overlay effects"""
@@ -17754,6 +18309,7 @@ class BlocFantome:
         # Calculate panel boundary (don't render rain on UI panel)
         panelLeft = WINDOW_WIDTH - PANEL_WIDTH
         config = self._getDimensionWeatherConfig()["rain"]
+        layer = self._weatherParticleLayer()
         
         # Draw rain drops with visible blue glow
         for drop in self.rainDrops:
@@ -17769,25 +18325,21 @@ class BlocFantome:
             color = drop.get("color", config["colors"][0])
             if config["style"] == "embers":
                 radius = max(1, drop["length"] // 3)
-                emberSurf = pygame.Surface((radius * 6, radius * 6), pygame.SRCALPHA)
-                center = radius * 3
-                pygame.draw.circle(emberSurf, (*color[:3], 35), (center, center), radius * 3)
-                pygame.draw.circle(emberSurf, color, (center, center), radius)
-                self.screen.blit(emberSurf, (int(drop["x"]) - center, int(drop["y"]) - center))
+                center = (round(drop["x"]), round(drop["y"]))
+                pygame.draw.circle(layer, (*color[:3], 35), center, radius * 3)
+                pygame.draw.circle(layer, color, center, radius)
             else:
                 if config["style"] == "rain":
                     glowColor = (80, 140, 255, 60 if self.lightingEnabled else 40)
-                    glowSurf = pygame.Surface((12, int(drop["length"]) + 8), pygame.SRCALPHA)
-                    pygame.draw.line(
-                        glowSurf, glowColor, (6, 0), (6, int(drop["length"])),
-                        6 if self.lightingEnabled else 4,
-                    )
-                    self.screen.blit(glowSurf, (int(drop["x"]) - 6, int(drop["y"]) - 4))
+                    pygame.draw.line(layer, glowColor,
+                                     (round(drop["x"]), round(drop["y"])),
+                                     (round(endX), round(endY)),
+                                     6 if self.lightingEnabled else 4)
                 elif config["style"] == "void":
                     trailStart = (int(drop["x"] - drop["length"] * angle), int(drop["y"] - drop["length"]))
-                    pygame.draw.line(self.screen, (*color[:3], 55), trailStart, (int(endX), int(endY)), 3)
+                    pygame.draw.line(layer, (*color[:3], 55), trailStart, (int(endX), int(endY)), 3)
                 pygame.draw.line(
-                    self.screen, color,
+                    layer, color,
                     (int(drop["x"]), int(drop["y"])), (int(endX), int(endY)), 1,
                 )
         
@@ -17801,20 +18353,42 @@ class BlocFantome:
             # Draw expanding ring splash effect
             expansion = (12 - splash["life"]) * 0.5  # Expand as life decreases
             size = splash["size"] + expansion
-            
-            # Outer ring
-            splashSurf = pygame.Surface((int(size * 3), int(size * 1.5)), pygame.SRCALPHA)
-            splashColor = (180, 200, 240, alpha)
-            pygame.draw.ellipse(splashSurf, splashColor, splashSurf.get_rect(), 2)  # Ring, not filled
-            self.screen.blit(splashSurf, (splash["x"] - size * 1.5, splash["y"] - size * 0.75))
-            
-            # Inner splash dot
-            if splash["life"] > 6:
-                dotSize = max(2, splash["size"] - 1)
-                dotSurf = pygame.Surface((dotSize * 2, dotSize), pygame.SRCALPHA)
-                dotColor = (200, 220, 255, alpha)
-                pygame.draw.ellipse(dotSurf, dotColor, dotSurf.get_rect())
-                self.screen.blit(dotSurf, (splash["x"] - dotSize, splash["y"] - dotSize // 2))
+            style = splash.get("style", "rain")
+            color = splash.get("color", (180, 200, 240, 220))
+            center = (round(splash["x"]), round(splash["y"]))
+            scaledColor = (*color[:3], min(alpha, color[3] if len(color) > 3 else alpha))
+            if style == "embers":
+                pygame.draw.circle(layer, (*color[:3], alpha // 3), center, max(2, int(size)))
+                for index, dx in enumerate((-3, 0, 3)):
+                    sparkHeight = 2 + ((splash["life"] + index * 2) % 5)
+                    pygame.draw.line(
+                        layer, scaledColor,
+                        (center[0], center[1]),
+                        (center[0] + dx, center[1] - sparkHeight), 1,
+                    )
+            elif style == "void":
+                pygame.draw.ellipse(
+                    layer, scaledColor,
+                    pygame.Rect(center[0] - int(size), center[1] - 2,
+                                max(2, int(size * 2)), 4), 1,
+                )
+                pygame.draw.line(
+                    layer, scaledColor,
+                    (center[0] - 3, center[1] + 2),
+                    (center[0] + 3, center[1] - 3), 1,
+                )
+            else:
+                pygame.draw.ellipse(
+                    layer, scaledColor,
+                    pygame.Rect(center[0] - int(size * 2), center[1] - int(size),
+                                max(4, int(size * 4)), max(3, int(size * 2))), 2,
+                )
+                if splash["life"] > 6:
+                    pygame.draw.ellipse(
+                        layer, (*color[:3], alpha),
+                        pygame.Rect(center[0] - 2, center[1] - 1, 4, 2),
+                    )
+        self.screen.blit(layer, (0, 0))
         
         # Draw lightning bolt (Minecraft-style jagged white line)
         if self.lightningBolt and self.lightningBoltTimer > 0:
@@ -17872,9 +18446,10 @@ class BlocFantome:
         # Draw rain darkening overlay (behind world but on background)
         if self.skyDarkness > 0:
             rainConfig = self._getDimensionWeatherConfig()["rain"]
-            darkOverlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            darkOverlay.fill((*rainConfig["overlay"], self.skyDarkness))
-            self.screen.blit(darkOverlay, (0, 0))
+            self.screen.blit(
+                self._weatherDarkOverlay(rainConfig["overlay"], self.skyDarkness),
+                (0, 0),
+            )
         
         # Draw grid and blocks
         self._renderWorld()
@@ -17894,6 +18469,9 @@ class BlocFantome:
         
         # Draw block breaking particles
         self._renderBlockParticles()
+
+        # Powered dust emits sparse vanilla-style red motes.
+        self._renderRedstoneParticles()
         
         # Draw rain effects (on top of world, but under UI)
         self._renderRain()
@@ -18023,7 +18601,15 @@ class BlocFantome:
         
         # Light sources emit their own light - they're always fully lit
         # Also skip ambient occlusion for light sources to prevent flat appearance
-        if blockDef and blockDef.lightLevel > 0:
+        props = self.world.getBlockProperties(x, y, z)
+        dynamicRedstoneLight = (
+            blockType in (
+                BlockType.REDSTONE_TORCH, BlockType.REDSTONE_WALL_TORCH,
+                BlockType.REDSTONE_LAMP,
+            )
+            and props is not None and props.powered
+        )
+        if blockDef and (blockDef.lightLevel > 0 or dynamicRedstoneLight):
             # Return original sprite for light sources (no darkening/AO)
             return sprite
         else:
@@ -18664,12 +19250,20 @@ class BlocFantome:
                         isActive,
                         self.assetManager.getBlockSprite(displayBlockType),
                     )
+                elif displayBlockType == BlockType.REDSTONE_LAMP:
+                    sprite = self.assetManager.redstoneLampSprites.get(
+                        bool(props and props.powered),
+                        self.assetManager.getBlockSprite(displayBlockType),
+                    )
                 elif blockDef and blockDef.modelKind:
                     props = props or BlockProperties()
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
                     relativeFacing = Facing((facing.value - viewRot) % 4)
                     sprite = self.assetManager.getDetailSprite(
-                        displayBlockType, relativeFacing, props.isOpen, props.slabPosition
+                        displayBlockType, relativeFacing, props.isOpen, props.slabPosition,
+                        powered=props.powered, power=props.redstonePower,
+                        delay=props.repeaterDelay,
+                        connections=self._redstoneConnectionCount(x, y, z),
                     )
                 elif blockDef and blockDef.isDoor and props:
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
@@ -18973,7 +19567,8 @@ class BlocFantome:
         
         # Main button settings
         mainButtonHeight = 35
-        subCategoryHeight = 24
+        subCategoryHeight = PANEL_SUBMENU_ROW_HEIGHT
+        subCategoryStride = PANEL_SUBMENU_ROW_STRIDE
         slotSize = ICON_SIZE + 8
         headerHeight = 10
         startY = headerHeight
@@ -18987,17 +19582,17 @@ class BlocFantome:
             for category in CATEGORY_ORDER:
                 if category == "Problematic" or category == "Experimental":
                     continue
-                totalHeight += subCategoryHeight
+                totalHeight += subCategoryStride
                 if self.expandedCategories.get(category, False):
                     blocks = BLOCK_CATEGORIES.get(category, [])
                     numRows = (len(blocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
                     totalHeight += numRows * (slotSize + 4) + 5
             totalHeight += 10
         
-        # Features main button + content (3 dimension buttons + Show Tutorial + Rain + Snow + Sun/Moon + Clouds + Lighting + Horror Rain + Save/Load)
+        # Toggles: 3 dimensions, 2 actions, 5 visible toggles, 1 secret toggle.
         totalHeight += mainButtonHeight
         if self.experimentalExpanded:
-            totalHeight += 10 * 35 + 25 + 3 * 30 + 40 + 15
+            totalHeight += 11 * PANEL_SUBMENU_ROW_STRIDE + 7
 
         # Worlds opens a modal and has no inline content.
         totalHeight += mainButtonHeight
@@ -19050,30 +19645,22 @@ class BlocFantome:
                 # Sub-category header
                 subHeaderRect = pygame.Rect(panelX + 15, currentY, PANEL_WIDTH - 30, subCategoryHeight)
                 isSubHovered = subHeaderRect.collidepoint(mouseX, mouseY)
-                subColor = (65, 65, 75) if isSubHovered else (50, 50, 60)
-                pygame.draw.rect(self.screen, subColor, subHeaderRect, border_radius=3)
-                pygame.draw.rect(self.screen, (80, 80, 90), subHeaderRect, 1, border_radius=3)
+                previewBlock = CATEGORY_PREVIEW_BLOCKS.get(category)
+                previewIcon = (
+                    self.assetManager.getPanelPreviewIcon(previewBlock)
+                    if previewBlock is not None else None
+                )
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    subHeaderRect,
+                    f"{category} ({len(blocks)})",
+                    self.smallFont,
+                    hovered=isSubHovered,
+                    icon=previewIcon,
+                    expanded=isExpanded,
+                )
                 
-                # Draw expand/collapse indicator as a simple triangle shape
-                indicatorX = panelX + 22
-                indicatorY = currentY + subCategoryHeight // 2
-                if isExpanded:
-                    # Down-pointing triangle
-                    points = [(indicatorX - 4, indicatorY - 2), (indicatorX + 4, indicatorY - 2), (indicatorX, indicatorY + 3)]
-                else:
-                    # Right-pointing triangle
-                    points = [(indicatorX - 2, indicatorY - 4), (indicatorX + 3, indicatorY), (indicatorX - 2, indicatorY + 4)]
-                pygame.draw.polygon(self.screen, (180, 180, 180), points)
-                
-                # Category name
-                catText = self.smallFont.render(category, True, (220, 220, 220))
-                self.screen.blit(catText, (panelX + 35, currentY + 4))
-                
-                # Count
-                countText = self.smallFont.render(f"({len(blocks)})", True, (120, 120, 120))
-                self.screen.blit(countText, (panelX + PANEL_WIDTH - 50, currentY + 4))
-                
-                currentY += subCategoryHeight
+                currentY += subCategoryStride
                 
                 # Draw blocks if sub-category expanded
                 if isExpanded:
@@ -19134,42 +19721,53 @@ class BlocFantome:
             
             currentY += 5
         
-        # ===== FEATURES MAIN BUTTON =====
+        # ===== TOGGLES MAIN BUTTON =====
         experimentalRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         experimentalHovered = experimentalRect.collidepoint(mouseX, mouseY)
-        self.assetManager.drawButton(self.screen, experimentalRect, "Features", self.font, experimentalHovered, self.experimentalExpanded)
+        self.assetManager.drawButton(self.screen, experimentalRect, "Toggles", self.font, experimentalHovered, self.experimentalExpanded)
         currentY += mainButtonHeight + 5
         
-        # Experimental content (dimension buttons + Show Tutorial)
+        # Toggle content (dimension buttons + actions + state toggles)
         if self.experimentalExpanded:
+            now = pygame.time.get_ticks()
             dimensions = [
-                (DIMENSION_OVERWORLD, "Overworld"),
-                (DIMENSION_NETHER, "Nether"),
-                (DIMENSION_END, "End")
+                (DIMENSION_OVERWORLD, "Overworld", BlockType.GRASS),
+                (DIMENSION_NETHER, "Nether", BlockType.NETHERRACK),
+                (DIMENSION_END, "End", BlockType.END_STONE),
             ]
+            dimensionEffects = {
+                DIMENSION_OVERWORLD: (
+                    "overworld", ((110, 205, 105, 165),), (90, 150, 80)
+                ),
+                DIMENSION_NETHER: (
+                    "embers", ((255, 105, 30, 190), (225, 55, 20, 165)),
+                    (175, 75, 40),
+                ),
+                DIMENSION_END: (
+                    "void", ((175, 85, 225, 180), (105, 45, 175, 155)),
+                    (125, 80, 165),
+                ),
+            }
             dimY = currentY + 2
             
-            for dimKey, dimName in dimensions:
+            for dimKey, dimName, previewBlock in dimensions:
                 btnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
                 
                 if dimY + 30 >= startY and dimY <= startY + availableHeight:
                     isHovered = btnRect.collidepoint(mouseX, mouseY)
                     isSelected = self.currentDimension == dimKey
-                    
-                    # Texture and tint based on dimension
-                    if dimKey == DIMENSION_OVERWORLD:
-                        dimTexture = "grass_block_top.png"  # Use grass texture with tint for overworld
-                        dimTint = GRASS_TINT
-                    elif dimKey == DIMENSION_NETHER:
-                        dimTexture = "netherrack.png"
-                        dimTint = None
-                    else:  # End
-                        dimTexture = "end_stone.png"
-                        dimTint = None
-                    
-                    self.assetManager.drawButton(
-                        self.screen, btnRect, dimName, 
-                        self.smallFont, isHovered, isSelected, bgTexture=dimTexture, bgTint=dimTint
+                    effectStyle, effectColors, effectTint = dimensionEffects[dimKey]
+                    self.assetManager.drawPanelRow(
+                        self.screen,
+                        btnRect,
+                        dimName,
+                        self.smallFont,
+                        hovered=isHovered,
+                        active=isSelected,
+                        icon=self.assetManager.getPanelPreviewIcon(previewBlock),
+                        effectStyle=effectStyle if isSelected else None,
+                        effectColors=effectColors,
+                        effectTint=effectTint,
                     )
                 
                 dimY += 35
@@ -19177,9 +19775,18 @@ class BlocFantome:
             terrainBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 terrainHovered = terrainBtnRect.collidepoint(mouseX, mouseY)
-                self.assetManager.drawButton(
-                    self.screen, terrainBtnRect, "Terrain Slice",
-                    self.smallFont, terrainHovered, False, bgTexture="grass_block_top.png"
+                terrainPulse = now < self.toggleActionPulseUntil.get("terrain", 0)
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    terrainBtnRect,
+                    "Terrain Slice",
+                    self.smallFont,
+                    hovered=terrainHovered,
+                    active=terrainPulse,
+                    icon=self.assetManager.getPanelPreviewIcon(BlockType.GRASS),
+                    effectStyle="pulse" if terrainPulse else None,
+                    effectColors=((120, 205, 105, 150),),
+                    effectTint=(90, 145, 80),
                 )
             dimY += 35
             
@@ -19187,9 +19794,18 @@ class BlocFantome:
             tutorialBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 tutorialHovered = tutorialBtnRect.collidepoint(mouseX, mouseY)
-                self.assetManager.drawButton(
-                    self.screen, tutorialBtnRect, "Show Tutorial",
-                    self.smallFont, tutorialHovered, False, bgTexture="bookshelf.png"
+                tutorialPulse = now < self.toggleActionPulseUntil.get("tutorial", 0)
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    tutorialBtnRect,
+                    "Show Tutorial",
+                    self.smallFont,
+                    hovered=tutorialHovered,
+                    active=tutorialPulse,
+                    icon=self.assetManager.getPanelPreviewIcon(BlockType.BOOKSHELF),
+                    effectStyle="pulse" if tutorialPulse else None,
+                    effectColors=((220, 185, 90, 150),),
+                    effectTint=(155, 125, 65),
                 )
             dimY += 35
             
@@ -19200,9 +19816,22 @@ class BlocFantome:
                 rainHovered = rainBtnRect.collidepoint(mouseX, mouseY)
                 rain = weatherConfig["rain"]
                 rainLabel = f"{rain['name']}: {'ON' if self.rainEnabled else 'OFF'}"
-                self.assetManager.drawButton(
-                    self.screen, rainBtnRect, rainLabel,
-                    self.smallFont, rainHovered, self.rainEnabled, bgTexture=rain["texture"]
+                rainIcon = {
+                    DIMENSION_OVERWORLD: BlockType.WATER,
+                    DIMENSION_NETHER: BlockType.FIRE,
+                    DIMENSION_END: BlockType.END_PORTAL,
+                }[self.currentDimension]
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    rainBtnRect,
+                    rainLabel,
+                    self.smallFont,
+                    hovered=rainHovered,
+                    active=self.rainEnabled,
+                    icon=self.assetManager.getPanelPreviewIcon(rainIcon),
+                    effectStyle=rain["style"] if self.rainEnabled else None,
+                    effectColors=rain["colors"],
+                    effectTint=rain["colors"][0][:3],
                 )
             dimY += 35
             
@@ -19212,9 +19841,22 @@ class BlocFantome:
                 snowHovered = snowBtnRect.collidepoint(mouseX, mouseY)
                 snow = weatherConfig["snow"]
                 snowLabel = f"{snow['name']}: {'ON' if self.snowEnabled else 'OFF'}"
-                self.assetManager.drawButton(
-                    self.screen, snowBtnRect, snowLabel,
-                    self.smallFont, snowHovered, self.snowEnabled, bgTexture=snow["texture"]
+                snowIcon = {
+                    DIMENSION_OVERWORLD: BlockType.SNOW,
+                    DIMENSION_NETHER: BlockType.SOUL_SAND,
+                    DIMENSION_END: BlockType.PURPUR_BLOCK,
+                }[self.currentDimension]
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    snowBtnRect,
+                    snowLabel,
+                    self.smallFont,
+                    hovered=snowHovered,
+                    active=self.snowEnabled,
+                    icon=self.assetManager.getPanelPreviewIcon(snowIcon),
+                    effectStyle=snow["style"] if self.snowEnabled else None,
+                    effectColors=snow["colors"],
+                    effectTint=snow["colors"][0][:3],
                 )
             dimY += 35
             
@@ -19226,15 +19868,26 @@ class BlocFantome:
                 # Disable button if not in Overworld
                 canCelestial = self.currentDimension == DIMENSION_OVERWORLD
                 if canCelestial:
-                    self.assetManager.drawButton(
-                        self.screen, celestialBtnRect, celestialLabel,
-                        self.smallFont, celestialHovered, self.celestialEnabled, bgTexture="gold_block.png"
+                    self.assetManager.drawPanelRow(
+                        self.screen,
+                        celestialBtnRect,
+                        celestialLabel,
+                        self.smallFont,
+                        hovered=celestialHovered,
+                        active=self.celestialEnabled,
+                        icon=self.assetManager.getPanelPreviewIcon(BlockType.GOLD_BLOCK),
+                        effectStyle="celestial" if self.celestialEnabled else None,
+                        effectColors=((255, 220, 80, 175), (235, 235, 220, 145)),
+                        effectTint=(185, 150, 55),
                     )
                 else:
                     # Draw disabled button
-                    self.assetManager.drawButton(
-                        self.screen, celestialBtnRect, "Sun/Moon (Overworld)",
-                        self.smallFont, False, False
+                    self.assetManager.drawPanelRow(
+                        self.screen,
+                        celestialBtnRect,
+                        "Sun/Moon (Overworld)",
+                        self.smallFont,
+                        icon=self.assetManager.getPanelPreviewIcon(BlockType.GOLD_BLOCK),
                     )
                     # Darken to show disabled
                     darkOverlay = pygame.Surface((celestialBtnRect.width, celestialBtnRect.height), pygame.SRCALPHA)
@@ -19247,9 +19900,17 @@ class BlocFantome:
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 cloudsHovered = cloudsBtnRect.collidepoint(mouseX, mouseY)
                 cloudsLabel = "Clouds: ON" if self.cloudsEnabled else "Clouds: OFF"
-                self.assetManager.drawButton(
-                    self.screen, cloudsBtnRect, cloudsLabel,
-                    self.smallFont, cloudsHovered, self.cloudsEnabled, bgTexture="bone_block_side.png"
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    cloudsBtnRect,
+                    cloudsLabel,
+                    self.smallFont,
+                    hovered=cloudsHovered,
+                    active=self.cloudsEnabled,
+                    icon=self.assetManager.getPanelPreviewIcon(BlockType.WHITE_WOOL),
+                    effectStyle="clouds" if self.cloudsEnabled else None,
+                    effectColors=((225, 235, 245, 100), (185, 210, 235, 80)),
+                    effectTint=(155, 180, 200),
                 )
             dimY += 35
             
@@ -19258,9 +19919,17 @@ class BlocFantome:
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 lightingHovered = lightingBtnRect.collidepoint(mouseX, mouseY)
                 lightingLabel = "Lighting + Fog: ON" if self.lightingEnabled else "Lighting + Fog: OFF"
-                self.assetManager.drawButton(
-                    self.screen, lightingBtnRect, lightingLabel,
-                    self.smallFont, lightingHovered, self.lightingEnabled, bgTexture="jack_o_lantern.png"
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    lightingBtnRect,
+                    lightingLabel,
+                    self.smallFont,
+                    hovered=lightingHovered,
+                    active=self.lightingEnabled,
+                    icon=self.assetManager.getPanelPreviewIcon(BlockType.JACK_O_LANTERN),
+                    effectStyle="lighting" if self.lightingEnabled else None,
+                    effectColors=((255, 190, 65, 175), (255, 235, 145, 145)),
+                    effectTint=(190, 130, 45),
                 )
             dimY += 35
             

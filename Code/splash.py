@@ -19,9 +19,9 @@ SPLASH_FADE_FRAMES = 60       # 1 second fade
 SPLASH_FPS = 60
 
 # Colors  
-SPLASH_BG_COLOR = (5, 5, 4)
-END_STONE_COLOR = (219, 222, 158)
-END_STONE_BORDER = (180, 183, 130)
+SPLASH_BG_COLOR = (3, 4, 7)
+DEEPSLATE_COLOR = (55, 55, 62)
+DEEPSLATE_BORDER = (28, 29, 34)
 
 
 class SplashScreen:
@@ -61,12 +61,12 @@ class SplashScreen:
         self.background_tile = self._create_background_tile()
         self.icon = self._create_textured_block()
         self.title_font = self._load_title_font()
-        self.title = self.title_font.render("Bloc Fantôme", True, (255, 255, 255))
+        self.title = self._render_title("Bloc Fantôme")
         self.first_presented_at = None
     
     def _load_texture(self) -> Optional[pygame.Surface]:
-        """Load the end stone texture independently."""
-        texture_path = os.path.join(self.textures_dir, "end_stone.png")
+        """Load the repeating deepslate background texture independently."""
+        texture_path = os.path.join(self.textures_dir, "deepslate.png")
         
         if os.path.exists(texture_path):
             try:
@@ -79,45 +79,17 @@ class SplashScreen:
     
     def _load_title_font(self) -> pygame.font.Font:
         """Load the title font with fallbacks."""
-        # Try custom font first
-        custom_font_names = [
-            "Relationship of mélodrame.ttf",
-            "Relationship of melodrame.ttf"
-        ]
-        
-        for font_name in custom_font_names:
-            custom_path = os.path.join(self.fonts_dir, font_name)
-            if os.path.exists(custom_path):
-                try:
-                    return pygame.font.Font(custom_path, 64)
-                except:
-                    pass
-        
-        # Try to find any .ttf font in the fonts directory
-        if os.path.exists(self.fonts_dir):
-            try:
-                for f in os.listdir(self.fonts_dir):
-                    if f.endswith('.ttf'):
-                        try:
-                            return pygame.font.Font(os.path.join(self.fonts_dir, f), 64)
-                        except:
-                            continue
-            except:
-                pass
-        
-        # Fallback to clean system fonts
-        clean_fonts = ['Segoe UI Semibold', 'Trebuchet MS', 'Century Gothic', 
-                      'Calibri', 'Candara', 'Georgia', 'Palatino Linotype']
-        for font_name in clean_fonts:
-            try:
-                font = pygame.font.SysFont(font_name, 56)
-                if font:
-                    return font
-            except:
-                continue
-        
-        # Ultimate fallback
-        return pygame.font.Font(None, 56)
+        # Render small and nearest-neighbour scale it below. This creates a
+        # chunky original pixel treatment without bundling or copying a game font.
+        return pygame.font.Font(None, 38)
+
+    def _render_title(self, text: str) -> pygame.Surface:
+        base = self.title_font.render(text, True, (236, 238, 245))
+        shadow = self.title_font.render(text, True, (35, 19, 55))
+        low = pygame.Surface((base.get_width() + 6, base.get_height() + 7), pygame.SRCALPHA)
+        low.blit(shadow, (4, 5))
+        low.blit(base, (1, 1))
+        return pygame.transform.scale(low, (low.get_width() * 2, low.get_height() * 2))
     
     def _legacy_create_textured_block(self) -> pygame.Surface:
         """
@@ -253,7 +225,7 @@ class SplashScreen:
     def _create_background_tile(self) -> pygame.Surface:
         """Load the pre-rendered seamless tessellation without startup raster work."""
         backgroundPath = os.path.join(
-            self.icons_dir, "Splash_Background_End_Stone.png"
+            self.icons_dir, "Splash_Background_Deepslate.png"
         )
         if os.path.isfile(backgroundPath):
             try:
@@ -274,10 +246,12 @@ class SplashScreen:
 
     def _create_textured_block(self) -> pygame.Surface:
         """Load the approved foreground logo independently of Windows icons."""
-        logoPath = os.path.join(self.icons_dir, "Splash_End_Stone.png")
+        logoPath = os.path.join(self.icons_dir, "Respawn_Anchor.png")
         if os.path.isfile(logoPath):
             try:
-                return pygame.image.load(logoPath).convert_alpha()
+                from engine.app_icon import render_splash_logo_surface
+                artwork = pygame.image.load(logoPath).convert_alpha()
+                return render_splash_logo_surface(artwork, SPLASH_ICON_SIZE)
             except pygame.error:
                 pass
         from engine.app_icon import render_splash_logo_surface
@@ -287,8 +261,8 @@ class SplashScreen:
     def _create_fallback_icon(self) -> pygame.Surface:
         """Create a simple colored block as fallback."""
         icon = pygame.Surface((SPLASH_ICON_SIZE, SPLASH_ICON_SIZE), pygame.SRCALPHA)
-        icon.fill(END_STONE_COLOR)
-        pygame.draw.rect(icon, END_STONE_BORDER, icon.get_rect(), 4)
+        icon.fill(DEEPSLATE_COLOR)
+        pygame.draw.rect(icon, DEEPSLATE_BORDER, icon.get_rect(), 4)
         return icon
     
     def present(self) -> None:

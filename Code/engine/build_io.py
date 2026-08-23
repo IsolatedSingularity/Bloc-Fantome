@@ -25,6 +25,7 @@ from domain.blocks import (
 )
 from domain.dimensions import DIMENSION_END, DIMENSION_NETHER, DIMENSION_OVERWORLD
 from engine import scene_cache
+from engine import native_acceleration
 from engine.world_snapshot import WorldSnapshot
 
 
@@ -100,6 +101,16 @@ def _properties(block_type, state_data, definitions):
     properties.oxidationStage = max(
         0, min(3, int(state_data.get("oxidationStage", 0)))
     )
+    powered_value = state_data.get("powered", False)
+    properties.powered = powered_value is True or str(powered_value).casefold() == "true"
+    properties.redstonePower = max(0, min(15, int(state_data.get("redstonePower", 0))))
+    properties.repeaterDelay = max(1, min(4, int(state_data.get("repeaterDelay", 1))))
+    locked_value = state_data.get("repeaterLocked", False)
+    properties.repeaterLocked = locked_value is True or str(locked_value).casefold() == "true"
+    extended_value = state_data.get("pistonExtended", False)
+    properties.pistonExtended = extended_value is True or str(extended_value).casefold() == "true"
+    sticky_value = state_data.get("sticky", False)
+    properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
     return properties
 
 
@@ -223,19 +234,31 @@ def _draw_orders(blocks, structure_positions, structure_surfaces, view_surfaces)
             "hidden": structure_surfaces.get(rotation, ()),
         }
         for mode, positions in mode_positions.items():
-            ordered = sorted(
-                positions,
-                key=lambda position: (
-                    _depth_key(rotation, position),
-                    position[2],
-                    position[0],
-                    position[1],
-                ),
-            )
-            modes[mode][rotation] = tuple(
-                (_depth_key(rotation, position), *position, blocks[position])
-                for position in ordered
-            )
+            native_order = native_acceleration.sort_positions(positions, rotation)
+            if native_order is not None:
+                native_positions, native_indices, native_depths = native_order
+                modes[mode][rotation] = tuple(
+                    (
+                        native_depths[output],
+                        *native_positions[index],
+                        blocks[native_positions[index]],
+                    )
+                    for output, index in enumerate(native_indices)
+                )
+            else:
+                ordered = sorted(
+                    positions,
+                    key=lambda position: (
+                        _depth_key(rotation, position),
+                        position[2],
+                        position[0],
+                        position[1],
+                    ),
+                )
+                modes[mode][rotation] = tuple(
+                    (_depth_key(rotation, position), *position, blocks[position])
+                    for position in ordered
+                )
     return modes
 
 
@@ -405,7 +428,8 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
             state_data = dict(state_data)
             for key in (
                 "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge",
-                "oxidationStage",
+                "oxidationStage", "powered", "redstonePower", "repeaterDelay",
+                "repeaterLocked", "pistonExtended", "sticky",
             ):
                 if key in block_data:
                     state_data[key] = block_data[key]
@@ -512,6 +536,18 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
                 block_data["doorHinge"] = properties.doorHinge.name
             if definition and definition.modelKind == "lantern":
                 block_data["isOpen"] = properties.isOpen
+            if definition and definition.modelKind in {
+                "redstone_dust", "redstone_torch", "lever", "repeater",
+                "piston", "piston_head",
+            }:
+                block_data["powered"] = properties.powered
+                block_data["redstonePower"] = max(0, min(15, int(properties.redstonePower)))
+            if definition and definition.modelKind == "repeater":
+                block_data["repeaterDelay"] = max(1, min(4, int(properties.repeaterDelay)))
+                block_data["repeaterLocked"] = properties.repeaterLocked
+            if definition and definition.modelKind in {"piston", "piston_head"}:
+                block_data["pistonExtended"] = properties.pistonExtended
+                block_data["sticky"] = properties.sticky
             if definition and definition.isStair:
                 block_data["stairShape"] = properties.stairShape.name
             if properties.slabPosition:

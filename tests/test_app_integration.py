@@ -47,6 +47,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.app.currentDimension = app_module.DIMENSION_OVERWORLD
         self.app.world.setDimension(app_module.DIMENSION_OVERWORLD)
         self.app.currentBuildPath = None
+        self.app.worldCenteredRotation = False
         self.app.undoManager.clear()
 
     def test_json_structures_are_cursor_placeable(self):
@@ -125,6 +126,138 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertNotEqual(self.app.showBlockTooltip, old_value)
         self.app.showBlockTooltip = old_value
 
+        world_rotation_toggle = pygame.Rect(
+            panel.x + 28,
+            panel.y + 242 + 6 * 36,
+            panel.width - 56,
+            30,
+        )
+        self.assertTrue(panel.contains(world_rotation_toggle))
+        self.app.worldCenteredRotation = False
+        self.app._handleSettingsClick(*world_rotation_toggle.center)
+        self.assertTrue(self.app.worldCenteredRotation)
+
+    def test_block_and_toggle_submenus_share_rows_and_preview_icons(self):
+        self.assertEqual(app_module.PANEL_SUBMENU_ROW_HEIGHT, 30)
+        self.assertEqual(app_module.PANEL_SUBMENU_ROW_STRIDE, 35)
+        self.assertEqual(
+            set(app_module.CATEGORY_PREVIEW_BLOCKS),
+            set(app_module.CATEGORY_ORDER),
+        )
+        for category, block_type in app_module.CATEGORY_PREVIEW_BLOCKS.items():
+            with self.subTest(category=category):
+                self.assertIn(block_type, app_module.BLOCK_CATEGORIES[category])
+                self.assertIsNotNone(
+                    self.app.assetManager.getIconSprite(block_type)
+                )
+
+    def test_rain_button_animation_covers_button_and_keeps_icon_on_top(self):
+        rect = pygame.Rect(10, 10, 210, app_module.PANEL_SUBMENU_ROW_HEIGHT)
+        icon = self.app.assetManager.getIconSprite(app_module.BlockType.WATER)
+        plain = pygame.Surface((230, 50), pygame.SRCALPHA)
+        animated = pygame.Surface((230, 50), pygame.SRCALPHA)
+        self.app.assetManager.drawPanelRow(
+            plain, rect, "Rain: ON", self.app.smallFont, icon=icon
+        )
+        self.app.assetManager.drawPanelRow(
+            animated,
+            rect,
+            "Rain: ON",
+            self.app.smallFont,
+            icon=icon,
+            effectStyle="rain",
+            effectColors=((100, 140, 220, 220),),
+        )
+        icon_area = pygame.Rect(rect.right - rect.height, rect.top, rect.height, rect.height)
+        self.assertNotEqual(
+            pygame.image.tobytes(plain.subsurface(icon_area), "RGBA"),
+            pygame.image.tobytes(animated.subsurface(icon_area), "RGBA"),
+        )
+        self.assertEqual(
+            plain.get_at((icon_area.centerx, icon_area.centery)),
+            animated.get_at((icon_area.centerx, icon_area.centery)),
+        )
+        self.assertNotEqual(
+            pygame.image.tobytes(plain.subsurface(rect), "RGBA"),
+            pygame.image.tobytes(animated.subsurface(rect), "RGBA"),
+        )
+
+    def test_all_toggle_effect_styles_cover_button_and_keep_preview_foreground(self):
+        rect = pygame.Rect(10, 10, 210, app_module.PANEL_SUBMENU_ROW_HEIGHT)
+        icon = self.app.assetManager.getPanelPreviewIcon(app_module.BlockType.WATER)
+        initial_effect_surfaces = len(self.app.assetManager.uiEffectSurfaces)
+        plain = pygame.Surface((230, 50), pygame.SRCALPHA)
+        self.app.assetManager.drawPanelRow(
+            plain, rect, "Toggle", self.app.smallFont, icon=icon
+        )
+        icon_area = pygame.Rect(rect.right - rect.height, rect.top, rect.height, rect.height)
+        plain_icon = pygame.image.tobytes(plain.subsurface(icon_area), "RGBA")
+        styles = (
+            "rain", "embers", "void", "snow", "souls", "shards",
+            "clouds", "celestial", "lighting", "overworld", "pulse",
+        )
+        for style in styles:
+            with self.subTest(style=style):
+                animated = pygame.Surface((230, 50), pygame.SRCALPHA)
+                self.app.assetManager.drawPanelRow(
+                    animated,
+                    rect,
+                    "Toggle",
+                    self.app.smallFont,
+                    active=True,
+                    icon=icon,
+                    effectStyle=style,
+                    effectColors=((130, 180, 230, 170),),
+                    effectTint=(80, 120, 170),
+                )
+                self.assertNotEqual(
+                    pygame.image.tobytes(animated.subsurface(icon_area), "RGBA"),
+                    plain_icon,
+                )
+                effect_only = pygame.Surface((230, 50), pygame.SRCALPHA)
+                self.app.assetManager.drawPanelRow(
+                    effect_only, rect, "Toggle", self.app.smallFont,
+                    active=True, effectStyle=style,
+                    effectColors=((130, 180, 230, 170),),
+                    effectTint=(80, 120, 170),
+                )
+                self.assertNotEqual(
+                    pygame.image.tobytes(animated.subsurface(icon_area), "RGBA"),
+                    pygame.image.tobytes(effect_only.subsurface(icon_area), "RGBA"),
+                )
+                self.assertNotEqual(
+                    pygame.image.tobytes(animated.subsurface(rect), "RGBA"),
+                    pygame.image.tobytes(plain.subsurface(rect), "RGBA"),
+                )
+        self.assertLessEqual(
+            len(self.app.assetManager.uiEffectSurfaces),
+            initial_effect_surfaces + 1,
+        )
+
+    def test_panel_preview_icons_stay_stable_while_world_icons_animate(self):
+        animated_blocks = (
+            app_module.BlockType.WATER,
+            app_module.BlockType.FIRE,
+            app_module.BlockType.END_PORTAL,
+        )
+        previews = {
+            block: self.app.assetManager.getPanelPreviewIcon(block)
+            for block in animated_blocks
+        }
+        preview_bytes = {
+            block: pygame.image.tobytes(preview, "RGBA")
+            for block, preview in previews.items()
+        }
+        for _ in range(12):
+            self.app.assetManager.updateAnimation(100)
+        for block in animated_blocks:
+            self.assertIs(
+                self.app.assetManager.getPanelPreviewIcon(block), previews[block]
+            )
+            self.assertEqual(
+                pygame.image.tobytes(previews[block], "RGBA"), preview_bytes[block]
+            )
+
     def test_side_targets_work_at_every_zoom_and_rotation(self):
         source = (5, 5, 4)
         self.app.world.setBlock(*source, app_module.BlockType.STONE)
@@ -180,21 +313,41 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._updateHoveredCell(*point)
         self.assertEqual(self.app.hoveredSourceBlock, second)
 
-    def test_rotation_preserves_viewport_world_anchor_in_all_views(self):
+    def test_rotation_preserves_cursor_world_anchor_in_all_views(self):
         self.app.zoomLevel = 0.75
         self.app.renderer.setZoom(0.75)
         self.app.renderer.setViewRotation(0)
         self.app.renderer.offsetX = 410.5
         self.app.renderer.offsetY = 330.25
         self.app.cameraFocusZ = 3
-        center = ((app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) / 2, app_module.WINDOW_HEIGHT / 2)
-        anchor = self.app.renderer.screenToWorld(*center, self.app.cameraFocusZ)
-        for _ in range(4):
-            self.app._rotateViewAndRecenter(1)
-            self.assertEqual(
-                self.app.renderer.screenToWorld(*center, self.app.cameraFocusZ),
-                anchor,
-            )
+        self.app.hoveredSourceBlock = (8, 9, 17)
+        cursor = (287, 463)
+        anchor_z = self.app.hoveredSourceBlock[2]
+        anchor = self.app.renderer._screenToWorldPoint(
+            *cursor, anchor_z
+        )
+        with patch.object(pygame.mouse, "get_pos", return_value=cursor):
+            for _ in range(4):
+                self.app._rotateViewAndRecenter(1)
+                projected = self.app.renderer.worldToScreen(
+                    *anchor, anchor_z
+                )
+                self.assertLessEqual(abs(projected[0] - cursor[0]), 1)
+                self.assertLessEqual(abs(projected[1] - cursor[1]), 1)
+        self.app.hoveredSourceBlock = None
+
+    def test_world_centered_rotation_preserves_world_axis_in_all_views(self):
+        self.app.world.resize(80, 64, 32, min_y=0, preserve=False)
+        self.app.worldCenteredRotation = True
+        self.app.cameraFocusZ = 7
+        center = (39.5, 31.5, 7)
+        projected = self.app.renderer.worldToScreen(*center)
+        with patch.object(pygame.mouse, "get_pos", return_value=(50, 50)):
+            for _ in range(4):
+                self.app._rotateViewAndRecenter(1)
+                self.assertEqual(
+                    self.app.renderer.worldToScreen(*center), projected
+                )
 
     def test_magic_wand_overlay_uses_display_size(self):
         """A retained selection must remain renderable after placing a block."""
@@ -273,7 +426,12 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._invalidateViewCaches()
         self.app._renderWorld()
 
-        self.app._rotateViewAndRecenter(1)
+        cursor = (
+            (app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) // 2,
+            app_module.WINDOW_HEIGHT // 2,
+        )
+        with patch.object(pygame.mouse, "get_pos", return_value=cursor):
+            self.app._rotateViewAndRecenter(1)
         self.assertIsNotNone(self.app._worldZoomFallback)
         self.app._renderWorld()
         self.assertGreater(self.app._worldSurfaceBuildIndex, 0)
@@ -687,36 +845,98 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.zoomLevel, 1.0)
         self.assertEqual(self.app.cameraFocusZ, 0)
 
+    def test_dimension_change_from_world_resets_minimum_canvas(self):
+        path = Path(app_module.WORLDS_DIR) / "bastion_bridge_1161.json.gz"
+        self.assertTrue(self.app._loadBuildingFromPath(str(path), silent=True))
+        self.assertGreater(self.app.world.width, app_module.GRID_WIDTH)
+        self.app._switchDimension(app_module.DIMENSION_OVERWORLD)
+        self.assertEqual(
+            (self.app.world.width, self.app.world.depth, self.app.world.height),
+            (app_module.GRID_WIDTH, app_module.GRID_DEPTH, app_module.GRID_HEIGHT),
+        )
+        self.assertEqual(len(self.app.world.blocks), app_module.GRID_WIDTH * app_module.GRID_DEPTH)
+        self.assertEqual(
+            set(self.app.world.blocks.values()), {app_module.BlockType.GRASS}
+        )
+
+    def test_clicking_active_dimension_does_not_reset_canvas(self):
+        self.app.world.resize(32, 32, 32, preserve=False)
+        self.app.world.setBlock(20, 20, 5, app_module.BlockType.DIAMOND_BLOCK)
+        self.app.currentDimension = app_module.DIMENSION_OVERWORLD
+        self.app._switchDimension(app_module.DIMENSION_OVERWORLD)
+        self.assertEqual((self.app.world.width, self.app.world.depth), (32, 32))
+        self.assertEqual(
+            self.app.world.getBlock(20, 20, 5), app_module.BlockType.DIAMOND_BLOCK
+        )
+
     def test_runtime_and_packaged_icons_have_padding_and_multiple_sizes(self):
         from engine.app_icon import (
             render_explorer_icon_surface,
             render_runtime_icon_surface,
         )
 
-        texture = self.app.assetManager.textures["end_stone.png"]
-        icon = render_runtime_icon_surface(texture, 64)
+        artwork = pygame.image.load(ROOT / "Assets" / "Icons" / "Respawn_Anchor.png")
+        icon = render_runtime_icon_surface(artwork, 64)
         bounds = icon.get_bounding_rect(min_alpha=1)
         self.assertGreater(bounds.left, 0)
         self.assertGreater(bounds.top, 0)
         self.assertLess(bounds.right, 64)
         self.assertLess(bounds.bottom, 64)
 
-        ico = ROOT / "Assets" / "Icons" / "End_Stone.ico"
+        ico = ROOT / "Assets" / "Icons" / "Respawn_Anchor.ico"
         with ico.open("rb") as handle:
             reserved, kind, count = struct.unpack("<HHH", handle.read(6))
             entries = [struct.unpack("<BBBBHHII", handle.read(16)) for _ in range(count)]
         self.assertEqual((reserved, kind), (0, 1))
         self.assertEqual(
             {256 if entry[0] == 0 else entry[0] for entry in entries},
-            {16, 20, 24, 32, 40, 48, 64, 96, 128, 256},
+            {16, 32, 48, 64, 128, 256},
         )
         for size in (16, 32, 48, 256):
-            explorer = render_explorer_icon_surface(texture, size)
-            artwork = explorer.get_bounding_rect(min_alpha=1)
-            self.assertGreater(artwork.left, 0)
-            self.assertLess(artwork.right, size)
-            self.assertGreater(artwork.width / artwork.height, 0.75)
-            self.assertLess(artwork.width / artwork.height, 1.25)
+            explorer = render_explorer_icon_surface(artwork, size)
+            explorer_artwork = explorer.get_bounding_rect(min_alpha=1)
+            runtime_artwork = render_runtime_icon_surface(
+                artwork, size
+            ).get_bounding_rect(min_alpha=1)
+            self.assertGreater(explorer_artwork.left, 0)
+            self.assertLess(explorer_artwork.right, size)
+            self.assertLessEqual(abs(explorer_artwork.width - runtime_artwork.width), 1)
+            self.assertLessEqual(abs(explorer_artwork.height - runtime_artwork.height), 1)
+
+    def test_optional_native_sort_matches_python_painter_order(self):
+        from engine import build_io, native_acceleration
+
+        positions = {
+            (x, y, z)
+            for x in range(-7, 9)
+            for y in range(-5, 6)
+            for z in range(-2, 5)
+            if (x * 3 + y * 5 + z * 7) % 4
+        }
+        if native_acceleration.backend_name() != "rust":
+            self.skipTest("optional Rust accelerator is not built")
+        for rotation in range(4):
+            native = native_acceleration.sort_positions(positions, rotation)
+            self.assertIsNotNone(native)
+            native_positions, native_indices, native_depths = native
+            native_rows = tuple(
+                (native_depths[output], *native_positions[index])
+                for output, index in enumerate(native_indices)
+            )
+            expected_positions = sorted(
+                positions,
+                key=lambda position: (
+                    build_io._depth_key(rotation, position),
+                    position[2],
+                    position[0],
+                    position[1],
+                ),
+            )
+            expected = tuple(
+                (build_io._depth_key(rotation, position), *position)
+                for position in expected_positions
+            )
+            self.assertEqual(native_rows, expected)
 
     def test_large_json_structure_places_at_cursor_without_clipping(self):
         self.app.selectedStructure = "end_city_tower"
@@ -1109,10 +1329,141 @@ class AppIntegrationTests(unittest.TestCase):
             self.app._stopRain()
             self.app._stopSnow()
 
-    def test_small_app_icon_keeps_a_cube_silhouette(self):
-        texture = self.app.assetManager.textures["end_stone.png"]
+        self.assertEqual(
+            app_module.DIMENSION_WEATHER[app_module.DIMENSION_END]["snow"]["particles"],
+            84,
+        )
+        self.assertTrue(
+            app_module.DIMENSION_WEATHER[app_module.DIMENSION_END]["snow"]["screenwide"]
+        )
+        self.assertGreaterEqual(
+            app_module.DIMENSION_WEATHER[app_module.DIMENSION_END]["snow"]["size"][0], 4
+        )
+
+    def test_nether_and_end_weather_reuse_particle_surfaces(self):
+        for dimension in (app_module.DIMENSION_NETHER, app_module.DIMENSION_END):
+            with self.subTest(dimension=dimension):
+                self.app.currentDimension = dimension
+                self.app._startRain()
+                self.app._startSnow()
+                self.app.rainEnabled = True
+                self.app.snowEnabled = True
+                self.app._renderRain()
+                self.app._renderSnow()
+                with patch.object(pygame, "Surface", wraps=pygame.Surface) as surface_factory:
+                    self.app._renderRain()
+                    self.app._renderSnow()
+                surface_factory.assert_not_called()
+                self.app.rainEnabled = False
+                self.app.snowEnabled = False
+                self.app._stopRain()
+                self.app._stopSnow()
+
+    def test_weather_impacts_and_sounds_run_in_every_dimension(self):
+        for dimension in (
+            app_module.DIMENSION_OVERWORLD,
+            app_module.DIMENSION_NETHER,
+            app_module.DIMENSION_END,
+        ):
+            with self.subTest(dimension=dimension):
+                self.app.currentDimension = dimension
+                self.app.world.setDimension(dimension)
+                self.app._createInitialFloor()
+                self.app._frameCurrentCanvas()
+
+                with patch.object(self.app.assetManager, "playSound") as play_sound:
+                    self.app.rainEnabled = True
+                    self.app._startRain()
+                    self.app.splashSpawnTimer = 1000
+                    self.app._updateRain(16)
+                    self.assertTrue(self.app.rainSplashes)
+                    play_sound.assert_called()
+                    self.app.rainEnabled = False
+                    self.app._stopRain()
+
+                    play_sound.reset_mock()
+                    self.app.snowEnabled = True
+                    self.app._startSnow()
+                    self.app.snowImpactTimer = 1000
+                    self.app._updateSnow(16)
+                    self.assertTrue(self.app.snowImpacts)
+                    play_sound.assert_called()
+                    self.app.snowEnabled = False
+                    self.app._stopSnow()
+
+                self.app.world.resize(
+                    app_module.GRID_WIDTH,
+                    app_module.GRID_DEPTH,
+                    app_module.GRID_HEIGHT,
+                    min_y=0,
+                    preserve=False,
+                )
+
+    def test_weather_surface_candidates_refresh_only_after_world_edit(self):
+        self.app._createInitialFloor()
+        first = self.app._weatherSurfaceCandidates()
+        self.assertIs(self.app._weatherSurfaceCandidates(), first)
+        self.app.world.setBlock(2, 2, 1, app_module.BlockType.STONE)
+        refreshed = self.app._weatherSurfaceCandidates()
+        self.assertIsNot(refreshed, first)
+        self.assertIn(((2, 2), 1), refreshed)
+
+    def test_rain_extinguishes_only_dimension_appropriate_fire_and_undoes(self):
+        scenarios = (
+            (
+                app_module.DIMENSION_OVERWORLD,
+                app_module.BlockType.FIRE,
+                True,
+            ),
+            (
+                app_module.DIMENSION_NETHER,
+                app_module.BlockType.SOUL_FIRE,
+                True,
+            ),
+            (
+                app_module.DIMENSION_END,
+                app_module.BlockType.FIRE,
+                False,
+            ),
+        )
+        for dimension, fire_type, should_extinguish in scenarios:
+            with self.subTest(dimension=dimension):
+                self.app.world.resize(
+                    app_module.GRID_WIDTH,
+                    app_module.GRID_DEPTH,
+                    app_module.GRID_HEIGHT,
+                    min_y=0,
+                    preserve=False,
+                )
+                self.app.currentDimension = dimension
+                self.app.world.setDimension(dimension)
+                self.app.undoManager.clear()
+                self.app.world.setBlock(4, 4, 0, app_module.BlockType.STONE)
+                self.app.world.setBlock(4, 4, 1, fire_type)
+                self.app.weatherInteractionTimer = 0
+
+                with patch.object(self.app.assetManager, "playSound") as play_sound:
+                    self.app._updateWeatherFireInteractions(650)
+
+                expected = (
+                    app_module.BlockType.AIR if should_extinguish else fire_type
+                )
+                self.assertEqual(self.app.world.getBlock(4, 4, 1), expected)
+                if should_extinguish:
+                    self.assertEqual(len(self.app.undoManager.undo_stack), 1)
+                    play_sound.assert_called_once()
+                    self.assertTrue(self.app.undoManager.undo())
+                    self.assertEqual(
+                        self.app.world.getBlock(4, 4, 1), fire_type
+                    )
+                else:
+                    self.assertFalse(self.app.undoManager.undo_stack)
+                    play_sound.assert_not_called()
+
+    def test_small_app_icon_preserves_respawn_anchor_aspect_ratio(self):
+        artwork = pygame.image.load(ROOT / "Assets" / "Icons" / "Respawn_Anchor.png")
         for size in (16, 24, 32):
-            icon = app_module.render_app_icon_surface(texture, size)
+            icon = app_module.render_app_icon_surface(artwork, size)
             bounds = icon.get_bounding_rect(min_alpha=1)
             self.assertLessEqual(bounds.width / bounds.height, 1.6)
             self.assertLess(bounds.width, size)
@@ -1124,6 +1475,47 @@ class AppIntegrationTests(unittest.TestCase):
                 if icon.get_at((x, y)).a
             }
             self.assertGreater(len(colors), 8)
+
+    def test_piston_door_is_first_structure_and_opens_from_its_lever(self):
+        self.assertEqual(next(iter(app_module.PREMADE_STRUCTURES)), "piston_door")
+        structure = app_module.PREMADE_STRUCTURES["piston_door"]
+        self.assertEqual(structure["name"], "2x2 Piston Door")
+        self.assertEqual(
+            sum(1 for block in structure["blocks"] if block[3] == app_module.BlockType.STICKY_PISTON),
+            4,
+        )
+
+        self.app.world.resize(12, 12, 12, min_y=0, preserve=False)
+        with self.app.world.bulkUpdate():
+            for block in structure["blocks"]:
+                x, y, z, block_type, props = app_module._structureBlockParts(block)
+                self.app.world.setBlock(x, y, z, block_type)
+                if props is not None:
+                    self.app.world.setBlockProperties(x, y, z, props.copy())
+        self.app.redstone.mark_dirty()
+        self.app.redstone.update(0)
+        self.assertTrue(all(
+            self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
+            for x in (2, 3) for z in (1, 2)
+        ))
+
+        self.assertTrue(self.app._interactBlock(5, 1, 2))
+        self.app.redstone.update(50)
+        self.assertTrue(all(
+            self.app.world.getBlock(x, 2, z) == app_module.BlockType.AIR
+            for x in (2, 3) for z in (1, 2)
+        ))
+        self.assertTrue(all(
+            self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
+            for x in (1, 4) for z in (1, 2)
+        ))
+
+    def test_new_audio_defaults_are_eighty_percent(self):
+        self.assertEqual(
+            (self.app.musicVolume, self.app.ambientVolume, self.app.effectsVolume),
+            (0.8, 0.8, 0.8),
+        )
+        self.assertEqual(app_module.BLOCK_ACTION_GAIN_SCALE, 0.875)
 
 
 if __name__ == "__main__":

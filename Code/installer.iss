@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.3.2"
+#define MyAppVersion "2.4.0"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -41,7 +41,7 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 LZMAUseSeparateProcess=yes
 ; Visual settings
-SetupIconFile=..\Assets\Icons\End_Stone.ico
+SetupIconFile=..\Assets\Icons\Respawn_Anchor.ico
 WizardStyle=modern
 WizardImageFile=compiler:WizModernImage.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage.bmp
@@ -54,7 +54,7 @@ UninstallDisplayName={#MyAppName}
 ; Misc
 DisableWelcomePage=no
 DisableProgramGroupPage=yes
-LicenseFile=..\References\LICENSE.txt
+LicenseFile=..\LICENSE
 ; File association (optional)
 ChangesAssociations=yes
 
@@ -91,7 +91,7 @@ Name: "{app}\saves"
 Name: "{app}\screenshots"
 
 [Icons]
-Name: "{group}\Miette"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\Icons\Respawn_Anchor.ico"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon

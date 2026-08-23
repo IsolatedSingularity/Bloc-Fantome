@@ -339,6 +339,13 @@ class BlockType(Enum):
     BROWN_WALL_BANNER = 530
     MAGENTA_WALL_BANNER = 531
     REDSTONE_WALL_TORCH = 532
+    REDSTONE_DUST = 540
+    REDSTONE_TORCH = 541
+    LEVER = 542
+    REPEATER = 543
+    PISTON = 544
+    STICKY_PISTON = 545
+    PISTON_HEAD = 546
 
 
 class Facing(Enum):
@@ -393,6 +400,12 @@ class BlockProperties:
     doorHalf: DoorHalf = DoorHalf.LOWER
     doorHinge: DoorHinge = DoorHinge.LEFT
     oxidationStage: int = 0
+    powered: bool = False
+    redstonePower: int = 0
+    repeaterDelay: int = 1
+    repeaterLocked: bool = False
+    pistonExtended: bool = False
+    sticky: bool = False
 
     def copy(self):
         return BlockProperties(
@@ -403,4 +416,10 @@ class BlockProperties:
             doorHalf=self.doorHalf,
             doorHinge=self.doorHinge,
             oxidationStage=self.oxidationStage,
+            powered=self.powered,
+            redstonePower=self.redstonePower,
+            repeaterDelay=self.repeaterDelay,
+            repeaterLocked=self.repeaterLocked,
+            pistonExtended=self.pistonExtended,
+            sticky=self.sticky,
         )

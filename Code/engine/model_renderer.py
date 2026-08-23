@@ -268,6 +268,39 @@ class BlockModelRenderer:
             return ((5, 5, 0, 11, 11, 7), (6, 6, 7, 10, 10, 11))
         if kind == "torch":
             return ((7, 7, 0, 9, 9, 11),)
+        if kind == "redstone_torch":
+            return ((7, 7, 0, 9, 9, 10),)
+        if kind == "redstone_dust":
+            return ((0, 0, 0, 16, 16, 1),)
+        if kind == "repeater":
+            return (
+                (0, 0, 0, 16, 16, 2),
+                (4, 6, 2, 6, 8, 7), (10, 8, 2, 12, 10, 7),
+            )
+        if kind == "lever":
+            base = {
+                Facing.NORTH: (5, 8, 0, 11, 15, 3),
+                Facing.SOUTH: (5, 1, 0, 11, 8, 3),
+                Facing.EAST: (1, 5, 0, 8, 11, 3),
+                Facing.WEST: (8, 5, 0, 15, 11, 3),
+            }[facing]
+            handle = {
+                Facing.NORTH: (7, 6, 3, 9, 10, 11),
+                Facing.SOUTH: (7, 6, 3, 9, 10, 11),
+                Facing.EAST: (6, 7, 3, 10, 9, 11),
+                Facing.WEST: (6, 7, 3, 10, 9, 11),
+            }[facing]
+            return base, handle
+        if kind == "piston":
+            return self.cube_boxes()
+        if kind == "piston_head":
+            head = {
+                Facing.NORTH: (0, 0, 0, 16, 4, 16),
+                Facing.SOUTH: (0, 12, 0, 16, 16, 16),
+                Facing.EAST: (12, 0, 0, 16, 16, 16),
+                Facing.WEST: (0, 0, 0, 4, 16, 16),
+            }[facing]
+            return head, (6, 6, 0, 10, 10, 16)
         if kind == "candle":
             return ((6, 6, 0, 10, 10, 12),)
         if kind == "bulb":

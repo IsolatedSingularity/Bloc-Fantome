@@ -1427,10 +1427,18 @@ class World:
             if BLOCK_DEFINITIONS is None:
                 continue
             blockDef = BLOCK_DEFINITIONS.get(blockType)
-            if blockDef and blockDef.lightLevel > 0:
+            lightLevel = blockDef.lightLevel if blockDef else 0
+            blockName = getattr(blockType, "name", "")
+            if blockName in {"REDSTONE_TORCH", "REDSTONE_WALL_TORCH"}:
+                props = self.blockProperties.get((x, y, z))
+                lightLevel = 7 if props and props.powered else 0
+            elif blockName == "REDSTONE_LAMP":
+                props = self.blockProperties.get((x, y, z))
+                lightLevel = 15 if props and props.powered else 0
+            if blockDef and lightLevel > 0:
                 lightColor = getattr(blockDef, 'lightColor', (255, 200, 150))
-                lightSources.append((x, y, z, blockDef.lightLevel, lightColor))
-                lightMap[(x, y, z)] = (blockDef.lightLevel, lightColor)
+                lightSources.append((x, y, z, lightLevel, lightColor))
+                lightMap[(x, y, z)] = (lightLevel, lightColor)
         
         if not lightSources:
             return lightMap

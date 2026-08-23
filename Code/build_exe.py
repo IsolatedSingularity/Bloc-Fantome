@@ -17,7 +17,7 @@ import argparse
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 MAIN_SCRIPT = os.path.join(SCRIPT_DIR, "blocFantome.py")
-ICON_PATH = os.path.join(PROJECT_ROOT, "Assets", "Icons", "End_Stone.ico")
+ICON_PATH = os.path.join(PROJECT_ROOT, "Assets", "Icons", "Respawn_Anchor.ico")
 ICON_GENERATOR = os.path.join(SCRIPT_DIR, "generate_icon.py")
 STRUCTURES_DIR = os.path.join(SCRIPT_DIR, "saves")
 WORLDS_DIR = os.path.join(SCRIPT_DIR, "worlds")
@@ -26,9 +26,13 @@ DIST_DIR = PROJECT_ROOT  # Output directly to project root
 WORK_DIR = os.path.join(BUILD_DIR, "work")
 TK_RUNTIME_HOOK = os.path.join(SCRIPT_DIR, "pyi_tk_runtime.py")
 VERSION_FILE = os.path.join(BUILD_DIR, "version_info.txt")
+NATIVE_BUILDER = os.path.join(SCRIPT_DIR, "build_native.py")
+NATIVE_LIBRARY = os.path.join(
+    SCRIPT_DIR, "native", "bin", "bloc_fantome_native.dll"
+)
 
 # Version info
-VERSION = "2.3.2"
+VERSION = "2.4.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -63,6 +67,12 @@ def build(debug: bool = False, diagnostic: bool = False):
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.
     subprocess.run([sys.executable, ICON_GENERATOR], cwd=SCRIPT_DIR, check=True)
+
+    # The accelerator is intentionally optional. A missing Rust toolchain or
+    # failed native build leaves the exact Python path in the packaged app.
+    native_result = subprocess.run(
+        [sys.executable, NATIVE_BUILDER], cwd=SCRIPT_DIR, check=False
+    )
 
     # Create build directory if it doesn't exist
     os.makedirs(BUILD_DIR, exist_ok=True)
@@ -117,6 +127,8 @@ def build(debug: bool = False, diagnostic: bool = False):
             raise FileNotFoundError(f"Required Tk runtime path is missing: {sourcePath}")
         option = "--add-binary" if kind == "binary" else "--add-data"
         cmd.append(f"{option}={sourcePath}{os.pathsep}{destination}")
+    if native_result.returncode == 0 and os.path.isfile(NATIVE_LIBRARY):
+        cmd.append(f"--add-binary={NATIVE_LIBRARY}{os.pathsep}native")
     
     # Add windowed mode only for release builds
     if not debug and not diagnostic:

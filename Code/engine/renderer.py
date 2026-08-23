@@ -143,6 +143,20 @@ class IsometricRenderer:
         screenY = (rx + ry) * self._tileHHalf - z * self._blockH + self.offsetY
         return (round(screenX), round(screenY))
     
+    def _screenToWorldPoint(
+        self, screenX: float, screenY: float, targetZ: float = 0
+    ) -> Tuple[float, float]:
+        """Project a screen point onto one horizontal plane without rounding."""
+        adjustedX = screenX - self.offsetX
+        adjustedY = screenY - self.offsetY + targetZ * self._blockH
+        rotatedX = (
+            adjustedX / self._tileWHalf + adjustedY / self._tileHHalf
+        ) / 2.0
+        rotatedY = (
+            adjustedY / self._tileHHalf - adjustedX / self._tileWHalf
+        ) / 2.0
+        return self._unrotateCoords(rotatedX, rotatedY)
+
     def screenToWorld(self, screenX: int, screenY: int, targetZ: int = 0) -> Tuple[int, int]:
         """
         Convert 2D screen coordinates to 3D world coordinates at a given Z level.
@@ -154,23 +168,8 @@ class IsometricRenderer:
         Returns:
             Tuple of (worldX, worldY)
         """
-        # Use cached zoom-scaled dimensions for performance
-        tileW = self._tileW
-        tileH = self._tileH
-        blockH = self._blockH
-        
-        # Adjust for offset and Z level
-        adjustedX = screenX - self.offsetX
-        adjustedY = screenY - self.offsetY + targetZ * blockH
-        
-        # Inverse of the projection formulas (gives rotated coords)
-        rotatedX = (adjustedX / (tileW / 2) + adjustedY / (tileH / 2)) / 2
-        rotatedY = (adjustedY / (tileH / 2) - adjustedX / (tileW / 2)) / 2
-        
-        # Unrotate to get actual world coordinates
-        worldX, worldY = self._unrotateCoords(round(rotatedX), round(rotatedY))
-        
-        return (worldX, worldY)
+        worldX, worldY = self._screenToWorldPoint(screenX, screenY, targetZ)
+        return (round(worldX), round(worldY))
     
     def setOffset(self, offsetX: float, offsetY: float):
         """Update the screen offset"""

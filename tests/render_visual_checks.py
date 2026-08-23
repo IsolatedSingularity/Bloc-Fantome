@@ -37,12 +37,15 @@ def render(output_dir: Path) -> None:
     )
     splash._draw_background(screen)
     screen.blit(splash.icon, splash.icon.get_rect(center=(600, 335)))
-    title = splash.title_font.render("Bloc Fantôme", True, (255, 255, 255))
-    screen.blit(title, title.get_rect(center=(600, 585)))
+    screen.blit(splash.title, splash.title.get_rect(center=(600, 585)))
     pygame.image.save(screen, output_dir / "splash.png")
 
+    artwork = pygame.image.load(
+        ROOT / "Assets" / "Icons" / "Respawn_Anchor.png"
+    ).convert_alpha()
+
     pygame.image.save(
-        render_runtime_icon_surface(splash.texture, 256),
+        render_runtime_icon_surface(artwork, 256),
         output_dir / "app_icon.png",
     )
 
@@ -56,13 +59,13 @@ def render(output_dir: Path) -> None:
     sizes = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
     x = 20
     for size in sizes:
-        icon = render_explorer_icon_surface(splash.texture, size)
+        icon = render_explorer_icon_surface(artwork, size)
         preview = pygame.transform.scale(icon, (96, 96))
         icon_sheet.blit(preview, (x, 55))
         label = icon_font.render(f"ICO {size}", True, (220, 220, 220))
         icon_sheet.blit(label, label.get_rect(center=(x + 48, 165)))
         x += 94
-    runtime = render_runtime_icon_surface(splash.texture, 256)
+    runtime = render_runtime_icon_surface(artwork, 256)
     icon_sheet.blit(pygame.transform.scale(runtime, (128, 128)), (20, 190))
     icon_sheet.blit(icon_font.render("Taskbar/window", True, (220, 220, 220)), (160, 238))
     pygame.image.save(icon_sheet, output_dir / "icon_routes.png")
@@ -158,6 +161,91 @@ def render(output_dir: Path) -> None:
 
     app.buildLibrary.close()
     app._generateStructurePreviews()
+    app.blocksExpanded = True
+    app.experimentalExpanded = False
+    app.structuresExpanded = False
+    app.inventoryScroll = 0
+    for category in app_module.CATEGORY_ORDER:
+        app.expandedCategories[category] = False
+    app.assetManager.drawBackground(screen)
+    app._renderPanel()
+    pygame.image.save(screen, output_dir / "blocks_categories.png")
+
+    app.blocksExpanded = False
+    app.experimentalExpanded = True
+    app.rainEnabled = True
+    app.snowEnabled = False
+    app.cloudsEnabled = True
+    app.lightingEnabled = True
+    for dimension, filename in (
+        (app_module.DIMENSION_OVERWORLD, "toggles_overworld.png"),
+        (app_module.DIMENSION_NETHER, "toggles_nether.png"),
+        (app_module.DIMENSION_END, "toggles_end.png"),
+    ):
+        app.currentDimension = dimension
+        app.world.setDimension(dimension)
+        app.inventoryScroll = 0
+        app.assetManager.drawBackground(screen)
+        app._renderPanel()
+        pygame.image.save(screen, output_dir / filename)
+    app.rainEnabled = False
+
+    app.snowEnabled = True
+    for dimension, filename in (
+        (app_module.DIMENSION_OVERWORLD, "toggles_overworld_snow.png"),
+        (app_module.DIMENSION_NETHER, "toggles_nether_snow.png"),
+        (app_module.DIMENSION_END, "toggles_end_snow.png"),
+    ):
+        app.currentDimension = dimension
+        app.world.setDimension(dimension)
+        app.inventoryScroll = 0
+        app.assetManager.drawBackground(screen)
+        app._renderPanel()
+        pygame.image.save(screen, output_dir / filename)
+    app.snowEnabled = False
+
+    random.seed(1161)
+    for dimension, effect, filename in (
+        (app_module.DIMENSION_OVERWORLD, "rain", "weather_overworld_rain.png"),
+        (app_module.DIMENSION_OVERWORLD, "snow", "weather_overworld_snow.png"),
+        (app_module.DIMENSION_NETHER, "rain", "weather_nether_embers.png"),
+        (app_module.DIMENSION_NETHER, "snow", "weather_nether_souls.png"),
+        (app_module.DIMENSION_END, "rain", "weather_end_void.png"),
+        (app_module.DIMENSION_END, "snow", "weather_end_shards.png"),
+    ):
+        app.currentDimension = dimension
+        app.world.setDimension(dimension)
+        app.world.resize(
+            app_module.GRID_WIDTH,
+            app_module.GRID_DEPTH,
+            app_module.GRID_HEIGHT,
+            min_y=0,
+            preserve=False,
+        )
+        app._createInitialFloor()
+        app._frameCurrentCanvas()
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        if effect == "rain":
+            app.rainEnabled = True
+            app._startRain()
+            app.splashSpawnTimer = 1000
+            app._updateRain(16)
+        else:
+            app.snowEnabled = True
+            app._startSnow()
+            app.snowImpactTimer = 1000
+            app._updateSnow(16)
+        app._render()
+        pygame.image.save(screen, output_dir / filename)
+        app.rainEnabled = False
+        app.snowEnabled = False
+        app._stopRain()
+        app._stopSnow()
+
+    app.currentDimension = app_module.DIMENSION_OVERWORLD
+    app.world.setDimension(app_module.DIMENSION_OVERWORLD)
+
     app.blocksExpanded = False
     app.problemsExpanded = False
     app.experimentalExpanded = False
@@ -166,6 +254,26 @@ def render(output_dir: Path) -> None:
     app.assetManager.drawBackground(screen)
     app._renderPanel()
     pygame.image.save(screen, output_dir / "structure_panel.png")
+
+    app.world.resize(12, 12, 12, min_y=0, preserve=False)
+    door = app_module.PREMADE_STRUCTURES["piston_door"]
+    with app.world.bulkUpdate():
+        for block in door["blocks"]:
+            x, y, z, block_type, props = app_module._structureBlockParts(block)
+            app.world.setBlock(x, y, z, block_type)
+            if props is not None:
+                app.world.setBlockProperties(x, y, z, props.copy())
+    app.redstone.mark_dirty()
+    app.redstone.update(0)
+    app._fitWorldToViewport(notify=False)
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app._render()
+    pygame.image.save(screen, output_dir / "redstone_piston_door_closed.png")
+    app._interactBlock(5, 1, 2)
+    app.redstone.update(50)
+    app._render()
+    pygame.image.save(screen, output_dir / "redstone_piston_door_open.png")
 
     app._openWorldLibrary()
     app.assetManager.drawBackground(screen)

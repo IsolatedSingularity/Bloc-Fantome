@@ -43,8 +43,8 @@ def test_dead_duplicate_types_are_not_exported():
 
 def test_block_enum_name_and_value_contract():
     values = [(member.name, member.value) for member in blocFantome.BlockType]
-    assert len(values) == 332
-    assert _digest(values) == "3d059ca60e85642d913905b696e00b831e614bcacdf05b2c68dda18f2cb0a114"
+    assert len(values) == 339
+    assert _digest(values) == "75eee78cf8208c8b35c066cd5b025dd892139a098b313f3063277b856d22d857"
 
 
 def test_block_catalog_and_sound_contract():
@@ -56,9 +56,9 @@ def test_block_catalog_and_sound_contract():
         (block.name, vars(sound))
         for block, sound in blocFantome.BLOCK_SOUNDS.items()
     ]
-    assert len(definitions) == len(sounds) == 331
-    assert _digest(definitions) == "6e88a4525a52282733ee74afacda33cf32343335637fd900f6ae314622933133"
-    assert _digest(sounds) == "ce0c571ea2dd8d437b22869d3af04a7d736a534b9e994d64421fc3b9d63e3dac"
+    assert len(definitions) == len(sounds) == 338
+    assert _digest(definitions) == "8fccdfdad67277b127e02cbe93fb3c337d41a61957b775301b8af89a38009760"
+    assert _digest(sounds) == "c0326c648ad5677261707f4a7b348b03371e0db12d0f15379ac0f90a5e470e7e"
 
 
 def test_category_order_and_membership_contract():
@@ -66,8 +66,8 @@ def test_category_order_and_membership_contract():
         (name, [block.name for block in blocks])
         for name, blocks in blocFantome.BLOCK_CATEGORIES.items()
     ]
-    assert len(categories) == 11
-    assert _digest(categories) == "2c1096a50e9a7ee9baae2273186ce19b1a251dd7ba71ade230b5069568b02b9d"
+    assert len(categories) == 12
+    assert _digest(categories) == "9932d502bef84727057c3d28d12e26b5d113369d1bba97c6966bb465a8a7d4fe"
 
 
 def test_structure_tutorial_and_weather_summary_contract():
@@ -85,11 +85,11 @@ def test_structure_tutorial_and_weather_summary_contract():
         (step.get("title"), step.get("demo"), step.get("icon"))
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
-    assert len(structures) == 38
-    assert _digest(structures) == "ac6d210f4e3a24c91f23f14ba87a8214ef35bd38efe5c9c75898a15d534aeb2f"
+    assert len(structures) == 39
+    assert _digest(structures) == "80e96c35bacfa7a84bfdc1077bc694702469aa3ceb6c933c528f8133221e6e5f"
     assert len(tutorial) == 17
     assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
-    assert _digest(blocFantome.DIMENSION_WEATHER) == "bffbbbf2ed9ea82422dd95c8da6b3ec694ff4f99aaf53d8bf84e50858b121988"
+    assert _digest(blocFantome.DIMENSION_WEATHER) == "ba1a097351944d2a2aa27be50da2a101866f25f4b52f952fb757e0beb3f5da65"
 
 
 def test_runtime_paths_are_absolute_and_keep_assets_external():
@@ -106,7 +106,7 @@ def test_visible_product_name_is_accented_while_executable_name_stays_compatible
     assert 'PRODUCT = "Bloc Fantôme"' in build_script
     assert '#define MyAppName "Bloc Fantôme"' in installer
     assert '#define MyAppExeName "BlocFantome.exe"' in installer
-    assert 'Name: "{group}\\Miette"' in installer
+    assert 'Name: "{group}\\{#MyAppName}"' in installer
 
 
 def test_structure_registry_composition_does_not_mutate_builtin_mapping():

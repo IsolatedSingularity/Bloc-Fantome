@@ -1,4 +1,4 @@
-"""Independent End Stone render paths for splash, taskbar, and Explorer."""
+"""Independent charged-respawn-anchor branding and splash background paths."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import pygame
 from engine.model_renderer import BlockModelRenderer
 
 
-FALLBACK_END_STONE = (219, 222, 158, 255)
+FALLBACK_DEEPSLATE = (48, 48, 54, 255)
 SPLASH_VERTICAL_RATIO = 0.625
 RUNTIME_ICON_VERTICAL_RATIO = 0.625
 EXPLORER_ICON_VERTICAL_RATIO = 0.625
@@ -18,7 +18,7 @@ EXPLORER_ICON_VERTICAL_RATIO = 0.625
 def _rgba_texture(texture: Optional[pygame.Surface]) -> pygame.Surface:
     if texture is None:
         result = pygame.Surface((16, 16), pygame.SRCALPHA)
-        result.fill(FALLBACK_END_STONE)
+        result.fill(FALLBACK_DEEPSLATE)
         return result
     if texture.get_flags() & pygame.SRCALPHA:
         return texture
@@ -45,8 +45,8 @@ def _render_cube(
 def render_splash_logo_surface(
     texture: Optional[pygame.Surface], tile_width: int
 ) -> pygame.Surface:
-    """Render only the large splash logo; Windows icon tuning cannot affect it."""
-    return _render_cube(texture, tile_width, SPLASH_VERTICAL_RATIO)
+    """Aspect-fit the supplied charged respawn anchor without distortion."""
+    return _fit_artwork(texture, tile_width, padding_ratio=0.0)
 
 
 def render_splash_background_surface(
@@ -61,7 +61,7 @@ def render_splash_background_surface(
     cube = _render_cube(texture, cube_width, 0.5)
     row_step = cube_width * 3 // 4
     result = pygame.Surface((width, height))
-    result.fill((31, 33, 25))
+    result.fill((16, 17, 21))
     rows = height // row_step + 4
     columns = width // cube_width + 4
     for row in range(-2, rows):
@@ -69,7 +69,7 @@ def render_splash_background_surface(
         for column in range(-2, columns):
             result.blit(cube, (column * cube_width + offset_x, row * row_step))
     darkness = pygame.Surface(result.get_size(), pygame.SRCALPHA)
-    darkness.fill((4, 5, 7, 172))
+    darkness.fill((2, 3, 6, 206))
     result.blit(darkness, (0, 0))
     return result
 
@@ -77,41 +77,43 @@ def render_splash_background_surface(
 def render_runtime_icon_surface(
     texture: Optional[pygame.Surface], size: int = 64
 ) -> pygame.Surface:
-    """Render the dedicated Pygame window/taskbar icon with small-size padding."""
-    size = max(16, int(size))
-    source_width = max(192, size * 4)
-    cube = _render_cube(texture, source_width, RUNTIME_ICON_VERTICAL_RATIO)
-    cube = cube.subsurface(cube.get_bounding_rect(min_alpha=1))
-    padding = max(2, round(size * 0.09))
-    available = size - padding * 2
-    fit = min(available / cube.get_width(), available / cube.get_height())
-    fitted = pygame.transform.scale(
-        cube,
-        (max(1, round(cube.get_width() * fit)), max(1, round(cube.get_height() * fit))),
-    )
-    icon = pygame.Surface((size, size), pygame.SRCALPHA)
-    icon.blit(fitted, fitted.get_rect(center=icon.get_rect().center))
-    return icon
+    """Aspect-fit the supplied artwork with shell-safe transparent padding."""
+    return _fit_artwork(texture, size, padding_ratio=0.08)
 
 
 def render_explorer_icon_surface(
     texture: Optional[pygame.Surface], size: int
 ) -> pygame.Surface:
-    """Render one unsquashed embedded ICO entry independently of the taskbar."""
+    """Render one embedded ICO entry with the proven runtime proportions.
+
+    This remains a separate Explorer-only route so changing the packaged ICO
+    cannot alter the Pygame window/taskbar surface or the splash artwork.
+    """
+    return _fit_artwork(texture, size, padding_ratio=0.08)
+
+
+def _fit_artwork(
+    artwork: Optional[pygame.Surface], size: int, *, padding_ratio: float
+) -> pygame.Surface:
     size = max(16, int(size))
-    source_width = max(288, size * 6)
-    cube = _render_cube(texture, source_width, EXPLORER_ICON_VERTICAL_RATIO)
-    cube = cube.subsurface(cube.get_bounding_rect(min_alpha=1))
-    padding = max(1, round(size * 0.04))
-    available = size - padding * 2
-    fit = min(available / cube.get_width(), available / cube.get_height())
-    fitted = pygame.transform.scale(
-        cube,
-        (max(1, round(cube.get_width() * fit)), max(1, round(cube.get_height() * fit))),
+    result = pygame.Surface((size, size), pygame.SRCALPHA)
+    if artwork is None:
+        pygame.draw.rect(result, FALLBACK_DEEPSLATE, result.get_rect(), border_radius=max(2, size // 8))
+        return result
+    source = _rgba_texture(artwork)
+    bounds = source.get_bounding_rect(min_alpha=1)
+    if bounds.width and bounds.height:
+        source = source.subsurface(bounds)
+    padding = max(0, round(size * padding_ratio))
+    available = max(1, size - padding * 2)
+    scale = min(available / source.get_width(), available / source.get_height())
+    dimensions = (
+        max(1, round(source.get_width() * scale)),
+        max(1, round(source.get_height() * scale)),
     )
-    icon = pygame.Surface((size, size), pygame.SRCALPHA)
-    icon.blit(fitted, fitted.get_rect(center=icon.get_rect().center))
-    return icon
+    fitted = pygame.transform.smoothscale(source, dimensions)
+    result.blit(fitted, fitted.get_rect(center=result.get_rect().center))
+    return result
 
 
 # Compatibility exports for existing visual checks and third-party imports.
