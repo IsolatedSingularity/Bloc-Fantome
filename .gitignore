@@ -52,6 +52,7 @@ minecraft_builder.log
 abyssalAnchor/
 Game Reference/
 Jenova/
+OPEN_INACCURACIES.md
 
 # Minecraft Assets (user must extract these from their own installation)
 # Run setup_assets.py to populate these folders
