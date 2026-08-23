@@ -1,5 +1,5 @@
 """
-Engine module for Bloc Fantome.
+Engine module for Bloc Fantôme.
 
 Contains core systems:
 - Undo management

@@ -1,5 +1,5 @@
 """
-Build script for creating Bloc Fantome executable.
+Build script for creating Bloc Fantôme executable.
 Run this script to generate the standalone .exe file.
 
 Usage:
@@ -28,9 +28,9 @@ TK_RUNTIME_HOOK = os.path.join(SCRIPT_DIR, "pyi_tk_runtime.py")
 VERSION_FILE = os.path.join(BUILD_DIR, "version_info.txt")
 
 # Version info
-VERSION = "2.2.0"
+VERSION = "2.3.2"
 COMPANY = "Jeffrey Morais"
-PRODUCT = "Bloc Fantome"
+PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
 
 
@@ -58,7 +58,7 @@ def write_version_resource() -> None:
 
 def build(debug: bool = False, diagnostic: bool = False):
     print("=" * 60)
-    print(f"Building Bloc Fantome Executable v{VERSION}")
+    print(f"Building Bloc Fantôme Executable v{VERSION}")
     print("=" * 60)
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.
@@ -131,6 +131,7 @@ def build(debug: bool = False, diagnostic: bool = False):
         "bastion_remnant_no_lava",
         "bastion_remnant_with_lava",
         "end_city_tower",
+        "end_tutorial_legacy",
         "ruined_portal_accurate",
         "warped_forest_accurate",
         "warped_forest",
@@ -194,7 +195,7 @@ def build(debug: bool = False, diagnostic: bool = False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build Bloc Fantome executable")
+    parser = argparse.ArgumentParser(description="Build Bloc Fantôme executable")
     parser.add_argument("--debug", action="store_true", help="Build with console for debugging")
     parser.add_argument(
         "--diagnostic", action="store_true",

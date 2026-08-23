@@ -36,6 +36,7 @@ class SceneCacheTests(unittest.TestCase):
                 {"kind": "world", "version": "1.21"}, staged, {(1, 2, -3)},
                 {(4, 5, 6)}, {0: {(1, 2, -3)}, 1: {(4, 5, 6)}},
                 {(1, 2, -3), (4, 5, 6)},
+                {0: {(1, 2, -3)}, 1: {(4, 5, 6)}},
             )
             dimension, bounds, scene, loaded, skipped = scene_cache.load(
                 path, digest, FakeBlock
@@ -47,6 +48,8 @@ class SceneCacheTests(unittest.TestCase):
         self.assertEqual(scene["_structure_surfaces_by_view"][0], {(1, 2, -3)})
         self.assertEqual(scene["_structure_surfaces_by_view"][1], {(4, 5, 6)})
         self.assertEqual(scene["_surface_positions"], {(1, 2, -3), (4, 5, 6)})
+        self.assertEqual(scene["_view_surface_positions_by_view"][0], {(1, 2, -3)})
+        self.assertEqual(scene["_view_surface_positions_by_view"][1], {(4, 5, 6)})
         self.assertEqual(loaded[0][4].facing, Facing.WEST)
         self.assertEqual(loaded[0][4].stairShape, StairShape.OUTER_LEFT)
         self.assertEqual(loaded[1][5], (7, False, True))

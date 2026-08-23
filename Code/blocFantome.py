@@ -33,7 +33,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
-from engine.app_icon import render_app_icon_surface
+from engine.app_icon import render_runtime_icon_surface
+render_app_icon_surface = render_runtime_icon_surface
 from engine.input_commands import (
     Command as InputCommand,
     InputContext,
@@ -47,7 +48,7 @@ if sys.platform == 'win32':
         import ctypes
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.2'
+        myappid = 'blocfantome.builder.2.3.2'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -70,7 +71,7 @@ pygame.mixer.set_num_channels(32)  # Increase for ambient, rain, horror, block s
 # Window settings
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
-TITLE = "Bloc Fantome"
+TITLE = "Bloc Fantôme"
 
 # Grid settings
 GRID_WIDTH = 12
@@ -440,7 +441,7 @@ class _LegacyBlockType(Enum):
     END_GATEWAY = 206  # Animated starfield
     FIRE = 207  # Animated fire
     SOUL_FIRE = 208  # Animated soul fire
-    MATRIX = 209  # Animated Matrix falling code effect
+    MATRIX = 209  # Legacy save ID for the Craftmine Mine Crafter
     # Source-backed structure palette and model variants
     TUFF = 400
     POLISHED_TUFF = 401
@@ -812,10 +813,10 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.CUT_SANDSTONE: BlockDefinition("Cut Sandstone", "sandstone_top.png", "cut_sandstone.png", "sandstone_top.png"),
     BlockType.POWDER_SNOW: BlockDefinition("Powder Snow", "powder_snow.png", "powder_snow.png", "powder_snow.png"),
     BlockType.GLASS_PANE: BlockDefinition("Glass Pane", "glass_pane_top.png", "glass.png", "glass_pane_top.png", transparent=True, modelKind="pane"),
-    BlockType.LADDER: BlockDefinition("Ladder", "ladder.png", "ladder.png", "ladder.png", transparent=True, modelKind="pane"),
-    BlockType.CHAIN: BlockDefinition("Chain", "chain.png", "chain.png", "chain.png", transparent=True, modelKind="plant"),
-    BlockType.LANTERN: BlockDefinition("Lantern", "lantern.png", "lantern.png", "lantern.png", transparent=True, lightLevel=15, modelKind="bulb"),
-    BlockType.SOUL_LANTERN: BlockDefinition("Soul Lantern", "soul_lantern.png", "soul_lantern.png", "soul_lantern.png", transparent=True, lightLevel=10, lightColor=(90, 220, 255), modelKind="bulb"),
+    BlockType.LADDER: BlockDefinition("Ladder", "ladder.png", "ladder.png", "ladder.png", transparent=True, modelKind="ladder"),
+    BlockType.CHAIN: BlockDefinition("Chain", "chain.png", "chain.png", "chain.png", transparent=True, modelKind="chain"),
+    BlockType.LANTERN: BlockDefinition("Lantern", "lantern.png", "lantern.png", "lantern.png", transparent=True, lightLevel=15, modelKind="lantern"),
+    BlockType.SOUL_LANTERN: BlockDefinition("Soul Lantern", "soul_lantern.png", "soul_lantern.png", "soul_lantern.png", transparent=True, lightLevel=10, lightColor=(90, 220, 255), modelKind="lantern"),
     BlockType.REDSTONE_LAMP: BlockDefinition("Redstone Lamp", "redstone_lamp_on.png", "redstone_lamp_on.png", "redstone_lamp_on.png", lightLevel=15),
     BlockType.VAULT: BlockDefinition("Vault", "vault_top.png", "vault_side_off.png", "vault_bottom.png", textureFront="vault_front_off.png", transparent=True),
     BlockType.DECORATED_POT: BlockDefinition("Decorated Pot", "terracotta.png", "terracotta.png", "terracotta.png"),
@@ -932,7 +933,7 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.END_GATEWAY: BlockDefinition("End Gateway", "black_concrete.png", "black_concrete.png", "black_concrete.png", isPortal=True),  # Animated starfield
     BlockType.FIRE: BlockDefinition("Fire", "fire_0.png", "fire_0.png", "fire_0.png", transparent=True),  # Animated
     BlockType.SOUL_FIRE: BlockDefinition("Soul Fire", "soul_fire_0.png", "soul_fire_0.png", "soul_fire_0.png", transparent=True),  # Animated
-    BlockType.MATRIX: BlockDefinition("Matrix", "black_concrete.png", "black_concrete.png", "black_concrete.png"),  # Animated falling code
+    BlockType.MATRIX: BlockDefinition("Matrix", "mine_crafter_top.png", "mine_crafter_side.png", "mine_crafter_bottom.png"),
 }
 
 # Sound definitions for each block type
@@ -1248,6 +1249,131 @@ for _structureBlock in (
 ):
     BLOCK_SOUNDS.setdefault(_structureBlock, SoundDefinition("stone", "stone"))
 
+# Material-accurate placement/destruction sounds for the extended palette.
+# Interaction sounds (opening chests, enchanting, and completing portals) are
+# intentionally not listed here: those belong to the corresponding action,
+# never to ordinary placement or destruction.
+BLOCK_SOUNDS.update({
+    BlockType.CHEST: SoundDefinition("wood", "wood"),
+    BlockType.TRAPPED_CHEST: SoundDefinition("wood", "wood"),
+    BlockType.CHRISTMAS_CHEST: SoundDefinition("wood", "wood"),
+    BlockType.ENDER_CHEST: SoundDefinition("stone", "stone"),
+    BlockType.COPPER_CHEST: SoundDefinition("copper", "copper"),
+    BlockType.COPPER_CHEST_EXPOSED: SoundDefinition("copper", "copper"),
+    BlockType.COPPER_CHEST_WEATHERED: SoundDefinition("copper", "copper"),
+    BlockType.COPPER_CHEST_OXIDIZED: SoundDefinition("copper", "copper"),
+    BlockType.ENCHANTING_TABLE: SoundDefinition("stone", "stone"),
+    BlockType.END_PORTAL_FRAME: SoundDefinition("stone", "stone"),
+    BlockType.NETHER_PORTAL: SoundDefinition("glass", "glass"),
+    BlockType.END_PORTAL: SoundDefinition("glass", "glass"),
+    BlockType.END_GATEWAY: SoundDefinition("glass", "glass"),
+    BlockType.FIRE: SoundDefinition("fire_ignite", "fire_extinguish"),
+    BlockType.SOUL_FIRE: SoundDefinition("fire_ignite", "fire_extinguish"),
+    BlockType.MATRIX: SoundDefinition("stone", "stone"),
+    BlockType.SLIME_BLOCK: SoundDefinition("slime", "slime"),
+    BlockType.TUFF: SoundDefinition("tuff", "tuff"),
+    BlockType.POLISHED_TUFF: SoundDefinition("tuff", "tuff"),
+    BlockType.TUFF_BRICKS: SoundDefinition("tuff_bricks", "tuff"),
+    BlockType.CHISELED_TUFF: SoundDefinition("tuff", "tuff"),
+    BlockType.CHISELED_TUFF_BRICKS: SoundDefinition("tuff_bricks", "tuff"),
+    BlockType.DIRT_PATH: SoundDefinition("grass", "grass"),
+    BlockType.FARMLAND: SoundDefinition("gravel", "gravel"),
+    BlockType.WHEAT: SoundDefinition("grass", "grass"),
+    BlockType.POWDER_SNOW: SoundDefinition("powder_snow", "powder_snow"),
+    BlockType.GLASS_PANE: SoundDefinition("glass", "glass"),
+    BlockType.LADDER: SoundDefinition("wood", "wood"),
+    BlockType.CHAIN: SoundDefinition("chain", "chain"),
+    BlockType.LANTERN: SoundDefinition("lantern", "lantern"),
+    BlockType.SOUL_LANTERN: SoundDefinition("lantern", "lantern"),
+    BlockType.REDSTONE_LAMP: SoundDefinition("glass", "glass"),
+    BlockType.VAULT: SoundDefinition("vault", "vault"),
+    BlockType.DECORATED_POT: SoundDefinition("stone", "decorated_pot"),
+    BlockType.TRIAL_SPAWNER: SoundDefinition("trial_spawner", "trial_spawner"),
+    BlockType.DEEPSLATE: SoundDefinition("deepslate", "deepslate"),
+    BlockType.COBBLED_DEEPSLATE: SoundDefinition("deepslate", "deepslate"),
+    BlockType.POLISHED_DEEPSLATE: SoundDefinition("deepslate", "deepslate"),
+    BlockType.DEEPSLATE_BRICKS: SoundDefinition("deepslate_bricks", "deepslate"),
+    BlockType.CRACKED_DEEPSLATE_BRICKS: SoundDefinition("deepslate_bricks", "deepslate"),
+    BlockType.DEEPSLATE_TILES: SoundDefinition("deepslate_bricks", "deepslate"),
+    BlockType.CRACKED_DEEPSLATE_TILES: SoundDefinition("deepslate_bricks", "deepslate"),
+    BlockType.CHISELED_DEEPSLATE: SoundDefinition("deepslate", "deepslate"),
+    BlockType.REINFORCED_DEEPSLATE: SoundDefinition("deepslate", "deepslate"),
+})
+
+for _woodBlock in (
+    BlockType.SPRUCE_STAIRS, BlockType.ACACIA_STAIRS,
+    BlockType.SPRUCE_SLAB, BlockType.ACACIA_SLAB,
+    BlockType.SPRUCE_DOOR, BlockType.ACACIA_DOOR, BlockType.JUNGLE_DOOR,
+    BlockType.SPRUCE_FENCE, BlockType.ACACIA_FENCE, BlockType.OAK_FENCE,
+    BlockType.DARK_OAK_FENCE, BlockType.JUNGLE_FENCE, BlockType.OAK_FENCE_GATE,
+    BlockType.SPRUCE_TRAPDOOR, BlockType.OAK_TRAPDOOR,
+):
+    BLOCK_SOUNDS[_woodBlock] = SoundDefinition("wood", "wood")
+
+for _deepslateBlock in (
+    BlockType.DEEPSLATE_BRICK_STAIRS, BlockType.DEEPSLATE_TILE_STAIRS,
+    BlockType.COBBLED_DEEPSLATE_STAIRS, BlockType.POLISHED_DEEPSLATE_STAIRS,
+    BlockType.DEEPSLATE_BRICK_SLAB, BlockType.DEEPSLATE_TILE_SLAB,
+    BlockType.COBBLED_DEEPSLATE_SLAB, BlockType.POLISHED_DEEPSLATE_SLAB,
+    BlockType.POLISHED_DEEPSLATE_WALL, BlockType.DEEPSLATE_TILE_WALL,
+    BlockType.DEEPSLATE_BRICK_WALL,
+):
+    BLOCK_SOUNDS[_deepslateBlock] = SoundDefinition("deepslate_bricks", "deepslate")
+
+for _stoneShape in (
+    BlockType.PURPUR_STAIRS, BlockType.BLACKSTONE_STAIRS,
+    BlockType.POLISHED_BLACKSTONE_BRICK_STAIRS, BlockType.PURPUR_SLAB,
+    BlockType.BLACKSTONE_SLAB, BlockType.POLISHED_BLACKSTONE_BRICK_SLAB,
+    BlockType.SMOOTH_SANDSTONE_SLAB, BlockType.SANDSTONE_SLAB,
+    BlockType.SMOOTH_SANDSTONE_STAIRS, BlockType.SANDSTONE_STAIRS,
+    BlockType.SMOOTH_STONE_SLAB, BlockType.SMOOTH_QUARTZ_SLAB,
+    BlockType.GRANITE_STAIRS, BlockType.COBBLESTONE_WALL,
+    BlockType.SANDSTONE_WALL, BlockType.BLACKSTONE_WALL,
+    BlockType.DIORITE_WALL, BlockType.GRANITE_WALL,
+):
+    BLOCK_SOUNDS[_stoneShape] = SoundDefinition("stone", "stone")
+
+for _netherPlant in (
+    BlockType.CRIMSON_FUNGUS, BlockType.WARPED_FUNGUS,
+    BlockType.NETHER_SPROUTS, BlockType.TWISTING_VINES,
+    BlockType.WEEPING_VINES,
+):
+    BLOCK_SOUNDS[_netherPlant] = SoundDefinition("fungus", "fungus")
+
+for _clothBlock in (
+    BlockType.WHITE_BED, BlockType.YELLOW_BED, BlockType.GREEN_BED,
+    BlockType.RED_BED, BlockType.LIME_BED, BlockType.CYAN_BED,
+    BlockType.BLUE_BED, BlockType.PURPLE_BED, BlockType.ORANGE_BED,
+    BlockType.BROWN_BED, BlockType.BROWN_WALL_BANNER,
+    BlockType.MAGENTA_WALL_BANNER,
+):
+    BLOCK_SOUNDS[_clothBlock] = SoundDefinition("cloth", "cloth")
+
+for _copperShape in (
+    BlockType.OXIDIZED_CUT_COPPER_STAIRS, BlockType.CUT_COPPER_SLAB,
+    BlockType.OXIDIZED_COPPER_TRAPDOOR,
+):
+    BLOCK_SOUNDS[_copperShape] = SoundDefinition("copper", "copper")
+
+for _copperGrate in (BlockType.COPPER_GRATE, BlockType.OXIDIZED_COPPER_GRATE):
+    BLOCK_SOUNDS[_copperGrate] = SoundDefinition("copper_grate", "copper_grate")
+
+for _copperBulb in (
+    BlockType.COPPER_BULB, BlockType.EXPOSED_COPPER_BULB,
+    BlockType.WEATHERED_COPPER_BULB, BlockType.OXIDIZED_COPPER_BULB,
+):
+    BLOCK_SOUNDS[_copperBulb] = SoundDefinition("copper_bulb", "copper_bulb")
+
+for _candle in (BlockType.CANDLE, BlockType.WHITE_CANDLE, BlockType.RED_CANDLE):
+    BLOCK_SOUNDS[_candle] = SoundDefinition("candle", "candle")
+
+for _plantBlock in (BlockType.CHORUS_PLANT, BlockType.CHORUS_FLOWER):
+    BLOCK_SOUNDS[_plantBlock] = SoundDefinition("wood", "wood")
+
+BLOCK_SOUNDS[BlockType.WALL_TORCH] = SoundDefinition("wood", "wood")
+BLOCK_SOUNDS[BlockType.REDSTONE_WALL_TORCH] = SoundDefinition("wood", "wood")
+BLOCK_SOUNDS[BlockType.POLISHED_TUFF_SLAB] = SoundDefinition("tuff", "tuff")
+
 
 # ============================================================================
 # BLOCK CATEGORIES (for dropdown UI)
@@ -1332,7 +1458,8 @@ BLOCK_CATEGORIES = {
     "Light Sources": [
         BlockType.GLOWSTONE, BlockType.SEA_LANTERN, BlockType.SHROOMLIGHT,
         BlockType.LANTERN, BlockType.SOUL_LANTERN, BlockType.REDSTONE_LAMP,
-        BlockType.JACK_O_LANTERN, BlockType.MAGMA_BLOCK, BlockType.CRYING_OBSIDIAN
+        BlockType.JACK_O_LANTERN, BlockType.MAGMA_BLOCK, BlockType.CRYING_OBSIDIAN,
+        BlockType.FIRE
     ],
     "Nether": [
         BlockType.NETHERRACK, BlockType.NETHER_BRICKS, BlockType.SOUL_SAND, BlockType.SOUL_SOIL,
@@ -1346,12 +1473,12 @@ BLOCK_CATEGORIES = {
         BlockType.CHISELED_POLISHED_BLACKSTONE, BlockType.CRACKED_POLISHED_BLACKSTONE_BRICKS, BlockType.GILDED_BLACKSTONE,
         BlockType.BASALT, BlockType.POLISHED_BASALT, BlockType.SMOOTH_BASALT,
         BlockType.NETHER_GOLD_ORE, BlockType.ANCIENT_DEBRIS, BlockType.NETHERITE_BLOCK,
-        BlockType.GLOWSTONE
+        BlockType.GLOWSTONE, BlockType.SOUL_FIRE
     ],
     "End": [
         BlockType.END_STONE, BlockType.END_STONE_BRICKS, BlockType.END_PORTAL_FRAME,
         BlockType.END_PORTAL, BlockType.END_GATEWAY, BlockType.DRAGON_EGG,
-        BlockType.PURPUR_BLOCK, BlockType.PURPUR_PILLAR
+        BlockType.PURPUR_BLOCK, BlockType.PURPUR_PILLAR, BlockType.MATRIX
     ],
     "Functional": [
         BlockType.CRAFTING_TABLE, BlockType.FURNACE, BlockType.NOTE_BLOCK, BlockType.JUKEBOX,
@@ -1359,7 +1486,8 @@ BLOCK_CATEGORIES = {
         BlockType.CHEST, BlockType.TRAPPED_CHEST, BlockType.ENDER_CHEST, BlockType.CHRISTMAS_CHEST,
         BlockType.COPPER_CHEST, BlockType.COPPER_CHEST_EXPOSED, BlockType.COPPER_CHEST_WEATHERED, BlockType.COPPER_CHEST_OXIDIZED,
         BlockType.WATER, BlockType.LAVA, BlockType.MOB_SPAWNER, BlockType.TRIAL_SPAWNER,
-        BlockType.IRON_DOOR, BlockType.VAULT
+        BlockType.IRON_DOOR, BlockType.VAULT, BlockType.ENCHANTING_TABLE,
+        BlockType.SCULK_SENSOR
     ],
     "Slabs": [
         BlockType.OAK_SLAB, BlockType.COBBLESTONE_SLAB, BlockType.STONE_BRICK_SLAB, BlockType.STONE_SLAB,
@@ -1368,14 +1496,12 @@ BLOCK_CATEGORIES = {
         BlockType.COBBLED_DEEPSLATE_SLAB, BlockType.POLISHED_DEEPSLATE_SLAB,
         BlockType.BLACKSTONE_SLAB, BlockType.POLISHED_BLACKSTONE_BRICK_SLAB
     ],
-    "Experimental": [
-        BlockType.OXIDIZING_COPPER, BlockType.ENCHANTING_TABLE, BlockType.SCULK_SENSOR,
-        BlockType.FIRE, BlockType.SOUL_FIRE, BlockType.MATRIX
-    ],
 }
 
+BLOCK_CATEGORIES["Ores & Minerals"].append(BlockType.OXIDIZING_COPPER)
+
 # Order of categories in the UI
-CATEGORY_ORDER = ["Natural", "Wood", "Stone & Brick", "Ores & Minerals", "Colored Blocks", "Decorative", "Light Sources", "Nether", "End", "Functional", "Slabs", "Experimental"]
+CATEGORY_ORDER = ["Natural", "Wood", "Stone & Brick", "Ores & Minerals", "Colored Blocks", "Decorative", "Light Sources", "Nether", "End", "Functional", "Slabs"]
 
 
 # ============================================================================
@@ -1519,42 +1645,41 @@ STRUCTURE_WATER_BASINS = {
     ]
 }
 
-# Lighting Demo - Cave room with dark spots to light up
+# Lighting Demo - camera-facing cutaway cave with dark spots to light up
 STRUCTURE_DARK_CAVE = {
     "name": "Cave Room",
     "blocks": [
         # Cave floor - 12x12 stone
         *[(x, y, 0, BlockType.STONE) for x in range(12) for y in range(12)],
-        
-        # Cave walls - irregular stone/cobblestone mix
+
+        # Concave back shell.  View rotation 0 looks toward +X/+Y, so the
+        # +X/+Y faces stay completely open instead of enclosing the lighting
+        # demonstration behind camera-facing walls.
         *[(0, y, z, BlockType.STONE if (y + z) % 3 != 0 else BlockType.COBBLESTONE) 
-          for y in range(12) for z in range(1, 6)],
-        *[(11, y, z, BlockType.STONE if (y + z) % 3 != 0 else BlockType.COBBLESTONE) 
-          for y in range(12) for z in range(1, 6)],
+          for y in range(12) for z in range(1, 6 - (1 if y > 8 else 0))],
         *[(x, 0, z, BlockType.STONE if (x + z) % 3 != 0 else BlockType.COBBLESTONE) 
-          for x in range(12) for z in range(1, 6)],
-        *[(x, 11, z, BlockType.STONE if (x + z) % 3 != 0 else BlockType.COBBLESTONE) 
-          for x in range(12) for z in range(1, 6)],
-        
-        # Cave ceiling - much more open with large central hole
-        # Only blocks around the edges, center is open
-        *[(x, y, 6, BlockType.STONE) for x in range(12) for y in range(12) 
-          if (x < 2 or x > 9 or y < 2 or y > 9)],
-        # A few hanging blocks for visual interest
-        (2, 2, 6, BlockType.STONE),
-        (9, 2, 6, BlockType.STONE),
-        (2, 9, 6, BlockType.STONE),
-        (9, 9, 6, BlockType.STONE),
-        
-        # Stalactites from ceiling edges
-        *[(1, 5, z, BlockType.STONE) for z in range(4, 6)],
-        *[(10, 6, z, BlockType.STONE) for z in range(5, 6)],
-        
+          for x in range(12) for z in range(1, 6 - (1 if x > 8 else 0))],
+
+        # Irregular stepped overhang along only the retained cave walls.  The
+        # open centre and foreground expose every light interaction.
+        *[(x, y, 6, BlockType.STONE)
+          for x in range(8) for y in range(8)
+          if x < (4 if y < 4 else 2) or y < (4 if x < 4 else 2)],
+        *[(x, y, 5, BlockType.COBBLESTONE)
+          for x in range(1, 6) for y in range(1, 6)
+          if (x == 1 and y <= 4) or (y == 1 and x <= 4)],
+
+        # Stalactites hang from the shallow overhang, never in the open view.
+        (1, 4, 5, BlockType.STONE),
+        (1, 4, 4, BlockType.STONE),
+        (4, 1, 5, BlockType.STONE),
+        (7, 1, 5, BlockType.STONE),
+
         # Stalagmites from floor
         *[(5, 4, z, BlockType.STONE) for z in range(1, 3)],
         *[(2, 8, z, BlockType.STONE) for z in range(1, 2)],
         *[(9, 6, z, BlockType.STONE) for z in range(1, 3)],
-        
+
         # Light source spots (where user can place glowstone)
         # We put some coal ore to mark "dark spots"
         (2, 2, 1, BlockType.COAL_ORE),
@@ -1568,16 +1693,10 @@ STRUCTURE_DARK_CAVE = {
         (4, 1, 3, BlockType.IRON_ORE),
         (7, 10, 2, BlockType.GOLD_ORE),
         (1, 6, 3, BlockType.DIAMOND_ORE),
-        
-        # Entrance opening
-        (5, 0, 1, BlockType.AIR if hasattr(BlockType, 'AIR') else BlockType.GLASS),
-        (6, 0, 1, BlockType.GLASS),
-        (5, 0, 2, BlockType.GLASS),
-        (6, 0, 2, BlockType.GLASS),
     ]
 }
 
-# Weather Demo - Pools/backroom structure without water
+# Weather Demo - open four-pillar courtyard without water
 STRUCTURE_RAIN_COURTYARD = {
     "name": "Rain Courtyard",
     "blocks": [
@@ -1585,39 +1704,34 @@ STRUCTURE_RAIN_COURTYARD = {
         *[(x, y, 0, BlockType.SMOOTH_STONE if (x + y) % 2 == 0 else BlockType.STONE_BRICKS) 
           for x in range(14) for y in range(14)],
         
-        # Outer walls - stone brick, 3 high with openings
-        *[(0, y, z, BlockType.STONE_BRICKS) for y in range(14) for z in range(1, 4) 
-          if not (y in [3, 4, 9, 10] and z < 3)],
-        *[(13, y, z, BlockType.STONE_BRICKS) for y in range(14) for z in range(1, 4)
-          if not (y in [3, 4, 9, 10] and z < 3)],
-        *[(x, 0, z, BlockType.STONE_BRICKS) for x in range(14) for z in range(1, 4)
-          if not (x in [6, 7] and z < 3)],
-        *[(x, 13, z, BlockType.STONE_BRICKS) for x in range(14) for z in range(1, 4)],
-        
-        # Interior columns
-        *[(3, 3, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
-        *[(10, 3, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
-        *[(3, 10, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
-        *[(10, 10, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
-        
+        # Four corner pillars are the only vertical enclosure.  Two use the
+        # quartz treatment and two integrate the existing cobble/glowstone
+        # palette from the reference courtyard.
+        *[(2, 2, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
+        *[(11, 2, z, BlockType.QUARTZ_PILLAR) for z in range(1, 5)],
+        (2, 11, 1, BlockType.COBBLESTONE),
+        (2, 11, 2, BlockType.GLOWSTONE),
+        (2, 11, 3, BlockType.QUARTZ_PILLAR),
+        (2, 11, 4, BlockType.QUARTZ_PILLAR),
+        (11, 11, 1, BlockType.COBBLESTONE),
+        (11, 11, 2, BlockType.COBBLESTONE),
+        (11, 11, 3, BlockType.GLOWSTONE),
+        (11, 11, 4, BlockType.QUARTZ_PILLAR),
+
         # Central dry pool area - recessed area (no water)
         *[(x, y, 0, BlockType.PRISMARINE) for x in range(5, 9) for y in range(5, 9)],
-        
-        # Roof overhangs at corners (partial roof for rain effect)
-        *[(x, y, 4, BlockType.STONE_BRICKS) for x in range(4) for y in range(4)],
-        *[(x, y, 4, BlockType.STONE_BRICKS) for x in range(10, 14) for y in range(4)],
-        *[(x, y, 4, BlockType.STONE_BRICKS) for x in range(4) for y in range(10, 14)],
-        *[(x, y, 4, BlockType.STONE_BRICKS) for x in range(10, 14) for y in range(10, 14)],
-        
+
+        # Barely connected roof: one narrow rear beam with short returns, plus
+        # isolated caps over the two foreground pillars.  Most rain remains
+        # visible and the courtyard cannot read as a closed room.
+        *[(x, y, 5, BlockType.STONE_BRICKS) for x in range(2, 12) for y in range(2, 4)],
+        *[(x, y, 5, BlockType.STONE_BRICKS) for x in (2, 3, 10, 11) for y in range(4, 7)],
+        *[(x, y, 5, BlockType.STONE_BRICKS) for x in range(1, 4) for y in range(10, 13)],
+        *[(x, y, 5, BlockType.STONE_BRICKS) for x in range(10, 13) for y in range(10, 13)],
+
         # Benches
         *[(1, y, 1, BlockType.OAK_PLANKS) for y in range(5, 9)],
         *[(12, y, 1, BlockType.OAK_PLANKS) for y in range(5, 9)],
-        
-        # Lantern posts (using glowstone instead of actual lanterns)
-        (2, 2, 1, BlockType.COBBLESTONE), (2, 2, 2, BlockType.COBBLESTONE), (2, 2, 3, BlockType.GLOWSTONE),
-        (11, 2, 1, BlockType.COBBLESTONE), (11, 2, 2, BlockType.COBBLESTONE), (11, 2, 3, BlockType.GLOWSTONE),
-        (2, 11, 1, BlockType.COBBLESTONE), (2, 11, 2, BlockType.COBBLESTONE), (2, 11, 3, BlockType.GLOWSTONE),
-        (11, 11, 1, BlockType.COBBLESTONE), (11, 11, 2, BlockType.COBBLESTONE), (11, 11, 3, BlockType.GLOWSTONE),
     ]
 }
 
@@ -2751,7 +2865,7 @@ class TutorialScreen:
                 "Explore this End City tower!"
             ],
             "icons": ["end_stone", "purpur_block", "obsidian", "bedrock", "end_stone"],
-            "demo": "save:end_city_tower"  # Load end_city_tower.json save
+            "demo": "save:end_tutorial_legacy"
         },
         {
             "title": "Weather Effects",
@@ -3487,6 +3601,7 @@ class AssetManager:
         
         # Animation support for end portal (parallax layered starfield)
         self.endPortalTexture: Optional[pygame.Surface] = None  # Full 256x256 texture
+        self.endSkyTexture: Optional[pygame.Surface] = None
         self.endPortalLayers: List[Dict] = []  # Layer info: offset, speed, tint
         self.endPortalScrollOffset = 0.0
         self.endPortalAnimationTimer = 0
@@ -3498,9 +3613,24 @@ class AssetManager:
         self.currentFireFrame = 0
         self.fireAnimationTimer = 0
         self.fireAnimationSpeed = 60  # milliseconds per frame (fast fire animation)
-        
-        # Matrix block animation (falling green code)
-        self.matrixScrollOffset = 0  # Scroll offset for animation
+
+        # Finished special-model animation resources.
+        self.mineCrafterFrames: List[pygame.Surface] = []
+        self.mineCrafterActiveFrames: List[pygame.Surface] = []
+        self.currentMineCrafterFrame = 0
+        self.enchantingBookCover: Optional[pygame.Surface] = None
+        self.enchantingBookPages: Optional[pygame.Surface] = None
+        self.enchantingAnimationPhase = 0.0
+        self.enchantingAnimationTimer = 0
+        self.enchantingAnimationSpeed = 80
+        self.sculkSensorSprites: Dict[bool, pygame.Surface] = {}
+        self.sculkPreviewTimer = 0
+        self.sculkPreviewActive = False
+        self.copperStageSprites: Dict[int, pygame.Surface] = {}
+
+        # Legacy field names retain compatibility with older app state while
+        # driving the Craftmine Mine Crafter texture animation.
+        self.matrixScrollOffset = 0
         self.matrixAnimationTimer = 0
         self.matrixAnimationSpeed = 80  # milliseconds per frame
         
@@ -3523,9 +3653,10 @@ class AssetManager:
         self.portalAmbientSound: Optional[pygame.mixer.Sound] = None
         self.portalSoundChannel: Optional[pygame.mixer.Channel] = None
         
-        # Fire ambient sound (crackling every ~5 seconds)
+        # Fire ambient sound. The interval is jittered after each crackle so a
+        # cluster sounds alive without turning ignition into fake ambience.
         self.fireAmbientTimer = 0
-        self.fireAmbientInterval = 5000  # milliseconds (5 seconds)
+        self.fireAmbientInterval = 3200
         
         # Sound cooldown system to prevent sound spam
         self.soundLastPlayed: Dict[str, int] = {}  # Category -> last play time (ms)
@@ -3607,6 +3738,13 @@ class AssetManager:
             textureFiles.add(blockDef.textureBottom)
             if blockDef.textureFront:
                 textureFiles.add(blockDef.textureFront)
+        textureFiles.update({
+            "mine_crafter_inner_top.png",
+            "mine_crafter_active_inner_top.png",
+            "sculk_sensor_tendril_inactive.png",
+            "sculk_sensor_tendril_active.png",
+            "end_portal_frame_eye.png",
+        })
         
         for textureName in textureFiles:
             texturePath = os.path.join(TEXTURES_DIR, textureName)
@@ -3628,6 +3766,12 @@ class AssetManager:
         
         # Load animation frames for liquids
         self._loadAnimationFrames()
+
+        bookPath = os.path.join(ENTITY_DIR, "enchanting_table_book.png")
+        if os.path.exists(bookPath):
+            bookSheet = pygame.image.load(bookPath).convert_alpha()
+            self.enchantingBookCover = bookSheet.subsurface((0, 0, 6, 10)).copy()
+            self.enchantingBookPages = bookSheet.subsurface((0, 10, 12, 8)).copy()
     
     def _loadAnimationFrames(self):
         """Load animation frames from water_flow.png, lava_flow.png, and nether_portal.png"""
@@ -3683,6 +3827,11 @@ class AssetManager:
         endPortalPath = os.path.join(ENTITY_DIR, "end_portal.png")
         if os.path.exists(endPortalPath):
             self.endPortalTexture = pygame.image.load(endPortalPath).convert_alpha()
+            endSkyPath = os.path.join(
+                ASSETS_DIR, "Extensive Library", "textures", "environment", "end_sky.png"
+            )
+            if os.path.exists(endSkyPath):
+                self.endSkyTexture = pygame.image.load(endSkyPath).convert_alpha()
             # Define parallax layers with different speeds and tints
             # Each layer scrolls at different speed for depth effect
             self.endPortalLayers = [
@@ -3721,6 +3870,22 @@ class AssetManager:
                     frame = soulFireSheet.subsurface((0, idx * frameHeight, frameWidth, frameHeight))
                     self.soulFireFrames.append(frame)
             print(f"    Loaded {len(self.soulFireFrames)} soul fire animation frames")
+
+        for filename, destination in (
+            ("mine_crafter_inner_top.png", self.mineCrafterFrames),
+            ("mine_crafter_active_inner_top.png", self.mineCrafterActiveFrames),
+        ):
+            path = os.path.join(TEXTURES_DIR, filename)
+            if not os.path.exists(path):
+                continue
+            sheet = pygame.image.load(path).convert_alpha()
+            frameSize = sheet.get_width()
+            for index in range(sheet.get_height() // frameSize):
+                destination.append(
+                    sheet.subsurface((0, index * frameSize, frameSize, frameSize)).copy()
+                )
+        if self.mineCrafterFrames:
+            print(f"    Loaded {len(self.mineCrafterFrames)} Mine Crafter frames")
         
         # Load chest textures from entity/chest folder and extract faces
         chestDir = os.path.join(ENTITY_DIR, "chest")
@@ -3741,91 +3906,38 @@ class AssetManager:
             self._extractChestFaces()
     
     def _extractChestFaces(self):
-        """Extract top, front, and side textures from chest UV maps"""
-        # Mapping of chest texture file to block types
-        chestMapping = {
-            "normal.png": BlockType.CHEST,
-            "ender.png": BlockType.ENDER_CHEST,
-            "trapped.png": BlockType.TRAPPED_CHEST,
-            "christmas.png": BlockType.CHRISTMAS_CHEST,
-            "copper.png": BlockType.COPPER_CHEST,
-            "copper_exposed.png": BlockType.COPPER_CHEST_EXPOSED,
-            "copper_weathered.png": BlockType.COPPER_CHEST_WEATHERED,
-            "copper_oxidized.png": BlockType.COPPER_CHEST_OXIDIZED,
+        """Extract the exact single-chest cuboid UV regions from its atlas."""
+        scale = 2  # bundled entity atlases are 128x128; the model uses 64x64 UVs
+        regions = {
+            "lid_top": (28, 0, 14, 14),
+            "lid_side": (0, 14, 14, 5),
+            "lid_front": (42, 14, 14, 5),
+            "body_side": (0, 33, 14, 10),
+            "body_front": (42, 33, 14, 10),
+            "latch": (4, 1, 2, 4),
         }
-        
-        # UV coordinates for 128x128 chest texture (doubled from standard 64x64)
-        # These are approximate based on Minecraft's chest model
-        scale = 2  # 128/64
-        
-        # Top lid face: starts at (28, 0), size 14x14 in 64x64 coords
-        topX, topY = 28 * scale, 0 * scale
-        topW, topH = 14 * scale, 14 * scale
-        
-        # Front face (bottom chest body): starts at (28, 33), size 14x10
-        frontX, frontY = 28 * scale, 33 * scale
-        frontW, frontH = 14 * scale, 10 * scale
-        
-        # Side face: starts at (0, 33), size 14x10
-        sideX, sideY = 0 * scale, 33 * scale
-        sideW, sideH = 14 * scale, 10 * scale
-        
-        # Latch/clasp: starts at (1, 1), size 2x4 in 64x64 coords
-        latchX, latchY = 1 * scale, 1 * scale
-        latchW, latchH = 2 * scale, 4 * scale
-        
-        for chestFile, blockType in chestMapping.items():
-            if chestFile in self.chestTextures:
-                tex = self.chestTextures[chestFile]
-                texW, texH = tex.get_size()
-                
-                # Extract faces with bounds checking
-                try:
-                    # Top face
-                    if topX + topW <= texW and topY + topH <= texH:
-                        topFace = tex.subsurface((topX, topY, topW, topH))
-                        # Scale to 16x16
-                        topFace = pygame.transform.scale(topFace, (16, 16))
-                    else:
-                        topFace = None
-                    
-                    # Front face (with latch detail)
-                    if frontX + frontW <= texW and frontY + frontH <= texH:
-                        frontFace = tex.subsurface((frontX, frontY, frontW, frontH))
-                        # Scale to 16x16
-                        frontFace = pygame.transform.scale(frontFace, (16, 16))
-                        
-                        # Extract and overlay the latch/clasp on the front face
-                        if latchX + latchW <= texW and latchY + latchH <= texH:
-                            latchFace = tex.subsurface((latchX, latchY, latchW, latchH))
-                            # Scale latch proportionally (about 2x4 pixels -> scale to fit)
-                            latchScaled = pygame.transform.scale(latchFace, (2, 4))
-                            # Position latch at center-top of front face
-                            latchPosX = (16 - 2) // 2  # Center horizontally
-                            latchPosY = 0  # Top of front face
-                            frontFace.blit(latchScaled, (latchPosX, latchPosY))
-                    else:
-                        frontFace = None
-                    
-                    # Side face
-                    if sideX + sideW <= texW and sideY + sideH <= texH:
-                        sideFace = tex.subsurface((sideX, sideY, sideW, sideH))
-                        # Scale to 16x16
-                        sideFace = pygame.transform.scale(sideFace, (16, 16))
-                    else:
-                        sideFace = None
-                    
-                    # Store extracted faces as regular textures
-                    baseName = chestFile.replace(".png", "")
-                    if topFace:
-                        self.textures[f"chest_{baseName}_top.png"] = topFace
-                    if frontFace:
-                        self.textures[f"chest_{baseName}_front.png"] = frontFace
-                    if sideFace:
-                        self.textures[f"chest_{baseName}_side.png"] = sideFace
-                        
-                except Exception as e:
-                    print(f"    Warning: Could not extract faces from {chestFile}: {e}")
+        for chestFile, atlas in self.chestTextures.items():
+            baseName = chestFile.removesuffix(".png")
+            for regionName, (x, y, width, height) in regions.items():
+                rect = pygame.Rect(
+                    x * scale, y * scale, width * scale, height * scale
+                )
+                if not atlas.get_rect().contains(rect):
+                    continue
+                face = atlas.subsurface(rect).copy()
+                self.textures[f"chest_{baseName}_{regionName}.png"] = (
+                    pygame.transform.scale(face, (16, 16))
+                )
+            # Compatibility aliases used by older icon and fallback paths.
+            self.textures[f"chest_{baseName}_top.png"] = self.textures.get(
+                f"chest_{baseName}_lid_top.png"
+            )
+            self.textures[f"chest_{baseName}_side.png"] = self.textures.get(
+                f"chest_{baseName}_body_side.png"
+            )
+            self.textures[f"chest_{baseName}_front.png"] = self.textures.get(
+                f"chest_{baseName}_body_front.png"
+            )
     
     def updateAnimation(self, dt: int):
         """Update liquid animation frames based on elapsed time"""
@@ -3869,12 +3981,10 @@ class AssetManager:
                 self._updateAnimatedIcon(BlockType.NETHER_PORTAL)
         
         # Update end portal animation (parallax scrolling layers)
+        self.endPortalScrollOffset = (self.endPortalScrollOffset + dt) % 800000.0
         self.endPortalAnimationTimer += dt
         if self.endPortalAnimationTimer >= self.endPortalAnimationSpeed:
-            self.endPortalAnimationTimer = 0
-            self.endPortalScrollOffset += 1.0
-            if self.endPortalScrollOffset > 256:
-                self.endPortalScrollOffset = 0
+            self.endPortalAnimationTimer %= self.endPortalAnimationSpeed
             # Recreate end portal sprites with new scroll offset
             if self.endPortalTexture:
                 self.blockSprites[BlockType.END_PORTAL] = self._createEndPortalBlock(isGateway=False)
@@ -3892,17 +4002,49 @@ class AssetManager:
                 # Recreate fire sprite with new frame
                 frame = self.fireFrames[self.currentFireFrame]
                 self.blockSprites[BlockType.FIRE] = self._createFireBlock(frame)
+                self._updateAnimatedIcon(BlockType.FIRE)
             if self.soulFireFrames:
                 soulFrame = self.soulFireFrames[self.currentFireFrame % len(self.soulFireFrames)]
                 self.blockSprites[BlockType.SOUL_FIRE] = self._createFireBlock(soulFrame, isSoulFire=True)
+                self._updateAnimatedIcon(BlockType.SOUL_FIRE)
         
         # Update Matrix block animation (falling green code)
         self.matrixAnimationTimer += dt
         if self.matrixAnimationTimer >= self.matrixAnimationSpeed:
             self.matrixAnimationTimer = 0
-            # Recreate matrix sprite
+            if self.mineCrafterFrames:
+                self.currentMineCrafterFrame = (
+                    self.currentMineCrafterFrame + 1
+                ) % len(self.mineCrafterFrames)
             self.blockSprites[BlockType.MATRIX] = self._createMatrixBlock()
             self._updateAnimatedIcon(BlockType.MATRIX)
+
+        self.enchantingAnimationTimer += dt
+        if self.enchantingAnimationTimer >= self.enchantingAnimationSpeed:
+            self.enchantingAnimationTimer = 0
+            self.enchantingAnimationPhase = (
+                self.enchantingAnimationPhase + 0.32
+            ) % (math.pi * 2)
+            definition = BLOCK_DEFINITIONS[BlockType.ENCHANTING_TABLE]
+            self.blockSprites[BlockType.ENCHANTING_TABLE] = self._createEnchantingTableBlock(
+                self.textures.get(definition.textureTop),
+                self.textures.get(definition.textureSide),
+                self.textures.get(definition.textureBottom),
+                self.enchantingAnimationPhase,
+            )
+            self._updateAnimatedIcon(BlockType.ENCHANTING_TABLE)
+
+        self.sculkPreviewTimer += dt
+        if self.sculkPreviewTimer >= 600 and self.sculkSensorSprites:
+            self.sculkPreviewTimer = 0
+            self.sculkPreviewActive = not self.sculkPreviewActive
+            self.iconSprites[BlockType.SCULK_SENSOR] = self._fitIconSprite(
+                self.sculkSensorSprites.get(
+                    self.sculkPreviewActive,
+                    self.sculkSensorSprites.get(False),
+                ),
+                ICON_SIZE,
+            )
         
         # Update spawner particles
         self.spawnerParticleTimer += dt
@@ -3924,17 +4066,16 @@ class AssetManager:
                 self.blockSprites[BlockType.OXIDIZING_COPPER] = self._createIsometricBlock(tex, tex, tex)
                 self.oxidizingCopperInitialized = True
         
-        # Update oxidizing copper (slow oxidation) - stops at fully oxidized
-        if self.oxidizingCopperStage < 3:  # Only animate if not fully oxidized
-            self.oxidizingCopperTimer += dt
-            if self.oxidizingCopperTimer >= self.oxidizingCopperSpeed:
-                self.oxidizingCopperTimer = 0
-                self.oxidizingCopperStage += 1  # Advance to next stage (max 3)
-                # Update the oxidizing copper sprite with new stage texture
-                texName = self.copperStageTextures[self.oxidizingCopperStage]
-                tex = self.textures.get(texName)
-                if tex:
-                    self.blockSprites[BlockType.OXIDIZING_COPPER] = self._createIsometricBlock(tex, tex, tex)
+        # The inventory preview cycles; placed copper keeps its own saved stage.
+        self.oxidizingCopperTimer += dt
+        if self.oxidizingCopperTimer >= self.oxidizingCopperSpeed:
+            self.oxidizingCopperTimer = 0
+            self.oxidizingCopperStage = (self.oxidizingCopperStage + 1) % 4
+            sprite = self.copperStageSprites.get(self.oxidizingCopperStage)
+            if sprite:
+                self.iconSprites[BlockType.OXIDIZING_COPPER] = self._fitIconSprite(
+                    sprite, ICON_SIZE
+                )
         
         # Decay sound active channel counts (sounds typically last < 500ms)
         # Every 200ms, decrement all counts to allow new sounds
@@ -4021,6 +4162,12 @@ class AssetManager:
                 self.blockSprites[blockType] = self._createLiquidBlock(
                     topTex, sideTex, frontTex, blockType == BlockType.WATER
                 )
+            elif blockType == BlockType.END_PORTAL_FRAME:
+                self.blockSprites[blockType] = (
+                    self.blockModelRenderer.render_end_portal_frame(
+                        topTex, sideTex, self.textures.get(blockDef.textureBottom)
+                    )
+                )
             elif blockDef.isPortal:
                 # Portal blocks - use animated frames
                 if blockType == BlockType.NETHER_PORTAL:
@@ -4038,6 +4185,33 @@ class AssetManager:
                 else:
                     # Fallback to static texture if no frames loaded
                     self.blockSprites[blockType] = self._createPortalBlock(topTex)
+            elif blockType == BlockType.OXIDIZING_COPPER:
+                for stage, textureName in enumerate(self.copperStageTextures):
+                    texture = self.textures.get(textureName)
+                    if texture:
+                        self.copperStageSprites[stage] = self._createIsometricBlock(
+                            texture, texture, texture
+                        )
+                self.blockSprites[blockType] = self.copperStageSprites.get(
+                    0, self._createIsometricBlock(topTex, sideTex, frontTex)
+                )
+            elif blockType == BlockType.ENCHANTING_TABLE:
+                self.blockSprites[blockType] = self._createEnchantingTableBlock(
+                    topTex, sideTex, self.textures.get(blockDef.textureBottom), 0.0
+                )
+            elif blockType == BlockType.SCULK_SENSOR:
+                inactive = self.textures.get("sculk_sensor_tendril_inactive.png")
+                active = self.textures.get("sculk_sensor_tendril_active.png") or inactive
+                for isActive, tendril in ((False, inactive), (True, active)):
+                    if tendril:
+                        self.sculkSensorSprites[isActive] = (
+                            self.blockModelRenderer.render_sculk_sensor(
+                                topTex, sideTex, self.textures.get(blockDef.textureBottom), tendril
+                            )
+                        )
+                self.blockSprites[blockType] = self.sculkSensorSprites.get(
+                    False, self._createIsometricBlock(topTex, sideTex, frontTex)
+                )
             elif blockType == BlockType.FIRE:
                 # Fire uses animated frames
                 if self.fireFrames:
@@ -4051,7 +4225,7 @@ class AssetManager:
                 else:
                     self.blockSprites[blockType] = self._createIsometricBlock(topTex, sideTex, frontTex, True)
             elif blockType == BlockType.MATRIX:
-                # Matrix block uses animated falling code effect
+                # Legacy save ID, rendered as Mojang's 25w14craftmine Mine Crafter.
                 self.blockSprites[blockType] = self._createMatrixBlock()
             elif blockType in (BlockType.CHEST, BlockType.ENDER_CHEST, BlockType.TRAPPED_CHEST, 
                               BlockType.CHRISTMAS_CHEST, BlockType.COPPER_CHEST, BlockType.COPPER_CHEST_EXPOSED,
@@ -4068,49 +4242,30 @@ class AssetManager:
                     BlockType.COPPER_CHEST_OXIDIZED: "copper_oxidized",
                 }.get(blockType, "normal")
                 
-                # Latch colors per chest type
-                latchColors = {
-                    "normal": (80, 60, 40),      # Brown/gold
-                    "ender": (40, 80, 60),       # Green-ish
-                    "trapped": (120, 80, 40),    # Orange-gold
-                    "christmas": (200, 40, 40),  # Red
-                    "copper": (180, 100, 60),    # Copper
-                    "copper_exposed": (160, 110, 80),
-                    "copper_weathered": (100, 130, 100),
-                    "copper_oxidized": (60, 140, 130),
-                }
-                latchColor = latchColors.get(chestName, (80, 60, 40))
-                
-                chestTop = self.textures.get(f"chest_{chestName}_top.png")
-                chestFront = self.textures.get(f"chest_{chestName}_front.png")
-                chestSide = self.textures.get(f"chest_{chestName}_side.png")
-                
-                if chestTop and chestFront and chestSide:
-                    # Use dedicated chest method with latch
-                    # Left face = side texture, Right face = front texture
-                    self.blockSprites[blockType] = self._createChestBlock(chestTop, chestSide, chestFront, latchColor)
-                else:
-                    # Fallback to regular block
-                    self.blockSprites[blockType] = self._createIsometricBlock(topTex, sideTex, frontTex, False)
+                self.blockSprites[blockType] = self._createChestBlock(chestName)
+            elif blockType == BlockType.GLASS or blockType.name.endswith("_STAINED_GLASS"):
+                # The model renderer uses one consistent UV basis on all cube
+                # faces, avoiding the mirrored seams of the legacy mapper.
+                self.blockSprites[blockType] = self.blockModelRenderer.render_boxes(
+                    self.blockModelRenderer.cube_boxes(), topTex, sideTex, frontTex
+                )
             else:
-                # Regular full block (skip OXIDIZING_COPPER - handled in updateAnimation)
-                if blockType != BlockType.OXIDIZING_COPPER:
-                    _internKey = (
-                        blockDef.textureTop,
-                        blockDef.textureSide,
-                        blockDef.textureFront or blockDef.textureSide,
-                        blockDef.transparent,
-                        blockDef.tintTop,
-                        blockDef.tintSide,
+                _internKey = (
+                    blockDef.textureTop,
+                    blockDef.textureSide,
+                    blockDef.textureFront or blockDef.textureSide,
+                    blockDef.transparent,
+                    blockDef.tintTop,
+                    blockDef.tintSide,
+                )
+                if _internKey in self._spriteInternPool:
+                    self.blockSprites[blockType] = self._spriteInternPool[_internKey]
+                else:
+                    sprite = self._createIsometricBlock(
+                        topTex, sideTex, frontTex, blockDef.transparent
                     )
-                    if _internKey in self._spriteInternPool:
-                        self.blockSprites[blockType] = self._spriteInternPool[_internKey]
-                    else:
-                        sprite = self._createIsometricBlock(
-                            topTex, sideTex, frontTex, blockDef.transparent
-                        )
-                        self._spriteInternPool[_internKey] = sprite
-                        self.blockSprites[blockType] = sprite
+                    self._spriteInternPool[_internKey] = sprite
+                    self.blockSprites[blockType] = sprite
     
     def _tintTexture(self, texture: pygame.Surface, tint: Tuple[int, int, int]) -> pygame.Surface:
         """Apply a color tint to a grayscale texture (like Minecraft biome coloring)"""
@@ -4287,67 +4442,20 @@ class AssetManager:
         
         return surface
     
-    def _createChestBlock(self, topTexture: pygame.Surface,
-                          sideTexture: pygame.Surface,
-                          frontTexture: pygame.Surface,
-                          latchColor: Tuple[int, int, int] = (80, 60, 40)) -> pygame.Surface:
-        """
-        Create an isometric chest block with a visible latch on the front.
-        The latch is drawn as a small metal nib protruding from the front face.
-        """
-        W = TILE_WIDTH
-        H = TILE_HEIGHT + BLOCK_HEIGHT
-        halfW = W // 2
-        halfH = TILE_HEIGHT // 2
-        
-        # First create the base block
-        surface = self._createIsometricBlock(topTexture, sideTexture, frontTexture, False)
-        
-        # Now draw the latch (metal nib) on the front/right face
-        # The latch should be a small 3D protrusion in the middle of the front
-        # Front face spans from (halfW, TILE_HEIGHT-1-halfH) to (W-1, TILE_HEIGHT-1+halfH)
-        
-        # Calculate center position on the right face
-        # The right face top-left corner is at (halfW, halfH) sloping to (W, TILE_HEIGHT)
-        # Center horizontally: 3/4 across the face from left edge
-        latchCenterX = halfW + int(halfW * 0.5)
-        
-        # Vertical center: middle of the face
-        # At latchCenterX, the top edge y is: TILE_HEIGHT - 1 - (relX/halfW)*halfH
-        relX = latchCenterX - halfW
-        faceTopY = TILE_HEIGHT - 1 - int((relX / halfW) * halfH)
-        latchCenterY = faceTopY + BLOCK_HEIGHT // 2
-        
-        # Draw a small metal latch nib - a 3x4 pixel protrusion
-        latchW, latchH = 3, 5
-        latchX = latchCenterX - latchW // 2
-        latchY = latchCenterY - latchH // 2
-        
-        # Brighter top/front, darker sides - metal look
-        latchBright = (min(255, latchColor[0] + 40), min(255, latchColor[1] + 30), min(255, latchColor[2] + 20))
-        latchDark = (max(0, latchColor[0] - 20), max(0, latchColor[1] - 20), max(0, latchColor[2] - 20))
-        
-        # Draw the latch as a small rectangle with shading
-        for dy in range(latchH):
-            for dx in range(latchW):
-                px = latchX + dx
-                py = latchY + dy
-                if 0 <= px < W and 0 <= py < H:
-                    # Shade based on position
-                    if dy == 0:  # Top edge - brightest
-                        color = latchBright
-                    elif dx == 0:  # Left edge - darker
-                        color = latchDark
-                    else:  # Body
-                        color = latchColor
-                    surface.set_at((px, py), color)
-        
-        # Add a small highlight on the latch
-        if latchW > 1 and latchH > 1:
-            highlight = (min(255, latchColor[0] + 60), min(255, latchColor[1] + 50), min(255, latchColor[2] + 40))
-            surface.set_at((latchX + 1, latchY + 1), highlight)
-        
-        return surface
+    def _createChestBlock(self, chestName: str,
+                          facing: Facing = Facing.SOUTH) -> pygame.Surface:
+        """Render the exact single-chest cuboids and atlas regions."""
+        names = (
+            "lid_top", "lid_side", "lid_front",
+            "body_side", "body_front", "latch",
+        )
+        textures = [
+            self.textures.get(f"chest_{chestName}_{name}.png") for name in names
+        ]
+        if all(textures):
+            return self.blockModelRenderer.render_chest(*textures, facing=facing)
+        fallback = self.textures.get("oak_planks.png")
+        return self._createIsometricBlock(fallback, fallback, fallback)
     
     def _getAverageColor(self, surface: pygame.Surface) -> Tuple[int, int, int]:
         """Get the average color of a surface"""
@@ -5476,7 +5584,98 @@ class AssetManager:
         
         return surface
     
+    @staticmethod
+    def _endPortalLayerParameters(layerNumber: int, timeFraction: float):
+        """Return the Java 1.16.1 PortalTexturing transform constants."""
+        return (
+            17.0 / layerNumber,
+            (2.0 + layerNumber / 1.5) * timeFraction,
+            (layerNumber * layerNumber * 4321.0 + layerNumber * 9.0) * 2.0,
+            0.5 * (4.5 - layerNumber / 4.0),
+        )
+
+    @staticmethod
+    def _javaRandomPortalColors(layerCount: int):
+        """Yield the exact java.util.Random(31100) color sequence."""
+        mask = (1 << 48) - 1
+        seed = (31100 ^ 0x5DEECE66D) & mask
+
+        def nextFloat():
+            nonlocal seed
+            seed = (seed * 0x5DEECE66D + 0xB) & mask
+            return (seed >> 24) / float(1 << 24)
+
+        for layer in range(layerCount):
+            strength = 0.15 if layer == 0 else 2.0 / (18 - layer)
+            yield (
+                round((nextFloat() * 0.5 + 0.1) * strength * 255),
+                round((nextFloat() * 0.5 + 0.4) * strength * 255),
+                round((nextFloat() * 0.5 + 0.5) * strength * 255),
+            )
+
+    def _transformEndPortalLayer(
+        self, texture: pygame.Surface, layerNumber: int, timeFraction: float, size: int
+    ) -> pygame.Surface:
+        """Approximate Java's projective texgen while preserving its texture matrix."""
+        translateX, translateY, angle, frequency = self._endPortalLayerParameters(
+            layerNumber, timeFraction
+        )
+        tileSize = max(3, round(size / max(0.1, frequency)))
+        tile = pygame.transform.smoothscale(texture, (tileSize, tileSize))
+        canvasSize = size * 4
+        tiled = pygame.Surface((canvasSize, canvasSize), pygame.SRCALPHA)
+        phaseX = round((translateX % 1.0) * tileSize)
+        phaseY = round((translateY % 1.0) * tileSize)
+        for x in range(-tileSize + phaseX, canvasSize + tileSize, tileSize):
+            for y in range(-tileSize + phaseY, canvasSize + tileSize, tileSize):
+                tiled.blit(tile, (x, y))
+        rotated = pygame.transform.rotate(tiled, -angle)
+        return rotated.subsurface(
+            pygame.Rect(0, 0, size, size).move(
+                rotated.get_width() // 2 - size // 2,
+                rotated.get_height() // 2 - size // 2,
+            )
+        ).copy()
+
+    def _createEndEffectTexture(self, isGateway: bool) -> pygame.Surface:
+        """Compose the Java 1.16.1 sky plus additive portal layers."""
+        size = 64
+        effect = pygame.Surface((size, size), pygame.SRCALPHA)
+        effect.fill((0, 0, 0, 255))
+        if self.endPortalTexture is None:
+            return effect
+
+        layerCount = 16 if isGateway else 15
+        timeFraction = float(self.endPortalScrollOffset) / 800000.0
+        colors = tuple(self._javaRandomPortalColors(layerCount))
+        for layer, tint in enumerate(colors):
+            layerNumber = layer + 1
+            source = (
+                self.endSkyTexture
+                if layer == 0 and self.endSkyTexture is not None
+                else self.endPortalTexture
+            )
+            layerSurface = self._transformEndPortalLayer(
+                source, layerNumber, timeFraction, size
+            )
+            layerSurface.fill((*tint, 255), special_flags=pygame.BLEND_RGBA_MULT)
+            if layer == 0:
+                effect.blit(layerSurface, (0, 0))
+            else:
+                effect.blit(layerSurface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+        return effect
+
     def _createEndPortalBlock(self, isGateway: bool = False) -> pygame.Surface:
+        """Render the source-height portal plane or full gateway block entity."""
+        effect = self._createEndEffectTexture(isGateway)
+        if isGateway:
+            return self.blockModelRenderer.render_boxes(
+                self.blockModelRenderer.cube_boxes(), effect, effect, effect
+            )
+        # EndPortalBlockEntityRenderer uses 0.75 for the upper face.
+        return self.blockModelRenderer.render_horizontal_plane(effect, 12)
+
+    def _legacy_createEndPortalBlock(self, isGateway: bool = False) -> pygame.Surface:
         """
         Create an isometric end portal/gateway block sprite.
         Uses the actual end_portal.png texture (grayscale starfield) with vertical scrolling animation.
@@ -5658,7 +5857,30 @@ class AssetManager:
         
         return surface
     
-    def _createFireBlock(self, fireTexture: pygame.Surface, isSoulFire: bool = False) -> pygame.Surface:
+    def _createEnchantingTableBlock(self, top, side, bottom,
+                                    phase: float) -> pygame.Surface:
+        cover = self.enchantingBookCover
+        pages = self.enchantingBookPages
+        if cover is None:
+            cover = pygame.Surface((8, 8), pygame.SRCALPHA)
+            cover.fill((116, 68, 32, 255))
+        if pages is None:
+            pages = pygame.Surface((8, 8), pygame.SRCALPHA)
+            pages.fill((230, 215, 164, 255))
+        return self.blockModelRenderer.render_enchanting_table(
+            top, side, bottom, cover, pages, phase
+        )
+
+    def _createFireBlock(self, fireTexture: pygame.Surface,
+                         isSoulFire: bool = False) -> pygame.Surface:
+        """Render the four-plane Java floor-fire model in icons and the world."""
+        if fireTexture:
+            return self.blockModelRenderer.render_fire(fireTexture)
+        fallback = pygame.Surface((16, 16), pygame.SRCALPHA)
+        fallback.fill((20, 150, 200, 190) if isSoulFire else (255, 100, 0, 190))
+        return self.blockModelRenderer.render_fire(fallback)
+
+    def _legacy_createFireBlock(self, fireTexture: pygame.Surface, isSoulFire: bool = False) -> pygame.Surface:
         """
         Create an isometric fire block sprite.
         Fire is rendered as a transparent animated sprite on a 1x1x1 block space.
@@ -5697,6 +5919,23 @@ class AssetManager:
         return surface
     
     def _createMatrixBlock(self) -> pygame.Surface:
+        """Render the official 25w14craftmine Mine Crafter model and textures."""
+        outerTop = self.textures.get("mine_crafter_top.png")
+        side = self.textures.get("mine_crafter_side.png")
+        bottom = self.textures.get("mine_crafter_bottom.png")
+        inner = (
+            self.mineCrafterFrames[self.currentMineCrafterFrame % len(self.mineCrafterFrames)]
+            if self.mineCrafterFrames
+            else self.textures.get("mine_crafter_inner_top.png")
+        )
+        if all((outerTop, inner, side, bottom)):
+            return self.blockModelRenderer.render_mine_crafter(
+                outerTop, inner, side, bottom
+            )
+        fallback = self.textures.get("black_concrete.png")
+        return self._createIsometricBlock(fallback, fallback, fallback)
+
+    def _legacy_createMatrixBlock(self) -> pygame.Surface:
         """
         Create an isometric Matrix block sprite with falling green code effect.
         Uses a cleaner pixel-based rendering without per-character tracking.
@@ -5882,23 +6121,19 @@ class AssetManager:
                     ICON_SIZE,
                 )
             elif blockDef.isPortal:
-                # For portal, use animated frame or static texture
-                icon = self._createPortalIcon(blockType, blockDef, ICON_SIZE)
-            elif blockType in (BlockType.FIRE, BlockType.SOUL_FIRE):
-                # For fire, create a 2D icon from the fire texture
-                icon = self._createFireIcon(blockType, ICON_SIZE)
+                if blockType == BlockType.NETHER_PORTAL:
+                    icon = self._createPortalIcon(blockType, blockDef, ICON_SIZE)
+                else:
+                    icon = self._fitIconSprite(
+                        self.blockSprites.get(blockType), ICON_SIZE
+                    )
             else:
                 # Regular blocks: reuse blockSprites scaled to icon size
                 # This guarantees icons look identical to placed blocks
                 if blockType in self.blockSprites:
-                    blockSprite = self.blockSprites[blockType]
-                    spriteW, spriteH = blockSprite.get_size()
-                    # Scale to fit ICON_SIZE while maintaining aspect ratio
-                    scale = ICON_SIZE / max(spriteW, spriteH)
-                    newW = int(spriteW * scale)
-                    newH = int(spriteH * scale)
-                    # Use nearest-neighbor scaling to preserve pixel-perfect look
-                    icon = pygame.transform.scale(blockSprite, (newW, newH))
+                    icon = self._fitIconSprite(
+                        self.blockSprites[blockType], ICON_SIZE
+                    )
                 else:
                     # Fallback: create icon from scratch if blockSprite missing
                     icon = self._createIconBlock(blockType, blockDef, ICON_SIZE)
@@ -5929,14 +6164,9 @@ class AssetManager:
     def _updateAnimatedIcon(self, blockType: BlockType):
         """Update icon sprite for animated blocks (water, lava, portals) to match current frame"""
         if blockType in self.blockSprites:
-            blockSprite = self.blockSprites[blockType]
-            spriteW, spriteH = blockSprite.get_size()
-            # Scale to fit ICON_SIZE while maintaining aspect ratio
-            scale = ICON_SIZE / max(spriteW, spriteH)
-            newW = int(spriteW * scale)
-            newH = int(spriteH * scale)
-            # Use nearest-neighbor scaling to preserve pixel-perfect look
-            self.iconSprites[blockType] = pygame.transform.scale(blockSprite, (newW, newH))
+            self.iconSprites[blockType] = self._fitIconSprite(
+                self.blockSprites[blockType], ICON_SIZE
+            )
     
     def _createDoorIcon(self, blockType: BlockType, blockDef, size: int) -> pygame.Surface:
         """Create a simple door icon showing the door texture"""
@@ -6560,7 +6790,8 @@ class AssetManager:
             "lantern", "mangrove_roots", "moss", "mud", "mud_bricks", "packed_mud",
             "pointed_dripstone", "powder_snow", "rooted_dirt", "roots", "scaffold",
             "sculk", "sculk_catalyst", "sculk_shrieker", "sculk_vein", "stem", "tuff",
-            "tuff_bricks", "vine", "cobweb"
+            "tuff_bricks", "vine", "cobweb", "trial_spawner", "vault",
+            "decorated_pot", "copper_grate", "copper_bulb"
         ]
         for category in blockSoundCategories:
             categoryDir = os.path.join(blockDir, category)
@@ -6608,15 +6839,26 @@ class AssetManager:
         if self.sounds["end_portal"]:
             print(f"    Loaded {len(self.sounds['end_portal'])} end_portal sounds")
         
-        # Load fire sounds
+        # Fire crackling and ignition are distinct game events. Keeping them in
+        # separate pools prevents flint-and-steel from playing as ambience.
         fireDir = os.path.join(SOUNDS_DIR, "fire")
-        self.sounds["fire"] = []
-        for sndFile in ["fire.ogg", "ignite.ogg"]:
-            snd = self._loadSingleSound(os.path.join(fireDir, sndFile), SOUND_VOLUME_AMBIENT)
-            if snd:
-                self.sounds["fire"].append(snd)
-        if self.sounds["fire"]:
-            print(f"    Loaded {len(self.sounds['fire'])} fire sounds")
+        fireAmbient = self._loadSingleSound(
+            os.path.join(fireDir, "fire.ogg"), SOUND_VOLUME_AMBIENT
+        )
+        fireIgnite = self._loadSingleSound(
+            os.path.join(fireDir, "ignite.ogg"), SOUND_VOLUME_DEFAULT
+        )
+        fireExtinguish = self._loadSingleSound(
+            os.path.join(randomDir, "fizz.ogg"), SOUND_VOLUME_DEFAULT
+        )
+        self.sounds["fire_ambient"] = [fireAmbient] if fireAmbient else []
+        self.sounds["fire_ignite"] = [fireIgnite] if fireIgnite else []
+        self.sounds["fire_extinguish"] = [fireExtinguish] if fireExtinguish else []
+
+        slimeDir = os.path.join(SOUNDS_DIR, "mob", "slime")
+        self.sounds["slime"] = self._loadSoundFiles(
+            "slime", slimeDir, "big{i}.ogg", maxVariants=4
+        )
         
         # Load sculk sounds (more variants)
         sculkDir = os.path.join(blockDir, "sculk")
@@ -7087,21 +7329,14 @@ class AssetManager:
         if blockType in BLOCK_SOUNDS:
             soundDef = BLOCK_SOUNDS[blockType]
             category = soundDef.placeSound if isPlace else soundDef.breakSound
-            
-            # Special handling for glass - use stone for placing, glass for breaking
-            if blockType == BlockType.GLASS:
-                if isPlace:
-                    category = "stone"  # Glass placing sounds like stone
-                else:
-                    category = "glass"  # Glass breaking has unique sound
-            
-            # Special handling for END_PORTAL - play the portal completion sound
-            if blockType == BlockType.END_PORTAL and isPlace:
-                # Play the endportal.ogg sound specifically (first sound in end_portal category)
-                if "end_portal" in self.sounds and self.sounds["end_portal"]:
-                    self.playOneShot(self.sounds["end_portal"][0], group="ambient", volume=0.7)
-                    return
-            
+
+            # Modern block groups often have dedicated placement recordings.
+            # Use those when present and fall back to the break pool for groups
+            # such as chain, which intentionally share the same recordings.
+            placeCategory = f"{category}_place"
+            if isPlace and self.sounds.get(placeCategory):
+                category = placeCategory
+
             self.playSound(category, worldPos, effectsVolume)
     
     def getDoorSprite(self, blockType: BlockType, facing: Facing, isOpen: bool,
@@ -7143,10 +7378,20 @@ class AssetManager:
             textures = self.specialBlockTextures.get(blockType)
             if not textures:
                 return self.blockSprites.get(blockType)
-            boxes = self.blockModelRenderer.detail_boxes(
-                definition.modelKind, facing, bool(isOpen), half
-            )
-            self.detailSprites[key] = self.blockModelRenderer.render_boxes(boxes, *textures)
+            if definition.modelKind == "ladder":
+                sprite = self.blockModelRenderer.render_ladder(textures[0], facing)
+            elif definition.modelKind == "chain":
+                sprite = self.blockModelRenderer.render_chain(textures[0])
+            elif definition.modelKind == "lantern":
+                sprite = self.blockModelRenderer.render_lantern(
+                    textures[0], hanging=bool(isOpen)
+                )
+            else:
+                boxes = self.blockModelRenderer.detail_boxes(
+                    definition.modelKind, facing, bool(isOpen), half
+                )
+                sprite = self.blockModelRenderer.render_boxes(boxes, *textures)
+            self.detailSprites[key] = sprite
         return self.detailSprites[key]
 
     def getBlockSprite(self, blockType: BlockType) -> Optional[pygame.Surface]:
@@ -7162,35 +7407,33 @@ class AssetManager:
     ) -> pygame.Surface:
         """Return a cached, pixel-crisp view/zoom variant.
         Uses pre-rendered mipmap levels to reduce scaling cost at low zoom.
-        Zoom bucket uses 5% steps to reduce cache pressure without visible difference.
+        Cache keys use the exact raster dimensions required by the projection.
         """
-        # Coarser zoom bucket: 5% steps instead of 0.1% steps
-        zoomBucket = round(max(0.1, float(zoom)) * 20) / 20
-        if zoomBucket == 1.0 and not flipped:
+        zoom = max(0.01, float(zoom))
+        targetSize = (
+            max(1, round(sprite.get_width() * zoom)),
+            max(1, round(sprite.get_height() * zoom)),
+        )
+        if targetSize == sprite.get_size() and not flipped:
             return sprite
         # Keep the Surface itself in the key. Temporary animated liquid
         # surfaces can be destroyed and Python may reuse their id, which used
         # to make water retrieve a cached lava sprite (and vice versa).
-        key = (sprite, zoomBucket, flipped)
+        key = (sprite, targetSize, flipped)
         cached = self.zoomSpriteCache.get(key)
         if cached is not None:
             return cached
         transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
         # Use mipmap if available: pick closest pre-rendered level then scale the remainder
         source = transformed
-        effectiveZoom = zoomBucket
         mipmapLevels = self._mipmaps.get(sprite)
-        if mipmapLevels and zoomBucket < 0.9:
-            bestScale = min(mipmapLevels, key=lambda level: abs(level - zoomBucket))
+        if mipmapLevels and zoom < 0.9:
+            bestScale = min(mipmapLevels, key=lambda level: abs(level - zoom))
             mmSurface = mipmapLevels[bestScale]
             if flipped:
                 mmSurface = pygame.transform.flip(mmSurface, True, False)
             source = mmSurface
-            effectiveZoom = zoomBucket / bestScale
-        size = (
-            max(1, int(source.get_width() * effectiveZoom)),
-            max(1, int(source.get_height() * effectiveZoom)),
-        )
+        size = targetSize
         # Preserve vanilla pixel edges at every zoom.  Filtering tiny Nether
         # and End structures made their dark palettes look lower-resolution
         # than equally sized Overworld scenes.
@@ -7920,7 +8163,7 @@ from engine.world import World
 
 class BlocFantome:
     """
-    Main application class for Bloc Fantome.
+    Main application class for Bloc Fantôme.
     
     Handles the game loop, user input, rendering, and coordination between
     the world, renderer, and asset manager.
@@ -7959,7 +8202,7 @@ class BlocFantome:
         self.cameraFocusZ = 0
         self.sceneMetadata = {
             "kind": "build",
-            "provider": "Bloc Fantome",
+            "provider": "Bloc Fantôme",
             "version": "local",
         }
         self.sceneStructurePositions: Set[Tuple[int, int, int]] = set()
@@ -7980,6 +8223,8 @@ class BlocFantome:
         self.renderDistanceChunks = 4
         self._visibleOrderCacheKey = None
         self._visibleOrderCache = []
+        self._visibleOrderOccluded = 0
+        self._visibleOrderCaches = {}
         self._screenPlanCacheKey = None
         self._screenPlanCache = []
         self._screenPlanOccluded = 0
@@ -7987,6 +8232,14 @@ class BlocFantome:
         self._worldSurfaceCache = None
         self._worldSurfaceCacheOffset = (0.0, 0.0)
         self._worldSurfaceMargin = 640
+        self._worldZoomFallback = None
+        self._worldFallbackSource = None
+        self._worldFallbackSourceZoom = None
+        self._worldFallbackSourceOffset = (0.0, 0.0)
+        self._worldTransitionKind = None
+        self._worldSurfaceBuildKey = None
+        self._worldSurfaceBuild = None
+        self._worldSurfaceBuildIndex = 0
         self._cameraCacheStep = 256
         self._screenCullAnchorOffset = None
         self._renderChunkAnchor = None
@@ -7994,11 +8247,6 @@ class BlocFantome:
         self.renderStats = {"candidates": 0, "screen_candidates": 0, "drawn": 0, "occluded": 0}
         self._fogSurfaceKey = None
         self._fogSurface = None
-        self._zoomPreviewSurface = None
-        self._zoomPreviewPosition = (0, 0)
-        self._zoomPreviewUntil = 0
-        self._zoomPreviewSource = None
-        self._zoomPreviewSourceZoom = 1.0
         self.fitWorldButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 112, 10, 100, 28)
         self.shrinkCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 180, 10, 30, 28)
         self.growCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 146, 10, 30, 28)
@@ -8016,8 +8264,11 @@ class BlocFantome:
         self.brushSizes = [1, 2, 3]
         
         # Inventory scroll state
-        self.inventoryScroll = 0
+        self.inventoryScroll = 0.0
+        self.inventoryScrollTarget = 0.0
         self.maxScroll = 0
+        self._settingsPanelCacheKey = None
+        self._settingsPanelCache = None
         
         # Hotkeys expand state
         self.hotkeysExpanded = False
@@ -8032,6 +8283,7 @@ class BlocFantome:
         self.worldLibrary = WorldLibraryModal(self.font, self.smallFont, self.assetManager)
         self.worldLoadExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="world-stage")
         self.pendingWorldLoad = None
+        self.tutorialPreloads = {}
         
         # Panning state
         self.panning = False
@@ -8050,6 +8302,11 @@ class BlocFantome:
         self.structureThumbnailBg: Optional[pygame.Surface] = None  # Cached Nether-brick bg
         self._panelBackgroundCacheKey = None
         self._panelBackgroundCache = None
+
+        # Per-cell lightweight behavior for finished special blocks.
+        self._copperAgeTimers: Dict[Tuple[int, int, int], int] = {}
+        self._sculkSensorActiveUntil: Dict[Tuple[int, int, int], int] = {}
+        self._specialAnimationRevision = 0
         
         # Liquid flow timing and optimization
         self.waterFlowDelay = WATER_FLOW_DELAY
@@ -8382,6 +8639,8 @@ class BlocFantome:
         else:
             musicBackend = PreloadedMusicBackend(pygame.mixer, channel_index=31, logger=print)
             self.musicBackendName = "preloaded decoded track"
+        self.musicBackend = musicBackend
+        self.tutorialMusicPaths = {}
         self.musicController = MusicController(
             musicBackend,
             volume=self.musicVolume,
@@ -8670,7 +8929,14 @@ class BlocFantome:
             pygame.display.set_icon(icon)
     
     def _setAppIconEarly(self):
-        """Set the same padded model used by the packaged multi-size icon."""
+        """Set the dedicated runtime icon before the display is created."""
+        runtimePath = os.path.join(ICONS_DIR, "Taskbar_End_Stone.png")
+        if os.path.isfile(runtimePath):
+            try:
+                pygame.display.set_icon(pygame.image.load(runtimePath))
+                return
+            except pygame.error:
+                pass
         texture = None
         texturePath = os.path.join(TEXTURES_DIR, "end_stone.png")
         if os.path.isfile(texturePath):
@@ -8678,11 +8944,19 @@ class BlocFantome:
                 texture = pygame.image.load(texturePath)
             except pygame.error:
                 texture = None
-        pygame.display.set_icon(render_app_icon_surface(texture, 64))
+        pygame.display.set_icon(render_runtime_icon_surface(texture, 256))
 
     def _setAppIcon(self):
-        texture = self.assetManager.textures.get("end_stone")
-        pygame.display.set_icon(render_app_icon_surface(texture, 64))
+        """Reapply the exact same textured runtime asset after display setup."""
+        runtimePath = os.path.join(ICONS_DIR, "Taskbar_End_Stone.png")
+        if os.path.isfile(runtimePath):
+            try:
+                pygame.display.set_icon(pygame.image.load(runtimePath).convert_alpha())
+                return
+            except pygame.error:
+                pass
+        texture = self.assetManager.textures.get("end_stone.png")
+        pygame.display.set_icon(render_runtime_icon_surface(texture, 256))
 
     def _loadAppConfig(self) -> None:
         """Load app preferences from config file (expanded categories, hotbar, etc.)"""
@@ -8759,7 +9033,7 @@ class BlocFantome:
         except Exception as e:
             print(f"Could not save app config: {e}")
     
-    def _showSplashScreen(self):
+    def _showSplashScreen(self, splash=None):
         """
         Display a splash screen with the app icon and title.
         Uses the new splash.py module for high-resolution rendering.
@@ -8771,13 +9045,14 @@ class BlocFantome:
         
         try:
             # Use the new splash module
-            splash = SplashScreen(
-                self.screen, 
-                self.clock, 
-                TEXTURES_DIR, 
-                FONTS_DIR, 
-                ICONS_DIR
-            )
+            if splash is None:
+                splash = SplashScreen(
+                    self.screen,
+                    self.clock,
+                    TEXTURES_DIR,
+                    FONTS_DIR,
+                    ICONS_DIR,
+                )
             splash.show(pre_render_callback=pre_render_game)
             return True
         except Exception as e:
@@ -8785,8 +9060,30 @@ class BlocFantome:
             # Fallback: just return True to continue
             return True
 
+    def _queueTutorialPreloads(self) -> None:
+        """Stage bundled tutorial scenes while the startup assets are loading."""
+        for step in TutorialScreen.TUTORIAL_STEPS:
+            demo = step.get("demo")
+            if not isinstance(demo, str) or not demo.startswith("save:"):
+                continue
+            saveName = demo[5:]
+            path = os.path.join(BUILTIN_STRUCTURES_DIR, f"{saveName}.json")
+            if os.path.isfile(path) and saveName not in self.tutorialPreloads:
+                self.tutorialPreloads[saveName] = self.worldLoadExecutor.submit(
+                    self._readBuildFile, path
+                )
+
     def run(self) -> None:
         """Main application loop"""
+        startupSplash = None
+        try:
+            startupSplash = SplashScreen(
+                self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
+            )
+            startupSplash.present()
+        except Exception as error:
+            print(f"Initial splash error: {error}")
+        self._queueTutorialPreloads()
         # Load assets
         if not self.assetManager.loadAllAssets():
             print("Failed to load assets!")
@@ -8794,6 +9091,7 @@ class BlocFantome:
         
         # Start music immediately after assets load
         self._playMenuMusic()
+        self._preloadTutorialMusic()
         
         # Set 3D app icon (after assets loaded)
         self._setAppIcon()
@@ -8819,14 +9117,14 @@ class BlocFantome:
         self._createInitialFloor()
         
         # Show splash screen (also starts music during fade)
-        if not self._showSplashScreen():
+        if not self._showSplashScreen(startupSplash):
             return  # User quit during splash
         
         # Show tutorial on startup if enabled
         if self.tutorialScreen.shouldShowOnStartup():
             self.tutorialScreen.show()
         
-        print("\n=== Bloc Fantome Started ===")
+        print("\n=== Bloc Fantôme Started ===")
         print("Controls:")
         print("  Left Click: Place block / Select from panel")
         print("  Right Click: Remove block / Open-Close doors")
@@ -8866,6 +9164,9 @@ class BlocFantome:
         anchorX, anchorY = self.renderer.screenToWorld(
             centerX, centerY, self.cameraFocusZ
         )
+        if self._worldSurfaceCache is not None:
+            self._worldZoomFallback = self._worldSurfaceCache
+            self._worldTransitionKind = "rotation"
         self.renderer.rotateView(direction)
         screenX, screenY = self.renderer.worldToScreen(
             anchorX, anchorY, self.cameraFocusZ
@@ -8874,16 +9175,28 @@ class BlocFantome:
         self.renderer.offsetY += centerY - screenY
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
-        self._invalidateViewCaches()
+        self._invalidateViewCaches(keepZoomFallback=True)
         print(f"View rotated: {self.renderer.viewRotation * 90}°")
 
-    def _invalidateViewCaches(self) -> None:
+    def _invalidateViewCaches(
+        self, *, keepWorldOrder: bool = False, keepZoomFallback: bool = False
+    ) -> None:
         """Invalidate projection-dependent plans while preserving sprite mips."""
-        self._visibleOrderCacheKey = None
+        if not keepWorldOrder:
+            self._visibleOrderCacheKey = None
         self._screenPlanCacheKey = None
         self._worldSurfaceCacheKey = None
         self._worldSurfaceCache = None
-        self._renderChunkAnchor = None
+        self._worldSurfaceBuildKey = None
+        self._worldSurfaceBuild = None
+        self._worldSurfaceBuildIndex = 0
+        if not keepZoomFallback:
+            self._worldZoomFallback = None
+            self._worldFallbackSource = None
+            self._worldFallbackSourceZoom = None
+            self._worldTransitionKind = None
+        if not keepWorldOrder:
+            self._renderChunkAnchor = None
         self._screenCullAnchorOffset = None
 
     def _afterWorldEdit(self, affectedPositions=()) -> None:
@@ -8891,6 +9204,7 @@ class BlocFantome:
         positions = tuple(affectedPositions)
         self.lightingDirty = True
         self._minimapCacheKey = None
+        self._visibleOrderCaches.clear()
         self._invalidateViewCaches()
         if self.world.heightIndex:
             self.currentBuildHeight = max(self.world.heightIndex.values())
@@ -8946,7 +9260,7 @@ class BlocFantome:
             self.tooltipText = "Centered on grid"
             self.tooltipTimer = 1000
     
-    def _playMenuMusic(self, dimension: str = None):
+    def _playMenuMusic(self, dimension: str = None, preferredTrack: str = None):
         """Activate the shuffled playlist for a dimension."""
         if dimension is None:
             dimension = self.currentDimension
@@ -8965,10 +9279,25 @@ class BlocFantome:
         self.musicFiles = musicFiles
         if musicFiles:
             musicFiles.sort(key=lambda path: os.path.basename(path).casefold())
+            if preferredTrack in musicFiles:
+                musicFiles = [preferredTrack]
             self.musicController.set_endevent(pygame.USEREVENT + 1)
             # Dimension changes must never leave a long or failed silent fade.
             # The preloaded backend swaps the decoded track atomically.
             self.musicController.set_playlist(musicFiles, fade=False)
+
+    def _preloadTutorialMusic(self) -> None:
+        """Decode one bounded track per tutorial dimension under the splash."""
+        preload = getattr(self.musicBackend, "preload", None)
+        if preload is None:
+            return
+        for dimension in (DIMENSION_NETHER, DIMENSION_END):
+            tracks = self._dimensionMusicFiles(dimension)
+            if not tracks:
+                continue
+            track = min(tracks, key=lambda path: (os.path.getsize(path), path.casefold()))
+            preload(track)
+            self.tutorialMusicPaths[dimension] = track
 
     @staticmethod
     def _dimensionMusicFiles(dimension: str) -> List[str]:
@@ -9152,7 +9481,7 @@ class BlocFantome:
                     self.world.setBlock(x, y, top + offset, BlockType.CHORUS_PLANT)
                 self.world.setBlock(x, y, top + plantHeight + 1, BlockType.CHORUS_FLOWER)
     
-    def _switchDimension(self, newDimension: str):
+    def _switchDimension(self, newDimension: str, preferredMusic: str = None):
         """Switch to a different dimension (changes background, floor, and music)"""
         if newDimension == self.currentDimension:
             return  # Already in this dimension
@@ -9191,7 +9520,7 @@ class BlocFantome:
         self._frameCurrentCanvas()
         
         # Switch music
-        self._playMenuMusic(newDimension)
+        self._playMenuMusic(newDimension, preferredTrack=preferredMusic)
         
         dimensionName = newDimension.capitalize()
         print(f"Switched to {dimensionName} dimension")
@@ -9222,10 +9551,14 @@ class BlocFantome:
         # Skip for save: demos as they handle their own dimension
         if not (demo and demo.startswith("save:")):
             if self.currentDimension != requiredDimension:
-                self._switchDimension(requiredDimension)
+                self._switchDimension(
+                    requiredDimension,
+                    preferredMusic=self.tutorialMusicPaths.get(requiredDimension),
+                )
                 print(f"Tutorial: Switched to {requiredDimension} dimension")
         
         # ===== Reset modes when switching panels =====
+        self._cancelMagicWandMode()
         # Turn off mirror mode when navigating tutorial
         if self.mirrorModeX or self.mirrorModeY:
             self.mirrorModeX = False
@@ -9402,11 +9735,21 @@ class BlocFantome:
             saveFilename = f"{saveName}.json"
             try:
                 showcasePath = os.path.join(BUILTIN_STRUCTURES_DIR, saveFilename)
-                success = self._loadBuildingFromPath(showcasePath, silent=True)
-                if success:
-                    if title == "The End":
-                        self._addTutorialEndIsland()
+                future = self.tutorialPreloads.pop(saveName, None)
+                if future is not None:
+                    dimension, bounds, metadata, snapshot, _skipped = future.result()
+                    success = self._applyStagedBuild(
+                        dimension,
+                        bounds,
+                        metadata,
+                        snapshot,
+                        showcasePath,
+                        silent=True,
+                        preferredMusic=self.tutorialMusicPaths.get(dimension),
+                    )
                 else:
+                    success = self._loadBuildingFromPath(showcasePath, silent=True)
+                if not success:
                     # Fallback to empty world
                     self.world.clear()
                     self._createInitialFloor()
@@ -9481,16 +9824,8 @@ class BlocFantome:
         
         self._normalizeSpecialBlockTopology()
 
-        if title in ("The Nether", "The End") and self.world.blocks:
-            # These tutorial showcases are tall silhouettes. Fit them first,
-            # then bias the occupied bounds below screen center so their roofs
-            # do not start underneath the tutorial card.
-            self._fitWorldToViewport(notify=False)
-            tutorialClearance = 82
-            self.renderer.offsetY += tutorialClearance
-            self.targetOffsetX = self.renderer.offsetX
-            self.targetOffsetY = self.renderer.offsetY
-            self._invalidateViewCaches()
+        if title in ("The Nether", "The End") and self.world.occupiedBounds is not None:
+            self._frameTutorialShowcase()
 
         # Horror mode: pause music AFTER demo is loaded (so dimension music starts first)
         if is_horror:
@@ -9579,14 +9914,13 @@ class BlocFantome:
         
         # Check if mouse is over the panel - scroll inventory
         if mouseX > WINDOW_WIDTH - PANEL_WIDTH:
-            # Scroll speed
-            scrollAmount = 30
-            
-            # event.y is positive when scrolling up, negative when scrolling down
-            self.inventoryScroll -= event.y * scrollAmount
-            
-            # Clamp scroll to valid range
-            self.inventoryScroll = max(0, min(self.inventoryScroll, self.maxScroll))
+            # Accumulate high-resolution Windows wheel deltas into a target;
+            # the frame update eases toward it instead of jumping per notch.
+            wheelDelta = float(getattr(event, "precise_y", event.y))
+            self.inventoryScrollTarget -= wheelDelta * 72.0
+            self.inventoryScrollTarget = max(
+                0.0, min(self.inventoryScrollTarget, float(self.maxScroll))
+            )
         else:
             # Mouse is over the world area - handle zoom toward cursor
             # event.y is positive when scrolling up (zoom in), negative when scrolling down (zoom out)
@@ -9777,7 +10111,7 @@ class BlocFantome:
             elif event.key == pygame.K_RETURN:
                 # Select first search result if any
                 if self.searchResults:
-                    self.selectedBlock = self.searchResults[0]
+                    self._selectBlockForPlacement(self.searchResults[0])
                     self._addToRecentBlocks(self.selectedBlock)
                     # Add to search history
                     if self.searchQuery and self.searchQuery not in self.searchHistory:
@@ -9841,6 +10175,10 @@ class BlocFantome:
             elif self.fillToolActive:
                 self.fillToolActive = False
                 self.fillStart = None
+            elif self.magicWandMode:
+                self._cancelMagicWandMode()
+                self.tooltipText = "Magic Wand: OFF"
+                self.tooltipTimer = 1500
             else:
                 self.running = False
         
@@ -9851,13 +10189,13 @@ class BlocFantome:
             if mods & pygame.KMOD_SHIFT:
                 # Secondary hotbar (Shift+1-9)
                 if slot < len(self.hotbar2):
-                    self.selectedBlock = self.hotbar2[slot]
+                    self._selectBlockForPlacement(self.hotbar2[slot])
                     self.assetManager.playClickSound()
             else:
                 # Primary hotbar (1-9)
                 self.hotbarSelectedSlot = slot
                 if slot < len(self.hotbar):
-                    self.selectedBlock = self.hotbar[slot]
+                    self._selectBlockForPlacement(self.hotbar[slot])
                     self.assetManager.playClickSound()
         
         # Search (Ctrl+F)
@@ -10123,14 +10461,14 @@ class BlocFantome:
             self.tooltipTimer = 1500
             self.assetManager.playClickSound()
         
-        # Magic Wand tool (W key)
-        elif event.key == pygame.K_w and not (mods & pygame.KMOD_CTRL):
+        # Magic Wand tool. Plain W is reserved for camera movement.
+        elif event.key == pygame.K_w and mods & pygame.KMOD_CTRL and mods & pygame.KMOD_SHIFT:
             self.magicWandMode = not self.magicWandMode
             if self.magicWandMode:
                 self.magicWandSelection.clear()
                 self.tooltipText = "Magic Wand: Click a block to select connected"
             else:
-                self.magicWandSelection.clear()
+                self._cancelMagicWandMode()
                 self.tooltipText = "Magic Wand: OFF"
             self.tooltipTimer = 1500
             self.assetManager.playClickSound()
@@ -10368,7 +10706,7 @@ class BlocFantome:
                         btnY = blocksStartY + row * (slotSize + 4)
                         
                         if btnX <= panelX <= btnX + slotSize and btnY <= panelY <= btnY + slotSize:
-                            self.selectedBlock = blockType
+                            self._selectBlockForPlacement(blockType)
                             return
                     
                     numRows = (len(blocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
@@ -10388,35 +10726,6 @@ class BlocFantome:
                     currentY += collapseBtnHeight + 5
             
             currentY += 5
-        
-        # ===== CHECK PROBLEMS MAIN BUTTON =====
-        problemsTop = currentY
-        problemsBottom = currentY + mainButtonHeight
-        
-        if problemsTop <= panelY <= problemsBottom and ICON_MARGIN <= panelX <= PANEL_WIDTH - ICON_MARGIN:
-            self.problemsExpanded = not self.problemsExpanded
-            return
-        
-        currentY += mainButtonHeight + 5
-        
-        # Check experimental blocks if expanded
-        if self.problemsExpanded:
-            experimentalBlocks = BLOCK_CATEGORIES.get("Experimental", [])
-            blocksStartY = currentY + 2
-            
-            for i, blockType in enumerate(experimentalBlocks):
-                row = i // ICONS_PER_ROW
-                col = i % ICONS_PER_ROW
-                
-                btnX = ICON_MARGIN + col * (slotSize + 4)
-                btnY = blocksStartY + row * (slotSize + 4)
-                
-                if btnX <= panelX <= btnX + slotSize and btnY <= panelY <= btnY + slotSize:
-                    self.selectedBlock = blockType
-                    return
-            
-            numRows = (len(experimentalBlocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
-            currentY += numRows * (slotSize + 4) + 10
         
         # ===== CHECK FEATURES MAIN BUTTON =====
         experimentalTop = currentY
@@ -10862,6 +11171,7 @@ class BlocFantome:
         modelRenderer = self.assetManager.blockModelRenderer
         boxes = modelRenderer.cube_boxes()
         alreadyViewOriented = False
+        stairPickState = None
 
         if blockDef and blockDef.modelKind:
             props = props or BlockProperties()
@@ -10889,6 +11199,9 @@ class BlocFantome:
                 blockType, relativeFacing, props.stairShape, props.slabPosition
             )
             boxes = modelRenderer.stair_boxes(
+                relativeFacing, props.stairShape, props.slabPosition
+            )
+            stairPickState = (
                 relativeFacing, props.stairShape, props.slabPosition
             )
             alreadyViewOriented = True
@@ -10923,7 +11236,12 @@ class BlocFantome:
         if sprite.get_at((sampleX, localY)).a < 8:
             return None
 
-        face = modelRenderer.pick_box_face(localX, localY, boxes)
+        if stairPickState is not None:
+            face = modelRenderer.pick_stair_face(
+                localX, localY, *stairPickState
+            )
+        else:
+            face = modelRenderer.pick_box_face(localX, localY, boxes)
         if face is not None:
             return face
         # Rasterized edge pixels can sit one pixel outside the analytical box
@@ -10995,6 +11313,22 @@ class BlocFantome:
                             facing=self.previewFacing,
                             slabPosition=self.previewSlabPosition,
                         )
+                    elif blockDef and blockDef.modelKind:
+                        properties = BlockProperties(
+                            facing=self._determineFacing(placeX, placeY)
+                        )
+                        if blockDef.modelKind == "lantern":
+                            supportedBelow = (
+                                placeZ > self.world.min_y
+                                and self.world.getBlock(placeX, placeY, placeZ - 1)
+                                != BlockType.AIR
+                            )
+                            supportedAbove = (
+                                placeZ + 1 < self.world.max_y_exclusive
+                                and self.world.getBlock(placeX, placeY, placeZ + 1)
+                                != BlockType.AIR
+                            )
+                            properties.isOpen = supportedAbove and not supportedBelow
                     if blockDef and blockDef.isDoor:
                         placed = self._placeDoorWithUndo(
                             placeX, placeY, placeZ, self.selectedBlock, self.previewFacing
@@ -11034,10 +11368,20 @@ class BlocFantome:
                 self.lightingDirty = True
     
     def _determineFacing(self, blockX: int, blockY: int) -> Facing:
-        """Determine which direction a placed block should face based on cursor position"""
-        # For now, default to SOUTH (facing the camera) 
-        # Can be made smarter later to face away from adjacent blocks or towards player
-        return Facing.SOUTH
+        """Determine outward placement facing from the clicked support face."""
+        if self.hoveredFace in ("left", "right"):
+            faceDirections = {
+                "left": ((0, 1), (1, 0), (0, -1), (-1, 0)),
+                "right": ((1, 0), (0, -1), (-1, 0), (0, 1)),
+            }
+            dx, dy = faceDirections[self.hoveredFace][self.renderer.viewRotation]
+            return {
+                (0, -1): Facing.NORTH,
+                (1, 0): Facing.EAST,
+                (0, 1): Facing.SOUTH,
+                (-1, 0): Facing.WEST,
+            }[(dx, dy)]
+        return self.previewFacing
     
     def _rotateHoveredBlock(self):
         """Rotate the block under the cursor (stairs only - doors use right-click to open/close)"""
@@ -11258,7 +11602,9 @@ class BlocFantome:
         self._pollWorldLoad()
         # Update liquid animations
         dt = self.clock.get_time()  # Time since last frame in ms
+        self._updatePanelScroll(dt)
         self.assetManager.updateAnimation(dt)
+        self._updateSpecialBlocks(dt)
         
         # Update liquid flow
         self._updateLiquidFlow()
@@ -11316,10 +11662,68 @@ class BlocFantome:
                     f"water_queue={len(self.world.waterUpdateQueue)} "
                     f"lava_queue={len(self.world.lavaUpdateQueue)}"
                 )
-        
+
         # Update horror ambient system
         self._updateHorrorSystem(dt)
-    
+
+    def _updatePanelScroll(self, dt: int) -> None:
+        """Ease the inventory panel toward its wheel target."""
+        maximum = float(max(0, self.maxScroll))
+        self.inventoryScrollTarget = max(0.0, min(self.inventoryScrollTarget, maximum))
+        self.inventoryScroll = max(0.0, min(self.inventoryScroll, maximum))
+        difference = self.inventoryScrollTarget - self.inventoryScroll
+        if abs(difference) < 0.1:
+            self.inventoryScroll = self.inventoryScrollTarget
+            return
+        # Time-based exponential easing is stable at both 60 Hz and during a
+        # busy renderer frame, so scrolling never changes speed with FPS.
+        blend = 1.0 - math.exp(-max(0, dt) / 70.0)
+        self.inventoryScroll += difference * blend
+
+    def _updateSpecialBlocks(self, dt: int) -> None:
+        """Advance saved copper stages and transient Sculk Sensor pulses."""
+        copperPositions = set(
+            self.world.positionsOfType(BlockType.OXIDIZING_COPPER)
+        )
+        for position in tuple(self._copperAgeTimers):
+            if position not in copperPositions:
+                self._copperAgeTimers.pop(position, None)
+        for position in copperPositions:
+            props = self.world.getBlockProperties(*position) or BlockProperties()
+            props.oxidationStage = max(0, min(3, int(props.oxidationStage)))
+            if props.oxidationStage >= 3:
+                self._copperAgeTimers.pop(position, None)
+                continue
+            elapsed = self._copperAgeTimers.get(position, 0) + dt
+            if elapsed >= self.assetManager.oxidizingCopperSpeed:
+                props.oxidationStage += 1
+                self.world.setBlockProperties(*position, props)
+                elapsed = 0
+            self._copperAgeTimers[position] = elapsed
+
+        now = pygame.time.get_ticks()
+        expired = [
+            position for position, deadline in self._sculkSensorActiveUntil.items()
+            if deadline <= now
+        ]
+        if expired:
+            for position in expired:
+                self._sculkSensorActiveUntil.pop(position, None)
+            self._specialAnimationRevision += 1
+
+    def _triggerSculkSensors(self, x: int, y: int, z: int) -> None:
+        """Pulse nearby sensors after a player-authored block change."""
+        now = pygame.time.get_ticks()
+        activated = False
+        for sx, sy, sz in self.world.positionsOfType(BlockType.SCULK_SENSOR):
+            if abs(sx - x) + abs(sy - y) + abs(sz - z) > 8:
+                continue
+            self._sculkSensorActiveUntil[(sx, sy, sz)] = now + 1200
+            activated = True
+        if activated:
+            self._specialAnimationRevision += 1
+            self.assetManager.playSound("sculk_sensor")
+
     def _updateLiquidFlow(self) -> None:
         """Process liquid flow updates with separate timing for water and lava"""
         # Skip if liquid flow is disabled
@@ -11381,7 +11785,7 @@ class BlocFantome:
                 self.assetManager.portalSoundChannel = None
     
     def _updateFireAmbient(self, dt: int) -> None:
-        """Play fire crackling sound every ~5 seconds if fire blocks exist"""
+        """Play spatial fire crackling without replaying ignition sounds."""
         import random
         
         # Update timer
@@ -11389,6 +11793,7 @@ class BlocFantome:
         
         if self.assetManager.fireAmbientTimer >= self.assetManager.fireAmbientInterval:
             self.assetManager.fireAmbientTimer = 0
+            self.assetManager.fireAmbientInterval = random.randint(2400, 4200)
             
             # Check if any fire blocks exist (FIRE or SOUL_FIRE)
             fireBlocks = tuple(
@@ -11396,11 +11801,11 @@ class BlocFantome:
                 | self.world.positionsOfType(BlockType.SOUL_FIRE)
             )
             
-            if fireBlocks and "fire" in self.assetManager.sounds and self.assetManager.sounds["fire"]:
+            if fireBlocks and self.assetManager.sounds.get("fire_ambient"):
                 # Pick a random fire block to be the sound source
                 firePos = random.choice(fireBlocks)
                 # Play fire crackling sound from that position
-                self.assetManager.playSound("fire", firePos, self.effectsVolume)
+                self.assetManager.playSound("fire_ambient", firePos, self.effectsVolume)
     
     def _updateSpawnerParticles(self, dt: int):
         """Update and spawn particles for mob spawners"""
@@ -11519,7 +11924,7 @@ class BlocFantome:
             except Exception as e:
                 print(f"    Could not play rain track: {e}")
         elif self.currentDimension == DIMENSION_NETHER:
-            sounds = self.assetManager.sounds.get("fire", [])
+            sounds = self.assetManager.sounds.get("fire_ambient", [])
             if sounds:
                 self.assetManager.playOneShot(
                     random.choice(sounds), group="weather", volume=self.ambientVolume * 0.35
@@ -12900,7 +13305,7 @@ class BlocFantome:
                 highest = max(highest, z)
         self.sceneMetadata = {
             "kind": "terrain",
-            "provider": "Bloc Fantome source-informed slice",
+            "provider": "Bloc Fantôme source-informed slice",
             "version": "Java 1.16.1 ruleset",
             "seed": seed,
             "accuracy": "representative editor terrain; import Java chunks for block parity",
@@ -13593,13 +13998,17 @@ class BlocFantome:
         }
 
     def _applyStagedBuild(self, dimension: str, bounds, sceneMetadata,
-                          stagedBlocks, filepath: str, silent: bool) -> bool:
+                          stagedBlocks, filepath: str, silent: bool,
+                          preferredMusic: str = None) -> bool:
         if dimension != self.currentDimension:
-            self._switchDimension(dimension)
+            self._switchDimension(dimension, preferredMusic=preferredMusic)
         from engine.world_snapshot import WorldSnapshot
 
         width, depth, height, minY = bounds
         self.liquidLevelSpriteCache.clear()
+        self._copperAgeTimers.clear()
+        self._sculkSensorActiveUntil.clear()
+        self._specialAnimationRevision += 1
         if isinstance(stagedBlocks, WorldSnapshot):
             snapshot = stagedBlocks
             blockCount = len(snapshot.blocks)
@@ -13648,6 +14057,7 @@ class BlocFantome:
             )
             blockCount = len(stagedBlocks)
         self.world.replace(snapshot)
+        self._visibleOrderCaches.clear()
 
         if (sceneMetadata or {}).get("kind") != "world":
             self._normalizeSpecialBlockTopology()
@@ -13660,6 +14070,7 @@ class BlocFantome:
         )
         loadedMetadata.pop("_structure_surfaces_by_view", None)
         loadedMetadata.pop("_surface_positions", None)
+        loadedMetadata.pop("_view_surface_positions_by_view", None)
         self.sceneStructureBounds = self.world.sceneStructureBounds
         self.sceneMetadata = loadedMetadata
         self.world.prepareStructureSurfaceChunks(self.renderer.viewRotation)
@@ -13792,6 +14203,7 @@ class BlocFantome:
         if self.undoManager.execute(cmd):
             # Update build height tracker
             self.currentBuildHeight = max(self.currentBuildHeight, z)
+            self._triggerSculkSensors(x, y, z)
             return True
         return False
 
@@ -13882,6 +14294,7 @@ class BlocFantome:
         ], "Place door")
         if self.undoManager.execute(command):
             self.currentBuildHeight = max(self.currentBuildHeight, z + 1)
+            self._triggerSculkSensors(x, y, z)
             return True
         return False
     
@@ -13897,11 +14310,15 @@ class BlocFantome:
             commands = [RemoveBlockCommand(self.world, x, y, z)]
             if self.world.isInBounds(x, y, otherZ) and self.world.getBlock(x, y, otherZ) == blockType:
                 commands.append(RemoveBlockCommand(self.world, x, y, otherZ))
-            return self.undoManager.execute(BatchCommand(commands, "Remove door"))
+            result = self.undoManager.execute(BatchCommand(commands, "Remove door"))
+            if result:
+                self._triggerSculkSensors(x, y, z)
+            return result
         
         cmd = RemoveBlockCommand(world=self.world, x=x, y=y, z=z)
         result = self.undoManager.execute(cmd)
         if result:
+            self._triggerSculkSensors(x, y, z)
             self._refreshStairTopologyAround(x, y, z)
         return result
     
@@ -13909,7 +14326,13 @@ class BlocFantome:
         """Check if a block type needs special properties"""
         definition = BLOCK_DEFINITIONS.get(blockType)
         if definition:
-            return definition.isStair or definition.isSlab or definition.isDoor
+            return (
+                definition.isStair
+                or definition.isSlab
+                or definition.isDoor
+                or bool(definition.modelKind)
+                or blockType == BlockType.OXIDIZING_COPPER
+            )
         return False
     
     def _renderBlockTooltip(self) -> None:
@@ -14047,7 +14470,7 @@ class BlocFantome:
         
         # Scroll to center the block in view
         targetScroll = max(0, yPos - WINDOW_HEIGHT // 2)
-        self.inventoryScroll = targetScroll
+        self.inventoryScrollTarget = float(targetScroll)
     
     def _updateSearchResults(self):
         """Update search results based on current query"""
@@ -14193,6 +14616,17 @@ class BlocFantome:
         """Update a hotbar slot with a new block type"""
         if 0 <= slot < len(self.hotbar):
             self.hotbar[slot] = blockType
+
+    def _cancelMagicWandMode(self):
+        """Return clicks to normal placement and discard the retained selection."""
+        self.magicWandMode = False
+        self.magicWandSelection.clear()
+
+    def _selectBlockForPlacement(self, blockType: BlockType):
+        """Select a palette block and leave the mutually exclusive wand tool."""
+        self.selectedBlock = blockType
+        if self.magicWandMode or self.magicWandSelection:
+            self._cancelMagicWandMode()
     
     def _eyedropperBlock(self, mouseX: int, mouseY: int):
         """Pick block type from world at mouse position (eyedropper tool)"""
@@ -14204,7 +14638,7 @@ class BlocFantome:
         for checkZ in range(z, -1, -1):
             blockType = self.world.getBlock(x, y, checkZ)
             if blockType != BlockType.AIR:
-                self.selectedBlock = blockType
+                self._selectBlockForPlacement(blockType)
                 self._addToRecentBlocks(blockType)
                 # Also update current hotbar slot
                 self.hotbar[self.hotbarSelectedSlot] = blockType
@@ -14379,7 +14813,7 @@ class BlocFantome:
                 # Flood fill to find all connected blocks of same type
                 self.magicWandSelection = self._floodFillSelect(x, y, checkZ, blockType)
                 count = len(self.magicWandSelection)
-                self.tooltipText = f"Selected {count} connected {blockType.name} blocks. Press Del to remove or click to place"
+                self.tooltipText = f"Selected {count} connected {blockType.name} blocks. Press Del to remove or Esc to cancel"
                 self.tooltipTimer = 3000
                 self.assetManager.playClickSound()
                 return
@@ -15219,7 +15653,7 @@ class BlocFantome:
             if button == 1:  # Left click - select slot
                 self.hotbarSelectedSlot = slotIndex
                 if self.hotbar[slotIndex]:
-                    self.selectedBlock = self.hotbar[slotIndex]
+                    self._selectBlockForPlacement(self.hotbar[slotIndex])
                 self.assetManager.playClickSound()
             elif button == 3:  # Right click - assign current block to slot
                 self.hotbar[slotIndex] = self.selectedBlock
@@ -15229,31 +15663,27 @@ class BlocFantome:
     
     def _handleSettingsClick(self, mouseX: int, mouseY: int):
         """Handle clicks on the settings menu"""
-        menuWidth = 400
-        menuHeight = 450
-        menuX = (WINDOW_WIDTH - menuWidth) // 2
-        menuY = (WINDOW_HEIGHT - menuHeight) // 2
+        menuRect = self._settingsMenuRect()
+        menuX, menuY, menuWidth, menuHeight = menuRect
         
         # Close button (top right)
-        closeX = menuX + menuWidth - 30
-        closeY = menuY + 10
-        if closeX <= mouseX <= closeX + 20 and closeY <= mouseY <= closeY + 20:
+        closeRect = pygame.Rect(menuRect.right - 40, menuRect.y + 12, 28, 28)
+        if closeRect.collidepoint(mouseX, mouseY):
             self.settingsMenuOpen = False
             self.assetManager.playClickSound()
             return
         
         # Check if click is outside menu (close it)
-        if not (menuX <= mouseX <= menuX + menuWidth and 
-                menuY <= mouseY <= menuY + menuHeight):
+        if not menuRect.collidepoint(mouseX, mouseY):
             self.settingsMenuOpen = False
             return
         
         # Volume sliders - match render layout
-        y = menuY + 60
-        sliderY = y + 20  # Label is at y, track is at y+20
-        sliderHeight = 8
-        sliderX = menuX + 20
-        sliderWidth = menuWidth - 40
+        y = menuY + 68
+        sliderY = y + 22
+        sliderHeight = 12
+        sliderX = menuX + 28
+        sliderWidth = menuWidth - 56
         
         # Music volume slider
         if sliderX <= mouseX <= sliderX + sliderWidth and sliderY <= mouseY <= sliderY + sliderHeight + 8:
@@ -15261,24 +15691,23 @@ class BlocFantome:
             self.musicVolume = max(0, min(1, newVol))
             self.musicController.set_volume(0 if self.musicMuted else self.musicVolume)
         
-        # Ambient volume slider (y + 50)
-        y += 50
-        sliderY = y + 20
+        # Ambient volume slider
+        y += 54
+        sliderY = y + 22
         if sliderX <= mouseX <= sliderX + sliderWidth and sliderY <= mouseY <= sliderY + sliderHeight + 8:
             newVol = (mouseX - sliderX) / sliderWidth
             self.ambientVolume = max(0, min(1, newVol))
         
-        # Effects volume slider (y + 50)
-        y += 50
-        sliderY = y + 20
+        # Effects volume slider
+        y += 54
+        sliderY = y + 22
         if sliderX <= mouseX <= sliderX + sliderWidth and sliderY <= mouseY <= sliderY + sliderHeight + 8:
             newVol = (mouseX - sliderX) / sliderWidth
             self.effectsVolume = max(0, min(1, newVol))
         
-        # Toggle options - match render layout (y + 60 after effects)
-        y += 60
-        toggleSize = 20
-        toggleX = sliderX + sliderWidth - toggleSize
+        # Full-width Minecraft buttons are easier to hit than small generic
+        # checkboxes and remain inside the panel at every supported window size.
+        y = menuY + 242
         
         # Toggle attributes in order
         toggles = [
@@ -15291,12 +15720,23 @@ class BlocFantome:
         ]
         
         for attr in toggles:
-            if toggleX <= mouseX <= toggleX + toggleSize and y <= mouseY <= y + toggleSize:
+            toggleRect = pygame.Rect(sliderX, y, sliderWidth, 30)
+            if toggleRect.collidepoint(mouseX, mouseY):
                 currentVal = getattr(self, attr)
                 setattr(self, attr, not currentVal)
                 self.assetManager.playClickSound()
                 return
-            y += 35
+            y += 36
+
+    def _settingsMenuRect(self) -> pygame.Rect:
+        """Return the single geometry source used by Settings input/rendering."""
+        width, height = 460, 536
+        return pygame.Rect(
+            (WINDOW_WIDTH - width) // 2,
+            (WINDOW_HEIGHT - height) // 2,
+            width,
+            height,
+        )
     
     def _handleFillToolClick(self, mouseX: int, mouseY: int):
         """Handle clicks when fill tool is active"""
@@ -15677,34 +16117,65 @@ class BlocFantome:
         """Render settings menu overlay"""
         if not self.settingsMenuOpen:
             return
-        
-        menuWidth = 400
-        menuHeight = 500
-        menuX = (WINDOW_WIDTH - menuWidth) // 2
-        menuY = (WINDOW_HEIGHT - menuHeight) // 2
+
+        menuRect = self._settingsMenuRect()
+        menuX, menuY, menuWidth, menuHeight = menuRect
         
         # Overlay
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         self.screen.blit(overlay, (0, 0))
         
-        # Menu background
-        pygame.draw.rect(self.screen, (40, 40, 50), (menuX, menuY, menuWidth, menuHeight))
-        pygame.draw.rect(self.screen, (100, 100, 120), (menuX, menuY, menuWidth, menuHeight), 3)
+        # Tiled dirt/stone menu background and pixel bevel match the app's
+        # existing Minecraft inventory controls.
+        cacheKey = (menuRect.size, id(self.assetManager.backgroundTile))
+        if cacheKey != self._settingsPanelCacheKey:
+            panel = pygame.Surface(menuRect.size)
+            tile = self.assetManager.backgroundTile
+            if tile:
+                darkTile = tile.copy()
+                darkTile.fill((105, 105, 105), special_flags=pygame.BLEND_RGB_MULT)
+                for tileY in range(0, menuHeight, darkTile.get_height()):
+                    for tileX in range(0, menuWidth, darkTile.get_width()):
+                        panel.blit(darkTile, (tileX, tileY))
+            else:
+                panel.fill((54, 54, 54))
+            self._settingsPanelCache = panel
+            self._settingsPanelCacheKey = cacheKey
+        self.screen.blit(self._settingsPanelCache, menuRect.topleft)
+        pygame.draw.rect(self.screen, (12, 12, 12), menuRect, 4)
+        pygame.draw.line(self.screen, (160, 160, 160),
+                         (menuRect.left + 4, menuRect.top + 4),
+                         (menuRect.right - 5, menuRect.top + 4), 2)
+        pygame.draw.line(self.screen, (28, 28, 28),
+                         (menuRect.left + 4, menuRect.bottom - 5),
+                         (menuRect.right - 5, menuRect.bottom - 5), 2)
         
         # Title
         title = self.font.render("Settings", True, (255, 255, 255))
-        self.screen.blit(title, (menuX + menuWidth // 2 - title.get_width() // 2, menuY + 20))
-        
-        y = menuY + 60
+        titleRect = title.get_rect(center=(menuRect.centerx, menuY + 29))
+        titleShadow = self.font.render("Settings", True, (45, 45, 45))
+        self.screen.blit(titleShadow, titleRect.move(2, 2))
+        self.screen.blit(title, titleRect)
+
+        mousePos = pygame.mouse.get_pos()
+        closeRect = pygame.Rect(menuRect.right - 40, menuRect.y + 12, 28, 28)
+        self.assetManager.drawButton(
+            self.screen, closeRect, "X", self.smallFont,
+            closeRect.collidepoint(mousePos), False,
+        )
+
+        y = menuY + 68
         
         # Volume controls
-        self._renderSettingsVolumeSlider("Music Volume", self.musicVolume, menuX + 20, y, menuWidth - 40)
-        y += 50
-        self._renderSettingsVolumeSlider("Ambient Volume", self.ambientVolume, menuX + 20, y, menuWidth - 40)
-        y += 50
-        self._renderSettingsVolumeSlider("Effects Volume", self.effectsVolume, menuX + 20, y, menuWidth - 40)
-        y += 60
+        sliderX = menuX + 28
+        sliderWidth = menuWidth - 56
+        self._renderSettingsVolumeSlider("Music Volume", self.musicVolume, sliderX, y, sliderWidth)
+        y += 54
+        self._renderSettingsVolumeSlider("Ambient Volume", self.ambientVolume, sliderX, y, sliderWidth)
+        y += 54
+        self._renderSettingsVolumeSlider("Effects Volume", self.effectsVolume, sliderX, y, sliderWidth)
+        y = menuY + 242
         
         # Toggle options
         toggles = [
@@ -15717,12 +16188,17 @@ class BlocFantome:
         ]
         
         for label, value, attr in toggles:
-            self._renderToggle(label, value, menuX + 20, y, menuWidth - 40)
-            y += 35
+            toggleRect = pygame.Rect(sliderX, y, sliderWidth, 30)
+            self.assetManager.drawButton(
+                self.screen, toggleRect,
+                f"{label}: {'ON' if value else 'OFF'}",
+                self.smallFont, toggleRect.collidepoint(mousePos), value,
+            )
+            y += 36
         
         # Close hint
-        hint = self.smallFont.render("Press Ctrl+, or ESC to close", True, (150, 150, 150))
-        self.screen.blit(hint, (menuX + menuWidth // 2 - hint.get_width() // 2, menuY + menuHeight - 30))
+        hint = self.smallFont.render("Ctrl+, or Esc to close", True, (190, 190, 190))
+        self.screen.blit(hint, hint.get_rect(center=(menuRect.centerx, menuRect.bottom - 15)))
     
     def _drawRotationArrow(self, rect: pygame.Rect, clockwise: bool, centered: bool = False):
         """Draw a clean curved rotation arrow icon on a button"""
@@ -15802,26 +16278,24 @@ class BlocFantome:
     
     def _renderSettingsVolumeSlider(self, label: str, value: float, x: int, y: int, width: int):
         """Render a volume slider for settings menu"""
-        # Label
-        labelSurf = self.smallFont.render(label, True, (200, 200, 200))
+        labelSurf = self.smallFont.render(label, True, (255, 255, 255))
         self.screen.blit(labelSurf, (x, y))
-        
-        # Slider track
-        trackY = y + 20
-        trackHeight = 8
-        pygame.draw.rect(self.screen, (60, 60, 70), (x, trackY, width, trackHeight))
-        
-        # Filled portion
-        fillWidth = int(width * value)
-        pygame.draw.rect(self.screen, (100, 180, 100), (x, trackY, fillWidth, trackHeight))
-        
-        # Handle
-        handleX = x + fillWidth
-        pygame.draw.circle(self.screen, (200, 200, 200), (handleX, trackY + trackHeight // 2), 8)
-        
-        # Value text
-        valueText = self.smallFont.render(f"{int(value * 100)}%", True, (150, 150, 150))
-        self.screen.blit(valueText, (x + width + 10, y))
+        valueText = self.smallFont.render(f"{int(value * 100)}%", True, (220, 220, 220))
+        self.screen.blit(valueText, valueText.get_rect(topright=(x + width, y)))
+
+        track = pygame.Rect(x, y + 22, width, 12)
+        pygame.draw.rect(self.screen, (12, 12, 12), track)
+        pygame.draw.rect(self.screen, (70, 70, 70), track.inflate(-4, -4))
+        fillWidth = max(0, int((width - 4) * value))
+        if fillWidth:
+            pygame.draw.rect(
+                self.screen, (92, 168, 76),
+                (track.x + 2, track.y + 2, fillWidth, track.height - 4),
+            )
+        handleX = track.x + int(track.width * value)
+        handle = pygame.Rect(handleX - 5, track.y - 3, 10, track.height + 6)
+        pygame.draw.rect(self.screen, (210, 210, 210), handle)
+        pygame.draw.rect(self.screen, (45, 45, 45), handle, 2)
     
     def _renderToggle(self, label: str, value: bool, x: int, y: int, width: int):
         """Render a toggle option"""
@@ -16195,21 +16669,51 @@ class BlocFantome:
         textWithAlpha.set_alpha(alpha)
         self.screen.blit(textWithAlpha, (x + padding, y + padding))
 
+    def _prepareZoomFallback(self) -> None:
+        """Uniformly transform the complete cached viewport while exact tiles rebuild.
+
+        The cache includes a generous off-screen margin, so a wheel step never
+        exposes the clipped black border that the former screenshot preview did.
+        Scaling one composed surface also keeps neighboring block edges locked
+        together instead of rounding each block independently during input.
+        """
+        if self._worldFallbackSource is None and self._worldSurfaceCache is not None:
+            self._worldFallbackSource = self._worldSurfaceCache
+            self._worldFallbackSourceZoom = self._worldSurfaceCacheKey[1]
+            self._worldFallbackSourceOffset = self._worldSurfaceCacheOffset
+        source = self._worldFallbackSource
+        if source is None:
+            self._worldZoomFallback = None
+            return
+        ratio = self.zoomLevel / max(0.001, self._worldFallbackSourceZoom)
+        width, height = source.get_size()
+        scaledSize = (
+            max(1, round(width * ratio)),
+            max(1, round(height * ratio)),
+        )
+        scaled = pygame.transform.scale(source, scaledSize)
+        fallback = pygame.Surface((width, height), pygame.SRCALPHA)
+        margin = self._worldSurfaceMargin
+        sourceOffsetX, sourceOffsetY = self._worldFallbackSourceOffset
+        fallback.blit(
+            scaled,
+            (
+                round(
+                    self.renderer.offsetX + margin
+                    - ratio * (sourceOffsetX + margin)
+                ),
+                round(
+                    self.renderer.offsetY + margin
+                    - ratio * (sourceOffsetY + margin)
+                ),
+            ),
+        )
+        self._worldZoomFallback = fallback
+        self._worldTransitionKind = "zoom"
+
     def _handleZoom(self, delta: float, cursorX: int = None, cursorY: int = None):
         """Handle zoom in/out, centered on cursor position"""
         oldZoom = self.zoomLevel
-        now = pygame.time.get_ticks()
-        viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
-        if (
-            self._worldSurfaceCache is not None
-            and (self._zoomPreviewSource is None or now >= self._zoomPreviewUntil)
-        ):
-            sourceRect = pygame.Rect(
-                self._worldSurfaceMargin, self._worldSurfaceMargin,
-                viewportWidth, WINDOW_HEIGHT,
-            )
-            self._zoomPreviewSource = self._worldSurfaceCache.subsurface(sourceRect).copy()
-            self._zoomPreviewSourceZoom = oldZoom
         requested = self.zoomLevel + delta
         # Keep useful intermediate overview buckets instead of jumping from
         # 15% directly to the 5% floor with the normal 10% wheel step.
@@ -16220,7 +16724,9 @@ class BlocFantome:
         if oldZoom != self.zoomLevel:
             # Calculate zoom factor change
             zoomFactor = self.zoomLevel / oldZoom
-            
+            viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
+            anchorX = cursorX if cursorX is not None else viewportWidth // 2
+            anchorY = cursorY if cursorY is not None else WINDOW_HEIGHT // 2
             # If cursor position provided, adjust offset to keep cursor position stationary
             if cursorX is not None and cursorY is not None:
                 # To keep the world point under cursor fixed during zoom:
@@ -16237,29 +16743,36 @@ class BlocFantome:
             
             # Update renderer zoom level
             self.renderer.setZoom(self.zoomLevel)
-            if self._zoomPreviewSource is not None:
-                ratio = self.zoomLevel / max(0.001, self._zoomPreviewSourceZoom)
-                previewSize = (
-                    max(1, round(viewportWidth * ratio)),
-                    max(1, round(WINDOW_HEIGHT * ratio)),
-                )
-                self._zoomPreviewSurface = pygame.transform.scale(
-                    self._zoomPreviewSource, previewSize
-                )
-                anchorX = cursorX if cursorX is not None else viewportWidth // 2
-                anchorY = cursorY if cursorY is not None else WINDOW_HEIGHT // 2
-                self._zoomPreviewPosition = (
-                    round(anchorX * (1.0 - ratio)),
-                    round(anchorY * (1.0 - ratio)),
-                )
-                self._zoomPreviewUntil = now + 140
-            self._invalidateViewCaches()
+            self._prepareZoomFallback()
+            self._invalidateViewCaches(
+                keepWorldOrder=True, keepZoomFallback=True
+            )
 
     def _fitWorldToViewport(self, notify: bool = True) -> None:
         """Fit the occupied editable world into the canvas with safe padding."""
         if self.world.occupiedBounds is None:
             return
         self._fitBoundsToViewport(self.world.occupiedBounds, notify=notify)
+
+    def _frameTutorialShowcase(self) -> None:
+        """Present the compact Nether/End demos close-up at a consistent height."""
+        (minX, minY, minZ), (maxX, maxY, maxZ) = self.world.occupiedBounds
+        self.zoomLevel = 1.0
+        self.renderer.setZoom(self.zoomLevel)
+        centerWorld = (
+            (minX + maxX) / 2.0,
+            (minY + maxY) / 2.0,
+            (minZ + maxZ) / 2.0,
+        )
+        screenX, screenY = self.renderer.worldToScreen(*centerWorld)
+        targetX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
+        targetY = WINDOW_HEIGHT / 2.0 + 18
+        self.renderer.offsetX += targetX - screenX
+        self.renderer.offsetY += targetY - screenY
+        self.targetOffsetX = self.renderer.offsetX
+        self.targetOffsetY = self.renderer.offsetY
+        self.cameraFocusZ = round(centerWorld[2])
+        self._invalidateViewCaches()
 
     def _fitPositionsToViewport(self, positions, notify: bool = True) -> None:
         """Fit an occupied subset while leaving every world cell editable."""
@@ -16687,10 +17200,12 @@ class BlocFantome:
             return
         
         # Draw outline around each selected block
+        viewportWidth, viewportHeight = self.screen.get_size()
         for x, y, z in self.magicWandSelection:
             # Check if within viewable area
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
-            if -100 < screenX < self.width + 100 and -100 < screenY < self.height + 100:
+            if (-100 < screenX < viewportWidth + 100 and
+                    -100 < screenY < viewportHeight + 100):
                 self._renderSelectionMarker(x, y, z, (255, 100, 255))  # Magenta for magic wand
     
     # ==================== End Magic Wand Tool ====================
@@ -16748,7 +17263,7 @@ class BlocFantome:
             ("X", "X-Ray mode (see through blocks)"),
             ("B", "Cycle brush size (1x1, 2x2, 3x3)"),
             ("M", "Measurement tool"),
-            ("W", "Magic wand (select connected)"),
+            ("Ctrl+Shift+W", "Magic wand (select connected)"),
             ("P", "Stamp tool (copy first)"),
             ("[ / ]", "Rotate clipboard"),
             ("Tab", "Toggle minimap"),
@@ -17681,111 +18196,122 @@ class BlocFantome:
         )
 
     def _visibleBlocksInDrawOrder(self):
-        """Return a cached painter order for visible chunks near the camera."""
-        adaptiveMargin = max(192, min(384, round(256 * self.zoomLevel ** 0.5)))
-        self._worldSurfaceMargin = adaptiveMargin
+        """Return a cached view-facing painter order around the camera."""
+        self._worldSurfaceMargin = 512
         centerX, centerY = self._cameraWorldCenter()
         chunkSize = self.world.chunkStorage.chunk_size
         actualCenterChunk = (centerX // chunkSize, centerY // chunkSize)
         if (
             self._renderChunkAnchor is None
-            or abs(actualCenterChunk[0] - self._renderChunkAnchor[0]) > self._renderChunkHysteresis
-            or abs(actualCenterChunk[1] - self._renderChunkAnchor[1]) > self._renderChunkHysteresis
+            or abs(actualCenterChunk[0] - self._renderChunkAnchor[0])
+            > self._renderChunkHysteresis
+            or abs(actualCenterChunk[1] - self._renderChunkAnchor[1])
+            > self._renderChunkHysteresis
         ):
             self._renderChunkAnchor = actualCenterChunk
         centerChunk = self._renderChunkAnchor
-        if (
-            self._screenCullAnchorOffset is None
-            or abs(self.renderer.offsetX - self._screenCullAnchorOffset[0]) > self._worldSurfaceMargin / 2
-            or abs(self.renderer.offsetY - self._screenCullAnchorOffset[1]) > self._worldSurfaceMargin / 2
-        ):
-            self._screenCullAnchorOffset = (
-                self.renderer.offsetX,
-                self.renderer.offsetY,
+        # Every overview zoom shares coverage sized for the 5% floor. This
+        # keeps the complete map available while wheel steps reuse one sorted
+        # order; focused views retain the much smaller six-chunk working set.
+        if self.zoomLevel <= 0.25:
+            viewportRadius = math.ceil(
+                max(
+                    (WINDOW_WIDTH - PANEL_WIDTH)
+                    / max(1.0, TILE_WIDTH * self.zoomMin),
+                    WINDOW_HEIGHT / max(1.0, TILE_HEIGHT * self.zoomMin),
+                ) / chunkSize
+            ) + self._renderChunkHysteresis
+            radius = max(
+                self.renderDistanceChunks + self._renderChunkHysteresis,
+                viewportRadius,
             )
-        offsetBucket = self._screenCullAnchorOffset
-        overview = self.zoomLevel <= self.overviewZoomThreshold
+        else:
+            radius = self.renderDistanceChunks + self._renderChunkHysteresis
         cacheKey = (
             self.world.revision,
             self.renderer.viewRotation,
-            self.zoomLevel,
-            None if overview else centerChunk,
-            None if overview else offsetBucket,
-            None if overview else self.renderDistanceChunks,
+            centerChunk,
+            radius,
             self.layerViewEnabled,
             self.currentViewLayer if self.layerViewEnabled else None,
             self.sceneTerrainMode,
-            self._worldSurfaceMargin,
         )
         if cacheKey == self._visibleOrderCacheKey:
             return self._visibleOrderCache
-        blocksToDraw = []
-        addedPositions = set()
-        if overview:
-            # Terrain can use a cheap top-cell silhouette, but canonical
-            # structure cells must never disappear merely because the camera
-            # crossed a zoom threshold.
-            if self.sceneTerrainMode != "hidden":
-                for (x, y), z in self.world.heightIndex.items():
-                    blockType = self.world.blocks.get((x, y, z), BlockType.AIR)
-                    if blockType == BlockType.AIR:
-                        continue
-                    position = (x, y, z)
-                    addedPositions.add(position)
-                    blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
-            structurePositions = (
-                self.world.structureOverviewPositions()
-                if self.zoomLevel <= self.overviewZoomThreshold
-                else self.world.structureSurfacePositions(self.renderer.viewRotation)
+        cachedOrder = self._visibleOrderCaches.get(cacheKey)
+        if cachedOrder is not None:
+            self._visibleOrderCacheKey = cacheKey
+            self._visibleOrderCache, self._visibleOrderOccluded = cachedOrder
+            return self._visibleOrderCache
+
+        preparedByView = self.world.drawOrdersByMode.get(self.sceneTerrainMode, {})
+        prepared = preparedByView.get(self.renderer.viewRotation)
+        if (
+            self.world.drawOrdersRevision == self.world.revision
+            and prepared is not None
+            and self.world.occupiedBounds is not None
+        ):
+            (minX, minY, _), (maxX, maxY, _) = self.world.occupiedBounds
+            coversWorld = (
+                minX // chunkSize >= centerChunk[0] - radius
+                and maxX // chunkSize <= centerChunk[0] + radius
+                and minY // chunkSize >= centerChunk[1] - radius
+                and maxY // chunkSize <= centerChunk[1] + radius
             )
-            for x, y, z in structurePositions:
-                if self.layerViewEnabled and z > self.currentViewLayer:
-                    continue
-                position = (x, y, z)
-                if position in addedPositions:
-                    continue
-                blockType = self.world.blocks.get(position, BlockType.AIR)
-                if blockType == BlockType.AIR:
-                    continue
-                addedPositions.add(position)
-                blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
-            blocksToDraw.sort(key=lambda block: (block[0], block[3], block[1], block[2]))
+            if coversWorld and not self.layerViewEnabled:
+                blocksToDraw = prepared
+            else:
+                blocksToDraw = tuple(
+                    item for item in prepared
+                    if abs(item[1] // chunkSize - centerChunk[0]) <= radius
+                    and abs(item[2] // chunkSize - centerChunk[1]) <= radius
+                    and (not self.layerViewEnabled or item[3] <= self.currentViewLayer)
+                )
             self._visibleOrderCacheKey = cacheKey
             self._visibleOrderCache = blocksToDraw
+            self._visibleOrderOccluded = 0
+            self._visibleOrderCaches[cacheKey] = (blocksToDraw, 0)
+            while len(self._visibleOrderCaches) > 12:
+                self._visibleOrderCaches.pop(next(iter(self._visibleOrderCaches)))
             return blocksToDraw
 
-        # Two prefetched chunk rings prevent an expensive cache rebuild when
-        # the camera merely crosses a chunk edge. Screen culling still limits
-        # what is actually rasterized.
-        radius = self.renderDistanceChunks + self._renderChunkHysteresis
-        for (chunkX, chunkY, chunkZ), surfacePositions in self.world.iterSurfaceChunksInHorizontalRadius(
-            centerX, centerY, radius
-        ):
-            if not self._chunkIsOnScreen(chunkX, chunkY, chunkZ, self._worldSurfaceMargin):
-                continue
+        blocksToDraw = []
+        addedPositions = set()
+        occluded = 0
+        if self.sceneTerrainMode == "all":
+            terrainChunks = self.world.iterViewSurfaceChunksInHorizontalRadius(
+                self.renderer.viewRotation, centerX, centerY, radius
+            )
+        elif self.sceneTerrainMode == "transparent":
+            terrainChunks = self.world.iterSceneTerrainTopChunksInHorizontalRadius(
+                centerX, centerY, radius
+            )
+        else:
+            terrainChunks = ()
+        for _, surfacePositions in terrainChunks:
             for x, y, z in surfacePositions:
                 position = (x, y, z)
+                # Cutaway scenes have an exact camera-facing structure surface
+                # prepared at load time. Do not rescan the broader six-face
+                # structure shell here only to discard its hidden faces again.
+                if (
+                    self.sceneTerrainMode != "all"
+                    and position in self.sceneStructurePositions
+                ):
+                    continue
                 blockType = self.world.blocks.get(position, BlockType.AIR)
                 if self.layerViewEnabled and z > self.currentViewLayer:
                     continue
                 if self.sceneTerrainMode == "hidden" and position not in self.sceneStructurePositions:
                     continue
-                if (
-                    self.sceneTerrainMode == "transparent"
-                    and position not in self.sceneStructurePositions
-                    and self.world.heightIndex.get((x, y)) != z
-                ):
-                    continue
                 addedPositions.add(position)
                 blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
         if self.sceneTerrainMode != "all":
-            for (chunkX, chunkY, chunkZ), structurePositions in (
+            for _, structurePositions in (
                 self.world.iterStructureSurfaceChunksInHorizontalRadius(
                     self.renderer.viewRotation, centerX, centerY, radius
                 )
             ):
-                if not self._chunkIsOnScreen(chunkX, chunkY, chunkZ, self._worldSurfaceMargin):
-                    continue
                 for x, y, z in structurePositions:
                     position = (x, y, z)
                     if position in addedPositions:
@@ -17797,9 +18323,22 @@ class BlocFantome:
                         continue
                     addedPositions.add(position)
                     blocksToDraw.append((self.renderer.depthKey(x, y, z), x, y, z, blockType))
-        blocksToDraw.sort(key=lambda block: (block[0], block[3], block[1], block[2]))
+        # Painter depths are small integers.  Bucket by depth so an edit does
+        # not re-run one O(n log n) global sort before the next rotation.
+        depthBuckets = {}
+        for item in blocksToDraw:
+            depthBuckets.setdefault(item[0], []).append(item)
+        blocksToDraw = []
+        for depth in sorted(depthBuckets):
+            bucket = depthBuckets[depth]
+            bucket.sort(key=lambda block: (block[3], block[1], block[2]))
+            blocksToDraw.extend(bucket)
         self._visibleOrderCacheKey = cacheKey
         self._visibleOrderCache = blocksToDraw
+        self._visibleOrderOccluded = occluded
+        self._visibleOrderCaches[cacheKey] = (blocksToDraw, occluded)
+        while len(self._visibleOrderCaches) > 12:
+            self._visibleOrderCaches.pop(next(iter(self._visibleOrderCaches)))
         return blocksToDraw
 
     @staticmethod
@@ -17912,9 +18451,21 @@ class BlocFantome:
     def _visibleScreenRenderPlan(self):
         """Cache screen culling and solid-cube occlusion until view state changes."""
         blocksToDraw = self._visibleBlocksInDrawOrder()
+        if (
+            self._screenCullAnchorOffset is None
+            or abs(self.renderer.offsetX - self._screenCullAnchorOffset[0])
+            > self._worldSurfaceMargin / 2
+            or abs(self.renderer.offsetY - self._screenCullAnchorOffset[1])
+            > self._worldSurfaceMargin / 2
+        ):
+            self._screenCullAnchorOffset = (
+                self.renderer.offsetX,
+                self.renderer.offsetY,
+            )
         key = (
             self._visibleOrderCacheKey,
             self.zoomLevel,
+            self._screenCullAnchorOffset,
             WINDOW_WIDTH,
             WINDOW_HEIGHT,
         )
@@ -17922,7 +18473,7 @@ class BlocFantome:
             return self._screenPlanCache, self._screenPlanOccluded, len(blocksToDraw)
 
         plan = []
-        occluded = 0
+        occluded = self._visibleOrderOccluded
         rotation = self.renderer.viewRotation
         offsetX = self.renderer.offsetX
         offsetY = self.renderer.offsetY
@@ -17933,29 +18484,24 @@ class BlocFantome:
         spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
         margin = self._worldSurfaceMargin
         viewportRight = WINDOW_WIDTH - PANEL_WIDTH
-        overview = self.zoomLevel <= self.overviewZoomThreshold
         for item in blocksToDraw:
             _, x, y, z, blockType = item
-            if self.zoomLevel > self.overviewZoomThreshold:
-                if rotation == 0:
-                    rx, ry = x, y
-                elif rotation == 1:
-                    rx, ry = -y, x
-                elif rotation == 2:
-                    rx, ry = -x, -y
-                else:
-                    rx, ry = y, -x
-                screenX = round((rx - ry) * halfTileWidth + offsetX)
-                screenY = round((rx + ry) * halfTileHeight - z * blockHeight + offsetY)
-                if (
-                    screenX + spriteHalfWidth < -margin
-                    or screenX - spriteHalfWidth > viewportRight + margin
-                    or screenY + spriteHeight < -margin
-                    or screenY > WINDOW_HEIGHT + margin
-                ):
-                    continue
-            if not overview and self._isFullyOccluded(x, y, z, blockType):
-                occluded += 1
+            if rotation == 0:
+                rx, ry = x, y
+            elif rotation == 1:
+                rx, ry = -y, x
+            elif rotation == 2:
+                rx, ry = -x, -y
+            else:
+                rx, ry = y, -x
+            screenX = round((rx - ry) * halfTileWidth + offsetX)
+            screenY = round((rx + ry) * halfTileHeight - z * blockHeight + offsetY)
+            if (
+                screenX + spriteHalfWidth < -margin
+                or screenX - spriteHalfWidth > viewportRight + margin
+                or screenY + spriteHeight < -margin
+                or screenY > WINDOW_HEIGHT + margin
+            ):
                 continue
             plan.append(item)
         self._screenPlanCacheKey = key
@@ -17965,15 +18511,6 @@ class BlocFantome:
 
     def _renderWorld(self) -> None:
         """Render the world blocks in correct order"""
-        if (
-            self._zoomPreviewSurface is not None
-            and pygame.time.get_ticks() < self._zoomPreviewUntil
-        ):
-            self.screen.blit(self._zoomPreviewSurface, self._zoomPreviewPosition)
-            return
-        if self._zoomPreviewSurface is not None:
-            self._zoomPreviewSurface = None
-            self._zoomPreviewSource = None
         # Update lighting if needed
         if self.lightingEnabled and self.lightingDirty:
             self.lightMap = self.world.calculateLighting()
@@ -17990,6 +18527,9 @@ class BlocFantome:
             BlockType.NETHER_PORTAL,
             BlockType.FIRE,
             BlockType.SOUL_FIRE,
+            BlockType.ENCHANTING_TABLE,
+            BlockType.MATRIX,
+            BlockType.SCULK_SENSOR,
         }
         # Rebuilding an entire cached terrain surface for one liquid frame is
         # more expensive than the animation is worth. Keep animation live for
@@ -18007,6 +18547,9 @@ class BlocFantome:
                 self.assetManager.currentLavaFrame,
                 self.assetManager.currentPortalFrame,
                 self.assetManager.currentFireFrame,
+                self.assetManager.currentMineCrafterFrame,
+                round(self.assetManager.enchantingAnimationPhase, 3),
+                self._specialAnimationRevision,
             )
         surfaceKey = (
             self._screenPlanCacheKey,
@@ -18040,19 +18583,41 @@ class BlocFantome:
             return
 
         targetSurface = self.screen
+        incrementalZoomBuild = bool(
+            canCacheSurface
+            and self._worldZoomFallback is not None
+            and len(blocksToDraw) > 4000
+        )
         if canCacheSurface:
-            targetSurface = pygame.Surface(
-                (
-                    WINDOW_WIDTH - PANEL_WIDTH + self._worldSurfaceMargin * 2,
-                    WINDOW_HEIGHT + self._worldSurfaceMargin * 2,
-                ),
-                pygame.SRCALPHA,
+            cacheSize = (
+                WINDOW_WIDTH - PANEL_WIDTH + self._worldSurfaceMargin * 2,
+                WINDOW_HEIGHT + self._worldSurfaceMargin * 2,
             )
-        drawnCount = 0
+            if incrementalZoomBuild:
+                if (
+                    self._worldSurfaceBuildKey != surfaceKey
+                    or self._worldSurfaceBuild is None
+                ):
+                    self._worldSurfaceBuildKey = surfaceKey
+                    self._worldSurfaceBuild = pygame.Surface(
+                        cacheSize, pygame.SRCALPHA
+                    )
+                    self._worldSurfaceBuildIndex = 0
+                targetSurface = self._worldSurfaceBuild
+            else:
+                targetSurface = pygame.Surface(cacheSize, pygame.SRCALPHA)
+        startIndex = self._worldSurfaceBuildIndex if incrementalZoomBuild else 0
+        transitionBatch = 5200 if self._worldTransitionKind == "rotation" else 4200
+        endIndex = (
+            min(len(blocksToDraw), startIndex + transitionBatch)
+            if incrementalZoomBuild
+            else len(blocksToDraw)
+        )
+        drawnCount = startIndex
         blits = []
-        
+
         # Draw blocks
-        for _, x, y, z, blockType in blocksToDraw:
+        for _, x, y, z, blockType in blocksToDraw[startIndex:endIndex]:
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
             
             # Horror: Block texture flicker - briefly show wrong texture
@@ -18085,7 +18650,21 @@ class BlocFantome:
                 blockDef = BLOCK_DEFINITIONS.get(displayBlockType)
                 props = self.world.getBlockProperties(x, y, z)
                 
-                if blockDef and blockDef.modelKind:
+                if displayBlockType == BlockType.OXIDIZING_COPPER:
+                    stage = props.oxidationStage if props else 0
+                    sprite = self.assetManager.copperStageSprites.get(
+                        max(0, min(3, int(stage))),
+                        self.assetManager.getBlockSprite(displayBlockType),
+                    )
+                elif displayBlockType == BlockType.SCULK_SENSOR:
+                    isActive = self._sculkSensorActiveUntil.get(
+                        (x, y, z), 0
+                    ) > pygame.time.get_ticks()
+                    sprite = self.assetManager.sculkSensorSprites.get(
+                        isActive,
+                        self.assetManager.getBlockSprite(displayBlockType),
+                    )
+                elif blockDef and blockDef.modelKind:
                     props = props or BlockProperties()
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
                     relativeFacing = Facing((facing.value - viewRot) % 4)
@@ -18135,9 +18714,7 @@ class BlocFantome:
                 
                 # worldToScreen returns the TOP vertex of the tile diamond
                 # Sprite's top vertex is at (TILE_WIDTH // 2, 0), so offset to align
-                scaledTileWidth = int(TILE_WIDTH * self.zoomLevel)
-                scaledBlockHeight = int(BLOCK_HEIGHT * self.zoomLevel)
-                drawX = screenX - scaledTileWidth // 2
+                drawX = screenX - sprite.get_width() // 2
                 drawY = screenY
                 
                 # Apply X-Ray transparency for solid blocks
@@ -18164,6 +18741,21 @@ class BlocFantome:
         if blits:
             targetSurface.blits(blits)
 
+        if incrementalZoomBuild and endIndex < len(blocksToDraw):
+            self._worldSurfaceBuildIndex = endIndex
+            self.screen.blit(
+                self._worldZoomFallback,
+                (-self._worldSurfaceMargin, -self._worldSurfaceMargin),
+            )
+            self.renderStats = {
+                "candidates": allCandidateCount,
+                "screen_candidates": len(blocksToDraw),
+                "drawn": endIndex,
+                "occluded": occludedCount,
+            }
+            self._renderSpawnerParticles()
+            return
+
         if canCacheSurface:
             self._worldSurfaceCacheKey = surfaceKey
             self._worldSurfaceCache = targetSurface
@@ -18175,6 +18767,13 @@ class BlocFantome:
                 targetSurface,
                 (-self._worldSurfaceMargin, -self._worldSurfaceMargin),
             )
+            self._worldZoomFallback = None
+            self._worldFallbackSource = None
+            self._worldFallbackSourceZoom = None
+            self._worldTransitionKind = None
+            self._worldSurfaceBuildKey = None
+            self._worldSurfaceBuild = None
+            self._worldSurfaceBuildIndex = 0
         else:
             self._worldSurfaceCacheKey = None
             self._worldSurfaceCache = None
@@ -18395,13 +18994,6 @@ class BlocFantome:
                     totalHeight += numRows * (slotSize + 4) + 5
             totalHeight += 10
         
-        # Experimental blocks main button + content
-        totalHeight += mainButtonHeight
-        if self.problemsExpanded:
-            experimentalBlocks = BLOCK_CATEGORIES.get("Experimental", [])
-            numRows = (len(experimentalBlocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
-            totalHeight += numRows * (slotSize + 4) + 15
-        
         # Features main button + content (3 dimension buttons + Show Tutorial + Rain + Snow + Sun/Moon + Clouds + Lighting + Horror Rain + Save/Load)
         totalHeight += mainButtonHeight
         if self.experimentalExpanded:
@@ -18426,6 +19018,12 @@ class BlocFantome:
         # Available height for scrollable area
         availableHeight = WINDOW_HEIGHT - headerHeight
         self.maxScroll = max(0, totalHeight - availableHeight)
+        self.inventoryScrollTarget = max(
+            0.0, min(self.inventoryScrollTarget, float(self.maxScroll))
+        )
+        self.inventoryScroll = max(
+            0.0, min(self.inventoryScroll, float(self.maxScroll))
+        )
         
         # Create clipping region for scrollable content
         clipRect = pygame.Rect(panelX, startY, PANEL_WIDTH, availableHeight)
@@ -18440,7 +19038,7 @@ class BlocFantome:
         self.assetManager.drawButton(self.screen, blocksRect, "Blocks", self.font, blocksHovered, self.blocksExpanded)
         currentY += mainButtonHeight + 5
         
-        # Blocks content (sub-categories) - skip Experimental since it has its own section
+        # Blocks content (sub-categories)
         if self.blocksExpanded:
             for category in CATEGORY_ORDER:
                 if category == "Problematic" or category == "Experimental":
@@ -18535,38 +19133,6 @@ class BlocFantome:
                     currentY += collapseBtnHeight + 5
             
             currentY += 5
-        
-        # ===== EXPERIMENTAL MAIN BUTTON =====
-        problemsRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
-        problemsHovered = problemsRect.collidepoint(mouseX, mouseY)
-        self.assetManager.drawButton(self.screen, problemsRect, "Experimental", self.font, problemsHovered, self.problemsExpanded)
-        currentY += mainButtonHeight + 5
-        
-        # Experimental blocks content
-        if self.problemsExpanded:
-            experimentalBlocks = BLOCK_CATEGORIES.get("Experimental", [])
-            blocksStartY = currentY + 2
-            
-            for i, blockType in enumerate(experimentalBlocks):
-                row = i // ICONS_PER_ROW
-                col = i % ICONS_PER_ROW
-                
-                btnX = panelX + ICON_MARGIN + col * (slotSize + 4)
-                btnY = blocksStartY + row * (slotSize + 4)
-                
-                if btnY + slotSize >= startY and btnY <= startY + availableHeight:
-                    slotRect = pygame.Rect(btnX, btnY, slotSize, slotSize)
-                    isSelected = blockType == self.selectedBlock
-                    self.assetManager.drawSlot(self.screen, slotRect, isSelected)
-                    
-                    icon = self.assetManager.getIconSprite(blockType)
-                    if icon:
-                        iconX = btnX + (slotSize - ICON_SIZE) // 2
-                        iconY = btnY + (slotSize - ICON_SIZE) // 2
-                        self.screen.blit(icon, (iconX, iconY))
-            
-            numRows = (len(experimentalBlocks) + ICONS_PER_ROW - 1) // ICONS_PER_ROW
-            currentY += numRows * (slotSize + 4) + 10
         
         # ===== FEATURES MAIN BUTTON =====
         experimentalRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
@@ -18911,7 +19477,7 @@ class BlocFantome:
             ("X", "X-Ray mode"),
             ("Tab", "Minimap"),
             ("M", "Measure tool"),
-            ("W", "Magic wand"),
+            ("Ctrl+Shift", "W", "Magic wand"),
             ("P", "Stamp tool"),
             ("/", "Layer slice"),
             ("G", "Toggle grid"),
@@ -19053,62 +19619,45 @@ class BlocFantome:
         gearRect = pygame.Rect(gearX, gearY, gearSize, gearSize)
         gearHovered = gearRect.collidepoint(mouseX, mouseY)
         
-        # Draw square gray box
-        gearBgColor = (110, 110, 110) if gearHovered else (80, 80, 80)
-        pygame.draw.rect(self.screen, gearBgColor, gearRect)
-        pygame.draw.rect(self.screen, (60, 60, 60), gearRect, 2)
-        
-        # Draw proper gear icon with 6 teeth
-        import math
+        # Minecraft button frame with a compact eight-tooth gear.
+        self.assetManager.drawButton(
+            self.screen, gearRect, "", self.smallFont, hovered=gearHovered
+        )
         centerX = gearX + gearSize // 2
         centerY = gearY + gearSize // 2
-        gearColor = (255, 255, 255)
-        
-        # Build gear shape as polygon points
         gearPoints = []
-        numTeeth = 6
-        outerRadius = 11  # Tip of teeth
-        innerRadius = 8   # Base of teeth
-        toothWidth = 0.35  # Radians - tooth width at tip
-        
+        numTeeth = 8
+        outerRadius = 11
+        innerRadius = 8
+        toothWidth = 0.28
         for i in range(numTeeth):
-            # Angle to center of tooth
             toothAngle = (i * 2 * math.pi / numTeeth) - math.pi / 2
-            
-            # Valley before tooth (inner radius)
             valleyAngle1 = toothAngle - math.pi / numTeeth + toothWidth / 2
             gearPoints.append((
                 centerX + int(math.cos(valleyAngle1) * innerRadius),
                 centerY + int(math.sin(valleyAngle1) * innerRadius)
             ))
-            
-            # Tooth start (outer radius)
             toothStart = toothAngle - toothWidth / 2
             gearPoints.append((
                 centerX + int(math.cos(toothStart) * outerRadius),
                 centerY + int(math.sin(toothStart) * outerRadius)
             ))
-            
-            # Tooth end (outer radius)
             toothEnd = toothAngle + toothWidth / 2
             gearPoints.append((
                 centerX + int(math.cos(toothEnd) * outerRadius),
                 centerY + int(math.sin(toothEnd) * outerRadius)
             ))
-            
-            # Valley after tooth (inner radius)
             valleyAngle2 = toothAngle + math.pi / numTeeth - toothWidth / 2
             gearPoints.append((
                 centerX + int(math.cos(valleyAngle2) * innerRadius),
                 centerY + int(math.sin(valleyAngle2) * innerRadius)
             ))
-        
-        # Draw the gear body
-        pygame.draw.polygon(self.screen, gearColor, gearPoints)
-        
-        # Draw center hole
-        holeColor = gearBgColor  # Match background
-        pygame.draw.circle(self.screen, holeColor, (centerX, centerY), 4)
+        shadowPoints = [(x + 1, y + 2) for x, y in gearPoints]
+        pygame.draw.polygon(self.screen, (30, 30, 34), shadowPoints)
+        pygame.draw.polygon(self.screen, (205, 205, 208), gearPoints)
+        pygame.draw.polygon(self.screen, (245, 245, 245), gearPoints, 1)
+        pygame.draw.circle(self.screen, (36, 36, 40), (centerX, centerY), 4)
+        pygame.draw.circle(self.screen, (110, 110, 116), (centerX, centerY), 4, 1)
         
         # Store gear button rect for click detection
         self.settingsGearRect = gearRect
@@ -19258,7 +19807,7 @@ def main():
         sys.stderr = LoggingPrinter()
     
     print("=" * 50)
-    print("  Bloc Fantome Building Simulator")
+    print("  Bloc Fantôme Building Simulator")
     print("=" * 50)
     
     try:

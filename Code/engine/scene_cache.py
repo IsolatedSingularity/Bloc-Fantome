@@ -18,7 +18,7 @@ from engine.block_state import (
 )
 
 
-MAGIC = b"BFC5"
+MAGIC = b"BFC6"
 HEADER = struct.Struct("<4s32sI")
 RECORD = struct.Struct("<hhhHHBBBBBB")
 STAIR_SHAPES = tuple(StairShape)
@@ -57,6 +57,7 @@ def load(path: str, expected_digest: bytes, block_type):
     exterior_glass_positions = set()
     structure_surfaces_by_view = {rotation: set() for rotation in range(4)}
     surface_positions = set()
+    view_surface_positions_by_view = {rotation: set() for rotation in range(4)}
     for values in RECORD.iter_unpack(payload):
         x, y, z, type_value, flags, facing, slab, stair, door_half, hinge, liquid = values
         props = None
@@ -86,11 +87,15 @@ def load(path: str, expected_digest: bytes, block_type):
                 structure_surfaces_by_view[rotation].add((x, y, z))
         if flags & 2048:
             surface_positions.add((x, y, z))
+        for rotation in range(4):
+            if flags & (4096 << rotation):
+                view_surface_positions_by_view[rotation].add((x, y, z))
     scene = dict(metadata.get("scene", {}))
     scene["_structure_positions"] = structure_positions
     scene["_exterior_glass_positions"] = exterior_glass_positions
     scene["_structure_surfaces_by_view"] = structure_surfaces_by_view
     scene["_surface_positions"] = surface_positions
+    scene["_view_surface_positions_by_view"] = view_surface_positions_by_view
     bounds = tuple(metadata["bounds"])
     if len(bounds) != 4:
         raise ValueError("Invalid world cache bounds")
@@ -108,7 +113,7 @@ def load(path: str, expected_digest: bytes, block_type):
 def write(path: str, digest: bytes, dimension: str, bounds, scene,
           staged: Iterable, structure_positions,
           exterior_glass_positions=(), structure_surfaces_by_view=None,
-          surface_positions=()) -> None:
+          surface_positions=(), view_surface_positions_by_view=None) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     staged = tuple(staged)
     serialized_scene = {
@@ -120,6 +125,7 @@ def write(path: str, digest: bytes, dimension: str, bounds, scene,
     ).encode("utf-8")
     temp_path = path + ".tmp"
     structure_surfaces_by_view = structure_surfaces_by_view or {}
+    view_surface_positions_by_view = view_surface_positions_by_view or {}
     with open(temp_path, "wb") as handle:
         handle.write(HEADER.pack(MAGIC, digest, len(metadata)))
         handle.write(metadata)
@@ -133,6 +139,9 @@ def write(path: str, digest: bytes, dimension: str, bounds, scene,
                     flags |= 128 << rotation
             if (x, y, z) in surface_positions:
                 flags |= 2048
+            for rotation in range(4):
+                if (x, y, z) in view_surface_positions_by_view.get(rotation, ()):
+                    flags |= 4096 << rotation
             facing = slab = stair = door_half = hinge = liquid = 0
             if props is not None:
                 flags |= 1

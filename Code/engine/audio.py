@@ -1,4 +1,4 @@
-"""Bounded music and sound-effect routing for Bloc Fantome."""
+"""Bounded music and sound-effect routing for Bloc Fantôme."""
 
 from collections import defaultdict
 import os
@@ -24,12 +24,28 @@ class PreloadedMusicBackend:
         self._path: Optional[str] = None
         self._volume = 1.0
         self._end_event = 0
+        self._preloaded: Dict[str, Any] = {}
         self.stop_posts_end_event = False
+
+    def preload(self, path: str) -> None:
+        """Decode a bounded startup track without replacing current playback."""
+        path = str(path)
+        if path == self._path or path in self._preloaded:
+            return
+        self._preloaded[path] = self._mixer.Sound(path)
+        self._preloaded[path].set_volume(self._volume)
+        while len(self._preloaded) > 3:
+            self._preloaded.pop(next(iter(self._preloaded)))
 
     def load(self, path: str) -> None:
         self.stop()
-        self._sound = self._mixer.Sound(path)
-        self._path = str(path)
+        path = str(path)
+        if self._sound is not None and self._path:
+            self._preloaded[self._path] = self._sound
+        self._sound = self._preloaded.pop(path, None)
+        if self._sound is None:
+            self._sound = self._mixer.Sound(path)
+        self._path = path
         self._sound.set_volume(self._volume)
         self._logger(f"Music decoded: {os.path.basename(self._path)}")
 

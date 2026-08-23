@@ -1,5 +1,5 @@
 """
-Performance Module for Bloc Fantome
+Performance Module for Bloc Fantôme
 
 This module provides performance optimizations including:
 - Dirty region tracking (only re-render changed areas)

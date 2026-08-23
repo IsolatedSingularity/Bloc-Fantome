@@ -80,18 +80,35 @@ def benchmark_scene(app, path, repetitions):
     fit = measure(fit_and_render, repetitions=repetitions)
     overview = measure(app._render, repetitions=30, warmup=3)
 
+    def overview_rotate():
+        app._rotateViewAndRecenter(1)
+        app._renderWorld()
+
+    overview_rotation = measure(overview_rotate, repetitions=repetitions)
+
+    # One ordinary edit invalidates staged snapshot orders. This measures the
+    # integer-depth fallback rather than allowing edited worlds to regress to
+    # the old global sort stall.
+    edit_x = app.world.width // 2
+    edit_y = app.world.depth // 2
+    edit_z = min(app.world.max_y_exclusive - 1, app.world.getHighestBlock(edit_x, edit_y) + 1)
+    old_block = app.world.getBlock(edit_x, edit_y, edit_z)
+    replacement = blocFantome.BlockType.STONE
+    if old_block == replacement:
+        replacement = blocFantome.BlockType.COBBLESTONE
+    app.world.setBlock(edit_x, edit_y, edit_z, replacement)
+    app._visibleOrderCaches.clear()
+    app._invalidateViewCaches()
+    edited_overview_rotation = measure(overview_rotate, repetitions=repetitions)
+
     def zoom_exact():
         center = ((blocFantome.WINDOW_WIDTH - blocFantome.PANEL_WIDTH) // 2,
                   blocFantome.WINDOW_HEIGHT // 2)
         app._handleZoom(app.zoomStep, *center)
-        app._zoomPreviewUntil = 0
         app._renderWorld()
 
     def prepare_zoom_exact():
         app._fitWorldToViewport(notify=False)
-        app._zoomPreviewSurface = None
-        app._zoomPreviewSource = None
-        app._zoomPreviewUntil = 0
         app._renderWorld()
 
     zoom = measure(
@@ -113,6 +130,8 @@ def benchmark_scene(app, path, repetitions):
         "rotation": rotation,
         "fit_first_frame": fit,
         "overview": overview,
+        "overview_rotation": overview_rotation,
+        "edited_overview_rotation": edited_overview_rotation,
         "first_exact_zoom_frame": zoom,
         "render": dict(app.renderStats),
         "memory": {
@@ -159,6 +178,8 @@ def main(argv=None) -> int:
             f"pan_median={result['forced_pan_rebuild']['median_ms']:.1f}ms "
             f"full_p95={result['stable_full_frame']['p95_ms']:.2f}ms "
             f"fit_median={result['fit_first_frame']['median_ms']:.1f}ms "
+            f"overview_rotate_p95={result['overview_rotation']['p95_ms']:.1f}ms "
+            f"edited_rotate_p95={result['edited_overview_rotation']['p95_ms']:.1f}ms "
             f"zoom_exact_p95={result['first_exact_zoom_frame']['p95_ms']:.1f}ms "
             f"drawn={result['render']['drawn']} candidates={result['render']['candidates']}"
         )

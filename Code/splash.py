@@ -61,6 +61,8 @@ class SplashScreen:
         self.background_tile = self._create_background_tile()
         self.icon = self._create_textured_block()
         self.title_font = self._load_title_font()
+        self.title = self.title_font.render("Bloc Fantôme", True, (255, 255, 255))
+        self.first_presented_at = None
     
     def _load_texture(self) -> Optional[pygame.Surface]:
         """Load the end stone texture independently."""
@@ -249,16 +251,20 @@ class SplashScreen:
         return surface
     
     def _create_background_tile(self) -> pygame.Surface:
-        """Create the dim repeating End Stone texture used behind the logo."""
-        tile = pygame.Surface((64, 64))
-        if self.texture:
-            tile.blit(pygame.transform.scale(self.texture, (64, 64)), (0, 0))
-        else:
-            tile.fill(END_STONE_COLOR)
-        darkness = pygame.Surface(tile.get_size(), pygame.SRCALPHA)
-        darkness.fill((0, 0, 0, 224))
-        tile.blit(darkness, (0, 0))
-        return tile
+        """Load the pre-rendered seamless tessellation without startup raster work."""
+        backgroundPath = os.path.join(
+            self.icons_dir, "Splash_Background_End_Stone.png"
+        )
+        if os.path.isfile(backgroundPath):
+            try:
+                return pygame.image.load(backgroundPath).convert()
+            except pygame.error:
+                pass
+        from engine.app_icon import render_splash_background_surface
+
+        return render_splash_background_surface(
+            self.texture, (self.window_width, self.window_height)
+        )
 
     def _draw_background(self, target: pygame.Surface) -> None:
         """Tile the background without per-frame surface allocation."""
@@ -267,24 +273,16 @@ class SplashScreen:
                 target.blit(self.background_tile, (x, y))
 
     def _create_textured_block(self) -> pygame.Surface:
-        """Render one seamless full-cube model from the End Stone texture."""
-        from engine.model_renderer import BlockModelRenderer
+        """Load the approved foreground logo independently of Windows icons."""
+        logoPath = os.path.join(self.icons_dir, "Splash_End_Stone.png")
+        if os.path.isfile(logoPath):
+            try:
+                return pygame.image.load(logoPath).convert_alpha()
+            except pygame.error:
+                pass
+        from engine.app_icon import render_splash_logo_surface
 
-        texture = self.texture
-        if texture is None:
-            texture = pygame.Surface((16, 16), pygame.SRCALPHA)
-            texture.fill((*END_STONE_COLOR, 255))
-        renderer = BlockModelRenderer(
-            SPLASH_ICON_SIZE,
-            SPLASH_ICON_SIZE // 2,
-            SPLASH_ICON_SIZE // 2,
-        )
-        return renderer.render_boxes(
-            ((0, 0, 0, 16, 16, 16),),
-            texture,
-            texture,
-            texture,
-        )
+        return render_splash_logo_surface(self.texture, SPLASH_ICON_SIZE)
 
     def _create_fallback_icon(self) -> pygame.Surface:
         """Create a simple colored block as fallback."""
@@ -293,6 +291,23 @@ class SplashScreen:
         pygame.draw.rect(icon, END_STONE_BORDER, icon.get_rect(), 4)
         return icon
     
+    def present(self) -> None:
+        """Put the splash on screen immediately before expensive startup work."""
+        icon_rect = self.icon.get_rect(center=(
+            self.window_width // 2,
+            self.window_height // 2 - self.icon.get_height() // 4,
+        ))
+        title_rect = self.title.get_rect(center=(
+            self.window_width // 2,
+            self.window_height // 2 + self.icon.get_height() // 2 + 50,
+        ))
+        self._draw_background(self.screen)
+        self.screen.blit(self.icon, icon_rect)
+        self.screen.blit(self.title, title_rect)
+        pygame.display.flip()
+        if self.first_presented_at is None:
+            self.first_presented_at = pygame.time.get_ticks()
+
     def show(self, pre_render_callback=None) -> None:
         """
         Display the splash screen with fade animation.
@@ -311,8 +326,7 @@ class SplashScreen:
                                           self.window_height // 2 - icon.get_height() // 4))
         
         # Render title
-        title_text = self.title_font.render("Bloc Fantôme", True, (255, 255, 255))
-        title_rect = title_text.get_rect(center=(self.window_width // 2, 
+        title_rect = self.title.get_rect(center=(self.window_width // 2,
                                                   self.window_height // 2 + icon.get_height() // 2 + 50))
         
         # Pre-render game frame for smooth transition
@@ -323,8 +337,14 @@ class SplashScreen:
             except:
                 pass
         
-        # Display phase - dim tiled background with the model icon
-        for frame in range(SPLASH_DISPLAY_FRAMES):
+        # Display phase. Startup work counts toward the minimum display time,
+        # so loading first never adds another fixed two-second pause.
+        elapsedFrames = 0
+        if self.first_presented_at is not None:
+            elapsedFrames = round(
+                (pygame.time.get_ticks() - self.first_presented_at) * SPLASH_FPS / 1000
+            )
+        for frame in range(max(0, SPLASH_DISPLAY_FRAMES - elapsedFrames)):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -334,7 +354,7 @@ class SplashScreen:
             
             self._draw_background(self.screen)
             self.screen.blit(icon, icon_rect)
-            self.screen.blit(title_text, title_rect)
+            self.screen.blit(self.title, title_rect)
             
             pygame.display.flip()
             self.clock.tick(SPLASH_FPS)

@@ -1,5 +1,5 @@
 """
-World Module for Bloc Fantome
+World Module for Bloc Fantôme
 
 This module contains the World class which manages the 3D voxel grid
 for the building area. It uses dictionary-based sparse storage for
@@ -15,6 +15,7 @@ Features:
 
 from collections import defaultdict, deque
 from contextlib import contextmanager
+import heapq
 from typing import Any, Deque, Dict, List, Optional, Set, Tuple
 
 from domain.world_catalog import WorldCatalog
@@ -62,6 +63,11 @@ class World:
         # without changing the editable sparse world representation.
         self.surfaceBlocks: Set[Tuple[int, int, int]] = set()
         self.surfaceChunks: Dict[Tuple[int, int, int], Set[Tuple[int, int, int]]] = {}
+        self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+        self.viewSurfacePositionsByView = {rotation: set() for rotation in range(4)}
+        self._viewSurfaceChunksReady = set(range(4))
+        self.drawOrdersByMode = {}
+        self.drawOrdersRevision = -1
         self.sceneStructurePositions: Set[Tuple[int, int, int]] = set()
         self.sceneStructureBounds: Optional[
             Tuple[Tuple[int, int, int], Tuple[int, int, int]]
@@ -70,6 +76,8 @@ class World:
         self.sceneStructureSurfacesByView = {rotation: set() for rotation in range(4)}
         self.sceneStructureSurfaceChunksByView = {rotation: {} for rotation in range(4)}
         self._sceneStructureOverviewPositions = None
+        self._sceneTerrainTopChunks = None
+        self._sceneTerrainTopByColumn = {}
         self.revision = 0
         self._bulkDepth = 0
         self._bulkChanged = False
@@ -108,7 +116,10 @@ class World:
             if self._bulkDepth:
                 self._bulkChanged = True
             else:
+                previous_revision = self.revision
                 self.revision += 1
+                if self.drawOrdersRevision == previous_revision:
+                    self.drawOrdersRevision = self.revision
                 self.dirtyRegions.mark_block_and_neighbors(x, y, z)
 
     def _storeBlock(self, pos: Tuple[int, int, int], blockType: 'BlockType') -> bool:
@@ -139,10 +150,12 @@ class World:
             levels.add(z)
             if z > self.heightIndex.get(column, self.min_y - 1):
                 self.heightIndex[column] = z
+        self._refreshSceneTerrainTopColumn(column)
         if self._bulkDepth:
             self._bulkChanged = True
         else:
             self._refreshSurfaceNeighborhood(pos)
+            self._refreshPreparedDrawOrders(pos)
             self.revision += 1
             self.dirtyRegions.mark_block_and_neighbors(x, y, z)
         return True
@@ -214,6 +227,218 @@ class World:
                         cells.discard(candidate)
                         if not cells:
                             self.surfaceChunks.pop(chunk, None)
+            self._refreshViewSurfacePosition(candidate)
+
+    @staticmethod
+    def _drawDepth(rotation: int, pos: Tuple[int, int, int]) -> int:
+        x, y, z = pos
+        if rotation == 0:
+            return x + y + z
+        if rotation == 1:
+            return -y + x + z
+        if rotation == 2:
+            return -x - y + z
+        return y - x + z
+
+    def _refreshSceneStructureSurfacePosition(self, pos) -> None:
+        """Refresh one edited structure-role cell for every camera view."""
+        BlockType = self.catalog.block_type
+        for visible in self.sceneStructureSurfacesByView.values():
+            visible.discard(pos)
+        if pos not in self.sceneStructurePositions or pos not in self.blocks:
+            return
+        definition = self.catalog.definitions.get(self.blocks[pos])
+        opaque = bool(
+            definition
+            and not getattr(definition, "transparent", False)
+            and not getattr(definition, "isLiquid", False)
+            and not getattr(definition, "isThin", False)
+            and not getattr(definition, "isSlab", False)
+            and not getattr(definition, "isStair", False)
+            and not getattr(definition, "isPortal", False)
+            and not getattr(definition, "modelKind", None)
+        )
+        if not opaque:
+            for visible in self.sceneStructureSurfacesByView.values():
+                visible.add(pos)
+            return
+        x, y, z = pos
+
+        def occupied(neighbor):
+            return (
+                neighbor in self.sceneStructurePositions
+                and self.blocks.get(neighbor, BlockType.AIR) != BlockType.AIR
+            )
+
+        directions = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )
+        for rotation, sides in enumerate(directions):
+            if not occupied((x, y, z + 1)) or any(
+                not occupied((x + dx, y + dy, z)) for dx, dy in sides
+            ):
+                self.sceneStructureSurfacesByView[rotation].add(pos)
+
+    def _refreshPreparedDrawOrders(self, editedPos) -> None:
+        """Patch staged painter orders locally after an ordinary block edit."""
+        if not self.drawOrdersByMode or self.drawOrdersRevision != self.revision:
+            return
+        affected = {editedPos, *self._neighborPositions(editedPos)}
+        changedColumns = {(position[0], position[1]) for position in affected}
+        for position in affected:
+            self._refreshSceneStructureSurfacePosition(position)
+
+        def key(item):
+            return item[0], item[3], item[1], item[2]
+
+        def item(rotation, position):
+            block = self.blocks.get(position)
+            if block is None:
+                return None
+            return (self._drawDepth(rotation, position), *position, block)
+
+        for mode, views in self.drawOrdersByMode.items():
+            for rotation, oldOrder in tuple(views.items()):
+                if mode == "transparent":
+                    base = tuple(
+                        value for value in oldOrder
+                        if (value[1], value[2], value[3]) not in affected
+                        and not (
+                            (value[1], value[2]) in changedColumns
+                            and (value[1], value[2], value[3])
+                            not in self.sceneStructurePositions
+                        )
+                    )
+                    positions = set()
+                    for column in changedColumns:
+                        top = self.heightIndex.get(column)
+                        if top is not None:
+                            position = (column[0], column[1], top)
+                            if position not in self.sceneStructurePositions:
+                                positions.add(position)
+                    positions.update(
+                        position for position in affected
+                        if position in self.sceneStructureSurfacesByView[rotation]
+                    )
+                elif mode == "hidden":
+                    base = tuple(
+                        value for value in oldOrder
+                        if (value[1], value[2], value[3]) not in affected
+                    )
+                    positions = {
+                        position for position in affected
+                        if position in self.sceneStructureSurfacesByView[rotation]
+                    }
+                else:
+                    base = tuple(
+                        value for value in oldOrder
+                        if (value[1], value[2], value[3]) not in affected
+                    )
+                    positions = affected & self.viewSurfacePositionsByView[rotation]
+                additions = sorted(
+                    (value for position in positions if (value := item(rotation, position))),
+                    key=key,
+                )
+                views[rotation] = tuple(heapq.merge(base, additions, key=key))
+        self.drawOrdersRevision = self.revision + 1
+
+    def _surfaceViewsForPosition(self, pos: Tuple[int, int, int]):
+        """Return camera rotations that can see a block's top or front sides."""
+        BlockType = self.catalog.block_type
+        blockType = self.blocks.get(pos, BlockType.AIR)
+        if blockType == BlockType.AIR or pos not in self.surfaceBlocks:
+            return ()
+        definition = self.catalog.definitions.get(blockType)
+        opaqueCube = bool(
+            definition
+            and not getattr(definition, "transparent", False)
+            and not getattr(definition, "isLiquid", False)
+            and not getattr(definition, "isThin", False)
+            and not getattr(definition, "isSlab", False)
+            and not getattr(definition, "isStair", False)
+            and not getattr(definition, "isPortal", False)
+            and not getattr(definition, "modelKind", None)
+        )
+        if not opaqueCube:
+            return range(4)
+        x, y, z = pos
+
+        def neighborIsOpaque(neighbor) -> bool:
+            neighborType = self.blocks.get(neighbor, BlockType.AIR)
+            neighborDefinition = self.catalog.definitions.get(neighborType)
+            return bool(
+                neighborDefinition
+                and not getattr(neighborDefinition, "transparent", False)
+                and not getattr(neighborDefinition, "isLiquid", False)
+                and not getattr(neighborDefinition, "isThin", False)
+                and not getattr(neighborDefinition, "isSlab", False)
+                and not getattr(neighborDefinition, "isStair", False)
+                and not getattr(neighborDefinition, "isPortal", False)
+                and not getattr(neighborDefinition, "modelKind", None)
+            )
+
+        if not neighborIsOpaque((x, y, z + 1)):
+            return range(4)
+        exposed = {
+            (1, 0): not neighborIsOpaque((x + 1, y, z)),
+            (-1, 0): not neighborIsOpaque((x - 1, y, z)),
+            (0, 1): not neighborIsOpaque((x, y + 1, z)),
+            (0, -1): not neighborIsOpaque((x, y - 1, z)),
+        }
+        sideDirections = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )
+        return tuple(
+            rotation
+            for rotation, directions in enumerate(sideDirections)
+            if any(exposed[direction] for direction in directions)
+        )
+
+    def _refreshViewSurfacePosition(self, pos: Tuple[int, int, int]) -> None:
+        size = self.chunkStorage.chunk_size
+        chunk = tuple(value // size for value in pos)
+        visibleViews = set(self._surfaceViewsForPosition(pos))
+        for rotation, positionsByView in self.viewSurfacePositionsByView.items():
+            positionsByView.discard(pos)
+            if rotation in visibleViews:
+                positionsByView.add(pos)
+            if rotation not in self._viewSurfaceChunksReady:
+                continue
+            chunks = self.viewSurfaceChunksByView[rotation]
+            positions = chunks.get(chunk)
+            if positions is not None:
+                positions.discard(pos)
+                if not positions:
+                    chunks.pop(chunk, None)
+            if rotation in visibleViews:
+                chunks.setdefault(chunk, set()).add(pos)
+
+    def _rebuildViewSurfaceIndex(self) -> None:
+        positionsByView = {rotation: set() for rotation in range(4)}
+        for pos in self.surfaceBlocks:
+            for rotation in self._surfaceViewsForPosition(pos):
+                positionsByView[rotation].add(pos)
+        self.viewSurfacePositionsByView = positionsByView
+        self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+        self._viewSurfaceChunksReady.clear()
+
+    def prepareViewSurfaceChunks(self, viewRotation: int) -> None:
+        """Build one view's chunk lookup lazily after the first visible frame."""
+        rotation = viewRotation % 4
+        if rotation in self._viewSurfaceChunksReady:
+            return
+        size = self.chunkStorage.chunk_size
+        chunks = defaultdict(set)
+        for pos in self.viewSurfacePositionsByView[rotation]:
+            chunks[tuple(value // size for value in pos)].add(pos)
+        self.viewSurfaceChunksByView[rotation] = dict(chunks)
+        self._viewSurfaceChunksReady.add(rotation)
 
     def _rebuildSurfaceIndex(self) -> None:
         blocks = self.blocks
@@ -226,6 +451,7 @@ class World:
         for pos in self.surfaceBlocks:
             chunk = tuple(value // size for value in pos)
             self.surfaceChunks.setdefault(chunk, set()).add(pos)
+        self._rebuildViewSurfaceIndex()
 
     def replace(self, snapshot) -> None:
         """Atomically replace live state from a validated immutable snapshot."""
@@ -355,6 +581,20 @@ class World:
         ) if blocks else None
         self.surfaceBlocks = surfaceBlocks
         self.surfaceChunks = surfaceChunks
+        suppliedViewSurfaces = snapshot.view_surface_positions_by_view
+        if all(rotation in suppliedViewSurfaces for rotation in range(4)):
+            self.viewSurfacePositionsByView = {
+                rotation: (
+                    suppliedViewSurfaces[rotation]
+                    if isinstance(suppliedViewSurfaces[rotation], set)
+                    else set(suppliedViewSurfaces[rotation])
+                )
+                for rotation in range(4)
+            }
+            self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+            self._viewSurfaceChunksReady.clear()
+        else:
+            self._rebuildViewSurfaceIndex()
         self.sceneStructurePositions = structurePositions
         self.sceneStructureBounds = (
             tuple(min(position[axis] for position in structurePositions) for axis in range(3)),
@@ -364,6 +604,8 @@ class World:
         self.sceneStructureSurfacesByView = structureSurfacesByView
         self.sceneStructureSurfaceChunksByView = {rotation: {} for rotation in range(4)}
         self._sceneStructureOverviewPositions = None
+        self._sceneTerrainTopChunks = None
+        self._sceneTerrainTopByColumn = {}
         self.blockProperties = dict(snapshot.properties)
         self.liquidLevels = dict(snapshot.liquid_levels)
         self.liquidSources = set(snapshot.liquid_sources) & blocks.keys()
@@ -375,6 +617,8 @@ class World:
         self._bulkDepth = 0
         self._bulkChanged = False
         self.revision += 1
+        self.drawOrdersByMode = dict(snapshot.draw_orders_by_mode)
+        self.drawOrdersRevision = self.revision if self.drawOrdersByMode else -1
         self.dirtyRegions.request_full_redraw()
 
     @contextmanager
@@ -926,6 +1170,29 @@ class World:
                     if positions:
                         yield key, positions
 
+    def iterViewSurfaceChunksInHorizontalRadius(
+        self, viewRotation: int, centerX: int, centerY: int, chunkRadius: int
+    ):
+        """Iterate surface cells already filtered for the active camera faces."""
+        size = self.chunkStorage.chunk_size
+        centerChunkX = centerX // size
+        centerChunkY = centerY // size
+        radius = max(0, int(chunkRadius))
+        if self.occupiedBounds is None:
+            return
+        minChunkZ = self.occupiedBounds[0][2] // size
+        maxChunkZ = self.occupiedBounds[1][2] // size
+        chunks = self.viewSurfaceChunksByView[viewRotation % 4]
+        self.prepareViewSurfaceChunks(viewRotation)
+        chunks = self.viewSurfaceChunksByView[viewRotation % 4]
+        for chunkX in range(centerChunkX - radius, centerChunkX + radius + 1):
+            for chunkY in range(centerChunkY - radius, centerChunkY + radius + 1):
+                for chunkZ in range(minChunkZ, maxChunkZ + 1):
+                    key = (chunkX, chunkY, chunkZ)
+                    positions = chunks.get(key)
+                    if positions:
+                        yield key, positions
+
     def iterStructurePositionsInChunkRadius(self, centerX: int, centerY: int, chunkRadius: int):
         """Iterate structure-role positions by direct chunk lookup."""
         size = self.chunkStorage.chunk_size
@@ -961,6 +1228,54 @@ class World:
                 (x, y, z) for (x, y), z in columns.items()
             }
         return self._sceneStructureOverviewPositions
+
+    def _refreshSceneTerrainTopColumn(self, column) -> None:
+        """Keep the view-independent transparent-terrain index current after edits."""
+        if self._sceneTerrainTopChunks is None:
+            return
+        size = self.chunkStorage.chunk_size
+        oldPosition = self._sceneTerrainTopByColumn.pop(column, None)
+        if oldPosition is not None:
+            oldChunk = tuple(value // size for value in oldPosition)
+            positions = self._sceneTerrainTopChunks.get(oldChunk)
+            if positions is not None:
+                positions.discard(oldPosition)
+                if not positions:
+                    self._sceneTerrainTopChunks.pop(oldChunk, None)
+        topZ = self.heightIndex.get(column)
+        if topZ is None:
+            return
+        position = (column[0], column[1], topZ)
+        if position in self.sceneStructurePositions:
+            return
+        chunk = tuple(value // size for value in position)
+        self._sceneTerrainTopChunks.setdefault(chunk, set()).add(position)
+        self._sceneTerrainTopByColumn[column] = position
+
+    def prepareSceneTerrainTopChunks(self) -> None:
+        """Build the rotation-independent terrain-top lookup once per loaded scene."""
+        if self._sceneTerrainTopChunks is not None:
+            return
+        self._sceneTerrainTopChunks = {}
+        self._sceneTerrainTopByColumn = {}
+        for column in self.heightIndex:
+            self._refreshSceneTerrainTopColumn(column)
+
+    def iterSceneTerrainTopChunksInHorizontalRadius(
+        self, centerX: int, centerY: int, chunkRadius: int
+    ):
+        """Iterate only visible terrain column tops for transparent scene views."""
+        self.prepareSceneTerrainTopChunks()
+        size = self.chunkStorage.chunk_size
+        centerChunkX = centerX // size
+        centerChunkY = centerY // size
+        radius = max(0, int(chunkRadius))
+        for (chunkX, chunkY, chunkZ), positions in self._sceneTerrainTopChunks.items():
+            if (
+                abs(chunkX - centerChunkX) <= radius
+                and abs(chunkY - centerChunkY) <= radius
+            ):
+                yield (chunkX, chunkY, chunkZ), positions
 
     def prepareStructureSurfaceChunks(self, viewRotation: int) -> None:
         """Build one rotation's chunk lookup before latency-sensitive rendering."""
@@ -1039,6 +1354,11 @@ class World:
         self.occupiedBounds = None
         self.surfaceBlocks.clear()
         self.surfaceChunks.clear()
+        self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
+        self.viewSurfacePositionsByView = {rotation: set() for rotation in range(4)}
+        self._viewSurfaceChunksReady = set(range(4))
+        self.drawOrdersByMode = {}
+        self.drawOrdersRevision = -1
         self.sceneStructurePositions.clear()
         self.sceneStructureBounds = None
         self.sceneStructureChunks.clear()
@@ -1047,6 +1367,8 @@ class World:
         for chunks in self.sceneStructureSurfaceChunksByView.values():
             chunks.clear()
         self._sceneStructureOverviewPositions = None
+        self._sceneTerrainTopChunks = None
+        self._sceneTerrainTopByColumn = {}
         self.blockProperties.clear()
         self.liquidLevels.clear()
         self.liquidSources.clear()

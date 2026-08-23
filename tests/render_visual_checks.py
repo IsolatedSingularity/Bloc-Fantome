@@ -14,7 +14,10 @@ sys.path.insert(0, str(ROOT / "Code"))
 import pygame
 import blocFantome as app_module
 from splash import SplashScreen
-from engine.app_icon import render_app_icon_surface
+from engine.app_icon import (
+    render_explorer_icon_surface,
+    render_runtime_icon_surface,
+)
 
 
 def render(output_dir: Path) -> None:
@@ -39,9 +42,30 @@ def render(output_dir: Path) -> None:
     pygame.image.save(screen, output_dir / "splash.png")
 
     pygame.image.save(
-        render_app_icon_surface(splash.texture, 256),
+        render_runtime_icon_surface(splash.texture, 256),
         output_dir / "app_icon.png",
     )
+
+    icon_sheet = pygame.Surface((980, 330))
+    icon_sheet.fill((34, 34, 38))
+    icon_font = pygame.font.Font(None, 25)
+    icon_sheet.blit(
+        icon_font.render("Independent runtime and Explorer icon routes", True, (245, 245, 245)),
+        (20, 14),
+    )
+    sizes = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
+    x = 20
+    for size in sizes:
+        icon = render_explorer_icon_surface(splash.texture, size)
+        preview = pygame.transform.scale(icon, (96, 96))
+        icon_sheet.blit(preview, (x, 55))
+        label = icon_font.render(f"ICO {size}", True, (220, 220, 220))
+        icon_sheet.blit(label, label.get_rect(center=(x + 48, 165)))
+        x += 94
+    runtime = render_runtime_icon_surface(splash.texture, 256)
+    icon_sheet.blit(pygame.transform.scale(runtime, (128, 128)), (20, 190))
+    icon_sheet.blit(icon_font.render("Taskbar/window", True, (220, 220, 220)), (160, 238))
+    pygame.image.save(icon_sheet, output_dir / "icon_routes.png")
 
     sheet = pygame.Surface((1100, 620))
     sheet.fill((24, 20, 24))
@@ -81,6 +105,52 @@ def render(output_dir: Path) -> None:
         sheet.blit(label, (x - 22, 580))
     pygame.image.save(sheet, output_dir / "block_models.png")
 
+    special_sheet = pygame.Surface((1100, 730))
+    special_sheet.fill((24, 20, 24))
+    special_sheet.blit(
+        font.render("Finished special blocks", True, (240, 235, 225)),
+        (24, 18),
+    )
+    special_blocks = (
+        app_module.BlockType.OXIDIZING_COPPER,
+        app_module.BlockType.ENCHANTING_TABLE,
+        app_module.BlockType.SCULK_SENSOR,
+        app_module.BlockType.FIRE,
+        app_module.BlockType.SOUL_FIRE,
+        app_module.BlockType.MATRIX,
+        app_module.BlockType.LANTERN,
+        app_module.BlockType.SOUL_LANTERN,
+        app_module.BlockType.CHAIN,
+        app_module.BlockType.LADDER,
+        app_module.BlockType.END_PORTAL_FRAME,
+        app_module.BlockType.END_GATEWAY,
+        app_module.BlockType.END_PORTAL,
+        app_module.BlockType.CHEST,
+        app_module.BlockType.GLASS,
+    )
+    for index, block_type in enumerate(special_blocks):
+        sprite = app.assetManager.getBlockSprite(block_type)
+        bounds = sprite.get_bounding_rect(min_alpha=1)
+        cropped = sprite.subsurface(bounds)
+        scale = min(132 / cropped.get_width(), 150 / cropped.get_height())
+        model = pygame.transform.scale(
+            cropped,
+            (max(1, round(cropped.get_width() * scale)),
+             max(1, round(cropped.get_height() * scale))),
+        )
+        column = index % 6
+        row = index // 6
+        x = 24 + column * 178
+        y = 130 + row * 235
+        special_sheet.blit(model, model.get_rect(center=(x + 72, y)))
+        label = small.render(
+            app_module.BLOCK_DEFINITIONS[block_type].name,
+            True,
+            (215, 205, 195),
+        )
+        special_sheet.blit(label, label.get_rect(center=(x + 72, y + 105)))
+    pygame.image.save(special_sheet, output_dir / "special_blocks.png")
+
     app._openLoadDialog()
     app.assetManager.drawBackground(screen)
     app.buildLibrary.render(screen)
@@ -102,6 +172,26 @@ def render(output_dir: Path) -> None:
     app.worldLibrary.render(screen)
     pygame.image.save(screen, output_dir / "world_library.png")
     app.worldLibrary.close()
+
+    app.assetManager.drawBackground(screen)
+    app.settingsMenuOpen = True
+    app._renderSettingsMenu()
+    pygame.image.save(screen, output_dir / "settings.png")
+    app.settingsMenuOpen = False
+
+    for step_index, filename in (
+        (10, "tutorial_nether.png"),
+        (11, "tutorial_end.png"),
+        (12, "tutorial_weather.png"),
+        (13, "tutorial_lighting.png"),
+    ):
+        app._onTutorialStepChange(step_index)
+        if step_index >= 12:
+            app._fitWorldToViewport(notify=False)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        app._render()
+        pygame.image.save(screen, output_dir / filename)
 
     # README art: a full editor frame, not an isolated renderer export.
     app.structuresExpanded = False

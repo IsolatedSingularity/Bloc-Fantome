@@ -1,1 +1,1 @@
-"""User-interface components for Bloc Fantome."""
+"""User-interface components for Bloc Fantôme."""

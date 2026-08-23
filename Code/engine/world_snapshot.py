@@ -30,6 +30,8 @@ class WorldSnapshot:
     exterior_glass_positions: frozenset[Position] = frozenset()
     structure_surfaces_by_view: Mapping[int, frozenset[Position]] = field(default_factory=dict)
     surface_positions: frozenset[Position] = frozenset()
+    view_surface_positions_by_view: Mapping[int, frozenset[Position]] = field(default_factory=dict)
+    draw_orders_by_mode: Mapping[str, Mapping[int, tuple]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.width < 1 or self.depth < 1 or self.height < 1:

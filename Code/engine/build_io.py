@@ -69,6 +69,7 @@ def _properties(block_type, state_data, definitions):
         or definition.isStair
         or definition.isSlab
         or definition.modelKind
+        or block_type.name == "OXIDIZING_COPPER"
     ):
         return None
     properties = BlockProperties()
@@ -95,6 +96,9 @@ def _properties(block_type, state_data, definitions):
     properties.doorHinge = DoorHinge.__members__.get(
         str(state_data.get("doorHinge", state_data.get("hinge", "left"))).upper(),
         DoorHinge.LEFT,
+    )
+    properties.oxidationStage = max(
+        0, min(3, int(state_data.get("oxidationStage", 0)))
     )
     return properties
 
@@ -156,6 +160,85 @@ def _structure_surfaces(blocks, structure_positions, definitions, exterior_shell
     return result
 
 
+def _view_surface_positions(blocks, surface_positions, definitions):
+    """Precompute the exact conservative terrain cells visible in each view."""
+    result = {rotation: set() for rotation in range(4)}
+    side_directions = (
+        ((0, 1), (1, 0)),
+        ((1, 0), (0, -1)),
+        ((0, -1), (-1, 0)),
+        ((-1, 0), (0, 1)),
+    )
+
+    def opaque(position):
+        return _is_opaque_cube(definitions.get(blocks.get(position)))
+
+    for x, y, z in surface_positions:
+        position = (x, y, z)
+        if not opaque(position) or not opaque((x, y, z + 1)):
+            for visible in result.values():
+                visible.add(position)
+            continue
+        exposed = {
+            (1, 0): not opaque((x + 1, y, z)),
+            (-1, 0): not opaque((x - 1, y, z)),
+            (0, 1): not opaque((x, y + 1, z)),
+            (0, -1): not opaque((x, y - 1, z)),
+        }
+        for rotation, directions in enumerate(side_directions):
+            if any(exposed[direction] for direction in directions):
+                result[rotation].add(position)
+    return result
+
+
+def _depth_key(rotation, position):
+    x, y, z = position
+    if rotation == 0:
+        return x + y + z
+    if rotation == 1:
+        return -y + x + z
+    if rotation == 2:
+        return -x - y + z
+    return y - x + z
+
+
+def _draw_orders(blocks, structure_positions, structure_surfaces, view_surfaces):
+    """Build immutable painter orders on the staging worker, never on rotation."""
+    terrain_top = {}
+    for x, y, z in blocks:
+        column = (x, y)
+        if z > terrain_top.get(column, -10_000):
+            terrain_top[column] = z
+    terrain_top_positions = {
+        (x, y, z)
+        for (x, y), z in terrain_top.items()
+        if (x, y, z) not in structure_positions
+    }
+
+    modes = {"all": {}, "transparent": {}, "hidden": {}}
+    for rotation in range(4):
+        mode_positions = {
+            "all": view_surfaces.get(rotation, ()),
+            "transparent": terrain_top_positions | set(structure_surfaces.get(rotation, ())),
+            "hidden": structure_surfaces.get(rotation, ()),
+        }
+        for mode, positions in mode_positions.items():
+            ordered = sorted(
+                positions,
+                key=lambda position: (
+                    _depth_key(rotation, position),
+                    position[2],
+                    position[0],
+                    position[1],
+                ),
+            )
+            modes[mode][rotation] = tuple(
+                (_depth_key(rotation, position), *position, blocks[position])
+                for position in ordered
+            )
+    return modes
+
+
 def _exterior_glass(blocks, structure_positions, block_type, enabled):
     if not enabled or not structure_positions:
         return set()
@@ -192,7 +275,9 @@ def _exterior_glass(blocks, structure_positions, block_type, enabled):
     }
 
 
-def _snapshot_from_staged(dimension, bounds, scene, staged, skipped_count, cache_hit):
+def _snapshot_from_staged(
+    dimension, bounds, scene, staged, skipped_count, cache_hit, definitions
+):
     width, depth, height, min_y = bounds
     blocks = {}
     properties = {}
@@ -211,6 +296,12 @@ def _snapshot_from_staged(dimension, bounds, scene, staged, skipped_count, cache
                 liquid_sources.add(position)
             if falling:
                 liquid_falling.add(position)
+    surface_positions = set(scene.get("_surface_positions", ()))
+    structure_positions = set(scene.get("_structure_positions", ()))
+    structure_surfaces = scene.get("_structure_surfaces_by_view", {})
+    view_surfaces = scene.get("_view_surface_positions_by_view", {})
+    if not all(rotation in view_surfaces for rotation in range(4)):
+        view_surfaces = _view_surface_positions(blocks, surface_positions, definitions)
     snapshot = WorldSnapshot(
         width=width,
         depth=depth,
@@ -223,10 +314,14 @@ def _snapshot_from_staged(dimension, bounds, scene, staged, skipped_count, cache
         liquid_sources=liquid_sources,
         liquid_falling=liquid_falling,
         scene_metadata=scene,
-        structure_positions=set(scene.get("_structure_positions", ())),
+        structure_positions=structure_positions,
         exterior_glass_positions=set(scene.get("_exterior_glass_positions", ())),
-        structure_surfaces_by_view=scene.get("_structure_surfaces_by_view", {}),
-        surface_positions=set(scene.get("_surface_positions", ())),
+        structure_surfaces_by_view=structure_surfaces,
+        surface_positions=surface_positions,
+        view_surface_positions_by_view=view_surfaces,
+        draw_orders_by_mode=_draw_orders(
+            blocks, structure_positions, structure_surfaces, view_surfaces
+        ),
     )
     return BuildReadResult(snapshot, skipped_count, cache_hit)
 
@@ -248,7 +343,7 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
             dimension, bounds, scene, staged, skipped_count = cached
             print(f"World cache hit: {path.name}")
             return _snapshot_from_staged(
-                dimension, bounds, dict(scene), staged, skipped_count, True
+                dimension, bounds, dict(scene), staged, skipped_count, True, definitions
             )
         except (OSError, ValueError, KeyError, IndexError, struct.error):
             pass
@@ -309,7 +404,8 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
                 state_data = {}
             state_data = dict(state_data)
             for key in (
-                "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge"
+                "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge",
+                "oxidationStage",
             ):
                 if key in block_data:
                     state_data[key] = block_data[key]
@@ -358,10 +454,14 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
         for position in blocks
         if any(neighbor not in blocks for neighbor in _neighbor_positions(position))
     }
+    view_surface_positions = _view_surface_positions(
+        blocks, surface_positions, definitions
+    )
     scene["_structure_positions"] = structure_positions
     scene["_exterior_glass_positions"] = exterior_glass
     scene["_structure_surfaces_by_view"] = structure_surfaces
     scene["_surface_positions"] = surface_positions
+    scene["_view_surface_positions_by_view"] = view_surface_positions
 
     if cache_path is not None and cache_digest is not None:
         try:
@@ -376,12 +476,13 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
                 exterior_glass,
                 structure_surfaces,
                 surface_positions,
+                view_surface_positions,
             )
             scene_cache.prune(str(cache_policy.derived_cache_dir))
         except (OSError, ValueError, struct.error) as error:
             print(f"World cache skipped: {error}")
     return _snapshot_from_staged(
-        dimension, bounds, scene, staged, skipped_count, False
+        dimension, bounds, scene, staged, skipped_count, False, definitions
     )
 
 
@@ -409,10 +510,16 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
                 block_data["isOpen"] = properties.isOpen
                 block_data["doorHalf"] = properties.doorHalf.name
                 block_data["doorHinge"] = properties.doorHinge.name
+            if definition and definition.modelKind == "lantern":
+                block_data["isOpen"] = properties.isOpen
             if definition and definition.isStair:
                 block_data["stairShape"] = properties.stairShape.name
             if properties.slabPosition:
                 block_data["slabPosition"] = properties.slabPosition.name
+            if block_type.name == "OXIDIZING_COPPER":
+                block_data["oxidationStage"] = max(
+                    0, min(3, int(properties.oxidationStage))
+                )
         blocks.append(block_data)
     payload = {
         "version": 5,

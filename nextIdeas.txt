@@ -1,21 +1,23 @@
-Major
+Next
 
-
-- Performance is a lot better but it shits the bed visually and has a lag spike when zooming in and out. if too zoomed out parts of the map dont render and it has like some lag vignette effect when zooming in and out.
-- Biome selection and generation for all dimensions (with previews in right submenu)
-- Fix all experimental elements.
-- Programming language change optimization!?
-
-
-
-Minor
-
-
-- You closed the structures for the lighting and weather tutorial terrains, undo that
-- Use old end building or a better part of the end city for tutorial
 - Weather effects in all dimensions flesh out: splash effects / covering effects. End dimension equivalent of snow is way too subtle.
-- Add other structures: fortress, stronghold, pyramid, etc.
-- Start menu icon still looks squished and low res.
-- UI and performance pass.
+- basic redstone (only redstone dust, piston both types, lever, button, repeater, redstone torch). basic functionality currently no quasi connectivity and such.
+- Button effects (Toggles)
+
+
+- Biome selection and generation for all dimensions (with previews in right submenu)
+- Individual block refines (maybe functionality too)
+- Add other structures: fortress, stronghold, aquopolis, pyramid, etc.
+
+
+- file structure and documenting optimization
+- Script to scrape Minecraft locally to run Miette
+- update readme
+
+
+
+
+
+
 
 

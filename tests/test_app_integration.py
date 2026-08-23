@@ -59,6 +59,72 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.world.__class__.__module__, "engine.world")
         self.assertEqual(self.app.renderer.__class__.__module__, "engine.renderer")
 
+    def test_every_palette_block_has_loaded_place_and_break_sounds(self):
+        interaction_only = {
+            "chest", "enderchest", "copper_chest",
+            "copper_chest_weathered", "copper_chest_oxidized",
+            "enchantment_table", "end_portal",
+        }
+        for block_type in app_module.BlockType:
+            if block_type == app_module.BlockType.AIR:
+                continue
+            with self.subTest(block=block_type.name):
+                self.assertIn(block_type, app_module.BLOCK_SOUNDS)
+                sound_def = app_module.BLOCK_SOUNDS[block_type]
+                for is_place, category in (
+                    (True, sound_def.placeSound),
+                    (False, sound_def.breakSound),
+                ):
+                    if is_place and self.app.assetManager.sounds.get(f"{category}_place"):
+                        category = f"{category}_place"
+                    self.assertNotIn(category, interaction_only)
+                    self.assertTrue(
+                        self.app.assetManager.sounds.get(category),
+                        f"{block_type.name} has no loaded {'place' if is_place else 'break'} pool {category}",
+                    )
+
+    def test_fire_ambient_pool_never_contains_ignition(self):
+        sounds = self.app.assetManager.sounds
+        self.assertEqual(len(sounds["fire_ambient"]), 1)
+        self.assertEqual(len(sounds["fire_ignite"]), 1)
+        self.assertIsNot(sounds["fire_ambient"][0], sounds["fire_ignite"][0])
+        self.assertEqual(
+            app_module.BLOCK_SOUNDS[app_module.BlockType.FIRE].placeSound,
+            "fire_ignite",
+        )
+
+    def test_panel_wheel_scroll_eases_toward_target(self):
+        self.app.maxScroll = 600
+        self.app.inventoryScroll = 0.0
+        self.app.inventoryScrollTarget = 0.0
+        event = SimpleNamespace(y=-1, precise_y=-1.0)
+        with patch.object(
+            pygame.mouse, "get_pos",
+            return_value=(app_module.WINDOW_WIDTH - 1, 100),
+        ):
+            self.app._handleMouseWheel(event)
+        self.assertEqual(self.app.inventoryScroll, 0.0)
+        self.assertEqual(self.app.inventoryScrollTarget, 72.0)
+        self.app._updatePanelScroll(16)
+        self.assertGreater(self.app.inventoryScroll, 0.0)
+        self.assertLess(self.app.inventoryScroll, self.app.inventoryScrollTarget)
+        self.app._updatePanelScroll(1000)
+        self.assertAlmostEqual(self.app.inventoryScroll, 72.0, delta=0.1)
+
+    def test_settings_controls_share_one_bounded_minecraft_panel(self):
+        panel = self.app._settingsMenuRect()
+        self.assertTrue(pygame.Rect(0, 0, app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT).contains(panel))
+        slider = pygame.Rect(panel.x + 28, panel.y + 68 + 22, panel.width - 56, 12)
+        self.assertTrue(panel.contains(slider))
+        last_toggle = pygame.Rect(panel.x + 28, panel.y + 242 + 5 * 36, panel.width - 56, 30)
+        self.assertTrue(panel.contains(last_toggle))
+
+        old_value = self.app.showBlockTooltip
+        self.app.settingsMenuOpen = True
+        self.app._handleSettingsClick(last_toggle.centerx, last_toggle.centery)
+        self.assertNotEqual(self.app.showBlockTooltip, old_value)
+        self.app.showBlockTooltip = old_value
+
     def test_side_targets_work_at_every_zoom_and_rotation(self):
         source = (5, 5, 4)
         self.app.world.setBlock(*source, app_module.BlockType.STONE)
@@ -130,6 +196,12 @@ class AppIntegrationTests(unittest.TestCase):
                 anchor,
             )
 
+    def test_magic_wand_overlay_uses_display_size(self):
+        """A retained selection must remain renderable after placing a block."""
+        self.app.magicWandSelection = {(5, 5, 1)}
+        self.app.world.setBlock(5, 5, 1, app_module.BlockType.STONE)
+        self.app._renderMagicWandSelection()
+
     def test_occlusion_uses_camera_facing_neighbors_in_every_view(self):
         center = (5, 5, 2)
         directions = (
@@ -157,6 +229,61 @@ class AppIntegrationTests(unittest.TestCase):
         projected = self.app.renderer.worldToScreen(*point)
         self.assertLessEqual(abs(projected[0] - cursor[0]), 1)
         self.assertLessEqual(abs(projected[1] - cursor[1]), 1)
+
+    def test_large_zoom_uses_complete_fallback_then_finishes_exact_surface(self):
+        self.app.world.resize(80, 80, 16, min_y=0, preserve=False)
+        with self.app.world.bulkUpdate():
+            for x in range(80):
+                for y in range(80):
+                    self.app.world.setBlock(x, y, 0, app_module.BlockType.STONE)
+        self.app.zoomLevel = 0.2
+        self.app.renderer.setZoom(self.app.zoomLevel)
+        self.app._centerOnCell(40, 40, 0)
+        self.app.renderer.offsetX = self.app.targetOffsetX
+        self.app.renderer.offsetY = self.app.targetOffsetY
+        self.app._invalidateViewCaches()
+        self.app._renderWorld()
+        exactSize = self.app._worldSurfaceCache.get_size()
+
+        cursor = ((app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) // 2, 400)
+        self.app._handleZoom(0.025, *cursor)
+        self.assertIsNotNone(self.app._worldZoomFallback)
+        self.assertEqual(self.app._worldZoomFallback.get_size(), exactSize)
+        self.app._renderWorld()
+        self.assertGreater(self.app._worldSurfaceBuildIndex, 0)
+
+        for _ in range(8):
+            self.app._renderWorld()
+            if self.app._worldZoomFallback is None:
+                break
+        self.assertIsNone(self.app._worldZoomFallback)
+        self.assertIsNotNone(self.app._worldSurfaceCache)
+
+    def test_large_rotation_keeps_complete_frame_while_exact_surface_rebuilds(self):
+        self.app.world.resize(80, 80, 16, min_y=0, preserve=False)
+        with self.app.world.bulkUpdate():
+            for x in range(80):
+                for y in range(80):
+                    self.app.world.setBlock(x, y, 0, app_module.BlockType.STONE)
+        self.app.zoomLevel = 0.2
+        self.app.renderer.setZoom(self.app.zoomLevel)
+        self.app._centerOnCell(40, 40, 0)
+        self.app.renderer.offsetX = self.app.targetOffsetX
+        self.app.renderer.offsetY = self.app.targetOffsetY
+        self.app._invalidateViewCaches()
+        self.app._renderWorld()
+
+        self.app._rotateViewAndRecenter(1)
+        self.assertIsNotNone(self.app._worldZoomFallback)
+        self.app._renderWorld()
+        self.assertGreater(self.app._worldSurfaceBuildIndex, 0)
+
+        for _ in range(8):
+            self.app._renderWorld()
+            if self.app._worldZoomFallback is None:
+                break
+        self.assertIsNone(self.app._worldZoomFallback)
+        self.assertIsNotNone(self.app._worldSurfaceCache)
 
     def test_fit_world_uses_precomputed_occupied_bounds(self):
         self.app.world.setBlock(2, 3, 1, app_module.BlockType.STONE)
@@ -193,16 +320,183 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertIn(app_module.BlockType.OAK_STAIRS, app_module.BLOCK_CATEGORIES["Wood"])
         self.assertIn(app_module.BlockType.COBBLESTONE_STAIRS, app_module.BLOCK_CATEGORIES["Stone & Brick"])
         self.assertIn(app_module.BlockType.IRON_DOOR, app_module.BLOCK_CATEGORIES["Functional"])
+        self.assertNotIn("Experimental", app_module.BLOCK_CATEGORIES)
         for block in (
             app_module.BlockType.OAK_DOOR,
             app_module.BlockType.IRON_DOOR,
             app_module.BlockType.OAK_STAIRS,
             app_module.BlockType.COBBLESTONE_STAIRS,
         ):
-            self.assertNotIn(block, app_module.BLOCK_CATEGORIES["Experimental"])
             icon = self.app.assetManager.getIconSprite(block)
             self.assertEqual(icon.get_size(), (app_module.ICON_SIZE, app_module.ICON_SIZE))
             self.assertGreater(icon.get_bounding_rect(min_alpha=1).height, 0)
+
+    def test_finished_special_blocks_use_regular_categories_and_model_sprites(self):
+        expected = {
+            app_module.BlockType.OXIDIZING_COPPER: "Ores & Minerals",
+            app_module.BlockType.ENCHANTING_TABLE: "Functional",
+            app_module.BlockType.SCULK_SENSOR: "Functional",
+            app_module.BlockType.FIRE: "Light Sources",
+            app_module.BlockType.SOUL_FIRE: "Nether",
+            app_module.BlockType.MATRIX: "End",
+        }
+        for block, category in expected.items():
+            self.assertIn(block, app_module.BLOCK_CATEGORIES[category])
+            sprite = self.app.assetManager.getBlockSprite(block)
+            icon = self.app.assetManager.getIconSprite(block)
+            self.assertGreater(sprite.get_bounding_rect(min_alpha=1).height, 0)
+            self.assertEqual(icon.get_size(), (app_module.ICON_SIZE, app_module.ICON_SIZE))
+        self.assertEqual(
+            app_module.BLOCK_DEFINITIONS[app_module.BlockType.MATRIX].name,
+            "Matrix",
+        )
+        self.assertNotEqual(
+            pygame.image.tostring(
+                self.app.assetManager.sculkSensorSprites[False], "RGBA"
+            ),
+            pygame.image.tostring(
+                self.app.assetManager.sculkSensorSprites[True], "RGBA"
+            ),
+        )
+
+    def test_special_detail_models_use_source_shaped_geometry(self):
+        renderer = self.app.assetManager.blockModelRenderer
+        self.assertEqual(
+            renderer.detail_boxes("ladder", app_module.Facing.SOUTH),
+            ((0, 15, 0, 16, 16, 16),),
+        )
+        self.assertEqual(
+            renderer.detail_boxes("chain"), ((6, 6, 0, 10, 10, 16),)
+        )
+        floorLantern = renderer.detail_boxes("lantern", is_open=False)
+        hangingLantern = renderer.detail_boxes("lantern", is_open=True)
+        self.assertEqual(max(box[5] for box in floorLantern), 11)
+        self.assertEqual(max(box[5] for box in hangingLantern), 16)
+        for block in (
+            app_module.BlockType.LADDER,
+            app_module.BlockType.CHAIN,
+            app_module.BlockType.LANTERN,
+            app_module.BlockType.SOUL_LANTERN,
+        ):
+            sprite = self.app.assetManager.getBlockSprite(block)
+            self.assertGreater(sprite.get_bounding_rect(min_alpha=1).height, 0)
+
+    def test_end_portal_frame_and_effects_have_source_heights(self):
+        frame = self.app.assetManager.getBlockSprite(app_module.BlockType.END_PORTAL_FRAME)
+        portal = self.app.assetManager.getBlockSprite(app_module.BlockType.END_PORTAL)
+        gateway = self.app.assetManager.getBlockSprite(app_module.BlockType.END_GATEWAY)
+        self.assertLess(frame.get_bounding_rect(min_alpha=1).height,
+                        gateway.get_bounding_rect(min_alpha=1).height)
+        self.assertLess(portal.get_bounding_rect(min_alpha=1).height,
+                        gateway.get_bounding_rect(min_alpha=1).height)
+
+    def test_end_gateway_effect_uses_java_1161_layer_math(self):
+        parameters = self.app.assetManager._endPortalLayerParameters(2, 0.25)
+        self.assertAlmostEqual(parameters[0], 8.5)
+        self.assertAlmostEqual(parameters[1], 5.0 / 6.0)
+        self.assertAlmostEqual(parameters[2], 34604.0)
+        self.assertAlmostEqual(parameters[3], 2.0)
+        self.assertEqual(len(tuple(
+            self.app.assetManager._javaRandomPortalColors(16)
+        )), 16)
+
+    def test_fire_and_chest_models_have_depth_and_inset_geometry(self):
+        fire = self.app.assetManager.getBlockSprite(app_module.BlockType.FIRE)
+        chest = self.app.assetManager.getBlockSprite(app_module.BlockType.CHEST)
+        fireBounds = fire.get_bounding_rect(min_alpha=1)
+        chestBounds = chest.get_bounding_rect(min_alpha=1)
+        self.assertGreater(fireBounds.width, app_module.TILE_WIDTH // 2)
+        self.assertLess(chestBounds.width, app_module.TILE_WIDTH)
+        self.assertIsNotNone(
+            self.app.assetManager.textures.get("chest_normal_latch.png")
+        )
+
+    def test_stair_variants_are_connected_transforms_of_canonical_volume(self):
+        renderer = self.app.assetManager.blockModelRenderer
+        expectedCounts = {
+            app_module.StairShape.STRAIGHT: 6,
+            app_module.StairShape.INNER_LEFT: 7,
+            app_module.StairShape.INNER_RIGHT: 7,
+            app_module.StairShape.OUTER_LEFT: 5,
+            app_module.StairShape.OUTER_RIGHT: 5,
+        }
+        for facing in app_module.Facing:
+            for shape, expectedCount in expectedCounts.items():
+                bottom = renderer.stair_occupancy(
+                    facing, shape, app_module.SlabPosition.BOTTOM
+                )
+                top = renderer.stair_occupancy(
+                    facing, shape, app_module.SlabPosition.TOP
+                )
+                self.assertEqual(len(bottom), expectedCount)
+                self.assertEqual(top, {(x, y, 1 - z) for x, y, z in bottom})
+                pending = {next(iter(bottom))}
+                reached = set()
+                while pending:
+                    cell = pending.pop()
+                    if cell in reached:
+                        continue
+                    reached.add(cell)
+                    x, y, z = cell
+                    pending.update({
+                        neighbor for neighbor in (
+                            (x + 1, y, z), (x - 1, y, z),
+                            (x, y + 1, z), (x, y - 1, z),
+                            (x, y, z + 1), (x, y, z - 1),
+                        ) if neighbor in bottom and neighbor not in reached
+                    })
+                self.assertEqual(reached, set(bottom))
+
+    def test_copper_stage_round_trips_and_nearby_sculk_sensor_pulses(self):
+        copper = (3, 3, 1)
+        sensor = (5, 3, 1)
+        self.app.world.setBlock(*copper, app_module.BlockType.OXIDIZING_COPPER)
+        props = app_module.BlockProperties(oxidationStage=2)
+        self.app.world.setBlockProperties(*copper, props)
+        self.app.world.setBlock(*sensor, app_module.BlockType.SCULK_SENSOR)
+        self.app._updateSpecialBlocks(self.app.assetManager.oxidizingCopperSpeed)
+        self.assertEqual(
+            self.app.world.getBlockProperties(*copper).oxidationStage, 3
+        )
+        self.app._triggerSculkSensors(4, 3, 1)
+        self.assertIn(sensor, self.app._sculkSensorActiveUntil)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "special.json.gz")
+            self.assertTrue(self.app._saveBuilding(filepath=path, silent=True))
+            self.app.world.clear()
+            self.assertTrue(self.app._loadBuildingFromPath(path, silent=True))
+        self.assertEqual(
+            self.app.world.getBlockProperties(*copper).oxidationStage, 3
+        )
+
+    def test_tutorial_rooms_match_the_supplied_open_builds(self):
+        caveBlocks = {
+            (x, y, z): block for x, y, z, block, *_ in app_module.STRUCTURE_DARK_CAVE["blocks"]
+        }
+        courtyardBlocks = {
+            (x, y, z): block
+            for x, y, z, block, *_ in app_module.STRUCTURE_RAIN_COURTYARD["blocks"]
+        }
+
+        # Lighting is a concave shell: both camera-facing walls and the centre
+        # of the roof are absent, while the back/side shell remains solid.
+        self.assertIn((0, 6, 3), caveBlocks)
+        self.assertIn((6, 0, 3), caveBlocks)
+        self.assertNotIn((11, 6, 3), caveBlocks)
+        self.assertNotIn((6, 11, 3), caveBlocks)
+        self.assertNotIn((6, 6, 6), caveBlocks)
+
+        # Weather contains four pillars and only partial roof sections; there
+        # are no perimeter walls closing the courtyard.
+        for pillar in ((2, 2), (11, 2), (2, 11), (11, 11)):
+            self.assertIn((*pillar, 4), courtyardBlocks)
+        self.assertNotIn((0, 6, 2), courtyardBlocks)
+        self.assertNotIn((13, 6, 2), courtyardBlocks)
+        self.assertNotIn((6, 0, 2), courtyardBlocks)
+        self.assertNotIn((6, 13, 2), courtyardBlocks)
+        self.assertIn((6, 2, 5), courtyardBlocks)
+        self.assertNotIn((6, 6, 5), courtyardBlocks)
 
     def test_build_load_is_transactional(self):
         self.app.world.setBlock(2, 3, 1, app_module.BlockType.STONE)
@@ -271,25 +565,24 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertIn(app_module.BlockType.REINFORCED_DEEPSLATE, self.app.world.blocks.values())
         self.assertLessEqual(self.app.zoomLevel, self.app.overviewZoomThreshold)
 
-    def test_treasure_bastion_structure_does_not_vanish_at_overview_zoom(self):
+    def test_treasure_bastion_surface_does_not_vanish_at_overview_zoom(self):
         path = Path(app_module.WORLDS_DIR) / "bastion_treasure_1161.json.gz"
         self.assertTrue(self.app._loadBuildingFromPath(str(path), silent=True))
         self.app.zoomLevel = min(0.12, self.app.overviewZoomThreshold)
         self.app.renderer.setZoom(self.app.zoomLevel)
         self.app._invalidateViewCaches()
         drawn = {(x, y, z) for _, x, y, z, _ in self.app._visibleBlocksInDrawOrder()}
-        buriedStructure = {
-            pos for pos in self.app.sceneStructurePositions
-            if pos[2] < self.app.world.heightIndex.get(pos[:2], pos[2])
-        }
-        overviewStructure = self.app.world.structureOverviewPositions()
         drawnStructure = drawn & self.app.sceneStructurePositions
-        self.assertTrue(drawn & buriedStructure)
-        self.assertTrue(overviewStructure <= drawnStructure)
-        self.assertLess(
-            len(drawnStructure),
-            len(self.app.world.structureSurfacePositions(self.app.renderer.viewRotation)),
-        )
+        visibleStructureSurface = {
+            pos for pos in self.app.world.surfaceBlocks
+            if pos in self.app.sceneStructurePositions
+            if not self.app._isFullyOccluded(
+                *pos, self.app.world.blocks[pos]
+            )
+            if self.app._blockIsOnScreen(*pos, self.app._worldSurfaceMargin)
+        }
+        self.assertTrue(visibleStructureSurface)
+        self.assertTrue(visibleStructureSurface <= drawnStructure)
         self.assertIn(
             max(self.app.sceneStructurePositions, key=lambda pos: pos[2]), drawn
         )
@@ -360,6 +653,28 @@ class AppIntegrationTests(unittest.TestCase):
                     {"minecraft:jigsaw", "minecraft:structure_block", "minecraft:structure_void"},
                 )
 
+    def test_end_city_world_structure_sits_above_terrain(self):
+        path = Path(app_module.WORLDS_DIR) / "end_city_1161.json.gz"
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            scene = json.load(handle)
+        structure = [block for block in scene["blocks"] if block.get("role") == "structure"]
+        terrain = [block for block in scene["blocks"] if block.get("role") != "structure"]
+        terrainTop = {}
+        for block in terrain:
+            column = (block["x"], block["y"])
+            terrainTop[column] = max(terrainTop.get(column, -999), block["z"])
+        structureBase = {}
+        for block in structure:
+            column = (block["x"], block["y"])
+            structureBase[column] = min(
+                structureBase.get(column, 999), block["z"]
+            )
+        shared = set(terrainTop) & set(structureBase)
+        self.assertTrue(shared)
+        self.assertTrue(all(
+            terrainTop[column] < structureBase[column] for column in shared
+        ))
+
     def test_small_canvas_resets_camera_after_large_world(self):
         path = Path(app_module.WORLDS_DIR) / "ancient_city_121.json.gz"
         self.assertTrue(self.app._loadBuildingFromPath(str(path), silent=True))
@@ -373,11 +688,13 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.cameraFocusZ, 0)
 
     def test_runtime_and_packaged_icons_have_padding_and_multiple_sizes(self):
-        from engine.app_icon import render_app_icon_surface
-
-        icon = render_app_icon_surface(
-            self.app.assetManager.textures.get("end_stone"), 64
+        from engine.app_icon import (
+            render_explorer_icon_surface,
+            render_runtime_icon_surface,
         )
+
+        texture = self.app.assetManager.textures["end_stone.png"]
+        icon = render_runtime_icon_surface(texture, 64)
         bounds = icon.get_bounding_rect(min_alpha=1)
         self.assertGreater(bounds.left, 0)
         self.assertGreater(bounds.top, 0)
@@ -387,8 +704,19 @@ class AppIntegrationTests(unittest.TestCase):
         ico = ROOT / "Assets" / "Icons" / "End_Stone.ico"
         with ico.open("rb") as handle:
             reserved, kind, count = struct.unpack("<HHH", handle.read(6))
+            entries = [struct.unpack("<BBBBHHII", handle.read(16)) for _ in range(count)]
         self.assertEqual((reserved, kind), (0, 1))
-        self.assertGreaterEqual(count, 7)
+        self.assertEqual(
+            {256 if entry[0] == 0 else entry[0] for entry in entries},
+            {16, 20, 24, 32, 40, 48, 64, 96, 128, 256},
+        )
+        for size in (16, 32, 48, 256):
+            explorer = render_explorer_icon_surface(texture, size)
+            artwork = explorer.get_bounding_rect(min_alpha=1)
+            self.assertGreater(artwork.left, 0)
+            self.assertLess(artwork.right, size)
+            self.assertGreater(artwork.width / artwork.height, 0.75)
+            self.assertLess(artwork.width / artwork.height, 1.25)
 
     def test_large_json_structure_places_at_cursor_without_clipping(self):
         self.app.selectedStructure = "end_city_tower"
@@ -399,6 +727,26 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertTrue(all(self.app.world.isInBounds(*pos) for pos in self.app.world.blocks))
         self.app.undoManager.undo()
         self.assertFalse(self.app.world.blocks)
+
+    def test_large_world_accepts_an_edit_and_keeps_rotations_prepared(self):
+        path = Path(app_module.WORLDS_DIR) / "bastion_bridge_1161.json.gz"
+        self.assertTrue(self.app._loadBuildingFromPath(str(path), silent=True))
+        x = self.app.world.width // 2
+        y = self.app.world.depth // 2
+        z = min(
+            self.app.world.max_y_exclusive - 1,
+            self.app.world.getHighestBlock(x, y) + 1,
+        )
+        self.assertTrue(
+            self.app._placeBlockWithUndo(x, y, z, app_module.BlockType.STONE)
+        )
+        self.assertEqual(
+            self.app.world.drawOrdersRevision, self.app.world.revision
+        )
+        self.app._fitWorldToViewport(notify=False)
+        for _ in range(4):
+            self.app._rotateViewAndRecenter(1)
+            self.app._renderWorld()
 
     def test_structure_door_generation_is_part_of_the_same_undo(self):
         key = "_door_undo_fixture"
@@ -507,6 +855,38 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertTrue(self.app.mirrorModeX)
         self.assertTrue(self.app.mirrorModeY)
 
+    def test_camera_w_never_steals_normal_block_placement(self):
+        def press_w(mods=0):
+            event = SimpleNamespace(key=pygame.K_w, unicode="w")
+            with patch.object(pygame.key, "get_mods", return_value=mods):
+                self.app._handleKeyDown(event)
+
+        self.app.magicWandMode = False
+        self.app.magicWandSelection.clear()
+        self.app.measurementMode = False
+        self.app.replaceMode = False
+        self.app.stampMode = False
+        self.app.fillToolActive = False
+        self.app.selectionActive = False
+        self.app.structurePlacementMode = False
+        self.app.selectedStructure = None
+
+        press_w()
+        self.assertFalse(self.app.magicWandMode)
+
+        self.app.hoveredCell = (5, 5, 1)
+        self.app.selectedBlock = app_module.BlockType.STONE
+        with patch.object(pygame.key, "get_mods", return_value=0):
+            self.app._handleMouseDown(SimpleNamespace(button=1, pos=(300, 300)))
+        self.assertEqual(self.app.world.getBlock(5, 5, 1), app_module.BlockType.STONE)
+
+        press_w(pygame.KMOD_CTRL | pygame.KMOD_SHIFT)
+        self.assertTrue(self.app.magicWandMode)
+        self.app.magicWandSelection = {(5, 5, 1)}
+        self.app._selectBlockForPlacement(app_module.BlockType.DIRT)
+        self.assertFalse(self.app.magicWandMode)
+        self.assertFalse(self.app.magicWandSelection)
+
     def test_escape_cancels_editor_modes_before_quitting(self):
         def press_escape():
             event = SimpleNamespace(key=pygame.K_ESCAPE, unicode="")
@@ -553,7 +933,8 @@ class AppIntegrationTests(unittest.TestCase):
             if title == "The End":
                 self.assertEqual((self.app.world.width, self.app.world.depth), (16, 16))
                 self.assertIn(app_module.BlockType.END_STONE, self.app.world.blocks.values())
-                self.assertIn(app_module.BlockType.CHORUS_PLANT, self.app.world.blocks.values())
+                self.assertIn(app_module.BlockType.END_STONE_BRICKS, self.app.world.blocks.values())
+                self.assertIn(app_module.BlockType.MAGENTA_STAINED_GLASS, self.app.world.blocks.values())
                 self.assertGreaterEqual(
                     max(z for (x, y, z), block in self.app.world.blocks.items()
                         if block == app_module.BlockType.PURPUR_BLOCK),
@@ -565,7 +946,9 @@ class AppIntegrationTests(unittest.TestCase):
                 (min(pos[1] for pos in occupied) + max(pos[1] for pos in occupied)) / 2,
                 (min(pos[2] for pos in occupied) + max(pos[2] for pos in occupied)) / 2,
             )
-            self.assertGreater(self.app.renderer.worldToScreen(*center)[1], 380)
+            self.assertEqual(self.app.zoomLevel, 1.0)
+            self.assertGreater(self.app.renderer.worldToScreen(*center)[1], 400)
+            self.assertLess(self.app.renderer.worldToScreen(*center)[1], 430)
 
     def test_door_uses_two_synchronized_cells_and_undo(self):
         self.assertTrue(self.app._placeDoorWithUndo(
@@ -734,6 +1117,13 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertLessEqual(bounds.width / bounds.height, 1.6)
             self.assertLess(bounds.width, size)
             self.assertLess(bounds.height, size)
+            colors = {
+                icon.get_at((x, y))[:3]
+                for x in range(size)
+                for y in range(size)
+                if icon.get_at((x, y)).a
+            }
+            self.assertGreater(len(colors), 8)
 
 
 if __name__ == "__main__":

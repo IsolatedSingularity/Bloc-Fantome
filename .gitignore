@@ -59,6 +59,11 @@ Assets/Texture Hub/*
 Assets/Sound Hub/*
 !Assets/Texture Hub/README.md
 !Assets/Sound Hub/README.md
+# The Craftmine Mine Crafter does not exist in the normal release asset jar.
+!Assets/Texture Hub/blocks/
+Assets/Texture Hub/blocks/*
+!Assets/Texture Hub/blocks/mine_crafter_*.png
+!Assets/Texture Hub/blocks/mine_crafter_*.png.mcmeta
 
 # User saves (keep example saves in Code/saves)
 saves/*.json.gz

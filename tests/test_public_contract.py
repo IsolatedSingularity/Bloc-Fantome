@@ -57,8 +57,8 @@ def test_block_catalog_and_sound_contract():
         for block, sound in blocFantome.BLOCK_SOUNDS.items()
     ]
     assert len(definitions) == len(sounds) == 331
-    assert _digest(definitions) == "640f558c42b98ddb2b08c81b0f760c6a8ae9dfd4d6015637abe89d22d8a6260e"
-    assert _digest(sounds) == "24990291718c08140d421f57d9467a5462a4a8c7d15b12110c8a56395ecbde5a"
+    assert _digest(definitions) == "6e88a4525a52282733ee74afacda33cf32343335637fd900f6ae314622933133"
+    assert _digest(sounds) == "ce0c571ea2dd8d437b22869d3af04a7d736a534b9e994d64421fc3b9d63e3dac"
 
 
 def test_category_order_and_membership_contract():
@@ -66,8 +66,8 @@ def test_category_order_and_membership_contract():
         (name, [block.name for block in blocks])
         for name, blocks in blocFantome.BLOCK_CATEGORIES.items()
     ]
-    assert len(categories) == 12
-    assert _digest(categories) == "1f062c839487ba2a933160925d9a74b37ef64fc2f198df2b1ad5c23dfd4a30b1"
+    assert len(categories) == 11
+    assert _digest(categories) == "2c1096a50e9a7ee9baae2273186ce19b1a251dd7ba71ade230b5069568b02b9d"
 
 
 def test_structure_tutorial_and_weather_summary_contract():
@@ -86,9 +86,9 @@ def test_structure_tutorial_and_weather_summary_contract():
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
     assert len(structures) == 38
-    assert _digest(structures) == "ba9b0af1ccf40414eafcadf399f0beb7426c3edb45baaa7e7099e59729f42c50"
+    assert _digest(structures) == "ac6d210f4e3a24c91f23f14ba87a8214ef35bd38efe5c9c75898a15d534aeb2f"
     assert len(tutorial) == 17
-    assert _digest(tutorial) == "885c2e6f58c548cfa745553038925c3081150af240b3d053f7c17025b9e9f577"
+    assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
     assert _digest(blocFantome.DIMENSION_WEATHER) == "bffbbbf2ed9ea82422dd95c8da6b3ec694ff4f99aaf53d8bf84e50858b121988"
 
 
@@ -96,6 +96,17 @@ def test_runtime_paths_are_absolute_and_keep_assets_external():
     for name in ("BASE_DIR", "ASSETS_DIR", "SAVES_DIR", "WORLDS_DIR"):
         assert Path(getattr(blocFantome, name)).is_absolute(), name
     assert Path(blocFantome.ASSETS_DIR).name == "Assets"
+
+
+def test_visible_product_name_is_accented_while_executable_name_stays_compatible():
+    build_script = (ROOT / "Code" / "build_exe.py").read_text(encoding="utf-8")
+    installer = (ROOT / "Code" / "installer.iss").read_text(encoding="utf-8")
+
+    assert blocFantome.TITLE == "Bloc Fantôme"
+    assert 'PRODUCT = "Bloc Fantôme"' in build_script
+    assert '#define MyAppName "Bloc Fantôme"' in installer
+    assert '#define MyAppExeName "BlocFantome.exe"' in installer
+    assert 'Name: "{group}\\Miette"' in installer
 
 
 def test_structure_registry_composition_does_not_mutate_builtin_mapping():

@@ -3,7 +3,7 @@
 The importer intentionally uses only the Python standard library. It decodes
 modern palette-based chunk sections from official Java ``.mca`` region files
 and returns canonical block names and states. World generation remains Java's
-job; Bloc Fantome imports the resulting block data without pretending to be a
+job; Bloc Fantôme imports the resulting block data without pretending to be a
 seed-compatible generator.
 """
 

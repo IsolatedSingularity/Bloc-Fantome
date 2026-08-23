@@ -19,7 +19,7 @@ from runtime_paths import *  # noqa: F403 - intentional compatibility surface
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800
-TITLE = "Bloc Fantome"
+TITLE = "Bloc Fantôme"
 PANEL_WIDTH = 260
 ICON_SIZE = 72
 ICON_MARGIN = 10

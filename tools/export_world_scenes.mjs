@@ -11,7 +11,13 @@ import { gzipSync } from "node:zlib"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repo = resolve(here, "..")
-const generationRepo = resolve(process.argv[2] ?? join(repo, "..", "Minecraft-Generation"))
+const onlyArg = process.argv.find(argument => argument.startsWith("--only="))
+const selectedIds = new Set(
+  (onlyArg?.slice("--only=".length) ?? "").split(",").filter(Boolean)
+)
+const shouldWrite = id => selectedIds.size === 0 || selectedIds.has(id)
+const generationArg = process.argv.slice(2).find(argument => !argument.startsWith("--"))
+const generationRepo = resolve(generationArg ?? join(repo, "..", "Minecraft-Generation"))
 const viewer = join(generationRepo, "Viewer")
 const requireFromViewer = createRequire(join(viewer, "package.json"))
 const { unzipSync } = requireFromViewer("fflate")
@@ -324,7 +330,7 @@ function hash2(x, y, seed) {
   return (value >>> 0) / 0xffffffff
 }
 
-function addTerrain(blocks, occupied, kind, seed, minY) {
+function addTerrain(blocks, occupied, kind, seed, minY, foundation = null) {
   const put = (x, y, z, type, minecraft) => {
     const key = `${x},${y},${z}`
     if (occupied.has(key)) return
@@ -345,9 +351,14 @@ function addTerrain(blocks, occupied, kind, seed, minY) {
       const distance = Math.hypot(dx, dy)
       if (kind === "end" && distance > radius + Math.sin((x + y) * 0.19) * 8) continue
       if (nether && distance > radius + Math.sin((x - y) * 0.15) * 5) continue
-      const base = kind === "ancient" ? -30 : nether ? 30 : village ? 62 : 56
-      const amplitude = kind === "end" ? 4.0 : nether ? 6.5 : village ? 3.5 : 3.0
+      const base = kind === "ancient" ? -30 : kind === "end" ? 14 : nether ? 30 : village ? 62 : 56
+      const amplitude = kind === "end" ? 2.5 : nether ? 6.5 : village ? 3.5 : 3.0
       let height = terrainHeight(x, y, seed, base, amplitude)
+      if (
+        kind === "end" && foundation
+        && x >= foundation.minX && x <= foundation.maxX
+        && y >= foundation.minY && y <= foundation.maxY
+      ) height = foundation.top
       if (nether && hash2(Math.floor(x / 7), Math.floor(y / 7), seed) > 0.88) height -= 4
       const top = kind === "end" ? "END_STONE"
         : kind === "ancient" ? "SCULK"
@@ -450,7 +461,14 @@ function toScene(structure, spec) {
       role: "structure",
     })
   }
-  addTerrain(blocks, occupied, spec.habitat, spec.seed, spec.minY)
+  const foundation = spec.habitat === "end" && blocks.length ? {
+    minX: Math.min(...blocks.map(block => block.x)) - 2,
+    maxX: Math.max(...blocks.map(block => block.x)) + 2,
+    minY: Math.min(...blocks.map(block => block.y)) - 2,
+    maxY: Math.max(...blocks.map(block => block.y)) + 2,
+    top: spec.structureY - 1,
+  } : null
+  addTerrain(blocks, occupied, spec.habitat, spec.seed, spec.minY, foundation)
   return {
     version: 5,
     dimension: spec.dimension,
@@ -473,6 +491,7 @@ function toScene(structure, spec) {
 }
 
 async function writeScene(spec, structure) {
+  if (!shouldWrite(spec.id)) return
   const scene = toScene(structure, spec)
   const path = join(outDir, `${spec.id}.json.gz`)
   await writeFile(path, gzipSync(Buffer.from(JSON.stringify(scene)), { level: 9 }))
@@ -480,6 +499,7 @@ async function writeScene(spec, structure) {
 }
 
 async function writeCursorStructure({ id, name, dimension, pieces, translation = [0, 0, 0], fixedBounds = null }) {
+  if (!shouldWrite(id)) return
   const cells = new Map()
   let stackY = 0
   for (const piece of pieces) {

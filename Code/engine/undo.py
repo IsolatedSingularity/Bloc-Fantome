@@ -1,5 +1,5 @@
 """
-Undo/Redo system for Bloc Fantome.
+Undo/Redo system for Bloc Fantôme.
 
 Implements the Command pattern for reversible block operations.
 Uses duck typing to avoid import issues with BlockType enum.

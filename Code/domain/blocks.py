@@ -241,7 +241,7 @@ class BlockType(Enum):
     END_GATEWAY = 206
     FIRE = 207
     SOUL_FIRE = 208
-    MATRIX = 209
+    MATRIX = 209  # Legacy save ID retained for the Craftmine Mine Crafter
     TUFF = 400
     POLISHED_TUFF = 401
     TUFF_BRICKS = 402
@@ -392,6 +392,7 @@ class BlockProperties:
     stairShape: StairShape = StairShape.STRAIGHT
     doorHalf: DoorHalf = DoorHalf.LOWER
     doorHinge: DoorHinge = DoorHinge.LEFT
+    oxidationStage: int = 0
 
     def copy(self):
         return BlockProperties(
@@ -401,4 +402,5 @@ class BlockProperties:
             stairShape=self.stairShape,
             doorHalf=self.doorHalf,
             doorHinge=self.doorHinge,
+            oxidationStage=self.oxidationStage,
         )

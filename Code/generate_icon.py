@@ -1,4 +1,4 @@
-"""Generate Bloc Fantome's padded multi-resolution Windows icon."""
+"""Generate Bloc Fantôme's independent splash, taskbar, and Explorer assets."""
 
 from __future__ import annotations
 
@@ -11,10 +11,17 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
 import pygame
 
-from engine.app_icon import render_app_icon_surface
+from engine.app_icon import (
+    render_explorer_icon_surface,
+    render_runtime_icon_surface,
+    render_splash_background_surface,
+    render_splash_logo_surface,
+)
 
 
-SIZES = (16, 24, 32, 48, 64, 128, 256)
+# Include common Windows DPI-scaled shell/taskbar sizes instead of asking the
+# shell to interpolate one of the neighbouring resources.
+SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
 
 
 def _png_bytes(surface: pygame.Surface) -> bytes:
@@ -23,13 +30,31 @@ def _png_bytes(surface: pygame.Surface) -> bytes:
     return stream.getvalue()
 
 
+def _render_ico_entry(texture: pygame.Surface | None, size: int) -> pygame.Surface:
+    """Render one native Explorer resource without non-uniform correction."""
+    return render_explorer_icon_surface(texture, size)
+
+
 def generate(output_path: Path) -> None:
     pygame.init()
     try:
         project = Path(__file__).resolve().parent.parent
         texture_path = project / "Assets" / "Texture Hub" / "blocks" / "end_stone.png"
         texture = pygame.image.load(str(texture_path)) if texture_path.is_file() else None
-        images = [_png_bytes(render_app_icon_surface(texture, size)) for size in SIZES]
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        pygame.image.save(
+            render_splash_logo_surface(texture, 288),
+            output_path.parent / "Splash_End_Stone.png",
+        )
+        pygame.image.save(
+            render_splash_background_surface(texture),
+            output_path.parent / "Splash_Background_End_Stone.png",
+        )
+        pygame.image.save(
+            render_runtime_icon_surface(texture, 256),
+            output_path.parent / "Taskbar_End_Stone.png",
+        )
+        images = [_png_bytes(_render_ico_entry(texture, size)) for size in SIZES]
 
         header_size = 6 + 16 * len(images)
         offset = header_size
@@ -42,7 +67,6 @@ def generate(output_path: Path) -> None:
             ))
             offset += len(payload)
 
-        output_path.parent.mkdir(parents=True, exist_ok=True)
         with output_path.open("wb") as handle:
             handle.write(struct.pack("<HHH", 0, 1, len(images)))
             handle.writelines(entries)

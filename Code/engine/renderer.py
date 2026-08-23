@@ -1,5 +1,5 @@
 """
-Isometric Renderer Module for Bloc Fantome
+Isometric Renderer Module for Bloc Fantôme
 
 This module handles conversion between 3D world coordinates and 2D screen
 coordinates using 2:1 dimetric (pseudo-isometric) projection.

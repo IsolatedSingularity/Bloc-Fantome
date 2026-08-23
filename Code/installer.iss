@@ -1,4 +1,4 @@
-; Inno Setup Script for Bloc Fantome
+; Inno Setup Script for Bloc Fantôme
 ; This script creates a Windows installer for the application
 ;
 ; Requirements:
@@ -10,12 +10,12 @@
 ;
 ; Or use Inno Setup Compiler GUI
 
-#define MyAppName "Bloc Fantome"
-#define MyAppVersion "2.2.0"
+#define MyAppName "Bloc Fantôme"
+#define MyAppVersion "2.3.2"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
-#define MyAppAssocName "Bloc Fantome Structure"
+#define MyAppAssocName "Bloc Fantôme Structure"
 #define MyAppAssocExt ".bsms"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 

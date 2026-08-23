@@ -5,6 +5,7 @@ and three-voxel-thick door models. Rasterization happens only when a variant is
 first requested; the game loop blits cached surfaces.
 """
 
+import math
 from typing import Iterable, Optional, Sequence, Tuple
 
 import pygame
@@ -13,6 +14,7 @@ from engine.block_state import DoorHalf, DoorHinge, Facing, SlabPosition, StairS
 
 
 Box = Tuple[float, float, float, float, float, float]
+Voxel = Tuple[int, int, int]
 
 
 class BlockModelRenderer:
@@ -89,6 +91,30 @@ class BlockModelRenderer:
         self._draw_face(surface, top_face, top, 1.0, (x1 / 16, y1 / 16),
                         ((x2 - x1) / 16, 0), (0, (y2 - y1) / 16))
 
+    def _draw_box_normalized(self, surface, box: Box, top, side, front) -> None:
+        """Draw a box while mapping each supplied face texture edge-to-edge."""
+        x1, y1, z1, x2, y2, z2 = box
+        y_face = (
+            self._project(x1, y2, z2), self._project(x2, y2, z2),
+            self._project(x2, y2, z1), self._project(x1, y2, z1),
+        )
+        x_face = (
+            self._project(x2, y1, z2), self._project(x2, y2, z2),
+            self._project(x2, y2, z1), self._project(x2, y1, z1),
+        )
+        top_face = (
+            self._project(x1, y1, z2), self._project(x2, y1, z2),
+            self._project(x2, y2, z2), self._project(x1, y2, z2),
+        )
+        self._draw_face(surface, y_face, side, 0.70, (0, 0), (1, 0), (0, 1))
+        self._draw_face(surface, x_face, front, 0.85, (0, 0), (1, 0), (0, 1))
+        self._draw_face(surface, top_face, top, 1.0, (0, 0), (1, 0), (0, 1))
+
+    @staticmethod
+    def _texture_region(texture, rect) -> pygame.Surface:
+        region = texture.subsurface(pygame.Rect(rect)).copy()
+        return pygame.transform.scale(region, (16, 16))
+
     @staticmethod
     def _rotate_box(box: Box, turns: int) -> Box:
         x1, y1, z1, x2, y2, z2 = box
@@ -105,23 +131,89 @@ class BlockModelRenderer:
     def cube_boxes() -> tuple[Box, ...]:
         return ((0, 0, 0, 16, 16, 16),)
 
+    @staticmethod
+    def _rotate_voxel(voxel: Voxel, turns: int) -> Voxel:
+        """Rotate one cell in the canonical 2 x 2 x 2 stair volume."""
+        x, y, z = voxel
+        for _ in range(turns % 4):
+            x, y = 1 - y, x
+        return x, y, z
+
+    def stair_occupancy(self, facing: Facing, shape: StairShape,
+                        half: SlabPosition) -> frozenset[Voxel]:
+        """Return the connected Minecraft stair volume as eight-unit voxels.
+
+        Every bottom stair begins with the same continuous lower slab. Shape
+        variants only change which upper quadrants are occupied; facing and
+        top-half stairs are strict transforms of that canonical volume.
+        """
+        occupied: set[Voxel] = {
+            (x, y, 0) for x in range(2) for y in range(2)
+        }
+        if shape == StairShape.STRAIGHT:
+            occupied.update(((1, 0, 1), (1, 1, 1)))
+        elif shape == StairShape.INNER_RIGHT:
+            occupied.update(((1, 0, 1), (1, 1, 1), (0, 1, 1)))
+        elif shape == StairShape.INNER_LEFT:
+            occupied.update(((1, 0, 1), (1, 1, 1), (0, 0, 1)))
+        elif shape == StairShape.OUTER_RIGHT:
+            occupied.add((1, 1, 1))
+        else:
+            occupied.add((1, 0, 1))
+
+        rotated = {
+            self._rotate_voxel(voxel, facing.value) for voxel in occupied
+        }
+        if half == SlabPosition.TOP:
+            rotated = {(x, y, 1 - z) for x, y, z in rotated}
+        return frozenset(rotated)
+
     def stair_boxes(self, facing: Facing, shape: StairShape,
                     half: SlabPosition) -> tuple[Box, ...]:
-        boxes: list[Box] = [(0, 0, 0, 16, 16, 8)]
-        if shape == StairShape.STRAIGHT:
-            boxes.append((8, 0, 8, 16, 16, 16))
-        elif shape == StairShape.INNER_RIGHT:
-            boxes.extend(((8, 0, 8, 16, 16, 16), (0, 8, 8, 8, 16, 16)))
-        elif shape == StairShape.INNER_LEFT:
-            boxes.extend(((8, 0, 8, 16, 16, 16), (0, 0, 8, 8, 8, 16)))
-        elif shape == StairShape.OUTER_RIGHT:
-            boxes.append((8, 8, 8, 16, 16, 16))
-        else:
-            boxes.append((8, 0, 8, 16, 8, 16))
-        rotated = [self._rotate_box(box, facing.value) for box in boxes]
-        if half == SlabPosition.TOP:
-            rotated = [self._invert_box(box) for box in rotated]
-        return tuple(rotated)
+        return tuple(
+            (x * 8, y * 8, z * 8, (x + 1) * 8, (y + 1) * 8, (z + 1) * 8)
+            for x, y, z in sorted(self.stair_occupancy(facing, shape, half))
+        )
+
+    def _stair_faces(self, occupied: frozenset[Voxel]):
+        """Return only exterior faces of a stair's occupied union."""
+        faces = []
+        for x, y, z in occupied:
+            x1, y1, z1 = x * 8, y * 8, z * 8
+            x2, y2, z2 = x1 + 8, y1 + 8, z1 + 8
+            if (x, y + 1, z) not in occupied:
+                points = (
+                    self._project(x1, y2, z2), self._project(x2, y2, z2),
+                    self._project(x2, y2, z1), self._project(x1, y2, z1),
+                )
+                faces.append(("left", points, 0.70,
+                              (x1 / 16, (16 - z2) / 16),
+                              ((x2 - x1) / 16, 0),
+                              (0, (z2 - z1) / 16), 0))
+            if (x + 1, y, z) not in occupied:
+                points = (
+                    self._project(x2, y1, z2), self._project(x2, y2, z2),
+                    self._project(x2, y2, z1), self._project(x2, y1, z1),
+                )
+                faces.append(("right", points, 0.85,
+                              (y1 / 16, (16 - z2) / 16),
+                              ((y2 - y1) / 16, 0),
+                              (0, (z2 - z1) / 16), 0))
+            if (x, y, z + 1) not in occupied:
+                points = (
+                    self._project(x1, y1, z2), self._project(x2, y1, z2),
+                    self._project(x2, y2, z2), self._project(x1, y2, z2),
+                )
+                faces.append(("top", points, 1.0, (x1 / 16, y1 / 16),
+                              ((x2 - x1) / 16, 0),
+                              (0, (y2 - y1) / 16), 1))
+        return sorted(
+            faces,
+            key=lambda face: (
+                sum(point[1] for point in face[1]) / 4.0,
+                face[6],
+            ),
+        )
 
     @staticmethod
     def slab_boxes(half: SlabPosition) -> tuple[Box, ...]:
@@ -161,6 +253,19 @@ class BlockModelRenderer:
             return ((7, 1, 0, 9, 15, 16),)
         if kind == "pane":
             return ((7, 0, 0, 9, 16, 16),)
+        if kind == "ladder":
+            return ({
+                Facing.NORTH: (0, 0, 0, 16, 1, 16),
+                Facing.SOUTH: (0, 15, 0, 16, 16, 16),
+                Facing.EAST: (15, 0, 0, 16, 16, 16),
+                Facing.WEST: (0, 0, 0, 1, 16, 16),
+            }[facing],)
+        if kind == "chain":
+            return ((6, 6, 0, 10, 10, 16),)
+        if kind == "lantern":
+            if is_open:
+                return ((5, 5, 1, 11, 11, 8), (6, 6, 8, 10, 10, 16))
+            return ((5, 5, 0, 11, 11, 7), (6, 6, 7, 10, 10, 11))
         if kind == "torch":
             return ((7, 7, 0, 9, 9, 11),)
         if kind == "candle":
@@ -239,15 +344,236 @@ class BlockModelRenderer:
                     return face_name
         return None
 
+    def pick_stair_face(self, local_x: float, local_y: float, facing: Facing,
+                        shape: StairShape, half: SlabPosition) -> Optional[str]:
+        """Pick the topmost exterior face of the connected stair volume."""
+        point = (local_x, local_y)
+        faces = self._stair_faces(self.stair_occupancy(facing, shape, half))
+        for face_name, polygon, *_rest in reversed(faces):
+            if self._point_in_polygon(point, polygon):
+                return face_name
+        return None
+
     def render_boxes(self, boxes: Iterable[Box], top, side, front) -> pygame.Surface:
         surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
         for box in boxes:
             self._draw_box(surface, box, top, side, front)
         return surface
 
+    def render_crossed_planes(self, texture, z1: float = 0,
+                              z2: float = 16) -> pygame.Surface:
+        """Render a transparent Minecraft-style crossed-plane block."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        planes = (
+            ((0, 0), (16, 16)),
+            ((16, 0), (0, 16)),
+        )
+        for start, end in planes:
+            points = (
+                self._project(start[0], start[1], z1),
+                self._project(end[0], end[1], z1),
+                self._project(end[0], end[1], z2),
+                self._project(start[0], start[1], z2),
+            )
+            self._draw_face(
+                surface, points, texture, 1.0,
+                (0, 1), (1, 0), (0, -1),
+            )
+        return surface
+
+    def _draw_vertical_plane(self, surface, start, end, z1, z2, texture,
+                             uv_origin=(0, 1), uv_u=(1, 0), uv_v=(0, -1)) -> None:
+        points = (
+            self._project(start[0], start[1], z1),
+            self._project(end[0], end[1], z1),
+            self._project(end[0], end[1], z2),
+            self._project(start[0], start[1], z2),
+        )
+        self._draw_face(
+            surface, points, texture, 1.0, uv_origin, uv_u, uv_v
+        )
+
+    def render_fire(self, texture) -> pygame.Surface:
+        """Render the four intersecting floor-fire planes from the Java model."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        planes = (
+            ((0, 7.2), (16, 7.2)),
+            ((0, 8.8), (16, 8.8)),
+            ((7.2, 0), (7.2, 16)),
+            ((8.8, 0), (8.8, 16)),
+        )
+        for index, (start, end) in enumerate(planes):
+            self._draw_vertical_plane(
+                surface, start, end, 0, 16, texture,
+                (1, 1) if index % 2 else (0, 1),
+                (-1, 0) if index % 2 else (1, 0),
+            )
+        return surface
+
+    def render_ladder(self, texture, facing: Facing) -> pygame.Surface:
+        """Render the 0.8/16 wall-mounted ladder plane in its placement state."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        planes = {
+            Facing.NORTH: ((0, 0.8), (16, 0.8)),
+            Facing.SOUTH: ((16, 15.2), (0, 15.2)),
+            Facing.EAST: ((15.2, 0), (15.2, 16)),
+            Facing.WEST: ((0.8, 16), (0.8, 0)),
+        }
+        self._draw_vertical_plane(surface, *planes[facing], 0, 16, texture)
+        return surface
+
+    def render_chain(self, texture) -> pygame.Surface:
+        """Render the two diagonal, unshaded strips of the 1.16 chain model."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        self._draw_vertical_plane(
+            surface, (6, 6), (10, 10), 0, 16, texture,
+            (0, 1), (3 / 16, 0), (0, -1),
+        )
+        self._draw_vertical_plane(
+            surface, (10, 6), (6, 10), 0, 16, texture,
+            (3 / 16, 1), (3 / 16, 0), (0, -1),
+        )
+        return surface
+
+    def render_lantern(self, texture, hanging: bool = False) -> pygame.Surface:
+        """Render the source model's body, cap, and crossed iron handle."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        if hanging:
+            boxes = ((5, 5, 1, 11, 11, 8), (6, 6, 8, 10, 10, 10))
+            handle_bottom, handle_top = 10, 16
+        else:
+            boxes = ((5, 5, 0, 11, 11, 7), (6, 6, 7, 10, 10, 9))
+            handle_bottom, handle_top = 9, 11
+        bodyTop = self._texture_region(texture, (0, 9, 6, 6))
+        bodySide = self._texture_region(texture, (0, 2, 6, 7))
+        capTop = self._texture_region(texture, (1, 10, 4, 4))
+        capSide = self._texture_region(texture, (1, 0, 4, 2))
+        self._draw_box_normalized(surface, boxes[0], bodyTop, bodySide, bodySide)
+        self._draw_box_normalized(surface, boxes[1], capTop, capSide, capSide)
+        self._draw_vertical_plane(
+            surface, (6.5, 6.5), (9.5, 9.5),
+            handle_bottom, handle_top, texture, (11 / 16, 12 / 16),
+            (3 / 16, 0), (0, -(handle_top - handle_bottom) / 16),
+        )
+        self._draw_vertical_plane(
+            surface, (9.5, 6.5), (6.5, 9.5),
+            handle_bottom, handle_top, texture, (11 / 16, 12 / 16),
+            (3 / 16, 0), (0, -(handle_top - handle_bottom) / 16),
+        )
+        return surface
+
+    def render_horizontal_plane(self, texture, height: float) -> pygame.Surface:
+        """Render a texture on one horizontal block-entity face."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        points = (
+            self._project(0, 0, height), self._project(16, 0, height),
+            self._project(16, 16, height), self._project(0, 16, height),
+        )
+        self._draw_face(surface, points, texture, 1.0, (0, 0), (1, 0), (0, 1))
+        return surface
+
+    def render_end_portal_frame(self, top, side, bottom,
+                                eye=None) -> pygame.Surface:
+        """Render the source 13/16 frame base and optional 8x3x8 eye."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        self._draw_box(surface, (0, 0, 0, 16, 16, 13), top, side, side)
+        if eye is not None:
+            self._draw_box(surface, (4, 4, 13, 12, 12, 16), eye, eye, eye)
+        return surface
+
+    def render_chest(self, lid_top, lid_side, lid_front,
+                     body_side, body_front, latch,
+                     facing: Facing = Facing.SOUTH) -> pygame.Surface:
+        """Render the single-chest entity mesh: 14x10 body, 14x5 lid, 2x4 latch."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        y_front = lid_front if facing == Facing.SOUTH else lid_side
+        x_front = lid_front if facing == Facing.EAST else lid_side
+        self._draw_box_normalized(
+            surface, (1, 1, 0, 15, 15, 10), body_side,
+            body_front if facing == Facing.SOUTH else body_side,
+            body_front if facing == Facing.EAST else body_side,
+        )
+        self._draw_box_normalized(
+            surface, (1, 1, 10, 15, 15, 15), lid_top, y_front, x_front
+        )
+        latch_boxes = {
+            Facing.SOUTH: (7, 15, 8, 9, 16, 12),
+            Facing.EAST: (15, 7, 8, 16, 9, 12),
+            Facing.NORTH: (7, 0, 8, 9, 1, 12),
+            Facing.WEST: (0, 7, 8, 1, 9, 12),
+        }
+        self._draw_box_normalized(surface, latch_boxes[facing], latch, latch, latch)
+        return surface
+
+    def render_sculk_sensor(self, top, side, bottom, tendril) -> pygame.Surface:
+        """Render the canonical half-block base and four diagonal tendrils."""
+        surface = self.render_boxes(((0, 0, 0, 16, 16, 8),), top, side, side)
+        tendrils = (
+            ((0.17, 0.17), (5.83, 5.83)),
+            ((10.17, 5.83), (15.83, 0.17)),
+            ((10.17, 10.17), (15.83, 15.83)),
+            ((0.17, 15.83), (5.83, 10.17)),
+        )
+        for start, end in sorted(
+            tendrils,
+            key=lambda plane: sum(self._project(*point, 12)[1] for point in plane),
+        ):
+            points = (
+                self._project(start[0], start[1], 8),
+                self._project(end[0], end[1], 8),
+                self._project(end[0], end[1], 16),
+                self._project(start[0], start[1], 16),
+            )
+            self._draw_face(
+                surface, points, tendril, 1.0,
+                (0.25, 1.0), (0.5, 0), (0, -0.5),
+            )
+        return surface
+
+    def render_enchanting_table(self, top, side, bottom, cover, pages,
+                                phase: float = 0.0) -> pygame.Surface:
+        """Render the 12/16 table base with a lightweight animated open book."""
+        surface = self.render_boxes(((0, 0, 0, 16, 16, 12),), top, side, side)
+        flutter = math.sin(phase) * 0.7
+        cover_faces = (
+            ((8, 3, 14.3), (1, 4, 13.5), (1, 12, 13.5), (8, 13, 14.3)),
+            ((8, 3, 14.3), (15, 4, 13.5), (15, 12, 13.5), (8, 13, 14.3)),
+        )
+        page_faces = (
+            ((8, 3.5, 14.6), (1.7, 4.4, 14.0), (1.7, 11.6, 14.0), (8, 12.5, 14.6)),
+            ((8, 3.5, 14.6 + flutter), (14.3, 4.4, 14.0),
+             (14.3, 11.6, 14.0), (8, 12.5, 14.6 + flutter)),
+        )
+        for face in cover_faces:
+            self._draw_face(
+                surface, tuple(self._project(*point) for point in face),
+                cover, 0.82, (0, 0), (1, 0), (0, 1),
+            )
+        for face in page_faces:
+            self._draw_face(
+                surface, tuple(self._project(*point) for point in face),
+                pages, 1.0, (0, 0), (1, 0), (0, 1),
+            )
+        return surface
+
+    def render_mine_crafter(self, outer_top, inner_top, side, bottom) -> pygame.Surface:
+        """Render Mojang's 25w14craftmine Mine Crafter element layout."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        self._draw_box(surface, (0, 0, 0, 16, 16, 8), inner_top, side, side)
+        self._draw_box(surface, (1, 1, 8, 15, 15, 15), outer_top, side, side)
+        return surface
+
     def render_stair(self, top, side, front, facing: Facing, shape: StairShape,
                      half: SlabPosition) -> pygame.Surface:
-        return self.render_boxes(self.stair_boxes(facing, shape, half), top, side, front)
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        textures = {"top": top, "left": side, "right": front}
+        faces = self._stair_faces(self.stair_occupancy(facing, shape, half))
+        for face_name, points, shade, uv_origin, uv_u, uv_v, _priority in faces:
+            self._draw_face(
+                surface, points, textures[face_name], shade,
+                uv_origin, uv_u, uv_v,
+            )
+        return surface
 
     def render_door(self, texture, facing: Facing, is_open: bool,
                     hinge: DoorHinge, half: DoorHalf) -> pygame.Surface:
