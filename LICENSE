@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Third-party font notice
+-----------------------
+
+Zekton is copyright Typodermic Fonts Inc. and is not licensed under the MIT
+License above. Runtime font software and private license records are supplied
+locally by the repository owner under a separate application/game license and
+are intentionally excluded from Git. See `Assets/Fonts/ZEKTON_LOCAL_SETUP.md`
+for the expected local asset path and fallback behavior.

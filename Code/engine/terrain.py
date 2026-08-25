@@ -49,6 +49,17 @@ def _octaves(x: float, y: float, seed: int) -> float:
     return value / total
 
 
+def local_height_offset(x: int, y: int, seed: int, maximum: int = 3) -> int:
+    """Return a smooth, compact elevation for sculpting an existing flat pad."""
+    maximum = max(0, int(maximum))
+    if maximum == 0:
+        return 0
+    broad = _value_noise(x * 0.18, y * 0.18, seed)
+    detail = _value_noise(x * 0.41, y * 0.41, seed ^ 0x51C07)
+    normalized = max(0.0, min(1.0, 0.5 + broad * 0.38 + detail * 0.12))
+    return max(0, min(maximum, round(normalized * maximum)))
+
+
 def _column(x: int, y: int, top: int, surface: str, filler: str, base: str,
             min_y: int) -> Iterator[Cell]:
     bottom = max(min_y, top - 5)

@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.4.0"
+#define MyAppVersion "2.5.1"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -43,8 +43,6 @@ LZMAUseSeparateProcess=yes
 ; Visual settings
 SetupIconFile=..\Assets\Icons\Respawn_Anchor.ico
 WizardStyle=modern
-WizardImageFile=compiler:WizModernImage.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage.bmp
 ; Privileges
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
@@ -63,7 +61,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
 ; Main executable
@@ -77,6 +74,7 @@ Source: "..\Assets\Texture Hub\*"; DestDir: "{app}\Assets\Texture Hub"; Flags: i
 Source: "..\Assets\Sound Hub\*"; DestDir: "{app}\Assets\Sound Hub"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Icons\*"; DestDir: "{app}\Assets\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Fonts\*"; DestDir: "{app}\Assets\Fonts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\References\Titles\horror.png"; DestDir: "{app}\References\Titles"; Flags: ignoreversion
 
 ; Optional: Extensive Library (comment out if not needed - saves space)
 ; Source: "..\Assets\Extensive Library\*"; DestDir: "{app}\Assets\Extensive Library"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -90,11 +88,15 @@ Source: "..\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{app}\saves"
 Name: "{app}\screenshots"
 
+[InstallDelete]
+; Force upgrades to replace shortcuts created by older sandboxed installers.
+Type: files; Name: "{group}\{#MyAppName}.lnk"
+Type: files; Name: "{group}\{cm:UninstallProgram,{#MyAppName}}.lnk"
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Assets\Icons\Respawn_Anchor.ico"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Registry]
 ; File association (optional - for .bsms structure files)

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import random
 import sys
+import time
 
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -18,6 +19,20 @@ from engine.app_icon import (
     render_explorer_icon_surface,
     render_runtime_icon_surface,
 )
+
+
+def save_capture(surface: pygame.Surface, path: Path) -> None:
+    """Write through a temporary PNG so OneDrive cannot truncate QA captures."""
+    temporary = path.with_name(f".{path.stem}.new.png")
+    pygame.image.save(surface, temporary)
+    for attempt in range(20):
+        try:
+            os.replace(temporary, path)
+            return
+        except PermissionError:
+            if attempt == 19:
+                raise
+            time.sleep(0.05)
 
 
 def render(output_dir: Path) -> None:
@@ -36,15 +51,14 @@ def render(output_dir: Path) -> None:
         app_module.ICONS_DIR,
     )
     splash._draw_background(screen)
-    screen.blit(splash.icon, splash.icon.get_rect(center=(600, 335)))
-    screen.blit(splash.title, splash.title.get_rect(center=(600, 585)))
-    pygame.image.save(screen, output_dir / "splash.png")
+    screen.blit(splash.title, splash.title.get_rect(center=(600, 400)))
+    save_capture(screen, output_dir / "splash.png")
 
     artwork = pygame.image.load(
         ROOT / "Assets" / "Icons" / "Respawn_Anchor.png"
     ).convert_alpha()
 
-    pygame.image.save(
+    save_capture(
         render_runtime_icon_surface(artwork, 256),
         output_dir / "app_icon.png",
     )
@@ -68,7 +82,7 @@ def render(output_dir: Path) -> None:
     runtime = render_runtime_icon_surface(artwork, 256)
     icon_sheet.blit(pygame.transform.scale(runtime, (128, 128)), (20, 190))
     icon_sheet.blit(icon_font.render("Taskbar/window", True, (220, 220, 220)), (160, 238))
-    pygame.image.save(icon_sheet, output_dir / "icon_routes.png")
+    save_capture(icon_sheet, output_dir / "icon_routes.png")
 
     sheet = pygame.Surface((1100, 620))
     sheet.fill((24, 20, 24))
@@ -106,7 +120,7 @@ def render(output_dir: Path) -> None:
             (215, 205, 195),
         )
         sheet.blit(label, (x - 22, 580))
-    pygame.image.save(sheet, output_dir / "block_models.png")
+    save_capture(sheet, output_dir / "block_models.png")
 
     special_sheet = pygame.Surface((1100, 730))
     special_sheet.fill((24, 20, 24))
@@ -152,14 +166,66 @@ def render(output_dir: Path) -> None:
             (215, 205, 195),
         )
         special_sheet.blit(label, label.get_rect(center=(x + 72, y + 105)))
-    pygame.image.save(special_sheet, output_dir / "special_blocks.png")
+    save_capture(special_sheet, output_dir / "special_blocks.png")
 
     app._openLoadDialog()
     app.assetManager.drawBackground(screen)
     app.buildLibrary.render(screen)
-    pygame.image.save(screen, output_dir / "build_library.png")
+    save_capture(screen, output_dir / "build_library.png")
 
     app.buildLibrary.close()
+
+    # UI-pass captures: native-font HUD, movable tutorial states, centered
+    # resize preview, and protected local terrain sculpting.
+    app.currentDimension = app_module.DIMENSION_OVERWORLD
+    app.world.setDimension(app_module.DIMENSION_OVERWORLD)
+    app.world.resize(12, 12, 12, min_y=0, preserve=False)
+    app._createInitialFloor()
+    app._frameCurrentCanvas()
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app.hoveredCell = (6, 6, 1)
+    app._render()
+    save_capture(screen, output_dir / "hud_crisp_alignment.png")
+
+    app.renderer.setViewRotation(1)
+    app._render()
+    save_capture(screen, output_dir / "hud_rotated_alignment.png")
+    app.renderer.setViewRotation(0)
+
+    tutorial = app.tutorialScreen
+    tutorial.visible = True
+    tutorial.minimized = False
+    tutorial.currentStep = 0
+    tutorial.panelX = 720
+    tutorial.panelY = 130
+    tutorial._layoutPanelControls()
+    app._render()
+    save_capture(screen, output_dir / "tutorial_window.png")
+    tutorial.minimized = True
+    app._render()
+    save_capture(screen, output_dir / "tutorial_minimized.png")
+    tutorial.visible = False
+    tutorial.minimized = False
+
+    app._render()
+    growDimensions, _ = app._canvasResizeImpact(16)
+    app._renderCanvasResizePreview(16, growDimensions)
+    save_capture(screen, output_dir / "canvas_resize_preview.png")
+
+    app.world.setBlock(5, 5, 1, app_module.BlockType.DIAMOND_BLOCK)
+    app._render()
+    terrain_seed = 8731
+    terrain_plan = app._terrainNoisePlanForSeed(terrain_seed)
+    app._renderTerrainNoisePreview(terrain_plan)
+    save_capture(screen, output_dir / "terrain_noise_preview.png")
+    app._applyLocalTerrainNoise(terrain_seed)
+    app._frameCurrentCanvas()
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app._render()
+    save_capture(screen, output_dir / "terrain_noise_local.png")
+
     app._generateStructurePreviews()
     app.blocksExpanded = True
     app.experimentalExpanded = False
@@ -169,7 +235,19 @@ def render(output_dir: Path) -> None:
         app.expandedCategories[category] = False
     app.assetManager.drawBackground(screen)
     app._renderPanel()
-    pygame.image.save(screen, output_dir / "blocks_categories.png")
+    save_capture(screen, output_dir / "blocks_categories.png")
+
+    app.blocksExpanded = False
+    app.experimentalExpanded = False
+    app.structuresExpanded = False
+    app.inventoryScroll = 0
+    app.inventoryScrollTarget = 0
+    app._renderPanel()
+    app.inventoryScroll = app.maxScroll
+    app.inventoryScrollTarget = app.maxScroll
+    app.assetManager.drawBackground(screen)
+    app._renderPanel()
+    save_capture(screen, output_dir / "panel_controls.png")
 
     app.blocksExpanded = False
     app.experimentalExpanded = True
@@ -187,7 +265,7 @@ def render(output_dir: Path) -> None:
         app.inventoryScroll = 0
         app.assetManager.drawBackground(screen)
         app._renderPanel()
-        pygame.image.save(screen, output_dir / filename)
+        save_capture(screen, output_dir / filename)
     app.rainEnabled = False
 
     app.snowEnabled = True
@@ -201,7 +279,7 @@ def render(output_dir: Path) -> None:
         app.inventoryScroll = 0
         app.assetManager.drawBackground(screen)
         app._renderPanel()
-        pygame.image.save(screen, output_dir / filename)
+        save_capture(screen, output_dir / filename)
     app.snowEnabled = False
 
     random.seed(1161)
@@ -237,7 +315,7 @@ def render(output_dir: Path) -> None:
             app.snowImpactTimer = 1000
             app._updateSnow(16)
         app._render()
-        pygame.image.save(screen, output_dir / filename)
+        save_capture(screen, output_dir / filename)
         app.rainEnabled = False
         app.snowEnabled = False
         app._stopRain()
@@ -253,7 +331,7 @@ def render(output_dir: Path) -> None:
     app.inventoryScroll = 0
     app.assetManager.drawBackground(screen)
     app._renderPanel()
-    pygame.image.save(screen, output_dir / "structure_panel.png")
+    save_capture(screen, output_dir / "structure_panel.png")
 
     app.world.resize(12, 12, 12, min_y=0, preserve=False)
     door = app_module.PREMADE_STRUCTURES["piston_door"]
@@ -269,22 +347,22 @@ def render(output_dir: Path) -> None:
     app.renderer.offsetX = app.targetOffsetX
     app.renderer.offsetY = app.targetOffsetY
     app._render()
-    pygame.image.save(screen, output_dir / "redstone_piston_door_closed.png")
+    save_capture(screen, output_dir / "redstone_piston_door_closed.png")
     app._interactBlock(5, 1, 2)
     app.redstone.update(50)
     app._render()
-    pygame.image.save(screen, output_dir / "redstone_piston_door_open.png")
+    save_capture(screen, output_dir / "redstone_piston_door_open.png")
 
     app._openWorldLibrary()
     app.assetManager.drawBackground(screen)
     app.worldLibrary.render(screen)
-    pygame.image.save(screen, output_dir / "world_library.png")
+    save_capture(screen, output_dir / "world_library.png")
     app.worldLibrary.close()
 
     app.assetManager.drawBackground(screen)
     app.settingsMenuOpen = True
     app._renderSettingsMenu()
-    pygame.image.save(screen, output_dir / "settings.png")
+    save_capture(screen, output_dir / "settings.png")
     app.settingsMenuOpen = False
 
     for step_index, filename in (
@@ -299,7 +377,7 @@ def render(output_dir: Path) -> None:
         app.renderer.offsetX = app.targetOffsetX
         app.renderer.offsetY = app.targetOffsetY
         app._render()
-        pygame.image.save(screen, output_dir / filename)
+        save_capture(screen, output_dir / filename)
 
     # README art: a full editor frame, not an isolated renderer export.
     app.structuresExpanded = False
@@ -314,7 +392,7 @@ def render(output_dir: Path) -> None:
     app.renderer.offsetX = app.targetOffsetX
     app.renderer.offsetY = app.targetOffsetY
     app._render()
-    pygame.image.save(screen, output_dir / "worlds_bastion.png")
+    save_capture(screen, output_dir / "worlds_bastion.png")
 
     random.seed(1161)
     app._switchDimension(app_module.DIMENSION_OVERWORLD)
@@ -330,7 +408,7 @@ def render(output_dir: Path) -> None:
     app.lightingDirty = True
     app.inventoryScroll = 0
     app._render()
-    pygame.image.save(screen, output_dir / "terrain_slice.png")
+    save_capture(screen, output_dir / "terrain_slice.png")
 
 
 if __name__ == "__main__":

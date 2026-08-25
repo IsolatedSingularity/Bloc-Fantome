@@ -66,6 +66,10 @@ Assets/Texture Hub/blocks/*
 !Assets/Texture Hub/blocks/mine_crafter_*.png
 !Assets/Texture Hub/blocks/mine_crafter_*.png.mcmeta
 
+# Owner-supplied licensed font software and private license records
+Assets/Fonts/Zekton/
+zekton.zip
+
 # User saves (keep example saves in Code/saves)
 saves/*.json.gz
 Code/saves/_autosave.json.gz

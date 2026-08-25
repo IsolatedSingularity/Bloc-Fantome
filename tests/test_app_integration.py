@@ -234,6 +234,57 @@ class AppIntegrationTests(unittest.TestCase):
             initial_effect_surfaces + 1,
         )
 
+    def test_toggle_effect_motion_advances_between_60_fps_frames(self):
+        rect = pygame.Rect(10, 10, 210, app_module.PANEL_SUBMENU_ROW_HEIGHT)
+        frames = []
+        for ticks in (1000, 1017):
+            surface = pygame.Surface((230, 50), pygame.SRCALPHA)
+            with patch.object(pygame.time, "get_ticks", return_value=ticks):
+                self.app.assetManager.drawPanelRow(
+                    surface, rect, "Rain", self.app.smallFont,
+                    effectStyle="rain",
+                    effectColors=((130, 180, 230, 220),),
+                )
+            frames.append(pygame.image.tobytes(surface.subsurface(rect), "RGBA"))
+        self.assertNotEqual(frames[0], frames[1])
+
+    def test_volume_controls_fit_panel_and_muted_button_keeps_speaker(self):
+        self.app.volumeControlRects.clear()
+        x = app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH + app_module.ICON_MARGIN + 10
+        for index, (label, value) in enumerate((
+            ("Music", 0.8), ("Ambient", 0.6), ("Effects", 0.4),
+        )):
+            self.app._renderVolumeSlider(x, 120 + index * 28, label, value, -1, -1)
+        panel = pygame.Rect(
+            app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH, 0,
+            app_module.PANEL_WIDTH, app_module.WINDOW_HEIGHT,
+        )
+        for control in self.app.volumeControlRects.values():
+            self.assertTrue(panel.contains(control["track"]))
+            self.assertTrue(panel.contains(control["mute"]))
+            self.assertLess(control["track"].right, control["mute"].left)
+
+    def test_open_library_buttons_play_click_audio(self):
+        event_factory = lambda pos: pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": pos}
+        )
+        with patch.object(self.app.assetManager, "playClickSound") as click:
+            self.app.buildLibrary.open([])
+            self.app.buildLibrary.render(self.app.screen)
+            action = self.app.buildLibrary.handle_event(
+                event_factory(self.app.buildLibrary._browse_rect.center)
+            )
+            self.assertEqual(action[0], "browse")
+            self.app.worldLibrary.open([])
+            self.app.worldLibrary.render(self.app.screen)
+            action = self.app.worldLibrary.handle_event(
+                event_factory(self.app.worldLibrary._import_rect.center)
+            )
+            self.assertEqual(action[0], "import")
+            self.assertEqual(click.call_count, 2)
+        self.app.buildLibrary.close()
+        self.app.worldLibrary.close()
+
     def test_panel_preview_icons_stay_stable_while_world_icons_animate(self):
         animated_blocks = (
             app_module.BlockType.WATER,
@@ -786,6 +837,129 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertNotIn((31, 31, 31), self.app.world.blocks)
         self.app._resizeCanvas(16)
         self.assertEqual(self.app.world.getBlock(31, 31, 0), app_module.BlockType.GRASS)
+
+    def test_canvas_growth_is_centered_and_preserves_relative_world_state(self):
+        self.app.world.setBlock(1, 2, 3, app_module.BlockType.WATER)
+        self.app.world.liquidLevels[(1, 2, 3)] = 6
+        self.app.world.liquidSources.add((1, 2, 3))
+        self.app.sceneStructurePositions = {(4, 5, 1)}
+        self.app.world.sceneStructurePositions = self.app.sceneStructurePositions
+        self.app.world.setBlock(4, 5, 1, app_module.BlockType.STONE_BRICKS)
+
+        self.app._resizeCanvas(16)
+
+        self.assertEqual((self.app.world.width, self.app.world.depth), (28, 28))
+        self.assertEqual(self.app.world.getBlock(9, 10, 3), app_module.BlockType.WATER)
+        self.assertEqual(self.app.world.liquidLevels[(9, 10, 3)], 6)
+        self.assertIn((9, 10, 3), self.app.world.liquidSources)
+        self.assertIn((12, 13, 1), self.app.sceneStructurePositions)
+        self.assertEqual(
+            self.app.world.getBlock(12, 13, 1), app_module.BlockType.STONE_BRICKS
+        )
+        self.assertEqual(self.app.world.getBlock(0, 0, 0), app_module.BlockType.GRASS)
+        self.assertEqual(self.app.world.getBlock(27, 27, 0), app_module.BlockType.GRASS)
+
+    def test_local_terrain_noise_protects_build_columns_and_is_undoable(self):
+        self.app._createInitialFloor()
+        self.app.world.setBlock(5, 5, 1, app_module.BlockType.DIAMOND_BLOCK)
+        before = dict(self.app.world.blocks)
+
+        with patch.object(app_module.random, "randint", return_value=8731):
+            self.assertTrue(self.app._applyLocalTerrainNoise())
+
+        self.assertEqual(
+            self.app.world.getBlock(5, 5, 1), app_module.BlockType.DIAMOND_BLOCK
+        )
+        self.assertEqual(self.app.world.getHighestBlock(5, 5), 1)
+        self.assertTrue(any(z > 1 for _x, _y, z in self.app.world.blocks))
+        command = self.app.undoManager.undo()
+        self.assertIsNotNone(command)
+        self.assertEqual(self.app.world.blocks, before)
+
+    def test_terrain_hover_preview_holds_the_seed_used_on_click(self):
+        self.app._createInitialFloor()
+        self.app._clearTerrainNoisePreview()
+        seed = 421337
+        with (
+            patch.object(pygame.mouse, "get_pos", return_value=self.app.terrainNoiseButtonRect.center),
+            patch.object(app_module.random, "randint", return_value=seed),
+        ):
+            self.app._renderTerrainNoiseButton()
+        self.assertEqual(self.app._terrainNoisePreviewSeed, seed)
+        preview_columns = tuple(self.app._terrainNoisePreviewPlan["columns"])
+        self.assertTrue(preview_columns)
+        self.assertTrue(self.app._applyLocalTerrainNoise())
+        self.assertEqual(self.app.sceneMetadata["terrain_noise_seed"], seed)
+        self.assertEqual(
+            {(x, y, elevation) for x, y, elevation in preview_columns},
+            {
+                (x, y, self.app.world.getHighestBlock(x, y) - self.app.world.min_y)
+                for x, y, elevation in preview_columns
+            },
+        )
+
+    def test_persistent_tome_restarts_the_full_tutorial(self):
+        self.app._renderTutorialTomeButton(
+            pygame.Rect(app_module.WINDOW_WIDTH - 42, app_module.WINDOW_HEIGHT - 42, 32, 32)
+        )
+        tutorial = self.app.tutorialScreen
+        old_callback = tutorial.onStepChange
+        tutorial.onStepChange = None
+        try:
+            tutorial.currentStep = 9
+            tutorial.visible = False
+            self.app._handlePanelClick(*self.app.tutorialTomeRect.center)
+            self.assertTrue(tutorial.visible)
+            self.assertEqual(tutorial.currentStep, 0)
+            self.assertEqual(len(tutorial.TUTORIAL_STEPS), 17)
+        finally:
+            tutorial.visible = False
+            tutorial.onStepChange = old_callback
+
+    def test_tutorial_window_drags_minimizes_and_restores(self):
+        tutorial = app_module.TutorialScreen(
+            app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT
+        )
+        tutorial.visible = True
+        start = (tutorial.panelX, tutorial.panelY)
+        dragStart = (tutorial.panelX + 80, tutorial.panelY + 20)
+        self.assertTrue(tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": dragStart}
+        )))
+        self.assertTrue(tutorial.dragging)
+        dragEnd = (dragStart[0] - 140, dragStart[1] + 90)
+        self.assertTrue(tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEMOTION, {"pos": dragEnd}
+        )))
+        tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEBUTTONUP, {"button": 1, "pos": dragEnd}
+        ))
+        self.assertNotEqual((tutorial.panelX, tutorial.panelY), start)
+        self.assertFalse(tutorial.dragging)
+
+        self.assertTrue(tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN,
+            {"button": 1, "pos": tutorial.minimizeButtonRect.center},
+        )))
+        self.assertTrue(tutorial.minimized)
+        self.assertFalse(tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN, {"button": 1, "pos": (100, 100)}
+        )))
+        self.assertTrue(tutorial.handleEvent(pygame.event.Event(
+            pygame.MOUSEBUTTONDOWN,
+            {"button": 1, "pos": tutorial._restoreTileRect().center},
+        )))
+        self.assertFalse(tutorial.minimized)
+
+    def test_fit_world_button_label_has_no_percentage(self):
+        self.app.sceneStructurePositions.clear()
+        with patch.object(pygame.mouse, "get_pos", return_value=(0, 0)), patch.object(
+            self.app.assetManager, "drawButton"
+        ) as drawButton, patch.object(self.app, "_renderTerrainNoiseButton"):
+            self.app._renderFitWorldButton()
+        labels = [call.args[2] for call in drawButton.call_args_list]
+        self.assertIn("Fit World", labels)
+        self.assertFalse(any("%" in label for label in labels))
 
     def test_complete_world_catalog_uses_supported_placeable_palette(self):
         from engine.world_catalog import WORLD_ENTRIES, world_catalog

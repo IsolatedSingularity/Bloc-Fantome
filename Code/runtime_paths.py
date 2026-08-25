@@ -24,6 +24,11 @@ MUSIC_DIR_NETHER = os.path.join(SOUNDS_DIR, "music", "game", "nether")
 MUSIC_DIR_END = os.path.join(SOUNDS_DIR, "music", "game", "end")
 ICONS_DIR = os.path.join(ASSETS_DIR, "Icons")
 FONTS_DIR = os.path.join(ASSETS_DIR, "Fonts")
+REFERENCES_DIR = (
+    os.path.join(BASE_DIR, "References")
+    if getattr(sys, "frozen", False)
+    else os.path.join(BASE_DIR, "..", "References")
+)
 SAVES_DIR = os.path.join(BASE_DIR, "saves")
 BUILTIN_STRUCTURES_DIR = os.path.join(
     BUNDLED_DATA_DIR, "structures" if getattr(sys, "frozen", False) else "saves"

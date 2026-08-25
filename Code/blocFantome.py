@@ -46,9 +46,15 @@ from engine.input_commands import (
 if sys.platform == 'win32':
     try:
         import ctypes
+        # Opt out of Windows bitmap scaling before the display is created.
+        # This keeps Pygame's native font raster crisp on high-DPI monitors.
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.4.0'
+        myappid = 'blocfantome.builder.2.5.1'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -165,6 +171,7 @@ from runtime_paths import (
     TEXTURES_DIR,
     WORLDS_DIR,
 )
+from ui.fonts import load_ui_font, render_tracked_text
 
 # Grass tint color (plains biome - sampled from colormap)
 GRASS_TINT = (124, 189, 107)
@@ -3028,6 +3035,10 @@ class TutorialScreen:
         self.screenHeight = screenHeight
         self.currentStep = 0
         self.visible = False
+        self.minimized = False
+        self.dragging = False
+        self.dragOffset = (0, 0)
+        self.restoreHovered = False
         self.showOnStartup = True
         
         # Callback for demo structure loading (set by main app)
@@ -3052,25 +3063,7 @@ class TutorialScreen:
         # Checkbox dimensions
         self.checkboxSize = 18
         
-        # Calculate button positions (at bottom of panel)
-        buttonY = self.panelY + self.panelHeight - 75
-        totalButtonWidth = 3 * self.buttonWidth + 2 * self.buttonSpacing
-        startX = self.panelX + (self.panelWidth - totalButtonWidth) // 2
-        
-        self.backButtonRect = pygame.Rect(startX, buttonY, self.buttonWidth, self.buttonHeight)
-        self.nextButtonRect = pygame.Rect(startX + self.buttonWidth + self.buttonSpacing, 
-                                           buttonY, self.buttonWidth, self.buttonHeight)
-        self.skipButtonRect = pygame.Rect(startX + 2 * (self.buttonWidth + self.buttonSpacing), 
-                                           buttonY, self.buttonWidth, self.buttonHeight)
-        
-        # Checkbox position (below buttons, inside panel)
-        checkboxY = buttonY + self.buttonHeight + 12
-        self.checkboxRect = pygame.Rect(
-            self.panelX + (self.panelWidth - 180) // 2,
-            checkboxY,
-            self.checkboxSize,
-            self.checkboxSize
-        )
+        self._layoutPanelControls()
         
         # UI textures (will be set from AssetManager)
         self.buttonNormal = None
@@ -3084,15 +3077,58 @@ class TutorialScreen:
         self.stepIcons = {}
         
         # Fonts
-        self.titleFont = pygame.font.Font(None, 36)
-        self.contentFont = pygame.font.Font(None, 26)
-        self.smallFont = pygame.font.Font(None, 22)
+        self.titleFont = load_ui_font(30, bold=True)
+        self.contentFont = load_ui_font(20)
+        self.smallFont = load_ui_font(16)
         
         # Hover states for buttons
         self.backHovered = False
         self.nextHovered = False
         self.skipHovered = False
         self.checkboxHovered = False
+
+    def _layoutPanelControls(self) -> None:
+        """Keep every interactive rectangle attached to the draggable panel."""
+        buttonY = self.panelY + self.panelHeight - 75
+        totalButtonWidth = 3 * self.buttonWidth + 2 * self.buttonSpacing
+        startX = self.panelX + (self.panelWidth - totalButtonWidth) // 2
+        self.backButtonRect = pygame.Rect(startX, buttonY, self.buttonWidth, self.buttonHeight)
+        self.nextButtonRect = pygame.Rect(
+            startX + self.buttonWidth + self.buttonSpacing,
+            buttonY,
+            self.buttonWidth,
+            self.buttonHeight,
+        )
+        self.skipButtonRect = pygame.Rect(
+            startX + 2 * (self.buttonWidth + self.buttonSpacing),
+            buttonY,
+            self.buttonWidth,
+            self.buttonHeight,
+        )
+        checkboxY = buttonY + self.buttonHeight + 12
+        self.checkboxRect = pygame.Rect(
+            self.panelX + (self.panelWidth - 180) // 2,
+            checkboxY,
+            self.checkboxSize,
+            self.checkboxSize,
+        )
+        self.titleBarRect = pygame.Rect(
+            self.panelX + 4, self.panelY + 4, self.panelWidth - 8, 42
+        )
+        self.minimizeButtonRect = pygame.Rect(
+            self.panelX + self.panelWidth - 34, self.panelY + 10, 22, 20
+        )
+
+    def _restoreTileRect(self) -> pygame.Rect:
+        """Place the minimized tutorial tile immediately left of the gear."""
+        return pygame.Rect(self.screenWidth - 80, self.screenHeight - 42, 32, 32)
+
+    def _movePanel(self, mouseX: int, mouseY: int) -> None:
+        x = mouseX - self.dragOffset[0]
+        y = mouseY - self.dragOffset[1]
+        self.panelX = max(8, min(self.screenWidth - self.panelWidth - 8, x))
+        self.panelY = max(8, min(self.screenHeight - self.panelHeight - 8, y))
+        self._layoutPanelControls()
     
     def _loadConfig(self):
         """Load tutorial preferences from config file"""
@@ -3139,6 +3175,8 @@ class TutorialScreen:
         """Show the tutorial from the beginning"""
         self.currentStep = 0
         self.visible = True
+        self.minimized = False
+        self.dragging = False
         # Notify main app to load demo for first step
         if self.onStepChange:
             self.onStepChange(self.currentStep)
@@ -3146,6 +3184,8 @@ class TutorialScreen:
     def hide(self):
         """Hide the tutorial"""
         self.visible = False
+        self.minimized = False
+        self.dragging = False
         # Notify main app that tutorial ended
         if self.onTutorialEnd:
             self.onTutorialEnd()
@@ -3174,9 +3214,30 @@ class TutorialScreen:
         # Always allow QUIT events to pass through
         if event.type == pygame.QUIT:
             return False
+
+        if self.minimized:
+            if event.type == pygame.MOUSEMOTION:
+                self.restoreHovered = self._restoreTileRect().collidepoint(event.pos)
+            elif (
+                event.type == pygame.MOUSEBUTTONDOWN
+                and event.button == 1
+                and self._restoreTileRect().collidepoint(event.pos)
+            ):
+                self._playClickSound()
+                self.minimized = False
+                self.restoreHovered = False
+                return True
+            return False
+
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.dragging:
+            self.dragging = False
+            return True
         
         if event.type == pygame.MOUSEMOTION:
             mouseX, mouseY = event.pos
+            if self.dragging:
+                self._movePanel(mouseX, mouseY)
+                return True
             self.backHovered = self.backButtonRect.collidepoint(mouseX, mouseY)
             self.nextHovered = self.nextButtonRect.collidepoint(mouseX, mouseY)
             self.skipHovered = self.skipButtonRect.collidepoint(mouseX, mouseY)
@@ -3186,6 +3247,17 @@ class TutorialScreen:
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouseX, mouseY = event.pos
+
+            if self.minimizeButtonRect.collidepoint(mouseX, mouseY):
+                self._playClickSound()
+                self.minimized = True
+                self.dragging = False
+                return True
+
+            if self.titleBarRect.collidepoint(mouseX, mouseY):
+                self.dragging = True
+                self.dragOffset = (mouseX - self.panelX, mouseY - self.panelY)
+                return True
             
             # Check button clicks
             if self.backButtonRect.collidepoint(mouseX, mouseY):
@@ -3408,6 +3480,10 @@ class TutorialScreen:
         """
         if not self.visible:
             return
+
+        if self.minimized:
+            self._renderMinimizedTile(screen)
+            return
         
         # Get current step content
         step = self.TUTORIAL_STEPS[self.currentStep]
@@ -3431,6 +3507,25 @@ class TutorialScreen:
         innerRect = pygame.Rect(self.panelX + 5, self.panelY + 5, 
                                  self.panelWidth - 10, self.panelHeight - 10)
         pygame.draw.rect(screen, innerColor, innerRect, 1)
+
+        # Subtle OS-window affordance: a grip on the draggable header and a
+        # compact Minecraft-grey minimize control.
+        for index in range(3):
+            pygame.draw.circle(
+                screen,
+                (112, 112, 122),
+                (self.panelX + 15 + index * 7, self.panelY + 20),
+                2,
+            )
+        pygame.draw.rect(screen, (72, 72, 80), self.minimizeButtonRect)
+        pygame.draw.rect(screen, (132, 132, 142), self.minimizeButtonRect, 1)
+        pygame.draw.line(
+            screen,
+            (235, 235, 235),
+            (self.minimizeButtonRect.x + 6, self.minimizeButtonRect.bottom - 6),
+            (self.minimizeButtonRect.right - 6, self.minimizeButtonRect.bottom - 6),
+            2,
+        )
         
         # Progress indicator
         progressText = f"Step {self.currentStep + 1} of {len(self.TUTORIAL_STEPS)}"
@@ -3521,6 +3616,40 @@ class TutorialScreen:
         
         # Draw checkbox
         self._drawCheckbox(screen)
+
+    def _renderMinimizedTile(self, screen: pygame.Surface) -> None:
+        """Render the restorable book tile with its unread notification."""
+        rect = self._restoreTileRect()
+        if self.assetManager is not None:
+            self.assetManager.drawButton(
+                screen, rect, "", self.smallFont, self.restoreHovered, False
+            )
+        else:
+            pygame.draw.rect(screen, (82, 82, 88), rect)
+            pygame.draw.rect(screen, (155, 155, 162), rect, 1)
+        # Small open-book glyph, kept procedural so the tile works even when
+        # Minecraft GUI assets have not been extracted yet.
+        left = [
+            (rect.x + 7, rect.y + 9),
+            (rect.centerx, rect.y + 12),
+            (rect.centerx, rect.y + 24),
+            (rect.x + 7, rect.y + 21),
+        ]
+        right = [
+            (rect.centerx, rect.y + 12),
+            (rect.right - 7, rect.y + 9),
+            (rect.right - 7, rect.y + 21),
+            (rect.centerx, rect.y + 24),
+        ]
+        pygame.draw.polygon(screen, (210, 205, 187), left)
+        pygame.draw.polygon(screen, (229, 224, 205), right)
+        pygame.draw.lines(screen, (64, 58, 55), False, left + [left[0]], 1)
+        pygame.draw.lines(screen, (64, 58, 55), False, right + [right[0]], 1)
+        badgeCenter = (rect.right - 2, rect.y + 2)
+        pygame.draw.circle(screen, (142, 42, 65), badgeCenter, 8)
+        pygame.draw.circle(screen, (238, 180, 198), badgeCenter, 8, 1)
+        mark = self.smallFont.render("!", True, (255, 255, 255))
+        screen.blit(mark, mark.get_rect(center=(badgeCenter[0], badgeCenter[1] - 1)))
     
     def _drawButton(self, screen: pygame.Surface, rect: pygame.Rect, 
                     text: str, hovered: bool, disabled: bool):
@@ -7243,7 +7372,8 @@ class AssetManager:
     def drawButton(self, screen: pygame.Surface, rect: pygame.Rect, 
                    text: str, font: pygame.font.Font, 
                    hovered: bool = False, selected: bool = False,
-                   bgTexture: str = None, bgTint: Tuple[int, int, int] = None):
+                   bgTexture: str = None, bgTint: Tuple[int, int, int] = None,
+                   letterSpacing: int = 0):
         """Draw a Minecraft-style button with optional block texture background and tint"""
         # Choose texture based on state
         if selected:
@@ -7298,18 +7428,22 @@ class AssetManager:
             pygame.draw.rect(screen, borderColor, rect, 2)
         
         # Draw text with shadow
-        shadowKey = (id(font), text, (30, 30, 30))
+        shadowKey = (id(font), text, (30, 30, 30), int(letterSpacing))
         shadowSurf = self.uiTextCache.get(shadowKey)
         if shadowSurf is None:
-            shadowSurf = font.render(text, True, (30, 30, 30))
+            shadowSurf = render_tracked_text(
+                font, text, (30, 30, 30), letterSpacing
+            )
             self.uiTextCache[shadowKey] = shadowSurf
         shadowRect = shadowSurf.get_rect(center=(rect.centerx + 1, rect.centery + 1))
         screen.blit(shadowSurf, shadowRect)
         
-        textKey = (id(font), text, (255, 255, 255))
+        textKey = (id(font), text, (255, 255, 255), int(letterSpacing))
         textSurf = self.uiTextCache.get(textKey)
         if textSurf is None:
-            textSurf = font.render(text, True, (255, 255, 255))
+            textSurf = render_tracked_text(
+                font, text, (255, 255, 255), letterSpacing
+            )
             self.uiTextCache[textKey] = textSurf
         textRect = textSurf.get_rect(center=rect.center)
         screen.blit(textSurf, textRect)
@@ -7370,7 +7504,8 @@ class AssetManager:
         # icon are deliberately drawn afterward so both remain crisp on top.
         if tint or (effectStyle and effectColors):
             effectWidth = max(1, rect.width - 4)
-            phase = pygame.time.get_ticks() // 70
+            elapsed = pygame.time.get_ticks() / 1000.0
+            motion = elapsed * 14.285714
             effectSize = (effectWidth, rect.height - 4)
             effectLayer = self.uiEffectSurfaces.get(effectSize)
             if effectLayer is None:
@@ -7381,8 +7516,8 @@ class AssetManager:
                 effectLayer.fill((*tint, 38))
             if effectStyle and effectColors:
                 for index in range(8):
-                    x = (index * 29 + phase * 3) % effectWidth
-                    y = (index * 13 + phase * 4) % max(1, effectSize[1])
+                    x = round((index * 29 + elapsed * 43.0) % effectWidth)
+                    y = round((index * 13 + elapsed * 57.0) % max(1, effectSize[1]))
                     color = effectColors[index % len(effectColors)]
                     color = color if len(color) == 4 else (*color, 170)
                     if effectStyle == "embers":
@@ -7391,8 +7526,8 @@ class AssetManager:
                         pygame.draw.line(effectLayer, color, (x, emberY + 3), (x, emberY + 1), 1)
                     elif effectStyle == "void":
                         cx, cy = effectWidth // 2, effectSize[1] // 2
-                        radius = 4 + (index * 5 + phase) % max(6, effectWidth // 3)
-                        angle = (phase * 0.22 + index * 0.9)
+                        radius = round(4 + (index * 5 + motion) % max(6, effectWidth // 3))
+                        angle = elapsed * math.pi + index * 0.9
                         vx = round(cx + math.cos(angle) * radius)
                         vy = round(cy + math.sin(angle) * min(radius, effectSize[1] // 2 - 1))
                         pygame.draw.circle(effectLayer, color, (vx, vy), 1 + index % 2)
@@ -7422,7 +7557,7 @@ class AssetManager:
                         if index % 3 == 0:
                             pygame.draw.line(effectLayer, color, (x - 2, y + 3), (x + 2, y - 2), 1)
                     elif effectStyle == "pulse":
-                        radius = 2 + (phase + index * 3) % 12
+                        radius = round(2 + (motion + index * 3) % 12)
                         pygame.draw.circle(effectLayer, color, (x, y), radius, 1)
                     elif effectStyle == "rain":
                         pygame.draw.line(effectLayer, color, (x, y), (x + 2, y + 7), 1)
@@ -8554,9 +8689,15 @@ class BlocFantome:
         self._fogSurfaceKey = None
         self._fogSurface = None
         self.fitWorldButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 112, 10, 100, 28)
-        self.shrinkCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 180, 10, 30, 28)
-        self.growCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 146, 10, 30, 28)
-        self.terrainViewButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 354, 10, 166, 28)
+        self.terrainNoiseButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 146, 10, 30, 28)
+        self.growCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 180, 10, 30, 28)
+        self.shrinkCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 214, 10, 30, 28)
+        self.terrainViewButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 384, 10, 166, 28)
+        self._canvasResizePreviewSurface = None
+        self._terrainNoisePreviewSurface = None
+        self._terrainNoisePreviewSeed = None
+        self._terrainNoisePreviewPlanKey = None
+        self._terrainNoisePreviewPlan = None
         
         # UI state
         self.selectedBlock = BlockType.GRASS
@@ -8581,11 +8722,14 @@ class BlocFantome:
         self.hotkeysExpandBtnRect = None
         
         # Font
-        self.font = pygame.font.Font(None, 26)  # Slightly larger for better readability
-        self.smallFont = pygame.font.Font(None, 20)  # Slightly larger for better readability
+        self.font = load_ui_font(22, bold=True)
+        self.smallFont = load_ui_font(16)
+        self.hotkeyRowHeight = max(22, self.smallFont.get_linesize() + 4)
+        self.volumeControlRects = {}
+        self.tutorialTomeRect = pygame.Rect(0, 0, 0, 0)
         from ui.build_library import BuildLibraryModal
         from ui.world_library import WorldLibraryModal
-        self.buildLibrary = BuildLibraryModal(self.font, self.smallFont)
+        self.buildLibrary = BuildLibraryModal(self.font, self.smallFont, self.assetManager)
         self.worldLibrary = WorldLibraryModal(self.font, self.smallFont, self.assetManager)
         self.worldLoadExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="world-stage")
         self.pendingWorldLoad = None
@@ -10310,6 +10454,10 @@ class BlocFantome:
             self._fitWorldToViewport()
             self.assetManager.playClickSound()
             return
+        if event.button == 1 and self.terrainNoiseButtonRect.collidepoint(mouseX, mouseY):
+            self._applyLocalTerrainNoise()
+            self.assetManager.playClickSound()
+            return
         if (
             event.button == 1
             and self.sceneStructurePositions
@@ -10416,17 +10564,13 @@ class BlocFantome:
         
         # Handle slider dragging
         if self.draggingSlider and pygame.mouse.get_pressed()[0]:
-            # Calculate slider position
-            panelX = WINDOW_WIDTH - PANEL_WIDTH
-            sliderWidth = PANEL_WIDTH - 2 * ICON_MARGIN - 30
-            labelWidth = 55
-            trackWidth = sliderWidth - labelWidth - 50
-            trackX = panelX + ICON_MARGIN + 10 + labelWidth
-            
-            # Calculate new volume from mouse X position
-            relX = mouseX - trackX
-            newVolume = max(0.0, min(1.0, relX / trackWidth))
-            self._setVolume(self.draggingSlider, newVolume)
+            control = self.volumeControlRects.get(self.draggingSlider)
+            if control:
+                track = control["track"]
+                newVolume = max(
+                    0.0, min(1.0, (mouseX - track.left) / max(1, track.width))
+                )
+                self._setVolume(self.draggingSlider, newVolume)
             return
         
         # Check panel hover
@@ -11009,6 +11153,10 @@ class BlocFantome:
     
     def _handlePanelClick(self, mouseX: int, mouseY: int):
         """Handle click on the inventory panel with three main dropdown buttons"""
+        if self.tutorialTomeRect.collidepoint(mouseX, mouseY):
+            self.toggleActionPulseUntil["tutorial"] = pygame.time.get_ticks() + 450
+            self.tutorialScreen.show()
+            return
         # Check settings gear button first (fixed position at top right)
         if hasattr(self, 'settingsGearRect') and self.settingsGearRect.collidepoint(mouseX, mouseY):
             self.settingsMenuOpen = not self.settingsMenuOpen
@@ -11235,64 +11383,23 @@ class BlocFantome:
         # Skip volume header
         currentY += 22
         
-        # Volume slider click handling using stored Y positions from render
-        sliderWidth = PANEL_WIDTH - 2 * ICON_MARGIN - 30
-        labelWidth = 55
-        trackWidth = sliderWidth - labelWidth - 50
-        relTrackX = ICON_MARGIN + 10 + labelWidth  # Relative to panel left
-        relMuteX = relTrackX + trackWidth + 30
-        muteSize = 16
-        
-        # Check Music volume slider (use stored Y from render)
-        if hasattr(self, 'musicSliderY'):
-            sliderY = self.musicSliderY
-            # Music mute button
-            if relMuteX <= panelX <= relMuteX + muteSize and sliderY <= mouseY <= sliderY + 20:
-                self.musicMuted = not getattr(self, 'musicMuted', False)
-                if self.musicMuted:
-                    self.musicController.set_volume(0)
-                else:
-                    self.musicController.set_volume(self.musicVolume)
+        # Volume controls use the exact rectangles rendered on this frame.
+        for volumeType, control in self.volumeControlRects.items():
+            muteRect = control["mute"]
+            trackRect = control["track"]
+            if muteRect.collidepoint(mouseX, mouseY):
+                attr = f"{volumeType}Muted"
+                setattr(self, attr, not getattr(self, attr, False))
+                self._setVolume(volumeType, getattr(self, f"{volumeType}Volume"))
                 self.assetManager.playClickSound()
                 return
-            # Music slider track - start dragging
-            if relTrackX <= panelX <= relTrackX + trackWidth and sliderY <= mouseY <= sliderY + 20:
-                self.draggingSlider = "music"
-                clickX = panelX - relTrackX
-                newVolume = max(0.0, min(1.0, clickX / trackWidth))
-                self._setVolume("music", newVolume)
-                return
-        
-        # Check Ambient volume slider
-        if hasattr(self, 'ambientSliderY'):
-            sliderY = self.ambientSliderY
-            # Ambient mute button
-            if relMuteX <= panelX <= relMuteX + muteSize and sliderY <= mouseY <= sliderY + 20:
-                self.ambientMuted = not getattr(self, 'ambientMuted', False)
-                self.assetManager.playClickSound()
-                return
-            # Ambient slider track - start dragging
-            if relTrackX <= panelX <= relTrackX + trackWidth and sliderY <= mouseY <= sliderY + 20:
-                self.draggingSlider = "ambient"
-                clickX = panelX - relTrackX
-                newVolume = max(0.0, min(1.0, clickX / trackWidth))
-                self._setVolume("ambient", newVolume)
-                return
-        
-        # Check Effects volume slider
-        if hasattr(self, 'effectsSliderY'):
-            sliderY = self.effectsSliderY
-            # Effects mute button
-            if relMuteX <= panelX <= relMuteX + muteSize and sliderY <= mouseY <= sliderY + 20:
-                self.effectsMuted = not getattr(self, 'effectsMuted', False)
-                self.assetManager.playClickSound()
-                return
-            # Effects slider track - start dragging
-            if relTrackX <= panelX <= relTrackX + trackWidth and sliderY <= mouseY <= sliderY + 20:
-                self.draggingSlider = "effects"
-                clickX = panelX - relTrackX
-                newVolume = max(0.0, min(1.0, clickX / trackWidth))
-                self._setVolume("effects", newVolume)
+            if trackRect.inflate(0, 10).collidepoint(mouseX, mouseY):
+                self.draggingSlider = volumeType
+                newVolume = max(
+                    0.0,
+                    min(1.0, (mouseX - trackRect.left) / max(1, trackRect.width)),
+                )
+                self._setVolume(volumeType, newVolume)
                 return
         
         # Check hotkeys expand button
@@ -14941,9 +15048,11 @@ class BlocFantome:
         text = f"Z: {z}"
         textSurf = self.font.render(text, True, (100, 200, 100))
         
-        # Position at top-left of screen
+        # Stack below the dimension badge instead of sharing its origin.
         padding = 4
-        bgRect = pygame.Rect(10 - padding, 10 - padding,
+        badgeX = 10
+        badgeY = 38
+        bgRect = pygame.Rect(badgeX - padding, badgeY - padding,
                             textSurf.get_width() + padding * 2,
                             textSurf.get_height() + padding * 2)
         
@@ -14951,7 +15060,7 @@ class BlocFantome:
         bgSurf.fill((30, 30, 40, 180))
         self.screen.blit(bgSurf, bgRect.topleft)
         
-        self.screen.blit(textSurf, (10, 10))
+        self.screen.blit(textSurf, (badgeX, badgeY))
     
     # ==================== QOL FEATURE METHODS ====================
     
@@ -16414,8 +16523,10 @@ class BlocFantome:
         
         bgSurf = pygame.Surface((bgWidth, bgHeight), pygame.SRCALPHA)
         bgSurf.fill((30, 30, 40, 180))
-        self.screen.blit(bgSurf, (10, 35))
-        self.screen.blit(textSurf, (10 + padding, 35 + padding))
+        badgeX = 10
+        badgeY = 38
+        self.screen.blit(bgSurf, (badgeX - padding, badgeY - padding))
+        self.screen.blit(textSurf, (badgeX, badgeY))
     
     def _renderDimensionIndicator(self):
         """Render current dimension name with small block icon"""
@@ -16483,7 +16594,7 @@ class BlocFantome:
         textSurf = self.smallFont.render(text, True, (100, 200, 255))
         
         x = 10
-        y = 60 if self.showCoordinates else 35
+        y = 94 if self.showCoordinates else 66
         
         padding = 4
         bgSurf = pygame.Surface((textSurf.get_width() + padding * 2, textSurf.get_height() + padding * 2), pygame.SRCALPHA)
@@ -16521,7 +16632,7 @@ class BlocFantome:
             return
         
         # Calculate Y position below other indicators
-        y = 60 if self.showCoordinates else 35
+        y = 94 if self.showCoordinates else 66
         if self.mirrorModeX or self.mirrorModeY:
             y += 25
         if self.layerViewEnabled:
@@ -16547,7 +16658,7 @@ class BlocFantome:
         textSurf = self.smallFont.render(text, True, (255, 200, 100))
         
         x = 10
-        y = 85 if self.showCoordinates else 60
+        y = 119 if self.showCoordinates else 91
         if self.mirrorModeX or self.mirrorModeY:
             y += 25
         
@@ -16621,7 +16732,7 @@ class BlocFantome:
         
         # Label
         labelText = self.smallFont.render("Minimap", True, (150, 150, 150))
-        self.screen.blit(labelText, (mapX, mapY - 15))
+        self.screen.blit(labelText, labelText.get_rect(bottomleft=(mapX, mapY - 4)))
 
     def _renderViewRotationIndicator(self):
         """Render view rotation indicator when view is rotated"""
@@ -16636,7 +16747,8 @@ class BlocFantome:
         
         # Position below other indicators
         x = 10
-        y = 85 if self.showCoordinates else 60
+        coordinatesVisible = self.showCoordinates and self.hoveredCell is not None
+        y = 66 if coordinatesVisible else 38
         if self.mirrorModeX or self.mirrorModeY:
             y += 25
         if self.layerViewEnabled:
@@ -17388,35 +17500,163 @@ class BlocFantome:
         self._invalidateViewCaches()
 
     def _canvasResizeImpact(self, delta: int) -> Tuple[Tuple[int, int, int], int]:
-        """Return requested dimensions and the number of occupied cells clipped."""
+        """Return centered target dimensions and occupied cells clipped."""
         width = max(GRID_WIDTH, self.world.width + delta)
         depth = max(GRID_DEPTH, self.world.depth + delta)
         height = max(GRID_HEIGHT, self.world.height + delta)
         maxY = self.world.min_y + height
+        offsetX = (width - self.world.width) // 2
+        offsetY = (depth - self.world.depth) // 2
         clipped = sum(
             1 for x, y, z in self.world.blocks
-            if x >= width or y >= depth or z >= maxY
+            if not (
+                0 <= x + offsetX < width
+                and 0 <= y + offsetY < depth
+                and self.world.min_y <= z < maxY
+            )
         )
         return (width, depth, height), clipped
 
+    @staticmethod
+    def _shiftPosition(position, offsetX: int, offsetY: int):
+        if position is None:
+            return None
+        return (position[0] + offsetX, position[1] + offsetY, position[2])
+
+    def _shiftedPositionInBounds(self, position, offsetX: int, offsetY: int):
+        shifted = self._shiftPosition(position, offsetX, offsetY)
+        return shifted if shifted is not None and self.world.isInBounds(*shifted) else None
+
+    def _shiftAppWorldState(self, offsetX: int, offsetY: int) -> None:
+        """Translate persistent app-level coordinates after a centered resize."""
+        for attr in (
+            "selectionStart", "selectionEnd", "fillStart", "measurePoint1",
+            "measurePoint2", "stampOrigin",
+        ):
+            setattr(
+                self,
+                attr,
+                self._shiftedPositionInBounds(getattr(self, attr), offsetX, offsetY),
+            )
+        for attr in ("magicWandSelection",):
+            shifted = {
+                value
+                for position in getattr(self, attr)
+                if (value := self._shiftedPositionInBounds(position, offsetX, offsetY))
+                is not None
+            }
+            setattr(self, attr, shifted)
+        for attr in (
+            "_copperAgeTimers", "_sculkSensorActiveUntil", "snowLayers",
+            "blueprintBlocks",
+        ):
+            shifted = {}
+            for position, value in getattr(self, attr).items():
+                newPosition = self._shiftedPositionInBounds(position, offsetX, offsetY)
+                if newPosition is not None:
+                    shifted[newPosition] = value
+            setattr(self, attr, shifted)
+        self.hoveredCell = None
+        self.hoveredSourceBlock = None
+        self.highlightedBlock = None
+        self.lightMap.clear()
+        self.redstoneParticles.clear()
+        self._minimapCacheKey = None
+        self._minimapCache = None
+
+    def _centeredWorldSnapshot(self, dimensions, offsetX: int, offsetY: int):
+        """Build a translated snapshot without mutating the live world in place."""
+        from engine.world_snapshot import WorldSnapshot
+
+        width, depth, height = dimensions
+        maxY = self.world.min_y + height
+
+        def translated(position):
+            shifted = self._shiftPosition(position, offsetX, offsetY)
+            if (
+                0 <= shifted[0] < width
+                and 0 <= shifted[1] < depth
+                and self.world.min_y <= shifted[2] < maxY
+            ):
+                return shifted
+            return None
+
+        blocks = {}
+        properties = {}
+        liquidLevels = {}
+        liquidSources = set()
+        liquidFalling = set()
+        for position, blockType in self.world.blocks.items():
+            shifted = translated(position)
+            if shifted is None:
+                continue
+            blocks[shifted] = blockType
+            if position in self.world.blockProperties:
+                properties[shifted] = self.world.blockProperties[position]
+            if position in self.world.liquidLevels:
+                liquidLevels[shifted] = self.world.liquidLevels[position]
+            if position in self.world.liquidSources:
+                liquidSources.add(shifted)
+            if position in self.world.liquidFalling:
+                liquidFalling.add(shifted)
+
+        structurePositions = {
+            shifted for position in self.sceneStructurePositions
+            if (shifted := translated(position)) is not None
+        }
+        exteriorGlass = {
+            shifted for position in self.sceneExteriorGlassPositions
+            if (shifted := translated(position)) is not None
+        }
+        snapshot = WorldSnapshot(
+            width=width,
+            depth=depth,
+            height=height,
+            min_y=self.world.min_y,
+            dimension=self.currentDimension,
+            blocks=blocks,
+            properties=properties,
+            liquid_levels=liquidLevels,
+            liquid_sources=frozenset(liquidSources),
+            liquid_falling=frozenset(liquidFalling),
+            scene_metadata=dict(self.sceneMetadata),
+            structure_positions=frozenset(structurePositions),
+            exterior_glass_positions=frozenset(exteriorGlass),
+        )
+        return snapshot, exteriorGlass
+
     def _resizeCanvas(self, delta: int) -> None:
-        """Grow or shrink all editable axes in one chunk-sized step."""
+        """Grow or shrink symmetrically while preserving relative geometry."""
         dimensions, clipped = self._canvasResizeImpact(delta)
         if dimensions == (self.world.width, self.world.depth, self.world.height):
             self.tooltipText = "Canvas is already at the default minimum"
             self.tooltipTimer = 1800
             return
         oldWidth, oldDepth = self.world.width, self.world.depth
-        self.world.resize(*dimensions, min_y=self.world.min_y, preserve=True)
+        offsetX = (dimensions[0] - oldWidth) // 2
+        offsetY = (dimensions[1] - oldDepth) // 2
+        snapshot, exteriorGlass = self._centeredWorldSnapshot(
+            dimensions, offsetX, offsetY
+        )
+        self.world.replace(snapshot)
+        self.sceneStructurePositions = self.world.sceneStructurePositions
+        self.sceneStructureBounds = self.world.sceneStructureBounds
+        self.sceneExteriorGlassPositions = exteriorGlass
+        self._shiftAppWorldState(offsetX, offsetY)
         if delta > 0:
             floorBlock = {
                 DIMENSION_NETHER: BlockType.NETHERRACK,
                 DIMENSION_END: BlockType.END_STONE,
             }.get(self.currentDimension, BlockType.GRASS)
+            insetX = max(0, offsetX)
+            insetY = max(0, offsetY)
             with self.world.bulkUpdate():
                 for x in range(dimensions[0]):
                     for y in range(dimensions[1]):
-                        if x < oldWidth and y < oldDepth:
+                        if (
+                            insetX <= x < insetX + oldWidth
+                            and insetY <= y < insetY + oldDepth
+                        ):
                             continue
                         if self.world.getBlock(x, y, self.world.min_y) == BlockType.AIR:
                             self.world.setBlock(x, y, self.world.min_y, floorBlock)
@@ -17428,6 +17668,134 @@ class BlocFantome:
             + (f" | {clipped} blocks removed" if clipped else "")
         )
         self.tooltipTimer = 2600
+
+    def _planLocalTerrainNoise(self, seed: int):
+        """Return the exact protected terrain plan used by preview and apply."""
+        from engine.terrain import local_height_offset
+
+        baseZ = self.world.min_y
+        surfaceBlock = {
+            DIMENSION_NETHER: BlockType.NETHERRACK,
+            DIMENSION_END: BlockType.END_STONE,
+        }.get(self.currentDimension, BlockType.GRASS)
+        fillerBlock = {
+            DIMENSION_NETHER: BlockType.NETHERRACK,
+            DIMENSION_END: BlockType.END_STONE,
+        }.get(self.currentDimension, BlockType.DIRT)
+        eligible = set()
+        protected = set()
+        structureColumns = {(x, y) for x, y, _z in self.sceneStructurePositions}
+        for x in range(self.world.width):
+            for y in range(self.world.depth):
+                levels = self.world._columnLevels.get((x, y), set())
+                if (
+                    levels == {baseZ}
+                    and (x, y) not in structureColumns
+                    and self.world.getBlock(x, y, baseZ) == surfaceBlock
+                ):
+                    eligible.add((x, y))
+                else:
+                    protected.add((x, y))
+        columns = []
+        for x, y in sorted(eligible):
+            elevation = local_height_offset(x, y, seed, 3)
+            # Preserve a flat safety ring around player builds and structures,
+            # then ease gently into the generated surface.
+            if any((x + dx, y + dy) in protected for dx, dy in (
+                (1, 0), (-1, 0), (0, 1), (0, -1),
+            )):
+                elevation = 0
+            elif any(
+                (x + dx, y + dy) in protected
+                for dx, dy in (
+                    (2, 0), (-2, 0), (0, 2), (0, -2),
+                    (1, 1), (1, -1), (-1, 1), (-1, -1),
+                )
+            ):
+                elevation = min(elevation, 1)
+            elevation = min(
+                elevation, self.world.max_y_exclusive - baseZ - 1
+            )
+            if elevation <= 0:
+                continue
+            columns.append((x, y, elevation))
+        return {
+            "seed": seed,
+            "base_z": baseZ,
+            "surface_block": surfaceBlock,
+            "filler_block": fillerBlock,
+            "eligible": bool(eligible),
+            "columns": columns,
+        }
+
+    def _terrainNoisePlanForSeed(self, seed: int):
+        key = (
+            self.world.revision, self.currentDimension, seed,
+            id(self.sceneStructurePositions), len(self.sceneStructurePositions),
+        )
+        if key != self._terrainNoisePreviewPlanKey:
+            self._terrainNoisePreviewPlan = self._planLocalTerrainNoise(seed)
+            self._terrainNoisePreviewPlanKey = key
+        return self._terrainNoisePreviewPlan
+
+    def _clearTerrainNoisePreview(self) -> None:
+        self._terrainNoisePreviewSeed = None
+        self._terrainNoisePreviewPlanKey = None
+        self._terrainNoisePreviewPlan = None
+
+    def _applyLocalTerrainNoise(self, seed: Optional[int] = None) -> bool:
+        """Sculpt only untouched single-layer terrain columns, undoably."""
+        from engine.undo import BatchCommand, PlaceBlockCommand
+
+        seed = (
+            self._terrainNoisePreviewSeed
+            if seed is None and self._terrainNoisePreviewSeed is not None
+            else seed
+        )
+        if seed is None:
+            seed = random.randint(0, 0x7FFFFFFF)
+        plan = self._terrainNoisePlanForSeed(seed)
+        if not plan["eligible"]:
+            self.tooltipText = "No untouched flat terrain to sculpt"
+            self.tooltipTimer = 2200
+            self._clearTerrainNoisePreview()
+            return False
+
+        baseZ = plan["base_z"]
+        surfaceBlock = plan["surface_block"]
+        fillerBlock = plan["filler_block"]
+        commands = []
+        for x, y, elevation in plan["columns"]:
+            if fillerBlock != surfaceBlock:
+                commands.append(
+                    PlaceBlockCommand(self.world, x, y, baseZ, fillerBlock)
+                )
+            for z in range(baseZ + 1, baseZ + elevation):
+                commands.append(PlaceBlockCommand(self.world, x, y, z, fillerBlock))
+            commands.append(
+                PlaceBlockCommand(
+                    self.world, x, y, baseZ + elevation, surfaceBlock
+                )
+            )
+        if not commands:
+            self.tooltipText = "Terrain already has a protected level surface"
+            self.tooltipTimer = 2200
+            self._clearTerrainNoisePreview()
+            return False
+        if not self.undoManager.execute(BatchCommand(commands, "Sculpt terrain")):
+            return False
+        self.sceneMetadata["terrain_noise_seed"] = seed
+        self.sceneMetadata["terrain_noise_max_height"] = 3
+        self.currentBuildHeight = max(
+            self.currentBuildHeight, baseZ + 3
+        )
+        sculptedColumns = len(plan["columns"])
+        self._clearTerrainNoisePreview()
+        self.lightingDirty = True
+        self._invalidateViewCaches()
+        self.tooltipText = f"Sculpted {sculptedColumns} protected terrain columns"
+        self.tooltipTimer = 2600
+        return True
     
     def _getUndoRedoStatus(self) -> str:
         """Get status string for undo/redo"""
@@ -18494,9 +18862,6 @@ class BlocFantome:
         # Draw block tooltip (world blocks)
         self._renderBlockTooltip()
         
-        # Draw height indicator
-        self._renderHeightIndicator()
-        
         # Draw placement particles
         self._renderPlacementParticles()
         
@@ -18724,10 +19089,102 @@ class BlocFantome:
                 self.smallFont, terrainHovered, self.sceneTerrainMode != "all",
             )
         hovered = self.fitWorldButtonRect.collidepoint(mouseX, mouseY)
-        label = f"Fit World  {round(self.zoomLevel * 100)}%"
+        label = "Fit World"
         self.assetManager.drawButton(
             self.screen, self.fitWorldButtonRect, label, self.smallFont, hovered, False
         )
+        self._renderTerrainNoiseButton()
+
+    def _renderTerrainNoiseButton(self) -> None:
+        """Draw local-terrain sculpt control and its exact held-seed preview."""
+        mouse = pygame.mouse.get_pos()
+        rect = self.terrainNoiseButtonRect
+        hovered = rect.collidepoint(mouse)
+        self.assetManager.drawButton(
+            self.screen, rect, "", self.smallFont, hovered, False
+        )
+        # A small square overworld glyph consistent with the other Minecraft
+        # UI icons, but readable without relying on an item texture.
+        icon = rect.inflate(-12, -10)
+        pygame.draw.rect(self.screen, (75, 86, 78), icon)
+        pygame.draw.rect(self.screen, (155, 160, 156), icon, 1)
+        ridge = [
+            (icon.left + 2, icon.centery + 2),
+            (icon.left + 6, icon.centery - 2),
+            (icon.centerx, icon.centery),
+            (icon.right - 5, icon.top + 4),
+            (icon.right - 2, icon.centery - 1),
+        ]
+        pygame.draw.lines(self.screen, (128, 176, 118), False, ridge, 2)
+        if not hovered:
+            self._clearTerrainNoisePreview()
+            return
+        if self._terrainNoisePreviewSeed is None:
+            self._terrainNoisePreviewSeed = random.randint(0, 0x7FFFFFFF)
+        plan = self._terrainNoisePlanForSeed(self._terrainNoisePreviewSeed)
+        self._renderTerrainNoisePreview(plan)
+        text = self.smallFont.render(
+            "Preview: sculpt untouched flat terrain", True, (245, 245, 245)
+        )
+        box = text.get_rect(midtop=(rect.centerx, rect.bottom + 5)).inflate(12, 8)
+        box.clamp_ip(pygame.Rect(4, 4, WINDOW_WIDTH - PANEL_WIDTH - 8, WINDOW_HEIGHT - 8))
+        backdrop = pygame.Surface(box.size, pygame.SRCALPHA)
+        backdrop.fill((24, 24, 28, 220))
+        self.screen.blit(backdrop, box)
+        pygame.draw.rect(self.screen, (120, 120, 128), box, 1)
+        self.screen.blit(text, text.get_rect(center=box.center))
+
+    def _renderTerrainNoisePreview(self, plan) -> None:
+        """Overlay every block the held terrain plan would add in light blue."""
+        if (
+            self._terrainNoisePreviewSurface is None
+            or self._terrainNoisePreviewSurface.get_size() != self.screen.get_size()
+        ):
+            self._terrainNoisePreviewSurface = pygame.Surface(
+                self.screen.get_size(), pygame.SRCALPHA
+            )
+        overlay = self._terrainNoisePreviewSurface
+        overlay.fill((0, 0, 0, 0))
+        halfWidth = max(1, round(TILE_WIDTH * self.zoomLevel / 2))
+        halfHeight = max(1, round(TILE_HEIGHT * self.zoomLevel / 2))
+        tileHeight = halfHeight * 2
+        blockHeight = max(2, round(BLOCK_HEIGHT * self.zoomLevel))
+        viewport = pygame.Rect(0, 0, WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT)
+        topColor = (128, 224, 255, 72)
+        leftColor = (72, 168, 225, 62)
+        rightColor = (93, 191, 240, 68)
+        outline = (166, 237, 255, 165)
+        baseZ = plan["base_z"]
+        for x, y, elevation in plan["columns"]:
+            for z in range(baseZ + 1, baseZ + elevation + 1):
+                screenX, screenY = self.renderer.worldToScreen(x, y, z)
+                cubeBounds = pygame.Rect(
+                    round(screenX - halfWidth), round(screenY),
+                    halfWidth * 2, tileHeight + blockHeight,
+                )
+                if not viewport.colliderect(cubeBounds):
+                    continue
+                top = (
+                    (round(screenX), round(screenY)),
+                    (round(screenX + halfWidth), round(screenY + halfHeight)),
+                    (round(screenX), round(screenY + tileHeight)),
+                    (round(screenX - halfWidth), round(screenY + halfHeight)),
+                )
+                left = (
+                    top[3], top[2],
+                    (top[2][0], top[2][1] + blockHeight),
+                    (top[3][0], top[3][1] + blockHeight),
+                )
+                right = (
+                    top[2], top[1],
+                    (top[1][0], top[1][1] + blockHeight),
+                    (top[2][0], top[2][1] + blockHeight),
+                )
+                pygame.draw.polygon(overlay, leftColor, left)
+                pygame.draw.polygon(overlay, rightColor, right)
+                pygame.draw.polygon(overlay, topColor, top)
+                pygame.draw.lines(overlay, outline, True, top, 1)
+        self.screen.blit(overlay, (0, 0))
 
     def _renderCanvasResizeControls(self) -> None:
         mouse = pygame.mouse.get_pos()
@@ -18746,6 +19203,7 @@ class BlocFantome:
         if hoveredDelta is None:
             return
         dimensions, clipped = self._canvasResizeImpact(hoveredDelta)
+        self._renderCanvasResizePreview(hoveredDelta, dimensions)
         action = "Shrink" if hoveredDelta < 0 else "Extend"
         warning = (
             f"{action} to {dimensions[0]} x {dimensions[1]} x {dimensions[2]}"
@@ -18762,6 +19220,88 @@ class BlocFantome:
         self.screen.blit(backdrop, box)
         pygame.draw.rect(self.screen, (198, 142, 72), box, 1)
         self.screen.blit(textSurface, textSurface.get_rect(center=box.center))
+
+    def _renderCanvasResizePreview(self, delta: int, dimensions) -> None:
+        """Overlay transparent isometric cells on every affected canvas edge."""
+        if (
+            self._canvasResizePreviewSurface is None
+            or self._canvasResizePreviewSurface.get_size() != self.screen.get_size()
+        ):
+            self._canvasResizePreviewSurface = pygame.Surface(
+                self.screen.get_size(), pygame.SRCALPHA
+            )
+        overlay = self._canvasResizePreviewSurface
+        overlay.fill((0, 0, 0, 0))
+        tileWidth = max(2, round(TILE_WIDTH * self.zoomLevel))
+        tileHeight = max(2, round(TILE_HEIGHT * self.zoomLevel))
+        halfWidth = tileWidth // 2
+        halfHeight = tileHeight // 2
+        baseZ = self.world.min_y
+
+        if delta > 0:
+            insetX = (dimensions[0] - self.world.width) // 2
+            insetY = (dimensions[1] - self.world.depth) // 2
+            affected = dimensions[0] * dimensions[1] - self.world.width * self.world.depth
+            sample = max(1, math.ceil(affected / 1800))
+            color = (115, 235, 156, 35)
+            outline = (150, 255, 190, 115)
+            cells = (
+                (x - insetX, y - insetY, x, y)
+                for x in range(dimensions[0])
+                for y in range(dimensions[1])
+                if not (
+                    insetX <= x < insetX + self.world.width
+                    and insetY <= y < insetY + self.world.depth
+                )
+            )
+            for worldX, worldY, targetX, targetY in cells:
+                boundary = (
+                    targetX in (0, dimensions[0] - 1)
+                    or targetY in (0, dimensions[1] - 1)
+                    or targetX in (insetX - 1, insetX + self.world.width)
+                    or targetY in (insetY - 1, insetY + self.world.depth)
+                )
+                if not boundary and (targetX + targetY) % sample:
+                    continue
+                screenX, screenY = self.renderer.worldToScreen(worldX, worldY, baseZ)
+                points = [
+                    (round(screenX), round(screenY)),
+                    (round(screenX + halfWidth), round(screenY + halfHeight)),
+                    (round(screenX), round(screenY + tileHeight)),
+                    (round(screenX - halfWidth), round(screenY + halfHeight)),
+                ]
+                pygame.draw.polygon(overlay, color, points)
+                pygame.draw.polygon(overlay, outline, points, 1)
+        else:
+            insetX = (self.world.width - dimensions[0]) // 2
+            insetY = (self.world.depth - dimensions[1]) // 2
+            affected = self.world.width * self.world.depth - dimensions[0] * dimensions[1]
+            sample = max(1, math.ceil(affected / 1800))
+            color = (235, 94, 104, 38)
+            outline = (255, 150, 158, 125)
+            for x in range(self.world.width):
+                for y in range(self.world.depth):
+                    if (
+                        insetX <= x < insetX + dimensions[0]
+                        and insetY <= y < insetY + dimensions[1]
+                    ):
+                        continue
+                    boundary = (
+                        x in (0, self.world.width - 1, insetX - 1, insetX + dimensions[0])
+                        or y in (0, self.world.depth - 1, insetY - 1, insetY + dimensions[1])
+                    )
+                    if not boundary and (x + y) % sample:
+                        continue
+                    screenX, screenY = self.renderer.worldToScreen(x, y, baseZ)
+                    points = [
+                        (round(screenX), round(screenY)),
+                        (round(screenX + halfWidth), round(screenY + halfHeight)),
+                        (round(screenX), round(screenY + tileHeight)),
+                        (round(screenX - halfWidth), round(screenY + halfHeight)),
+                    ]
+                    pygame.draw.polygon(overlay, color, points)
+                    pygame.draw.polygon(overlay, outline, points, 1)
+        self.screen.blit(overlay, (0, 0))
     
     def _toggleLighting(self):
         """Toggle experimental lighting on/off"""
@@ -19604,11 +20144,11 @@ class BlocFantome:
         
         # Controls section (7 primary + header + expand button always + extra if expanded)
         totalHeight += 22  # Header
-        totalHeight += 7 * 18  # Primary controls
+        totalHeight += 7 * self.hotkeyRowHeight  # Primary controls
         totalHeight += 60  # Expand/collapse button with spacing
         totalHeight += 200  # Volume section + padding
         if self.hotkeysExpanded:
-            totalHeight += 16 * 18 + 80  # 16 extra controls + padding
+            totalHeight += 16 * self.hotkeyRowHeight + 80
         
         # Available height for scrollable area
         availableHeight = WINDOW_HEIGHT - headerHeight
@@ -19630,7 +20170,10 @@ class BlocFantome:
         blocksRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         blocksHovered = blocksRect.collidepoint(mouseX, mouseY)
         # No arrow - just "Blocks" text
-        self.assetManager.drawButton(self.screen, blocksRect, "Blocks", self.font, blocksHovered, self.blocksExpanded)
+        self.assetManager.drawButton(
+            self.screen, blocksRect, "Blocks", self.font,
+            blocksHovered, self.blocksExpanded, letterSpacing=1,
+        )
         currentY += mainButtonHeight + 5
         
         # Blocks content (sub-categories)
@@ -19724,7 +20267,10 @@ class BlocFantome:
         # ===== TOGGLES MAIN BUTTON =====
         experimentalRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         experimentalHovered = experimentalRect.collidepoint(mouseX, mouseY)
-        self.assetManager.drawButton(self.screen, experimentalRect, "Toggles", self.font, experimentalHovered, self.experimentalExpanded)
+        self.assetManager.drawButton(
+            self.screen, experimentalRect, "Toggles", self.font,
+            experimentalHovered, self.experimentalExpanded, letterSpacing=1,
+        )
         currentY += mainButtonHeight + 5
         
         # Toggle content (dimension buttons + actions + state toggles)
@@ -19953,13 +20499,19 @@ class BlocFantome:
         # ===== WORLDS MAIN BUTTON =====
         worldsRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         worldsHovered = worldsRect.collidepoint(mouseX, mouseY)
-        self.assetManager.drawButton(self.screen, worldsRect, "Worlds", self.font, worldsHovered, False)
+        self.assetManager.drawButton(
+            self.screen, worldsRect, "Worlds", self.font,
+            worldsHovered, False, letterSpacing=1,
+        )
         currentY += mainButtonHeight + 5
 
         # ===== STRUCTURES MAIN BUTTON =====
         structuresRect = pygame.Rect(panelX + ICON_MARGIN, currentY, PANEL_WIDTH - 2 * ICON_MARGIN, mainButtonHeight)
         structuresHovered = structuresRect.collidepoint(mouseX, mouseY)
-        self.assetManager.drawButton(self.screen, structuresRect, "Structures", self.font, structuresHovered, self.structuresExpanded)
+        self.assetManager.drawButton(
+            self.screen, structuresRect, "Structures", self.font,
+            structuresHovered, self.structuresExpanded, letterSpacing=1,
+        )
         currentY += mainButtonHeight + 5
         
         # Structures content - grid of thumbnail previews
@@ -20165,86 +20717,15 @@ class BlocFantome:
         
         for item in controls:
             if controlsY >= startY and controlsY <= startY + availableHeight:
-                # Minecraft-style pressed button appearance for each key
-                keyX = panelX + 8
-                
-                # Handle multi-key combinations (tuples with more than 2 elements)
-                if len(item) == 2:
-                    # Single key: (key, action)
-                    key, action = item
-                    keys = [key]
-                else:
-                    # Multi-key: keys are all but last element, action is last
-                    keys = list(item[:-1])
-                    action = item[-1]
-                
-                # Render each key with Minecraft button style
-                for i, key in enumerate(keys):
-                    # Draw + separator between keys
-                    if i > 0:
-                        plusText = self.smallFont.render("+", True, (100, 100, 110))
-                        self.screen.blit(plusText, (keyX, controlsY))
-                        keyX += plusText.get_width() + 2
-                    
-                    keyText = self.smallFont.render(key, True, (255, 255, 255))
-                    btnWidth = keyText.get_width() + 8
-                    btnHeight = 16
-                    keyBg = pygame.Rect(keyX, controlsY - 1, btnWidth, btnHeight)
-                    
-                    # Minecraft pressed button style: darker top, lighter bottom edge
-                    # Main button face (dark grey)
-                    pygame.draw.rect(self.screen, (55, 55, 55), keyBg)
-                    # Top shadow (darker - pressed look)
-                    pygame.draw.line(self.screen, (30, 30, 30), (keyBg.left, keyBg.top), (keyBg.right - 1, keyBg.top))
-                    pygame.draw.line(self.screen, (30, 30, 30), (keyBg.left, keyBg.top), (keyBg.left, keyBg.bottom - 1))
-                    # Bottom highlight (lighter)
-                    pygame.draw.line(self.screen, (80, 80, 80), (keyBg.left + 1, keyBg.bottom - 1), (keyBg.right - 1, keyBg.bottom - 1))
-                    pygame.draw.line(self.screen, (80, 80, 80), (keyBg.right - 1, keyBg.top + 1), (keyBg.right - 1, keyBg.bottom - 1))
-                    
-                    self.screen.blit(keyText, (keyX + 4, controlsY))
-                    keyX += btnWidth + 3
-                
-                # Action text
-                actionText = self.smallFont.render(action, True, (140, 140, 140))
-                self.screen.blit(actionText, (keyX + 4, controlsY))
-            controlsY += 18
+                self._renderHotkeyRow(item, panelX, controlsY)
+            controlsY += self.hotkeyRowHeight
         
         # Draw extra controls if expanded (BEFORE the collapse button)
         if self.hotkeysExpanded:
             for item in extraControls:
                 if controlsY >= startY and controlsY <= startY + availableHeight:
-                    keyX = panelX + 8
-                    
-                    if len(item) == 2:
-                        key, action = item
-                        keys = [key]
-                    else:
-                        keys = list(item[:-1])
-                        action = item[-1]
-                    
-                    for i, key in enumerate(keys):
-                        if i > 0:
-                            plusText = self.smallFont.render("+", True, (100, 100, 110))
-                            self.screen.blit(plusText, (keyX, controlsY))
-                            keyX += plusText.get_width() + 2
-                        
-                        keyText = self.smallFont.render(key, True, (255, 255, 255))
-                        btnWidth = keyText.get_width() + 8
-                        btnHeight = 16
-                        keyBg = pygame.Rect(keyX, controlsY - 1, btnWidth, btnHeight)
-                        
-                        pygame.draw.rect(self.screen, (55, 55, 55), keyBg)
-                        pygame.draw.line(self.screen, (30, 30, 30), (keyBg.left, keyBg.top), (keyBg.right - 1, keyBg.top))
-                        pygame.draw.line(self.screen, (30, 30, 30), (keyBg.left, keyBg.top), (keyBg.left, keyBg.bottom - 1))
-                        pygame.draw.line(self.screen, (80, 80, 80), (keyBg.left + 1, keyBg.bottom - 1), (keyBg.right - 1, keyBg.bottom - 1))
-                        pygame.draw.line(self.screen, (80, 80, 80), (keyBg.right - 1, keyBg.top + 1), (keyBg.right - 1, keyBg.bottom - 1))
-                        
-                        self.screen.blit(keyText, (keyX + 4, controlsY))
-                        keyX += btnWidth + 3
-                    
-                    actionText = self.smallFont.render(action, True, (140, 140, 140))
-                    self.screen.blit(actionText, (keyX + 4, controlsY))
-                controlsY += 18
+                    self._renderHotkeyRow(item, panelX, controlsY)
+                controlsY += self.hotkeyRowHeight
         
         # Add spacing before expand button
         controlsY += 8
@@ -20330,6 +20811,7 @@ class BlocFantome:
         
         # Store gear button rect for click detection
         self.settingsGearRect = gearRect
+        self._renderTutorialTomeButton(gearRect)
         
         # Draw scroll indicator if needed
         if self.maxScroll > 0:
@@ -20337,6 +20819,60 @@ class BlocFantome:
             scrollBarY = startY + (self.inventoryScroll * (availableHeight - scrollBarHeight) // self.maxScroll)
             scrollBarRect = pygame.Rect(WINDOW_WIDTH - 8, scrollBarY, 4, scrollBarHeight)
             pygame.draw.rect(self.screen, (150, 150, 150), scrollBarRect)
+
+    def _renderTutorialTomeButton(self, gearRect: pygame.Rect) -> None:
+        """Draw the persistent advanced-tutorial tome directly above Settings."""
+        size = gearRect.width
+        rect = pygame.Rect(gearRect.x, gearRect.y - size - 6, size, size)
+        self.tutorialTomeRect = rect
+        hovered = rect.collidepoint(pygame.mouse.get_pos())
+        self.assetManager.drawButton(
+            self.screen, rect, "", self.smallFont, hovered=hovered
+        )
+        cover = rect.inflate(-6, -10).move(0, 1)
+        shadow = cover.move(1, 2)
+        pygame.draw.rect(self.screen, (22, 12, 31), shadow, border_radius=2)
+        pygame.draw.rect(self.screen, (77, 36, 102), cover, border_radius=2)
+        pygame.draw.rect(self.screen, (190, 133, 62), cover, 1, border_radius=2)
+        spineX = cover.centerx
+        leftPage = (
+            (cover.left + 3, cover.top + 3), (spineX - 1, cover.top + 5),
+            (spineX - 1, cover.bottom - 3), (cover.left + 3, cover.bottom - 5),
+        )
+        rightPage = (
+            (spineX + 1, cover.top + 5), (cover.right - 3, cover.top + 3),
+            (cover.right - 3, cover.bottom - 5), (spineX + 1, cover.bottom - 3),
+        )
+        pygame.draw.polygon(self.screen, (207, 194, 164), leftPage)
+        pygame.draw.polygon(self.screen, (226, 211, 177), rightPage)
+        pygame.draw.line(
+            self.screen, (96, 59, 117),
+            (spineX, cover.top + 4), (spineX, cover.bottom - 3), 2,
+        )
+        pygame.draw.line(
+            self.screen, (142, 118, 101), leftPage[0], leftPage[1], 1,
+        )
+        pygame.draw.line(
+            self.screen, (142, 118, 101), rightPage[0], rightPage[1], 1,
+        )
+        rune = (spineX, cover.centery)
+        pygame.draw.circle(self.screen, (75, 210, 221), rune, 3, 1)
+        pygame.draw.line(
+            self.screen, (138, 232, 235),
+            (rune[0], rune[1] - 4), (rune[0], rune[1] + 4), 1,
+        )
+        pygame.draw.line(
+            self.screen, (138, 232, 235),
+            (rune[0] - 4, rune[1]), (rune[0] + 4, rune[1]), 1,
+        )
+        if hovered:
+            label = self.smallFont.render("Advanced Tutorial", True, (245, 245, 245))
+            box = label.get_rect(midright=(rect.left - 6, rect.centery)).inflate(10, 6)
+            backdrop = pygame.Surface(box.size, pygame.SRCALPHA)
+            backdrop.fill((24, 18, 30, 228))
+            self.screen.blit(backdrop, box)
+            pygame.draw.rect(self.screen, (126, 78, 150), box, 1)
+            self.screen.blit(label, label.get_rect(center=box.center))
     
     def _renderStatus(self) -> None:
         """Render status information"""
@@ -20387,12 +20923,65 @@ class BlocFantome:
                 (tooltipX + padding, tooltipY + padding * 2 + tooltipText.get_height()),
             )
     
+    def _renderHotkeyRow(self, item, panelX: int, y: int) -> None:
+        """Render keycaps with enough native-font height to contain every glyph."""
+        keys = [item[0]] if len(item) == 2 else list(item[:-1])
+        action = item[-1]
+        keyX = panelX + 8
+        rowCenterY = y + self.hotkeyRowHeight // 2
+        for index, key in enumerate(keys):
+            if index:
+                plusText = self.smallFont.render("+", True, (100, 100, 110))
+                self.screen.blit(plusText, plusText.get_rect(midleft=(keyX, rowCenterY)))
+                keyX += plusText.get_width() + 2
+            keyText = self.smallFont.render(key, True, (255, 255, 255))
+            keyBg = pygame.Rect(
+                keyX, y + 1, keyText.get_width() + 8,
+                max(18, min(self.hotkeyRowHeight - 2, keyText.get_height() + 4)),
+            )
+            pygame.draw.rect(self.screen, (55, 55, 55), keyBg)
+            pygame.draw.line(
+                self.screen, (30, 30, 30), keyBg.topleft,
+                (keyBg.right - 1, keyBg.top),
+            )
+            pygame.draw.line(
+                self.screen, (30, 30, 30), keyBg.topleft,
+                (keyBg.left, keyBg.bottom - 1),
+            )
+            pygame.draw.line(
+                self.screen, (80, 80, 80),
+                (keyBg.left + 1, keyBg.bottom - 1),
+                (keyBg.right - 1, keyBg.bottom - 1),
+            )
+            pygame.draw.line(
+                self.screen, (80, 80, 80),
+                (keyBg.right - 1, keyBg.top + 1),
+                (keyBg.right - 1, keyBg.bottom - 1),
+            )
+            self.screen.blit(keyText, keyText.get_rect(center=keyBg.center))
+            keyX = keyBg.right + 3
+        actionText = self.smallFont.render(action, True, (140, 140, 140))
+        self.screen.blit(
+            actionText, actionText.get_rect(midleft=(keyX + 4, rowCenterY))
+        )
+
     def _renderVolumeSlider(self, x: int, y: int, label: str, value: float, mouseX: int, mouseY: int):
         """Render a volume slider with mute toggle"""
-        sliderWidth = PANEL_WIDTH - 2 * ICON_MARGIN - 30
         sliderHeight = 8
-        labelWidth = 55
-        trackWidth = sliderWidth - labelWidth - 50  # Leave room for mute button
+        rowRight = WINDOW_WIDTH - 10
+        labelWidth = max(
+            self.smallFont.size(name)[0] for name in ("Music", "Ambient", "Effects")
+        ) + 8
+        muteSize = 18
+        muteRect = pygame.Rect(rowRight - muteSize, y, muteSize, muteSize)
+        percentWidth = self.smallFont.size("100%")[0]
+        percentRight = muteRect.left - 5
+        percentX = percentRight - percentWidth
+        trackX = x + labelWidth
+        trackRight = percentX - 7
+        trackWidth = max(24, trackRight - trackX)
+        trackY = y + (muteSize - sliderHeight) // 2
+        trackRect = pygame.Rect(trackX, trackY, trackWidth, sliderHeight)
         
         # Determine mute state based on label
         if label == "Music":
@@ -20408,9 +20997,6 @@ class BlocFantome:
         self.screen.blit(labelText, (x, y))
         
         # Slider track
-        trackX = x + labelWidth
-        trackY = y + 5
-        trackRect = pygame.Rect(trackX, trackY, trackWidth, sliderHeight)
         trackColor = (40, 40, 45) if isMuted else (50, 50, 60)
         pygame.draw.rect(self.screen, trackColor, trackRect, border_radius=4)
         
@@ -20422,7 +21008,7 @@ class BlocFantome:
             pygame.draw.rect(self.screen, filledColor, filledRect, border_radius=4)
         
         # Slider handle
-        handleX = trackX + filledWidth - 4
+        handleX = max(trackX - 1, min(trackRect.right - 7, trackX + filledWidth - 4))
         handleRect = pygame.Rect(handleX, trackY - 2, 8, sliderHeight + 4)
         handleColor = (200, 200, 200) if trackRect.collidepoint(mouseX, mouseY) else (150, 150, 150)
         if isMuted:
@@ -20431,23 +21017,31 @@ class BlocFantome:
         
         # Value percentage
         percentText = self.smallFont.render(f"{int(value * 100)}%", True, (100, 100, 100) if isMuted else (150, 150, 150))
-        self.screen.blit(percentText, (trackRect.right + 5, y))
+        self.screen.blit(percentText, percentText.get_rect(midright=(percentRight, muteRect.centery)))
         
-        # Mute toggle button (small box with X when muted, empty when not)
-        muteX = trackRect.right + 35
-        muteY = y
-        muteSize = 16
-        muteRect = pygame.Rect(muteX, muteY, muteSize, muteSize)
+        # Mute toggle always contains a speaker; muted state adds a red slash.
         muteHovered = muteRect.collidepoint(mouseX, mouseY)
         muteBgColor = (70, 50, 50) if isMuted else ((60, 60, 70) if muteHovered else (45, 45, 55))
         pygame.draw.rect(self.screen, muteBgColor, muteRect, border_radius=3)
         pygame.draw.rect(self.screen, (80, 80, 90), muteRect, 1, border_radius=3)
-        
-        # Draw X when muted, empty when not
+        speakerColor = (190, 190, 198) if not isMuted else (135, 125, 130)
+        speakerBox = pygame.Rect(muteRect.left + 4, muteRect.centery - 2, 3, 5)
+        pygame.draw.rect(self.screen, speakerColor, speakerBox)
+        pygame.draw.polygon(
+            self.screen, speakerColor,
+            ((speakerBox.right, speakerBox.top), (muteRect.left + 11, muteRect.top + 4),
+             (muteRect.left + 11, muteRect.bottom - 4), (speakerBox.right, speakerBox.bottom)),
+        )
         if isMuted:
-            # Draw X
-            pygame.draw.line(self.screen, (200, 100, 100), (muteX + 4, muteY + 4), (muteX + 12, muteY + 12), 2)
-            pygame.draw.line(self.screen, (200, 100, 100), (muteX + 12, muteY + 4), (muteX + 4, muteY + 12), 2)
+            pygame.draw.line(
+                self.screen, (225, 100, 110),
+                (muteRect.left + 3, muteRect.top + 3),
+                (muteRect.right - 3, muteRect.bottom - 3), 2,
+            )
+        self.volumeControlRects[label.lower()] = {
+            "track": trackRect,
+            "mute": muteRect,
+        }
 
 
 # ============================================================================

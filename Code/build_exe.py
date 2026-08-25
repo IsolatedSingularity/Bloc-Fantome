@@ -30,9 +30,13 @@ NATIVE_BUILDER = os.path.join(SCRIPT_DIR, "build_native.py")
 NATIVE_LIBRARY = os.path.join(
     SCRIPT_DIR, "native", "bin", "bloc_fantome_native.dll"
 )
+ZEKTON_FONT = os.path.join(
+    PROJECT_ROOT, "Assets", "Fonts", "Zekton", "Zekton-Regular.otf"
+)
+HORROR_TITLE = os.path.join(PROJECT_ROOT, "References", "Titles", "horror.png")
 
 # Version info
-VERSION = "2.4.0"
+VERSION = "2.5.1"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -64,6 +68,19 @@ def build(debug: bool = False, diagnostic: bool = False):
     print("=" * 60)
     print(f"Building Bloc Fantôme Executable v{VERSION}")
     print("=" * 60)
+
+    # Source builds retain a deliberate system-font fallback, but a release
+    # must not silently ship without the owner-supplied licensed typeface.
+    if not os.path.isfile(ZEKTON_FONT):
+        raise FileNotFoundError(
+            "Required licensed release font is missing: "
+            f"{ZEKTON_FONT}. Restore it from the owner's local Zekton bundle; "
+            "see Assets/Fonts/ZEKTON_LOCAL_SETUP.md."
+        )
+    if not os.path.isfile(HORROR_TITLE):
+        raise FileNotFoundError(
+            f"Required splash title artwork is missing: {HORROR_TITLE}"
+        )
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.
     subprocess.run([sys.executable, ICON_GENERATOR], cwd=SCRIPT_DIR, check=True)

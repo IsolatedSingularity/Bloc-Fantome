@@ -1,9 +1,8 @@
 """
 Bloc Fantôme - Splash Screen Module
 
-A self-contained splash screen that renders a high-resolution isometric block
-without depending on the main AssetManager. This module is designed to be
-robust against changes in the main codebase.
+A self-contained splash screen that presents the supplied horror wordmark over
+an Ancient City block mosaic without depending on the main AssetManager.
 
 Author: Jeffrey Morais
 """
@@ -11,6 +10,9 @@ Author: Jeffrey Morais
 import os
 import pygame
 from typing import Optional, Tuple
+
+from runtime_paths import REFERENCES_DIR
+from ui.fonts import load_ui_font
 
 # Splash screen configuration
 SPLASH_ICON_SIZE = 288  # Large connected cube, rendered from the source texture
@@ -28,11 +30,9 @@ class SplashScreen:
     """
     Self-contained splash screen with high-quality isometric block rendering.
     
-    Features:
-    - Proper textured isometric block using actual end_stone.png
-    - Independent texture loading (no AssetManager dependency)
-    - Smooth fade transition
-    - Dim tiled End Stone background with a centered, seamless cube
+    The approved title image remains the sole centerpiece. Resource-loading
+    fallbacks keep source checkouts usable while the release preflight requires
+    the supplied artwork.
     """
     
     def __init__(self, screen: pygame.Surface, clock: pygame.time.Clock, 
@@ -59,9 +59,8 @@ class SplashScreen:
         # Load resources
         self.texture = self._load_texture()
         self.background_tile = self._create_background_tile()
-        self.icon = self._create_textured_block()
         self.title_font = self._load_title_font()
-        self.title = self._render_title("Bloc Fantôme")
+        self.title = self._load_title_artwork()
         self.first_presented_at = None
     
     def _load_texture(self) -> Optional[pygame.Surface]:
@@ -78,18 +77,52 @@ class SplashScreen:
         return None
     
     def _load_title_font(self) -> pygame.font.Font:
-        """Load the title font with fallbacks."""
-        # Render small and nearest-neighbour scale it below. This creates a
-        # chunky original pixel treatment without bundling or copying a game font.
-        return pygame.font.Font(None, 38)
+        """Load the title directly at display resolution."""
+        return load_ui_font(68, fonts_dir=self.fonts_dir, bold=True)
 
     def _render_title(self, text: str) -> pygame.Surface:
-        base = self.title_font.render(text, True, (236, 238, 245))
-        shadow = self.title_font.render(text, True, (35, 19, 55))
-        low = pygame.Surface((base.get_width() + 6, base.get_height() + 7), pygame.SRCALPHA)
-        low.blit(shadow, (4, 5))
-        low.blit(base, (1, 1))
-        return pygame.transform.scale(low, (low.get_width() * 2, low.get_height() * 2))
+        label = text.upper()
+        face = self.title_font.render(label, True, (132, 77, 176))
+        edge = self.title_font.render(label, True, (64, 30, 91))
+        shadow = self.title_font.render(label, True, (16, 8, 24))
+        highlight = self.title_font.render(label, True, (188, 131, 226))
+        surface = pygame.Surface(
+            (face.get_width() + 18, face.get_height() + 20), pygame.SRCALPHA
+        )
+        # Layered native-resolution offsets give the wordmark depth without
+        # magnifying a low-resolution text raster.
+        surface.blit(shadow, (10, 12))
+        for offset in range(7, 2, -1):
+            surface.blit(edge, (offset, offset + 2))
+        surface.blit(face, (2, 2))
+        highlight.set_alpha(92)
+        surface.blit(highlight, (2, 0))
+        return surface
+
+    def _load_title_artwork(self) -> pygame.Surface:
+        """Load and aspect-fit the approved transparent horror wordmark."""
+        title_path = os.path.join(REFERENCES_DIR, "Titles", "horror.png")
+        try:
+            artwork = pygame.image.load(title_path).convert_alpha()
+            bounds = artwork.get_bounding_rect(min_alpha=1)
+            if bounds.width and bounds.height:
+                artwork = artwork.subsurface(bounds)
+            maximum = (self.window_width - 120, self.window_height - 120)
+            scale = min(
+                maximum[0] / max(1, artwork.get_width()),
+                maximum[1] / max(1, artwork.get_height()),
+                1.0,
+            )
+            return pygame.transform.smoothscale(
+                artwork,
+                (
+                    max(1, round(artwork.get_width() * scale)),
+                    max(1, round(artwork.get_height() * scale)),
+                ),
+            )
+        except (OSError, pygame.error) as error:
+            print(f"[Splash] Could not load horror title: {error}")
+            return self._render_title("Bloc Fantôme")
     
     def _legacy_create_textured_block(self) -> pygame.Surface:
         """
@@ -223,19 +256,31 @@ class SplashScreen:
         return surface
     
     def _create_background_tile(self) -> pygame.Surface:
-        """Load the pre-rendered seamless tessellation without startup raster work."""
+        """Load the pre-rendered Ancient City mosaic without startup raster work."""
         backgroundPath = os.path.join(
-            self.icons_dir, "Splash_Background_Deepslate.png"
+            self.icons_dir, "Splash_Background_Ancient_City.png"
         )
         if os.path.isfile(backgroundPath):
             try:
                 return pygame.image.load(backgroundPath).convert()
             except pygame.error:
                 pass
-        from engine.app_icon import render_splash_background_surface
+        from engine.app_icon import render_ancient_city_background_surface
 
-        return render_splash_background_surface(
-            self.texture, (self.window_width, self.window_height)
+        texture_names = (
+            "deepslate_tiles.png", "cracked_deepslate_tiles.png", "sculk.png",
+            "sculk_catalyst_top.png", "reinforced_deepslate_top.png",
+            "sculk_shrieker_top.png",
+        )
+        textures = []
+        for name in texture_names:
+            path = os.path.join(self.textures_dir, name)
+            try:
+                textures.append(pygame.image.load(path).convert_alpha())
+            except (OSError, pygame.error):
+                textures.append(None)
+        return render_ancient_city_background_surface(
+            textures, (self.window_width, self.window_height)
         )
 
     def _draw_background(self, target: pygame.Surface) -> None:
@@ -267,16 +312,11 @@ class SplashScreen:
     
     def present(self) -> None:
         """Put the splash on screen immediately before expensive startup work."""
-        icon_rect = self.icon.get_rect(center=(
-            self.window_width // 2,
-            self.window_height // 2 - self.icon.get_height() // 4,
-        ))
         title_rect = self.title.get_rect(center=(
             self.window_width // 2,
-            self.window_height // 2 + self.icon.get_height() // 2 + 50,
+            self.window_height // 2,
         ))
         self._draw_background(self.screen)
-        self.screen.blit(self.icon, icon_rect)
         self.screen.blit(self.title, title_rect)
         pygame.display.flip()
         if self.first_presented_at is None:
@@ -294,14 +334,9 @@ class SplashScreen:
         pygame.event.clear()
         pygame.event.pump()
         
-        # Get icon (with fallback)
-        icon = self.icon if self.icon else self._create_fallback_icon()
-        icon_rect = icon.get_rect(center=(self.window_width // 2, 
-                                          self.window_height // 2 - icon.get_height() // 4))
-        
         # Render title
         title_rect = self.title.get_rect(center=(self.window_width // 2,
-                                                  self.window_height // 2 + icon.get_height() // 2 + 50))
+                                                  self.window_height // 2))
         
         # Pre-render game frame for smooth transition
         game_frame = None
@@ -327,7 +362,6 @@ class SplashScreen:
                     return
             
             self._draw_background(self.screen)
-            self.screen.blit(icon, icon_rect)
             self.screen.blit(self.title, title_rect)
             
             pygame.display.flip()

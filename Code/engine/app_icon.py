@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Sequence
 
 import pygame
 
@@ -71,6 +71,51 @@ def render_splash_background_surface(
     darkness = pygame.Surface(result.get_size(), pygame.SRCALPHA)
     darkness.fill((2, 3, 6, 206))
     result.blit(darkness, (0, 0))
+    return result
+
+
+def render_ancient_city_background_surface(
+    textures: Sequence[Optional[pygame.Surface]],
+    size=(1200, 800),
+    cube_width: int = 64,
+) -> pygame.Surface:
+    """Render a deterministic Ancient City mosaic with sculk-lit accents."""
+    width, height = size
+    cube_width = max(32, int(cube_width))
+    usable = [texture for texture in textures if texture is not None]
+    if not usable:
+        return render_splash_background_surface(None, size, cube_width)
+    cubes = [_render_cube(texture, cube_width, 0.5) for texture in usable]
+    row_step = cube_width * 3 // 4
+    result = pygame.Surface((width, height))
+    result.fill((4, 7, 10))
+    rows = height // row_step + 4
+    columns = width // cube_width + 4
+    # The first textures are the quieter deepslate base. Later sculk and
+    # reinforced variants occur as deliberate, irregular points of interest.
+    pattern = (0, 1, 0, 2, 0, 3, 1, 0, 4, 0, 2, 5, 0, 1, 3, 0)
+    for row in range(-2, rows):
+        offset_x = (row & 1) * (cube_width // 2)
+        for column in range(-2, columns):
+            selector = pattern[(column * 5 + row * 7) % len(pattern)] % len(cubes)
+            result.blit(cubes[selector], (column * cube_width + offset_x, row * row_step))
+    darkness = pygame.Surface(result.get_size(), pygame.SRCALPHA)
+    darkness.fill((1, 3, 7, 158))
+    result.blit(darkness, (0, 0))
+    # A restrained central cyan-violet haze ties the sculk field to the title
+    # without flattening the individual block textures.
+    glow = pygame.Surface(result.get_size(), pygame.SRCALPHA)
+    pygame.draw.ellipse(
+        glow,
+        (30, 92, 105, 34),
+        (width // 8, height // 6, width * 3 // 4, height * 2 // 3),
+    )
+    pygame.draw.ellipse(
+        glow,
+        (88, 35, 118, 24),
+        (width // 5, height // 4, width * 3 // 5, height // 2),
+    )
+    result.blit(glow, (0, 0))
     return result
 
 

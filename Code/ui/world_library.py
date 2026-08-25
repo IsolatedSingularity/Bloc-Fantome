@@ -40,6 +40,11 @@ class WorldLibraryModal:
         self.visible = False
         self.pending = None
 
+    def _play_click(self) -> None:
+        play = getattr(self.assets, "playClickSound", None)
+        if callable(play):
+            play()
+
     def _visible_entries(self):
         return [entry for entry in self.entries if entry.category == self.category]
 
@@ -57,16 +62,20 @@ class WorldLibraryModal:
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
             return ("handled", None)
         if self._close_rect.collidepoint(event.pos):
+            self._play_click()
             self.close()
             return ("close", None)
         if self._import_rect.collidepoint(event.pos):
+            self._play_click()
             return ("import", None)
         if self.pending and self._confirm_rect.collidepoint(event.pos):
+            self._play_click()
             entry = self.pending
             self.close()
             return ("open", entry)
         for category, rect in self._tab_rects.items():
             if rect.collidepoint(event.pos):
+                self._play_click()
                 self.category = category
                 self.pending = None
                 self.scroll = 0
@@ -74,6 +83,7 @@ class WorldLibraryModal:
         if self._list_rect.collidepoint(event.pos):
             for rect, entry in self._entry_rects:
                 if rect.collidepoint(event.pos):
+                    self._play_click()
                     self.pending = entry
                     return ("handled", None)
         return ("handled", None)
