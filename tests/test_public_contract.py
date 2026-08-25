@@ -85,8 +85,8 @@ def test_structure_tutorial_and_weather_summary_contract():
         (step.get("title"), step.get("demo"), step.get("icon"))
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
-    assert len(structures) == 39
-    assert _digest(structures) == "80e96c35bacfa7a84bfdc1077bc694702469aa3ceb6c933c528f8133221e6e5f"
+    assert len(structures) == 40
+    assert _digest(structures) == "80c2612d4a7342e0c76e2361bd467632ed5c2755d8756228676e485205fbe8d1"
     assert len(tutorial) == 17
     assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
     assert _digest(blocFantome.DIMENSION_WEATHER) == "ba1a097351944d2a2aa27be50da2a101866f25f4b52f952fb757e0beb3f5da65"

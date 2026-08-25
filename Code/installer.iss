@@ -74,6 +74,7 @@ Source: "..\Assets\Texture Hub\*"; DestDir: "{app}\Assets\Texture Hub"; Flags: i
 Source: "..\Assets\Sound Hub\*"; DestDir: "{app}\Assets\Sound Hub"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Icons\*"; DestDir: "{app}\Assets\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Fonts\*"; DestDir: "{app}\Assets\Fonts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Assets\Skyboxes\*"; DestDir: "{app}\Assets\Skyboxes"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\References\Titles\horror.png"; DestDir: "{app}\References\Titles"; Flags: ignoreversion
 
 ; Optional: Extensive Library (comment out if not needed - saves space)

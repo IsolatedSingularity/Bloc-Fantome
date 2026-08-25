@@ -167,6 +167,7 @@ from runtime_paths import (
     MUSIC_DIR_END,
     MUSIC_DIR_NETHER,
     SAVES_DIR,
+    SKYBOXES_DIR,
     SOUNDS_DIR,
     TEXTURES_DIR,
     WORLDS_DIR,
@@ -2673,37 +2674,49 @@ STRUCTURE_HORROR_MONOLITH = {
 }
 
 STRUCTURE_PISTON_DOOR = {
-    "name": "2x2 Piston Door",
+    "name": "2x2 Exposed Piston Door",
     "blocks": [
         # Compact 6x4 stone foundation and a raised wiring shelf.
         *[(x, y, 0, BlockType.STONE_BRICKS) for x in range(6) for y in range(4)],
-        *[(x, 1, 1, BlockType.STONE_BRICKS) for x in range(6)],
-        # Four visible sticky pistons, already extended so the door starts closed.
+        # The lever-powered bus closes the door naturally on the first game tick.
         *[(0, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.EAST, pistonExtended=True, sticky=True))
+           BlockProperties(facing=Facing.EAST, sticky=True))
           for z in (1, 2)],
         *[(5, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.WEST, pistonExtended=True, sticky=True))
+           BlockProperties(facing=Facing.WEST, sticky=True))
           for z in (1, 2)],
-        *[(1, 2, z, BlockType.PISTON_HEAD,
-           BlockProperties(facing=Facing.EAST, pistonExtended=True, sticky=True))
-          for z in (1, 2)],
-        *[(4, 2, z, BlockType.PISTON_HEAD,
-           BlockProperties(facing=Facing.WEST, pistonExtended=True, sticky=True))
-          for z in (1, 2)],
-        # The two sticky halves pull these four door blocks outward when opened.
-        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (2, 3) for z in (1, 2)],
-        # Lever interrupts the compact dust bus and powers both directions.
+        # The two sticky halves push inward and pull back into their exposed bays.
+        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (1, 4) for z in (1, 2)],
         (5, 1, 2, BlockType.LEVER,
          BlockProperties(facing=Facing.SOUTH, powered=True, redstonePower=15)),
-        *[(x, 1, 2, BlockType.REDSTONE_DUST,
-           BlockProperties(powered=True, redstonePower=max(10, 10 + x)))
-          for x in range(5)],
+        *[(x, 1, z, BlockType.REDSTONE_DUST) for x in range(5) for z in (1, 2)],
+        (5, 1, 1, BlockType.REDSTONE_DUST),
+    ],
+}
+
+STRUCTURE_FLUSH_PISTON_DOOR = {
+    "name": "2x2 Flush Piston Door",
+    "blocks": [
+        *[(x, y, 0, BlockType.STONE_BRICKS) for x in range(6) for y in range(5)],
+        *[(0, 2, z, BlockType.STICKY_PISTON,
+           BlockProperties(facing=Facing.EAST, sticky=True)) for z in (1, 2)],
+        *[(5, 2, z, BlockType.STICKY_PISTON,
+           BlockProperties(facing=Facing.WEST, sticky=True)) for z in (1, 2)],
+        # Matching stone halves park in the jambs, making the closed face seamless.
+        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (1, 4) for z in (1, 2)],
+        *[(x, 2, 3, BlockType.STONE_BRICKS) for x in range(6)],
+        *[(x, y, z, BlockType.STONE_BRICKS)
+          for x in (0, 5) for y in (3, 4) for z in (1, 2)],
+        (5, 1, 2, BlockType.LEVER,
+         BlockProperties(facing=Facing.SOUTH, powered=True, redstonePower=15)),
+        *[(x, 1, z, BlockType.REDSTONE_DUST) for x in range(5) for z in (1, 2)],
+        (5, 1, 1, BlockType.REDSTONE_DUST),
     ],
 }
 
 PREMADE_STRUCTURES = {
     "piston_door": STRUCTURE_PISTON_DOOR,
+    "flush_piston_door": STRUCTURE_FLUSH_PISTON_DOOR,
     "house": STRUCTURE_HOUSE,
     "tree": STRUCTURE_TREE,
     "villager_house": STRUCTURE_VILLAGER_HOUSE,
@@ -3797,6 +3810,12 @@ class AssetManager:
         self.lavaFrames: List[pygame.Surface] = []
         self.currentWaterFrame = 0
         self.currentLavaFrame = 0
+        self.currentWaterVisualFrame = 0
+        self.currentLavaVisualFrame = 0
+        self.liquidAnimationElapsed = 0.0
+        self.liquidAnimationTextureCache: Dict[Tuple[bool, int], pygame.Surface] = {}
+        self.liquidAnimationSpriteCache: Dict[Tuple[bool, int, int], pygame.Surface] = {}
+        self.animationRevision = 0
         self.animationTimer = 0
         self.animationSpeed = 50  # milliseconds per frame
         
@@ -4152,34 +4171,74 @@ class AssetManager:
                 f"chest_{baseName}_body_front.png"
             )
     
+    def _liquidAnimationTexture(self, isWater: bool, visualFrame: int) -> pygame.Surface:
+        """Return one bounded 60 FPS interpolation frame for water or lava."""
+        frames = self.waterFrames if isWater else self.lavaFrames
+        steps = 3 if isWater else 6  # 50 ms water and 100 ms lava source timing.
+        visualCount = max(1, len(frames) * steps)
+        visualFrame %= visualCount
+        key = (isWater, visualFrame)
+        cached = self.liquidAnimationTextureCache.get(key)
+        if cached is not None:
+            return cached
+        sourceIndex, subframe = divmod(visualFrame, steps)
+        first = frames[sourceIndex % len(frames)]
+        if subframe == 0:
+            texture = first
+        else:
+            texture = first.copy()
+            second = frames[(sourceIndex + 1) % len(frames)].copy()
+            second.set_alpha(round(255 * subframe / steps))
+            texture.blit(second, (0, 0))
+        self.liquidAnimationTextureCache[key] = texture
+        return texture
+
+    def _liquidAnimationSprite(
+        self, isWater: bool, level: int, visualFrame: int
+    ) -> pygame.Surface:
+        key = (isWater, max(1, min(8, int(level))), int(visualFrame))
+        cached = self.liquidAnimationSpriteCache.get(key)
+        if cached is not None:
+            return cached
+        texture = self._liquidAnimationTexture(isWater, visualFrame)
+        sprite = self._createLiquidBlock(
+            texture, texture, texture, isWater=isWater, level=key[1]
+        )
+        self.liquidAnimationSpriteCache[key] = sprite
+        return sprite
+
+    def _updateLiquidAnimation60(self, dt: int) -> None:
+        """Advance both liquids at display cadence while preserving source speed."""
+        if not self.waterFrames and not self.lavaFrames:
+            return
+        # Both bundled cycles are 1.6 seconds: 32*50 ms and 16*100 ms.
+        self.liquidAnimationElapsed = (
+            self.liquidAnimationElapsed + max(0, int(dt))
+        ) % 1600.0
+        visualFrame = int(self.liquidAnimationElapsed * 60.0 / 1000.0) % 96
+        changed = False
+        if self.waterFrames and visualFrame != self.currentWaterVisualFrame:
+            self.currentWaterVisualFrame = visualFrame
+            self.currentWaterFrame = visualFrame // 3
+            self.blockSprites[BlockType.WATER] = self._liquidAnimationSprite(
+                True, 8, visualFrame
+            )
+            self._updateAnimatedIcon(BlockType.WATER)
+            changed = True
+        if self.lavaFrames and visualFrame != self.currentLavaVisualFrame:
+            self.currentLavaVisualFrame = visualFrame
+            self.currentLavaFrame = visualFrame // 6
+            self.blockSprites[BlockType.LAVA] = self._liquidAnimationSprite(
+                False, 8, visualFrame
+            )
+            self._updateAnimatedIcon(BlockType.LAVA)
+            changed = True
+        if changed:
+            self.animationRevision += 1
+
     def updateAnimation(self, dt: int):
-        """Update liquid animation frames based on elapsed time"""
-        self.animationTimer += dt
-        
-        if self.animationTimer >= self.animationSpeed:
-            self.animationTimer = 0
-            
-            # Advance water frame
-            if self.waterFrames:
-                self.currentWaterFrame = (self.currentWaterFrame + 1) % len(self.waterFrames)
-                # Recreate water sprite with new frame (level 8 = source)
-                frame = self.waterFrames[self.currentWaterFrame]
-                self.blockSprites[BlockType.WATER] = self._createLiquidBlock(
-                    frame, frame, frame, isWater=True, level=8
-                )
-                # Also update icon sprite for animated panel
-                self._updateAnimatedIcon(BlockType.WATER)
-            
-            # Advance lava frame (slower than water)
-            if self.lavaFrames and self.currentWaterFrame % 2 == 0:
-                self.currentLavaFrame = (self.currentLavaFrame + 1) % len(self.lavaFrames)
-                # Recreate lava sprite with new frame
-                frame = self.lavaFrames[self.currentLavaFrame]
-                self.blockSprites[BlockType.LAVA] = self._createLiquidBlock(
-                    frame, frame, frame, isWater=False, level=8
-                )
-                # Also update icon sprite for animated panel
-                self._updateAnimatedIcon(BlockType.LAVA)
+        """Update time-based visual animation state."""
+        self._updateLiquidAnimation60(dt)
         
         # Update portal animation (separate timer for slower animation)
         self.portalAnimationTimer += dt
@@ -6298,11 +6357,13 @@ class AssetManager:
     def createLiquidAtLevel(self, isWater: bool, level: int) -> pygame.Surface:
         """Create a liquid block at a specific level (1-8)"""
         if isWater and self.waterFrames:
-            frame = self.waterFrames[self.currentWaterFrame]
-            return self._createLiquidBlock(frame, frame, frame, isWater=True, level=level)
+            return self._liquidAnimationSprite(
+                True, level, self.currentWaterVisualFrame
+            )
         elif not isWater and self.lavaFrames:
-            frame = self.lavaFrames[self.currentLavaFrame]
-            return self._createLiquidBlock(frame, frame, frame, isWater=False, level=level)
+            return self._liquidAnimationSprite(
+                False, level, self.currentLavaVisualFrame
+            )
         else:
             return self._createLiquidBlock(None, None, None, isWater=isWater, level=level)
     
@@ -7763,7 +7824,8 @@ class AssetManager:
     def getDetailSprite(self, blockType: BlockType, facing: Facing,
                         isOpen: bool, half: SlabPosition, *, powered: bool = False,
                         power: int = 0, delay: int = 1,
-                        connections: int = 0) -> Optional[pygame.Surface]:
+                        connections: int = 0,
+                        sticky: bool = False) -> Optional[pygame.Surface]:
         """Return a cached structure-detail model variant."""
         definition = BLOCK_DEFINITIONS.get(blockType)
         if not definition or not definition.modelKind:
@@ -7778,11 +7840,17 @@ class AssetManager:
             max(0, min(15, int(power))) if stateful else 0,
             max(1, min(4, int(delay))) if definition.modelKind == "repeater" else 1,
             int(connections) if definition.modelKind == "redstone_dust" else 0,
+            bool(sticky) if definition.modelKind == "piston_head" else False,
         )
         if key not in self.detailSprites:
             textures = self.specialBlockTextures.get(blockType)
             if not textures:
                 return self.blockSprites.get(blockType)
+            if definition.modelKind == "piston_head" and sticky:
+                textures = (
+                    self.textures.get("piston_top_sticky.png", textures[0]),
+                    textures[1], textures[2],
+                )
             if definition.modelKind == "redstone_torch":
                 texture = self.textures.get(
                     "redstone_torch.png" if powered else "redstone_torch_off.png",
@@ -7795,12 +7863,7 @@ class AssetManager:
                 )
                 textures = (texture, texture, texture)
             elif definition.modelKind == "redstone_dust":
-                texture = self.textures.get(
-                    "redstone_dust_line0.png" if connections else "redstone_dust_dot.png",
-                    textures[0],
-                )
-                tint = (255, 46 + max(0, min(15, int(power))) * 10, 32) if powered else (90, 12, 10)
-                texture = self._tintTexture(texture, tint)
+                texture = self._redstoneDustTexture(connections, power, powered)
                 textures = (texture, texture, texture)
             if definition.modelKind == "ladder":
                 sprite = self.blockModelRenderer.render_ladder(textures[0], facing)
@@ -7810,13 +7873,64 @@ class AssetManager:
                 sprite = self.blockModelRenderer.render_lantern(
                     textures[0], hanging=bool(isOpen)
                 )
+            elif definition.modelKind == "piston":
+                sprite = self.blockModelRenderer.render_piston(
+                    *textures, facing, bool(isOpen)
+                )
+            elif definition.modelKind == "piston_head":
+                sprite = self.blockModelRenderer.render_piston_head(*textures, facing)
             else:
                 boxes = self.blockModelRenderer.detail_boxes(
                     definition.modelKind, facing, bool(isOpen), half
                 )
                 sprite = self.blockModelRenderer.render_boxes(boxes, *textures)
+            if powered and definition.modelKind in {
+                "redstone_dust", "redstone_torch", "repeater", "lever"
+            }:
+                sprite = self._withRedstoneGlow(sprite, definition.modelKind)
             self.detailSprites[key] = sprite
         return self.detailSprites[key]
+
+    def _redstoneDustTexture(self, mask: int, power: int,
+                             powered: bool) -> pygame.Surface:
+        """Compose a directional N/E/S/W dust texture from vanilla segments."""
+        dot = self.textures.get("redstone_dust_dot.png")
+        vertical = self.textures.get("redstone_dust_line0.png")
+        horizontal = self.textures.get("redstone_dust_line1.png")
+        if dot is None or vertical is None or horizontal is None:
+            return dot or vertical or horizontal
+        texture = pygame.Surface(dot.get_size(), pygame.SRCALPHA)
+        texture.blit(dot, (0, 0))
+        width, height = texture.get_size()
+        mid_x, mid_y = width // 2, height // 2
+        mask = max(0, min(15, int(mask)))
+        if mask & 0b0001:  # north
+            texture.blit(vertical, (0, 0), pygame.Rect(0, 0, width, mid_y + 1))
+        if mask & 0b0010:  # east
+            texture.blit(horizontal, (mid_x, 0), pygame.Rect(mid_x, 0, width - mid_x, height))
+        if mask & 0b0100:  # south
+            texture.blit(vertical, (0, mid_y), pygame.Rect(0, mid_y, width, height - mid_y))
+        if mask & 0b1000:  # west
+            texture.blit(horizontal, (0, 0), pygame.Rect(0, 0, mid_x + 1, height))
+        level = max(0, min(15, int(power)))
+        tint = (255, 16 + level * 3, 12) if powered else (90, 12, 10)
+        return self._tintTexture(texture, tint)
+
+    @staticmethod
+    def _withRedstoneGlow(sprite: pygame.Surface, kind: str) -> pygame.Surface:
+        """Add a cached, restrained emissive halo behind active circuitry."""
+        glowing = pygame.Surface(sprite.get_size(), pygame.SRCALPHA)
+        width, height = sprite.get_size()
+        if kind == "redstone_dust":
+            rect = pygame.Rect(width * 0.30, height * 0.27, width * 0.40, height * 0.18)
+            alpha = 28
+        else:
+            rect = pygame.Rect(width * 0.32, height * 0.18, width * 0.36, height * 0.50)
+            alpha = 30
+        pygame.draw.ellipse(glowing, (255, 40, 18, alpha), rect)
+        pygame.draw.ellipse(glowing, (255, 112, 35, alpha // 2), rect.inflate(-6, -6))
+        glowing.blit(sprite, (0, 0))
+        return glowing
 
     def getBlockSprite(self, blockType: BlockType) -> Optional[pygame.Surface]:
         """Get the isometric sprite for a block type"""
@@ -8659,6 +8773,8 @@ class BlocFantome:
             centerY,
             ProjectionMetrics(TILE_WIDTH, TILE_HEIGHT, BLOCK_HEIGHT),
         )
+        # Enables the existing positional falloff path for redstone and block sounds.
+        self.assetManager.renderer = self.renderer
         from engine.performance import PerformanceMonitor
         self.performanceMonitor = PerformanceMonitor(window_size=120)
         self.renderDistanceChunks = 4
@@ -8876,6 +8992,11 @@ class BlocFantome:
         
         # Current dimension (affects background, floor, and music)
         self.currentDimension = DIMENSION_OVERWORLD
+        from engine.skybox import SkyboxRenderer
+        self.skyboxesEnabled = False
+        self.skyboxRenderer = SkyboxRenderer(
+            SKYBOXES_DIR, (WINDOW_WIDTH, WINDOW_HEIGHT)
+        )
         
         # Sub-category expanded state (within Blocks section)
         self.expandedCategories: Dict[str, bool] = {}
@@ -8885,6 +9006,10 @@ class BlocFantome:
         
         # Tutorial system
         self.tutorialScreen = TutorialScreen(WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.tutorialScreen.onStepChange = self._onTutorialStepChange
+        self.tutorialScreen.onTutorialEnd = self._onTutorialEnd
+        self.tutorialAdvancedMode = False
+        self._tutorialSessionSnapshot = None
         
         # Experimental lighting system
         self.lightingEnabled = False
@@ -9453,6 +9578,7 @@ class BlocFantome:
                     self.worldCenteredRotation = config.get(
                         "worldCenteredRotation", False
                     )
+                    self.skyboxesEnabled = config.get("skyboxesEnabled", False)
                     
                     # Restore favorites (by block name)
                     savedFavorites = config.get("favoriteBlocks", [])
@@ -9493,6 +9619,7 @@ class BlocFantome:
                 "lightingEnabled": self.lightingEnabled,
                 "showBlockTooltip": self.showBlockTooltip,
                 "worldCenteredRotation": self.worldCenteredRotation,
+                "skyboxesEnabled": self.skyboxesEnabled,
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
                 "hotbar": [b.name for b in self.hotbar],
                 "searchHistory": self.searchHistory,
@@ -9595,7 +9722,7 @@ class BlocFantome:
         
         # Show tutorial on startup if enabled
         if self.tutorialScreen.shouldShowOnStartup():
-            self.tutorialScreen.show()
+            self._beginTutorial(advanced=False)
         
         print("\n=== Bloc Fantôme Started ===")
         print("Controls:")
@@ -9956,11 +10083,13 @@ class BlocFantome:
 
         centerX = (width - 1) / 2.0
         centerY = (depth - 1) / 2.0
+        radiusX = max(7.2, width * 0.43)
+        radiusY = max(6.7, depth * 0.40)
         with self.world.bulkUpdate():
             for x in range(width):
                 for y in range(depth):
-                    dx = (x - centerX) / 7.2
-                    dy = (y - centerY) / 6.7
+                    dx = (x - centerX) / radiusX
+                    dy = (y - centerY) / radiusY
                     edgeNoise = (((x * 37 + y * 19) % 11) - 5) * 0.018
                     distance = dx * dx + dy * dy + edgeNoise
                     if distance > 1.0:
@@ -10030,7 +10159,122 @@ class BlocFantome:
         
         dimensionName = newDimension.capitalize()
         print(f"Switched to {dimensionName} dimension")
-    
+
+    def _captureTutorialSession(self) -> None:
+        """Capture the live build and editor state before a tutorial mutates it."""
+        if self._tutorialSessionSnapshot is not None:
+            return
+        from engine.world_snapshot import WorldSnapshot
+
+        snapshot = WorldSnapshot(
+            width=self.world.width,
+            depth=self.world.depth,
+            height=self.world.height,
+            min_y=self.world.min_y,
+            dimension=self.currentDimension,
+            blocks=dict(self.world.blocks),
+            properties={
+                pos: props.copy() for pos, props in self.world.blockProperties.items()
+            },
+            liquid_levels=dict(self.world.liquidLevels),
+            liquid_sources=frozenset(self.world.liquidSources),
+            liquid_falling=frozenset(self.world.liquidFalling),
+            scene_metadata=dict(self.sceneMetadata),
+            structure_positions=frozenset(self.sceneStructurePositions),
+            exterior_glass_positions=frozenset(self.sceneExteriorGlassPositions),
+        )
+        self._tutorialSessionSnapshot = {
+            "world": snapshot,
+            "sceneTerrainMode": self.sceneTerrainMode,
+            "hotbar": list(self.hotbar),
+            "selectedBlock": self.selectedBlock,
+            "currentBuildPath": self.currentBuildPath,
+            "undo": list(self.undoManager.undo_stack),
+            "redo": list(self.undoManager.redo_stack),
+            "zoom": self.zoomLevel,
+            "cameraFocusZ": self.cameraFocusZ,
+            "currentViewLayer": self.currentViewLayer,
+            "currentBuildHeight": self.currentBuildHeight,
+            "renderer": (
+                self.renderer.offsetX, self.renderer.offsetY,
+                self.renderer.viewRotation,
+            ),
+            "toggles": {
+                name: getattr(self, name)
+                for name in (
+                    "rainEnabled", "snowEnabled", "horrorRainEnabled",
+                    "lightingEnabled", "celestialEnabled", "cloudsEnabled",
+                    "skyboxesEnabled",
+                ) if hasattr(self, name)
+            },
+            "celestialAngle": self.celestialAngle,
+            "moonPhase": self.moonPhase,
+        }
+
+    def _beginTutorial(self, *, advanced: bool) -> None:
+        """Start a non-destructive basic or expanded 32 x 32 tutorial session."""
+        self._captureTutorialSession()
+        self.tutorialAdvancedMode = bool(advanced)
+        self.tutorialScreen.show()
+        if advanced:
+            self.tooltipText = "Advanced Tutorial: expanded 32 x 32 showcases"
+            self.tooltipTimer = 2400
+
+    def _restoreTutorialSession(self) -> bool:
+        state = self._tutorialSessionSnapshot
+        if state is None:
+            return False
+        self._tutorialSessionSnapshot = None
+        snapshot = state["world"]
+
+        self.musicController.unpause()
+        if self.rainEnabled:
+            self._stopRain()
+        if self.snowEnabled:
+            self._stopSnow()
+        if self.horrorRainEnabled:
+            self._stopHorrorRain()
+
+        self.world.replace(snapshot)
+        self.currentDimension = snapshot.dimension
+        self.world.setDimension(snapshot.dimension)
+        self.assetManager._createBackground(snapshot.dimension)
+        self.sceneMetadata = dict(snapshot.scene_metadata)
+        self.sceneStructurePositions = self.world.sceneStructurePositions
+        self.sceneExteriorGlassPositions = set(snapshot.exterior_glass_positions)
+        self.sceneStructureBounds = self.world.sceneStructureBounds
+        self.sceneTerrainMode = state["sceneTerrainMode"]
+        self.hotbar = list(state["hotbar"])
+        self.selectedBlock = state["selectedBlock"]
+        self.currentBuildPath = state["currentBuildPath"]
+        self.undoManager.undo_stack[:] = state["undo"]
+        self.undoManager.redo_stack[:] = state["redo"]
+        self.zoomLevel = state["zoom"]
+        self.cameraFocusZ = state["cameraFocusZ"]
+        self.currentViewLayer = state["currentViewLayer"]
+        self.currentBuildHeight = state["currentBuildHeight"]
+        self.renderer.offsetX, self.renderer.offsetY, self.renderer.viewRotation = state["renderer"]
+        for name, enabled in state["toggles"].items():
+            setattr(self, name, enabled)
+        self.celestialAngle = state["celestialAngle"]
+        self.moonPhase = state["moonPhase"]
+        if self.rainEnabled:
+            self._startRain()
+        if self.snowEnabled:
+            self._startSnow()
+        if self.horrorRainEnabled:
+            self._startHorrorRain()
+        self.tutorialAdvancedMode = False
+        self.redstone.active_motions.clear()
+        self.redstone.mark_dirty()
+        self._visibleOrderCaches.clear()
+        self._worldSurfaceCache = None
+        self._worldSurfaceCacheKey = None
+        self.lightingDirty = True
+        self._playMenuMusic(snapshot.dimension)
+        print("Tutorial ended - restored the previous build")
+        return True
+
     def _onTutorialStepChange(self, stepIndex: int) -> None:
         """Handle tutorial step change - load demo structure for the step"""
         if stepIndex < 0 or stepIndex >= len(TutorialScreen.TUTORIAL_STEPS):
@@ -10062,6 +10306,9 @@ class BlocFantome:
                     preferredMusic=self.tutorialMusicPaths.get(requiredDimension),
                 )
                 print(f"Tutorial: Switched to {requiredDimension} dimension")
+            if self.tutorialAdvancedMode:
+                self.world.resize(32, 32, max(32, self.world.height), min_y=0, preserve=False)
+                self.world.setDimension(requiredDimension)
         
         # ===== Reset modes when switching panels =====
         self._cancelMagicWandMode()
@@ -10259,6 +10506,22 @@ class BlocFantome:
                     # Fallback to empty world
                     self.world.clear()
                     self._createInitialFloor()
+                elif self.tutorialAdvancedMode:
+                    old_width, old_depth = self.world.width, self.world.depth
+                    target = (32, 32, max(32, self.world.height))
+                    offset_x = (target[0] - old_width) // 2
+                    offset_y = (target[1] - old_depth) // 2
+                    snapshot, exterior = self._centeredWorldSnapshot(
+                        target, offset_x, offset_y
+                    )
+                    self.world.replace(snapshot)
+                    self.sceneStructurePositions = self.world.sceneStructurePositions
+                    self.sceneExteriorGlassPositions = exterior
+                    self.sceneStructureBounds = self.world.sceneStructureBounds
+                    if self.currentDimension == DIMENSION_END:
+                        self._addTutorialEndIsland()
+                    else:
+                        self._createInitialFloor(self.currentDimension)
             except Exception as e:
                 print(f"Tutorial: Could not load save '{saveName}': {e}")
                 self.world.clear()
@@ -10276,10 +10539,13 @@ class BlocFantome:
                 minY = min(b[1] for b in structure["blocks"])
                 maxY = max(b[1] for b in structure["blocks"])
                 minZ = min(b[2] for b in structure["blocks"])
-                
-                # Center at grid center (around middle of grid)
-                centerX = self.world.width // 2 - (maxX + minX) // 2
-                centerY = self.world.depth // 2 - (maxY + minY) // 2
+                spanX, spanY = maxX - minX + 1, maxY - minY + 1
+                scale = (
+                    2 if self.tutorialAdvancedMode and max(spanX, spanY) <= 14 else 1
+                )
+                scaledWidth, scaledDepth = spanX * scale, spanY * scale
+                originX = (self.world.width - scaledWidth) // 2
+                originY = (self.world.depth - scaledDepth) // 2
                 
                 # Only for Structures Library panel (empty_platform): don't create floor since it has its own
                 # All other panels: create floor and place structure on top
@@ -10293,13 +10559,17 @@ class BlocFantome:
                 
                 for block in structure["blocks"]:
                     x, y, z, blockType, properties = _structureBlockParts(block)
-                    placeX = x + centerX
-                    placeY = y + centerY
-                    placeZ = z + centerZ
-                    if self.world.isInBounds(placeX, placeY, placeZ):
-                        self.world.setBlock(placeX, placeY, placeZ, blockType)
-                        if properties is not None:
-                            self.world.setBlockProperties(placeX, placeY, placeZ, properties.copy())
+                    for scaleX in range(scale):
+                        for scaleY in range(scale):
+                            placeX = originX + (x - minX) * scale + scaleX
+                            placeY = originY + (y - minY) * scale + scaleY
+                            placeZ = z + centerZ
+                            if self.world.isInBounds(placeX, placeY, placeZ):
+                                self.world.setBlock(placeX, placeY, placeZ, blockType)
+                                if properties is not None:
+                                    self.world.setBlockProperties(
+                                        placeX, placeY, placeZ, properties.copy()
+                                    )
                 
                 print(f"Tutorial step {stepIndex + 1}: Loaded '{demo}' structure")
                 
@@ -10312,11 +10582,11 @@ class BlocFantome:
                     # Place "mistake" blocks through the undo system at visible locations
                     # These will appear on the structure and user can undo them
                     mistakeBlocks = [
-                        (centerX + 4, centerY + 4, centerZ + 1, BlockType.DIRT),
-                        (centerX + 6, centerY + 3, centerZ + 1, BlockType.COBBLESTONE),
-                        (centerX + 3, centerY + 6, centerZ + 2, BlockType.GRAVEL),
-                        (centerX + 5, centerY + 5, centerZ + 2, BlockType.SAND),
-                        (centerX + 7, centerY + 4, centerZ + 1, BlockType.NETHERRACK),
+                        (originX + 4 * scale, originY + 4 * scale, centerZ + 1, BlockType.DIRT),
+                        (originX + 6 * scale, originY + 3 * scale, centerZ + 1, BlockType.COBBLESTONE),
+                        (originX + 3 * scale, originY + 6 * scale, centerZ + 2, BlockType.GRAVEL),
+                        (originX + 5 * scale, originY + 5 * scale, centerZ + 2, BlockType.SAND),
+                        (originX + 7 * scale, originY + 4 * scale, centerZ + 1, BlockType.NETHERRACK),
                     ]
                     
                     for mx, my, mz, mBlockType in mistakeBlocks:
@@ -10340,7 +10610,11 @@ class BlocFantome:
             print("Tutorial: Paused music for horror effect")
     
     def _onTutorialEnd(self) -> None:
-        """Handle tutorial ending - return to overworld and resume music"""
+        """Handle tutorial ending without discarding the user's live build."""
+        if self._restoreTutorialSession():
+            return
+
+        # Compatibility path for direct test/dev invocation without a session.
         # Switch back to overworld dimension
         if self.currentDimension != DIMENSION_OVERWORLD:
             self._switchDimension(DIMENSION_OVERWORLD)
@@ -11142,7 +11416,7 @@ class BlocFantome:
             self.stampData.clear()
             self.stampOrigin = None
         elif command is InputCommand.CLOSE_TUTORIAL:
-            self.tutorialScreen.visible = False
+            self.tutorialScreen.hide()
         elif command is InputCommand.QUIT:
             self.running = False
         elif command is InputCommand.CLOSE_MODAL:
@@ -11155,7 +11429,7 @@ class BlocFantome:
         """Handle click on the inventory panel with three main dropdown buttons"""
         if self.tutorialTomeRect.collidepoint(mouseX, mouseY):
             self.toggleActionPulseUntil["tutorial"] = pygame.time.get_ticks() + 450
-            self.tutorialScreen.show()
+            self._beginTutorial(advanced=True)
             return
         # Check settings gear button first (fixed position at top right)
         if hasattr(self, 'settingsGearRect') and self.settingsGearRect.collidepoint(mouseX, mouseY):
@@ -11272,7 +11546,7 @@ class BlocFantome:
             # Check Show Tutorial button
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
                 self.toggleActionPulseUntil["tutorial"] = pygame.time.get_ticks() + 450
-                self.tutorialScreen.show()
+                self._beginTutorial(advanced=False)
                 return
             dimY += 35
             
@@ -11303,6 +11577,12 @@ class BlocFantome:
             # Check Lighting toggle button
             if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
                 self._toggleLighting()
+                return
+            dimY += 35
+
+            # Check optimized rotating skybox toggle.
+            if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+                self._toggleSkyboxes()
                 return
             dimY += 35
             
@@ -11867,23 +12147,9 @@ class BlocFantome:
             }[(dx, dy)]
         return self.previewFacing
 
-    def _redstoneConnectionCount(self, x: int, y: int, z: int) -> int:
-        """Return a compact visual connection count for a dust cell."""
-        if self.world.getBlock(x, y, z) != BlockType.REDSTONE_DUST:
-            return 0
-        connectable = {
-            BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH,
-            BlockType.REDSTONE_WALL_TORCH, BlockType.LEVER,
-            BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
-            BlockType.REDSTONE_LAMP, BlockType.REDSTONE_BLOCK,
-        }
-        count = 0
-        for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
-            for dz in (0, 1, -1):
-                if self.world.getBlock(x + dx, y + dy, z + dz) in connectable:
-                    count += 1
-                    break
-        return count
+    def _redstoneConnectionMask(self, x: int, y: int, z: int) -> int:
+        """Return the simulator's directional N/E/S/W dust connection mask."""
+        return self.redstone.wire_connection_mask((x, y, z))
     
     def _rotateHoveredBlock(self):
         """Rotate the block under the cursor (stairs only - doors use right-click to open/close)"""
@@ -12112,6 +12378,8 @@ class BlocFantome:
                 batch = BatchCommand(commands, f"Place {structure['name']}")
                 self.undoManager.execute(batch)
                 self._normalizeSpecialBlockTopology()
+                self.redstone.mark_dirty()
+                self.redstone.update(0)
                 self.lightingDirty = True
                 # Play appropriate sound for structure type
                 if self.selectedStructure == "end_portal":
@@ -12132,9 +12400,9 @@ class BlocFantome:
     
     def _updateRedstoneParticles(self, dt: int) -> None:
         self.redstoneParticleTimer += dt
-        if self.redstoneParticleTimer >= 120:
-            self.redstoneParticleTimer %= 120
-            powered = list(self.redstone.powered_dust)
+        if self.redstoneParticleTimer >= 100:
+            self.redstoneParticleTimer %= 100
+            powered = list(self.redstone.powered_components)
             random.shuffle(powered)
             for x, y, z in powered[:24]:
                 if random.random() < 0.42:
@@ -12160,6 +12428,51 @@ class BlocFantome:
             pygame.draw.circle(self.screen, (255, 62, 40, alpha), (round(sx), round(sy)), 2)
             pygame.draw.circle(self.screen, (255, 178, 92, alpha), (round(sx), round(sy)), 1)
 
+    def _renderPistonMotions(self) -> None:
+        """Composite committed piston moves at smooth sub-cell positions."""
+        self.redstone.prune_stale_motions()
+        if not self.redstone.active_motions:
+            return
+        view_rotation = self.renderer.viewRotation
+        moving = []
+        for motion in self.redstone.active_motions:
+            progress = motion.progress
+            eased = progress * progress * (3.0 - 2.0 * progress)
+            for cell in motion.cells:
+                x = cell.source[0] + (cell.target[0] - cell.source[0]) * eased
+                y = cell.source[1] + (cell.target[1] - cell.source[1]) * eased
+                z = cell.source[2] + (cell.target[2] - cell.source[2]) * eased
+                moving.append((x + y + z, x, y, z, cell))
+        for _depth, x, y, z, cell in sorted(moving, key=lambda item: item[0]):
+            block_type = cell.block
+            props = cell.props or BlockProperties()
+            definition = BLOCK_DEFINITIONS.get(block_type)
+            if definition and definition.modelKind:
+                facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
+                relative = Facing((facing.value - view_rotation) % 4)
+                sprite = self.assetManager.getDetailSprite(
+                    block_type, relative, props.pistonExtended, props.slabPosition,
+                    powered=props.powered, power=props.redstonePower,
+                    delay=props.repeaterDelay,
+                    sticky=props.sticky,
+                )
+            else:
+                sprite = self.assetManager.getBlockSprite(block_type)
+            if sprite is None:
+                continue
+            if self.lightingEnabled:
+                sprite = self._applyLighting(
+                    sprite, round(x), round(y), round(z), block_type
+                )
+            flipped = view_rotation in (1, 3) and not (
+                definition and (definition.isDoor or definition.isStair)
+            )
+            sprite = self.assetManager.getScaledSprite(
+                sprite, self.zoomLevel, flipped=flipped
+            )
+            screen_x, screen_y = self.renderer.worldToScreen(x, y, z)
+            self.screen.blit(sprite, (screen_x - sprite.get_width() // 2, screen_y))
+
     def _update(self):
         """Update game state"""
         self._pollWorldLoad()
@@ -12167,6 +12480,13 @@ class BlocFantome:
         dt = self.clock.get_time()  # Time since last frame in ms
         self._updatePanelScroll(dt)
         self.assetManager.updateAnimation(dt)
+        if self.skyboxesEnabled:
+            self.skyboxRenderer.update(
+                dt,
+                self.currentDimension,
+                celestial_enabled=self.celestialEnabled,
+                celestial_angle=self.celestialAngle,
+            )
         self._updateSpecialBlocks(dt)
         if self.redstone.update(dt):
             self.lightingDirty = True
@@ -18789,8 +19109,15 @@ class BlocFantome:
 
     def _render(self) -> None:
         """Render the game"""
-        # Draw tiled dirt background
-        self.assetManager.drawBackground(self.screen)
+        # Skyboxes are lazy panoramas with a constant two-blit scrolling path.
+        # Missing local assets fall back to the normal dimension texture.
+        skyboxDrawn = False
+        if self.skyboxesEnabled:
+            skyboxDrawn = self.skyboxRenderer.render(
+                self.screen, self.currentDimension
+            )
+        if not skyboxDrawn:
+            self.assetManager.drawBackground(self.screen)
         
         # Draw clouds (behind celestial bodies, before darkness)
         self._renderClouds()
@@ -18821,6 +19148,9 @@ class BlocFantome:
         
         # Draw grid and blocks
         self._renderWorld()
+
+        # Piston bodies commit atomically, then animate their captured cells at 60 FPS.
+        self._renderPistonMotions()
 
         # Lightweight dimension atmosphere stays outside the block loop.
         self._renderDimensionFog()
@@ -19314,6 +19644,27 @@ class BlocFantome:
         else:
             print("Lighting: OFF")
 
+    def _toggleSkyboxes(self) -> None:
+        """Toggle licensed, automatically swapping dimension panoramas."""
+        self.skyboxesEnabled = not self.skyboxesEnabled
+        if self.skyboxesEnabled:
+            self.skyboxRenderer.update(
+                0,
+                self.currentDimension,
+                celestial_enabled=self.celestialEnabled,
+                celestial_angle=self.celestialAngle,
+            )
+            if not self.skyboxRenderer.available(self.currentDimension):
+                self.skyboxesEnabled = False
+                self.tooltipText = "Skybox assets are unavailable"
+            else:
+                self.tooltipText = (
+                    f"Skybox: {self.skyboxRenderer.active_name(self.currentDimension)}"
+                )
+        else:
+            self.tooltipText = "Skybox disabled"
+        self.tooltipTimer = 1600
+
     def _cameraWorldCenter(self) -> Tuple[int, int]:
         viewportCenterX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
         viewportCenterY = WINDOW_HEIGHT // 2
@@ -19669,8 +20020,8 @@ class BlocFantome:
         animationKey = None
         if visibleAnimated:
             animationKey = (
-                self.assetManager.currentWaterFrame,
-                self.assetManager.currentLavaFrame,
+                self.assetManager.currentWaterVisualFrame,
+                self.assetManager.currentLavaVisualFrame,
                 self.assetManager.currentPortalFrame,
                 self.assetManager.currentFireFrame,
                 self.assetManager.currentMineCrafterFrame,
@@ -19686,7 +20037,10 @@ class BlocFantome:
             self.xrayAlpha if self.xrayEnabled else None,
             animationKey,
         )
-        canCacheSurface = not self.horrorEnabled
+        # Moving piston cells are composited at sub-cell positions every frame.
+        self.redstone.prune_stale_motions()
+        canCacheSurface = not self.horrorEnabled and not self.redstone.active_motions
+        movingTargets = self.redstone.moving_final_targets
         if (
             canCacheSurface
             and self._worldSurfaceCache is not None
@@ -19744,6 +20098,8 @@ class BlocFantome:
 
         # Draw blocks
         for _, x, y, z, blockType in blocksToDraw[startIndex:endIndex]:
+            if (x, y, z) in movingTargets:
+                continue
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
             
             # Horror: Block texture flicker - briefly show wrong texture
@@ -19763,7 +20119,11 @@ class BlocFantome:
             if displayBlockType in (BlockType.WATER, BlockType.LAVA):
                 level = self.world.getLiquidLevel(x, y, z)
                 if level < 8 and level > 0:
-                    frame = self.assetManager.currentWaterFrame if displayBlockType == BlockType.WATER else self.assetManager.currentLavaFrame
+                    frame = (
+                        self.assetManager.currentWaterVisualFrame
+                        if displayBlockType == BlockType.WATER
+                        else self.assetManager.currentLavaVisualFrame
+                    )
                     cacheKey = (displayBlockType, level, frame)
                     sprite = self.liquidLevelSpriteCache.get(cacheKey)
                     if sprite is None:
@@ -19799,11 +20159,17 @@ class BlocFantome:
                     props = props or BlockProperties()
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
                     relativeFacing = Facing((facing.value - viewRot) % 4)
+                    extended = (
+                        props.pistonExtended
+                        if displayBlockType in (BlockType.PISTON, BlockType.STICKY_PISTON)
+                        else props.isOpen
+                    )
                     sprite = self.assetManager.getDetailSprite(
-                        displayBlockType, relativeFacing, props.isOpen, props.slabPosition,
+                        displayBlockType, relativeFacing, extended, props.slabPosition,
                         powered=props.powered, power=props.redstonePower,
                         delay=props.repeaterDelay,
-                        connections=self._redstoneConnectionCount(x, y, z),
+                        connections=self._redstoneConnectionMask(x, y, z),
+                        sticky=props.sticky,
                     )
                 elif blockDef and blockDef.isDoor and props:
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
@@ -20129,10 +20495,10 @@ class BlocFantome:
                     totalHeight += numRows * (slotSize + 4) + 5
             totalHeight += 10
         
-        # Toggles: 3 dimensions, 2 actions, 5 visible toggles, 1 secret toggle.
+        # Toggles: 3 dimensions, 2 actions, 6 visible toggles, 1 secret toggle.
         totalHeight += mainButtonHeight
         if self.experimentalExpanded:
-            totalHeight += 11 * PANEL_SUBMENU_ROW_STRIDE + 7
+            totalHeight += 12 * PANEL_SUBMENU_ROW_STRIDE + 7
 
         # Worlds opens a modal and has no inline content.
         totalHeight += mainButtonHeight
@@ -20476,6 +20842,30 @@ class BlocFantome:
                     effectStyle="lighting" if self.lightingEnabled else None,
                     effectColors=((255, 190, 65, 175), (255, 235, 145, 145)),
                     effectTint=(190, 130, 45),
+                )
+            dimY += 35
+
+            # Cached, slowly rotating sky panorama. The active variant changes
+            # automatically per dimension and with the Overworld day cycle.
+            skyboxBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
+            if dimY + 30 >= startY and dimY <= startY + availableHeight:
+                skyboxHovered = skyboxBtnRect.collidepoint(mouseX, mouseY)
+                skyboxName = self.skyboxRenderer.active_name(self.currentDimension)
+                skyboxLabel = (
+                    f"Skybox: {skyboxName}" if self.skyboxesEnabled
+                    else "Skybox: OFF"
+                )
+                self.assetManager.drawPanelRow(
+                    self.screen,
+                    skyboxBtnRect,
+                    skyboxLabel,
+                    self.smallFont,
+                    hovered=skyboxHovered,
+                    active=self.skyboxesEnabled,
+                    icon=self.assetManager.getPanelPreviewIcon(BlockType.END_PORTAL),
+                    effectStyle="void" if self.skyboxesEnabled else None,
+                    effectColors=((145, 72, 220, 150), (68, 155, 210, 130)),
+                    effectTint=(100, 70, 145),
                 )
             dimY += 35
             

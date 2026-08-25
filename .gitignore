@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -66,9 +66,17 @@ Assets/Texture Hub/blocks/*
 !Assets/Texture Hub/blocks/mine_crafter_*.png
 !Assets/Texture Hub/blocks/mine_crafter_*.png.mcmeta
 
-# Owner-supplied licensed font software and private license records
+# Owner-supplied licensed assets, skyboxes, font software, and private license records
 Assets/Fonts/Zekton/
 zekton.zip
+Assets/Skyboxes/
+*.skybox.zip
+Black Mesa Skyboxes.zip
+Assets/LICENSES_PRIVATE.md
+Assets/**/LICENSE_PRIVATE*
+Assets/**/LICENSE*.txt
+!Assets/Fonts/Agreement.txt
+
 
 # User saves (keep example saves in Code/saves)
 saves/*.json.gz

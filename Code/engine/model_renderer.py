@@ -292,7 +292,14 @@ class BlockModelRenderer:
             }[facing]
             return base, handle
         if kind == "piston":
-            return self.cube_boxes()
+            if not is_open:
+                return self.cube_boxes()
+            return ({
+                Facing.NORTH: (0, 4, 0, 16, 16, 16),
+                Facing.SOUTH: (0, 0, 0, 16, 12, 16),
+                Facing.EAST: (0, 0, 0, 12, 16, 16),
+                Facing.WEST: (4, 0, 0, 16, 16, 16),
+            }[facing],)
         if kind == "piston_head":
             head = {
                 Facing.NORTH: (0, 0, 0, 16, 4, 16),
@@ -300,7 +307,13 @@ class BlockModelRenderer:
                 Facing.EAST: (12, 0, 0, 16, 16, 16),
                 Facing.WEST: (0, 0, 0, 4, 16, 16),
             }[facing]
-            return head, (6, 6, 0, 10, 10, 16)
+            stem = {
+                Facing.NORTH: (6, 4, 6, 10, 16, 10),
+                Facing.SOUTH: (6, 0, 6, 10, 12, 10),
+                Facing.EAST: (0, 6, 6, 12, 10, 10),
+                Facing.WEST: (4, 6, 6, 16, 10, 10),
+            }[facing]
+            return head, stem
         if kind == "candle":
             return ((6, 6, 0, 10, 10, 12),)
         if kind == "bulb":
@@ -391,6 +404,26 @@ class BlockModelRenderer:
         surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
         for box in boxes:
             self._draw_box(surface, box, top, side, front)
+        return surface
+
+    def render_piston(self, cap, side, back, facing: Facing,
+                      extended: bool) -> pygame.Surface:
+        """Render an oriented piston body with the cap on its true front face."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        box = self.detail_boxes("piston", facing, extended)[0]
+        y_face = cap if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
+        x_face = cap if facing == Facing.EAST else back if facing == Facing.WEST else side
+        self._draw_box(surface, box, side, y_face, x_face)
+        return surface
+
+    def render_piston_head(self, cap, side, inner, facing: Facing) -> pygame.Surface:
+        """Render the four-voxel plate and axis-aligned arm without texture shear."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        plate, stem = self.detail_boxes("piston_head", facing)
+        y_face = cap if facing == Facing.SOUTH else inner if facing == Facing.NORTH else side
+        x_face = cap if facing == Facing.EAST else inner if facing == Facing.WEST else side
+        self._draw_box(surface, plate, side, y_face, x_face)
+        self._draw_box(surface, stem, side, side, side)
         return surface
 
     def render_crossed_planes(self, texture, z1: float = 0,

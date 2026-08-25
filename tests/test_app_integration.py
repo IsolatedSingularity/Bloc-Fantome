@@ -568,6 +568,44 @@ class AppIntegrationTests(unittest.TestCase):
             ),
         )
 
+    def test_water_and_lava_interpolate_at_sixty_fps_without_speeding_cycles(self):
+        assets = self.app.assetManager
+        assets.liquidAnimationElapsed = 0.0
+        assets.currentWaterVisualFrame = 0
+        assets.currentLavaVisualFrame = 0
+        assets.currentWaterFrame = 0
+        assets.currentLavaFrame = 0
+        assets.blockSprites[app_module.BlockType.WATER] = assets._liquidAnimationSprite(
+            True, 8, 0
+        )
+        assets.blockSprites[app_module.BlockType.LAVA] = assets._liquidAnimationSprite(
+            False, 8, 0
+        )
+        water_before = pygame.image.tostring(
+            assets.getBlockSprite(app_module.BlockType.WATER), "RGBA"
+        )
+        lava_before = pygame.image.tostring(
+            assets.getBlockSprite(app_module.BlockType.LAVA), "RGBA"
+        )
+        assets.updateAnimation(17)
+        self.assertEqual(assets.currentWaterVisualFrame, 1)
+        self.assertEqual(assets.currentLavaVisualFrame, 1)
+        self.assertEqual(assets.currentWaterFrame, 0)
+        self.assertEqual(assets.currentLavaFrame, 0)
+        self.assertNotEqual(
+            water_before,
+            pygame.image.tostring(assets.getBlockSprite(app_module.BlockType.WATER), "RGBA"),
+        )
+        self.assertNotEqual(
+            lava_before,
+            pygame.image.tostring(assets.getBlockSprite(app_module.BlockType.LAVA), "RGBA"),
+        )
+        assets.updateAnimation(33)
+        self.assertEqual(assets.currentWaterVisualFrame, 3)
+        self.assertEqual(assets.currentWaterFrame, 1)
+        self.assertEqual(assets.currentLavaFrame, 0)
+        self.assertLessEqual(len(assets.liquidAnimationTextureCache), 192)
+
     def test_special_detail_models_use_source_shaped_geometry(self):
         renderer = self.app.assetManager.blockModelRenderer
         self.assertEqual(
@@ -581,6 +619,16 @@ class AppIntegrationTests(unittest.TestCase):
         hangingLantern = renderer.detail_boxes("lantern", is_open=True)
         self.assertEqual(max(box[5] for box in floorLantern), 11)
         self.assertEqual(max(box[5] for box in hangingLantern), 16)
+        self.assertEqual(
+            renderer.detail_boxes(
+                "piston", app_module.Facing.EAST, is_open=True
+            ),
+            ((0, 0, 0, 12, 16, 16),),
+        )
+        eastHead = renderer.detail_boxes("piston_head", app_module.Facing.EAST)
+        northHead = renderer.detail_boxes("piston_head", app_module.Facing.NORTH)
+        self.assertEqual(eastHead[1], (0, 6, 6, 12, 10, 10))
+        self.assertEqual(northHead[1], (6, 4, 6, 10, 16, 10))
         for block in (
             app_module.BlockType.LADDER,
             app_module.BlockType.CHAIN,
@@ -898,7 +946,7 @@ class AppIntegrationTests(unittest.TestCase):
             },
         )
 
-    def test_persistent_tome_restarts_the_full_tutorial(self):
+    def test_persistent_tome_starts_the_advanced_tutorial(self):
         self.app._renderTutorialTomeButton(
             pygame.Rect(app_module.WINDOW_WIDTH - 42, app_module.WINDOW_HEIGHT - 42, 32, 32)
         )
@@ -910,11 +958,51 @@ class AppIntegrationTests(unittest.TestCase):
             tutorial.visible = False
             self.app._handlePanelClick(*self.app.tutorialTomeRect.center)
             self.assertTrue(tutorial.visible)
+            self.assertTrue(self.app.tutorialAdvancedMode)
             self.assertEqual(tutorial.currentStep, 0)
             self.assertEqual(len(tutorial.TUTORIAL_STEPS), 17)
         finally:
-            tutorial.visible = False
             tutorial.onStepChange = old_callback
+            tutorial.hide()
+
+    def test_basic_tutorial_restores_the_existing_build_and_editor_state(self):
+        self.app.world.setBlock(2, 3, 1, app_module.BlockType.DIAMOND_BLOCK)
+        self.app.hotbar[0] = app_module.BlockType.OBSIDIAN
+        self.app.selectedBlock = app_module.BlockType.OBSIDIAN
+        original_blocks = dict(self.app.world.blocks)
+        original_dimensions = (
+            self.app.world.width, self.app.world.depth, self.app.world.height,
+            self.app.world.min_y,
+        )
+
+        self.app._beginTutorial(advanced=False)
+        self.assertTrue(self.app.tutorialScreen.visible)
+        self.assertNotEqual(dict(self.app.world.blocks), original_blocks)
+        self.app.tutorialScreen.hide()
+
+        self.assertEqual(dict(self.app.world.blocks), original_blocks)
+        self.assertEqual((
+            self.app.world.width, self.app.world.depth, self.app.world.height,
+            self.app.world.min_y,
+        ), original_dimensions)
+        self.assertEqual(self.app.hotbar[0], app_module.BlockType.OBSIDIAN)
+        self.assertEqual(self.app.selectedBlock, app_module.BlockType.OBSIDIAN)
+        self.assertIsNone(self.app._tutorialSessionSnapshot)
+
+    def test_advanced_tutorial_uses_expanded_scaled_showcases_and_restores(self):
+        self.app.world.setBlock(2, 3, 1, app_module.BlockType.EMERALD_BLOCK)
+        original_blocks = dict(self.app.world.blocks)
+        basic_count = len(app_module.STRUCTURE_WELCOME_SHOWCASE["blocks"])
+
+        self.app._beginTutorial(advanced=True)
+        self.assertEqual(
+            (self.app.world.width, self.app.world.depth, self.app.world.height),
+            (32, 32, 32),
+        )
+        non_floor = sum(1 for (x, y, z) in self.app.world.blocks if z > 0)
+        self.assertGreater(non_floor, basic_count)
+        self.app.tutorialScreen.hide()
+        self.assertEqual(dict(self.app.world.blocks), original_blocks)
 
     def test_tutorial_window_drags_minimizes_and_restores(self):
         tutorial = app_module.TutorialScreen(
@@ -1006,6 +1094,16 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertTrue(all(
             terrainTop[column] < structureBase[column] for column in shared
         ))
+        padHeights = {
+            terrainTop[(x, y)]
+            for x in range(99, 156) for y in range(105, 151)
+        }
+        self.assertGreaterEqual(len(padHeights), 5)
+        groundContacts = {
+            column for column, base in structureBase.items() if base == 19
+        }
+        self.assertTrue(groundContacts)
+        self.assertTrue(all(terrainTop[column] == 18 for column in groundContacts))
 
     def test_small_canvas_resets_camera_after_large_world(self):
         path = Path(app_module.WORLDS_DIR) / "ancient_city_121.json.gz"
@@ -1650,39 +1748,59 @@ class AppIntegrationTests(unittest.TestCase):
             }
             self.assertGreater(len(colors), 8)
 
-    def test_piston_door_is_first_structure_and_opens_from_its_lever(self):
+    def test_both_piston_doors_are_natural_and_survive_repeated_cycles(self):
         self.assertEqual(next(iter(app_module.PREMADE_STRUCTURES)), "piston_door")
-        structure = app_module.PREMADE_STRUCTURES["piston_door"]
-        self.assertEqual(structure["name"], "2x2 Piston Door")
-        self.assertEqual(
-            sum(1 for block in structure["blocks"] if block[3] == app_module.BlockType.STICKY_PISTON),
-            4,
-        )
+        for key, expected_name in (
+            ("piston_door", "2x2 Exposed Piston Door"),
+            ("flush_piston_door", "2x2 Flush Piston Door"),
+        ):
+            structure = app_module.PREMADE_STRUCTURES[key]
+            self.assertEqual(structure["name"], expected_name)
+            self.assertEqual(sum(
+                1 for block in structure["blocks"]
+                if block[3] == app_module.BlockType.STICKY_PISTON
+            ), 4)
+            self.assertFalse(any(
+                block[3] == app_module.BlockType.PISTON_HEAD
+                for block in structure["blocks"]
+            ))
 
-        self.app.world.resize(12, 12, 12, min_y=0, preserve=False)
-        with self.app.world.bulkUpdate():
-            for block in structure["blocks"]:
-                x, y, z, block_type, props = app_module._structureBlockParts(block)
-                self.app.world.setBlock(x, y, z, block_type)
-                if props is not None:
-                    self.app.world.setBlockProperties(x, y, z, props.copy())
-        self.app.redstone.mark_dirty()
-        self.app.redstone.update(0)
-        self.assertTrue(all(
-            self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
-            for x in (2, 3) for z in (1, 2)
-        ))
+            self.app.world.resize(12, 12, 12, min_y=0, preserve=False)
+            self.app.redstone.active_motions.clear()
+            with self.app.world.bulkUpdate():
+                for block in structure["blocks"]:
+                    x, y, z, block_type, props = app_module._structureBlockParts(block)
+                    self.app.world.setBlock(x, y, z, block_type)
+                    if props is not None:
+                        self.app.world.setBlockProperties(x, y, z, props.copy())
+            self.app.redstone.mark_dirty()
+            self.app.redstone.update(50)
 
-        self.assertTrue(self.app._interactBlock(5, 1, 2))
-        self.app.redstone.update(50)
-        self.assertTrue(all(
-            self.app.world.getBlock(x, 2, z) == app_module.BlockType.AIR
-            for x in (2, 3) for z in (1, 2)
-        ))
-        self.assertTrue(all(
-            self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
-            for x in (1, 4) for z in (1, 2)
-        ))
+            for _cycle in range(3):
+                self.assertTrue(all(
+                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
+                    for x in (2, 3) for z in (1, 2)
+                ), [
+                    (x, z, self.app.world.getBlock(x, 2, z).name)
+                    for x in range(6) for z in (1, 2)
+                ] + [
+                    ("dust", x, z, getattr(
+                        self.app.world.getBlockProperties(x, 1, z),
+                        "redstonePower", None
+                    )) for x in range(5) for z in (1, 2)
+                ])
+                self.assertTrue(self.app._interactBlock(5, 1, 2))
+                self.app.redstone.update(50)
+                self.assertTrue(all(
+                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.AIR
+                    for x in (2, 3) for z in (1, 2)
+                ))
+                self.assertTrue(all(
+                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
+                    for x in (1, 4) for z in (1, 2)
+                ))
+                self.assertTrue(self.app._interactBlock(5, 1, 2))
+                self.app.redstone.update(50)
 
     def test_new_audio_defaults_are_eighty_percent(self):
         self.assertEqual(

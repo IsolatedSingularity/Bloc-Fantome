@@ -24,6 +24,9 @@ MUSIC_DIR_NETHER = os.path.join(SOUNDS_DIR, "music", "game", "nether")
 MUSIC_DIR_END = os.path.join(SOUNDS_DIR, "music", "game", "end")
 ICONS_DIR = os.path.join(ASSETS_DIR, "Icons")
 FONTS_DIR = os.path.join(ASSETS_DIR, "Fonts")
+SKYBOXES_DIR = os.path.join(
+    ASSETS_DIR, "Skyboxes", "Black Mesa", "assets", "minecraft", "optifine", "sky"
+)
 REFERENCES_DIR = (
     os.path.join(BASE_DIR, "References")
     if getattr(sys, "frozen", False)

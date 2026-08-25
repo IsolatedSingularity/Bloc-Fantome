@@ -91,31 +91,32 @@ def render_ancient_city_background_surface(
     result.fill((4, 7, 10))
     rows = height // row_step + 4
     columns = width // cube_width + 4
-    # The first textures are the quieter deepslate base. Later sculk and
-    # reinforced variants occur as deliberate, irregular points of interest.
-    pattern = (0, 1, 0, 2, 0, 3, 1, 0, 4, 0, 2, 5, 0, 1, 3, 0)
+    # Keep deepslate as the Deep Dark foundation while making sculk and its
+    # growth blocks the dominant material rather than isolated accents.
+    pattern = (0, 2, 0, 3, 2, 1, 2, 0, 4, 2, 3, 5, 0, 2, 1, 2)
     for row in range(-2, rows):
         offset_x = (row & 1) * (cube_width // 2)
         for column in range(-2, columns):
             selector = pattern[(column * 5 + row * 7) % len(pattern)] % len(cubes)
             result.blit(cubes[selector], (column * cube_width + offset_x, row * row_step))
     darkness = pygame.Surface(result.get_size(), pygame.SRCALPHA)
-    darkness.fill((1, 3, 7, 158))
+    darkness.fill((1, 2, 6, 194))
     result.blit(darkness, (0, 0))
-    # A restrained central cyan-violet haze ties the sculk field to the title
-    # without flattening the individual block textures.
-    glow = pygame.Surface(result.get_size(), pygame.SRCALPHA)
-    pygame.draw.ellipse(
-        glow,
-        (30, 92, 105, 34),
-        (width // 8, height // 6, width * 3 // 4, height * 2 // 3),
+
+    # Build the fog once at quarter resolution and upscale it into soft wisps.
+    # The cached splash PNG therefore has no procedural work during startup.
+    fog_size = (max(1, width // 4), max(1, height // 4))
+    fog = pygame.Surface(fog_size, pygame.SRCALPHA)
+    wisps = (
+        ((-35, 92, 210, 70), (92, 31, 126, 28)),
+        ((105, 112, 190, 58), (119, 43, 151, 25)),
+        ((205, 72, 145, 50), (74, 25, 111, 22)),
+        ((30, 142, 260, 48), (109, 37, 144, 18)),
     )
-    pygame.draw.ellipse(
-        glow,
-        (88, 35, 118, 24),
-        (width // 5, height // 4, width * 3 // 5, height // 2),
-    )
-    result.blit(glow, (0, 0))
+    for bounds, color in wisps:
+        pygame.draw.ellipse(fog, color, bounds)
+    fog = pygame.transform.smoothscale(fog, (width, height))
+    result.blit(fog, (0, 0))
     return result
 
 

@@ -20,11 +20,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Third-party font notice
------------------------
+Third-party asset notices
+-------------------------
 
-Zekton is copyright Typodermic Fonts Inc. and is not licensed under the MIT
-License above. Runtime font software and private license records are supplied
-locally by the repository owner under a separate application/game license and
-are intentionally excluded from Git. See `Assets/Fonts/ZEKTON_LOCAL_SETUP.md`
-for the expected local asset path and fallback behavior.
+- Zekton is copyright Typodermic Fonts Inc. and is not licensed under the MIT
+  License above. Runtime font software and private license records are supplied
+  locally by the repository owner under a separate application/game license and
+  are intentionally excluded from Git. See `Assets/Fonts/ZEKTON_LOCAL_SETUP.md`
+  for the expected local asset path and fallback behavior.
+
+- Skybox textures, environment maps, and third-party media packs (including Black Mesa
+  Skyboxes by Ewan Howell) are copyright their respective authors and are licensed
+  locally under private asset usage grants. Private license files and proprietary
+  media packages are intentionally excluded from Git. See `Assets/Skyboxes/SKYBOX_LOCAL_SETUP.md`
+  and `Assets/LICENSES_PRIVATE.md` for local configuration details.

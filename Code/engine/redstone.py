@@ -8,6 +8,7 @@ changes or a scheduled component tick is due; no per-frame world scan occurs.
 from __future__ import annotations
 
 from collections import deque
+from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, Optional, Tuple
 
 from engine.block_state import BlockProperties, Facing
@@ -27,6 +28,32 @@ def _facing_offset(facing: Facing) -> tuple[int, int, int]:
     return dx, dy, 0
 
 
+@dataclass(frozen=True)
+class MovingCell:
+    """One captured block moving between two cells during a piston animation."""
+
+    block: object
+    props: Optional[BlockProperties]
+    source: Position
+    target: Position
+
+
+@dataclass
+class PistonMotion:
+    """Short, time-based visual motion layered over the committed world state."""
+
+    piston: Position
+    extending: bool
+    cells: tuple[MovingCell, ...]
+    final_targets: frozenset[Position]
+    elapsed_ms: float = 0.0
+    duration_ms: float = 100.0
+
+    @property
+    def progress(self) -> float:
+        return min(1.0, self.elapsed_ms / self.duration_ms)
+
+
 class RedstoneSimulator:
     """Bounded redstone updates plus horizontal piston movement."""
 
@@ -40,9 +67,11 @@ class RedstoneSimulator:
         self._seen_revision = -1
         self._accumulator = 0
         self._repeater_updates: Dict[Position, tuple[bool, int]] = {}
+        self._lamp_off_updates: Dict[Position, int] = {}
         self._torch_history: Dict[Position, deque[int]] = {}
         self._torch_cooldown: Dict[Position, int] = {}
         self._game_tick = 0
+        self.active_motions: list[PistonMotion] = []
 
     @property
     def powered_dust(self) -> Iterable[Position]:
@@ -52,13 +81,26 @@ class RedstoneSimulator:
             if props and props.redstonePower > 0:
                 yield pos
 
+    @property
+    def powered_components(self) -> Iterable[Position]:
+        """Powered circuitry eligible for restrained visual sparks."""
+        bt = self.block_type
+        for block in (bt.REDSTONE_DUST, bt.REDSTONE_TORCH,
+                      bt.REDSTONE_WALL_TORCH, bt.REPEATER):
+            for pos in self.world.blockTypePositions.get(block, ()):
+                props = self.world.getBlockProperties(*pos)
+                if props and props.powered:
+                    yield pos
+
     def mark_dirty(self) -> None:
         self._seen_revision = -1
 
     def update(self, dt_ms: int) -> bool:
         """Advance scheduled component ticks and return whether state changed."""
         changed = False
-        self._accumulator += max(0, int(dt_ms))
+        elapsed = max(0, int(dt_ms))
+        self._advance_motions(elapsed)
+        self._accumulator += elapsed
         if self.world.revision != self._seen_revision:
             changed |= self.recalculate()
         while self._accumulator >= self.TICK_MS:
@@ -66,6 +108,30 @@ class RedstoneSimulator:
             self._game_tick += 1
             changed |= self._tick_components()
         return changed
+
+    def _advance_motions(self, dt_ms: int) -> None:
+        if not self.active_motions or dt_ms <= 0:
+            return
+        for motion in self.active_motions:
+            motion.elapsed_ms += dt_ms
+        self.active_motions[:] = [
+            motion for motion in self.active_motions if motion.progress < 1.0
+        ]
+
+    def prune_stale_motions(self) -> None:
+        """Discard visual transients whose piston vanished with a world reset."""
+        bt = self.block_type
+        self.active_motions[:] = [
+            motion for motion in self.active_motions
+            if self.world.getBlock(*motion.piston) in (bt.PISTON, bt.STICKY_PISTON)
+        ]
+
+    @property
+    def moving_final_targets(self) -> frozenset[Position]:
+        targets = set()
+        for motion in self.active_motions:
+            targets.update(motion.final_targets)
+        return frozenset(targets)
 
     def recalculate(self) -> bool:
         """Resolve torches, wires, repeaters, lamps and piston inputs."""
@@ -151,6 +217,25 @@ class RedstoneSimulator:
                 lower = (side[0], side[1], z - 1)
                 if self.world.getBlock(*lower) == bt.REDSTONE_DUST:
                     yield lower
+
+    def wire_connection_mask(self, pos: Position) -> int:
+        """Return N/E/S/W visual connectivity as a four-bit mask."""
+        if self.world.getBlock(*pos) != self.block_type.REDSTONE_DUST:
+            return 0
+        bt = self.block_type
+        connectable = {
+            bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
+            bt.LEVER, bt.REPEATER, bt.PISTON, bt.STICKY_PISTON,
+            bt.REDSTONE_LAMP, bt.REDSTONE_BLOCK,
+        }
+        x, y, z = pos
+        mask = 0
+        for bit, (dx, dy, _) in enumerate(HORIZONTAL):
+            side = (x + dx, y + dy, z)
+            candidates = (side, (side[0], side[1], z + 1), (side[0], side[1], z - 1))
+            if any(self.world.getBlock(*candidate) in connectable for candidate in candidates):
+                mask |= 1 << bit
+        return mask
 
     def _update_dust(self) -> bool:
         bt = self.block_type
@@ -258,15 +343,45 @@ class RedstoneSimulator:
         for pos in self.world.blockTypePositions.get(bt.REDSTONE_LAMP, ()):
             props = self._props(pos)
             desired = self._direct_power(pos) > 0
-            if props.powered != desired:
-                props.powered = desired
-                props.redstonePower = 15 if desired else 0
+            if desired:
+                self._lamp_off_updates.pop(pos, None)
+                if not props.powered:
+                    props.powered = True
+                    props.redstonePower = 15
+                    self._set_props(pos, props)
+                    changed = True
+            elif props.powered:
+                # Java lamps remain lit for four game ticks after losing input.
+                self._lamp_off_updates.setdefault(pos, 4)
+            else:
+                self._lamp_off_updates.pop(pos, None)
+        return changed
+
+    def _tick_lamp_off_updates(self) -> bool:
+        changed = False
+        for pos, ticks in list(self._lamp_off_updates.items()):
+            if self.world.getBlock(*pos) != self.block_type.REDSTONE_LAMP:
+                self._lamp_off_updates.pop(pos, None)
+                continue
+            if self._direct_power(pos) > 0:
+                self._lamp_off_updates.pop(pos, None)
+                continue
+            ticks -= 1
+            if ticks > 0:
+                self._lamp_off_updates[pos] = ticks
+                continue
+            self._lamp_off_updates.pop(pos, None)
+            props = self._props(pos)
+            if props.powered:
+                props.powered = False
+                props.redstonePower = 0
                 self._set_props(pos, props)
                 changed = True
         return changed
 
     def _tick_components(self) -> bool:
         changed = False
+        changed |= self._tick_lamp_off_updates()
         for pos, (desired, ticks) in list(self._repeater_updates.items()):
             ticks -= 1
             if ticks > 0:
@@ -291,18 +406,72 @@ class RedstoneSimulator:
         return changed
 
     def _piston_powered(self, pos: Position) -> bool:
-        if self._direct_power(pos) > 0:
-            return True
-        # Java's quasi-connectivity check: power around the block above.
-        above = (pos[0], pos[1], pos[2] + 1)
-        return self._direct_power(above) > 0
+        # Intentional project rule: direct/strong power only, never quasi-connectivity.
+        return self._direct_power(pos) > 0
+
+    def _piston_behavior(self, block, props: Optional[BlockProperties]) -> str:
+        bt = self.block_type
+        if block == bt.AIR:
+            return "air"
+        definition = self.definitions.get(block)
+        if block in {
+            bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
+            bt.LEVER, bt.REPEATER, bt.WATER, bt.LAVA, bt.FIRE, bt.SOUL_FIRE,
+        } or (definition and (
+            definition.isDoor
+            or definition.modelKind in {
+                "torch", "ladder", "plant", "banner", "candle", "lantern"
+            }
+        )):
+            return "break"
+        if block in {
+            bt.BEDROCK, bt.OBSIDIAN, bt.CRYING_OBSIDIAN,
+            bt.RESPAWN_ANCHOR, bt.REINFORCED_DEEPSLATE, bt.PISTON_HEAD,
+            bt.END_PORTAL_FRAME, bt.END_PORTAL, bt.END_GATEWAY,
+            bt.CHEST, bt.TRAPPED_CHEST, bt.CHRISTMAS_CHEST,
+            bt.COPPER_CHEST, bt.COPPER_CHEST_EXPOSED,
+            bt.COPPER_CHEST_WEATHERED, bt.COPPER_CHEST_OXIDIZED,
+            bt.ENDER_CHEST, bt.FURNACE, bt.ENCHANTING_TABLE,
+            bt.MOB_SPAWNER, bt.TRIAL_SPAWNER,
+        } or (block in (bt.PISTON, bt.STICKY_PISTON) and props and props.pistonExtended):
+            return "block"
+        return "move"
 
     def _movable(self, block, props: Optional[BlockProperties]) -> bool:
-        bt = self.block_type
-        return block not in {
-            bt.AIR, bt.BEDROCK, bt.OBSIDIAN, bt.CRYING_OBSIDIAN,
-            bt.RESPAWN_ANCHOR, bt.PISTON_HEAD,
-        } and not (block in (bt.PISTON, bt.STICKY_PISTON) and props and props.pistonExtended)
+        return self._piston_behavior(block, props) == "move"
+
+    def _capture_cell(self, source: Position, target: Position) -> MovingCell:
+        props = self.world.getBlockProperties(*source)
+        return MovingCell(
+            self.world.getBlock(*source), props.copy() if props is not None else None,
+            source, target,
+        )
+
+    def _break_cell(self, pos: Position) -> None:
+        """Remove a fragile cell and its paired door half, if present."""
+        block = self.world.getBlock(*pos)
+        definition = self.definitions.get(block)
+        self.world.setBlock(*pos, self.block_type.AIR)
+        if not (definition and definition.isDoor):
+            return
+        for dz in (-1, 1):
+            paired = pos[0], pos[1], pos[2] + dz
+            if self.world.isInBounds(*paired) and self.world.getBlock(*paired) == block:
+                self.world.setBlock(*paired, self.block_type.AIR)
+
+    def _start_motion(
+        self, pos: Position, extending: bool, cells: list[MovingCell],
+        final_targets: Iterable[Position],
+    ) -> None:
+        self.active_motions[:] = [
+            motion for motion in self.active_motions if motion.piston != pos
+        ]
+        self.active_motions.append(PistonMotion(
+            piston=pos,
+            extending=extending,
+            cells=tuple(cells),
+            final_targets=frozenset(final_targets),
+        ))
 
     def _move_cell(self, source: Position, target: Position) -> None:
         block = self.world.getBlock(*source)
@@ -331,23 +500,32 @@ class RedstoneSimulator:
         while self.world.getBlock(*cursor) != self.block_type.AIR:
             block = self.world.getBlock(*cursor)
             cell_props = self.world.getBlockProperties(*cursor)
-            if len(chain) >= 12 or not self._movable(block, cell_props):
+            behavior = self._piston_behavior(block, cell_props)
+            if behavior == "break":
+                self._break_cell(cursor)
+                break
+            if len(chain) >= 12 or behavior != "move":
                 return False
             chain.append(cursor)
             cursor = _add(cursor, direction)
             if not self.world.isInBounds(*cursor):
                 return False
+        moving = [self._capture_cell(source, _add(source, direction)) for source in chain]
+        head_props = BlockProperties(
+            facing=props.facing, pistonExtended=True,
+            sticky=self.world.getBlock(*pos) == self.block_type.STICKY_PISTON,
+        )
+        moving.append(MovingCell(self.block_type.PISTON_HEAD, head_props.copy(), pos, front))
+        final_targets = [_add(source, direction) for source in chain]
+        final_targets.append(front)
         with self.world.bulkUpdate():
             for source in reversed(chain):
                 self._move_cell(source, _add(source, direction))
-            head = BlockProperties(
-                facing=props.facing, pistonExtended=True,
-                sticky=self.world.getBlock(*pos) == self.block_type.STICKY_PISTON,
-            )
             self.world.setBlock(*front, self.block_type.PISTON_HEAD)
-            self.world.setBlockProperties(*front, head)
+            self.world.setBlockProperties(*front, head_props)
             props.pistonExtended = True
             self.world.setBlockProperties(*pos, props)
+        self._start_motion(pos, True, moving, final_targets)
         if self.sound:
             self.sound("piston_out", pos)
         return True
@@ -356,6 +534,12 @@ class RedstoneSimulator:
         direction = _facing_offset(props.facing)
         front = _add(pos, direction)
         pull = _add(front, direction)
+        head_props = BlockProperties(
+            facing=props.facing, pistonExtended=True,
+            sticky=self.world.getBlock(*pos) == self.block_type.STICKY_PISTON,
+        )
+        moving = [MovingCell(self.block_type.PISTON_HEAD, head_props, front, pos)]
+        final_targets = []
         with self.world.bulkUpdate():
             if self.world.getBlock(*front) == self.block_type.PISTON_HEAD:
                 self.world.setBlock(*front, self.block_type.AIR)
@@ -366,9 +550,12 @@ class RedstoneSimulator:
                 block = self.world.getBlock(*pull)
                 cell_props = self.world.getBlockProperties(*pull)
                 if block != self.block_type.AIR and self._movable(block, cell_props):
+                    moving.append(self._capture_cell(pull, front))
+                    final_targets.append(front)
                     self._move_cell(pull, front)
             props.pistonExtended = False
             self.world.setBlockProperties(*pos, props)
+        self._start_motion(pos, False, moving, final_targets)
         if self.sound:
             self.sound("piston_in", pos)
         return True
@@ -388,4 +575,3 @@ class RedstoneSimulator:
             elif not desired and props.pistonExtended:
                 changed |= self._retract(pos, props)
         return changed
-

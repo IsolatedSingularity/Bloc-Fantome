@@ -208,6 +208,14 @@ def render(output_dir: Path) -> None:
     tutorial.visible = False
     tutorial.minimized = False
 
+    app._beginTutorial(advanced=True)
+    tutorial.panelX = 720
+    tutorial.panelY = 130
+    tutorial._layoutPanelControls()
+    app._render()
+    save_capture(screen, output_dir / "tutorial_advanced.png")
+    tutorial.hide()
+
     app._render()
     growDimensions, _ = app._canvasResizeImpact(16)
     app._renderCanvasResizePreview(16, growDimensions)
@@ -282,6 +290,19 @@ def render(output_dir: Path) -> None:
         save_capture(screen, output_dir / filename)
     app.snowEnabled = False
 
+    app.skyboxesEnabled = True
+    for dimension, filename in (
+        (app_module.DIMENSION_OVERWORLD, "skybox_overworld_app.png"),
+        (app_module.DIMENSION_NETHER, "skybox_nether_app.png"),
+        (app_module.DIMENSION_END, "skybox_end_app.png"),
+    ):
+        app.currentDimension = dimension
+        app.world.setDimension(dimension)
+        app.skyboxRenderer.update(0, dimension)
+        app._render()
+        save_capture(screen, output_dir / filename)
+    app.skyboxesEnabled = False
+
     random.seed(1161)
     for dimension, effect, filename in (
         (app_module.DIMENSION_OVERWORLD, "rain", "weather_overworld_rain.png"),
@@ -333,25 +354,36 @@ def render(output_dir: Path) -> None:
     app._renderPanel()
     save_capture(screen, output_dir / "structure_panel.png")
 
-    app.world.resize(12, 12, 12, min_y=0, preserve=False)
-    door = app_module.PREMADE_STRUCTURES["piston_door"]
-    with app.world.bulkUpdate():
-        for block in door["blocks"]:
-            x, y, z, block_type, props = app_module._structureBlockParts(block)
-            app.world.setBlock(x, y, z, block_type)
-            if props is not None:
-                app.world.setBlockProperties(x, y, z, props.copy())
-    app.redstone.mark_dirty()
-    app.redstone.update(0)
-    app._fitWorldToViewport(notify=False)
-    app.renderer.offsetX = app.targetOffsetX
-    app.renderer.offsetY = app.targetOffsetY
-    app._render()
-    save_capture(screen, output_dir / "redstone_piston_door_closed.png")
-    app._interactBlock(5, 1, 2)
-    app.redstone.update(50)
-    app._render()
-    save_capture(screen, output_dir / "redstone_piston_door_open.png")
+    def capture_piston_door(key, prefix):
+        app.world.resize(12, 12, 12, min_y=0, preserve=False)
+        app.redstone.active_motions.clear()
+        door = app_module.PREMADE_STRUCTURES[key]
+        with app.world.bulkUpdate():
+            for block in door["blocks"]:
+                x, y, z, block_type, props = app_module._structureBlockParts(block)
+                app.world.setBlock(x, y, z, block_type)
+                if props is not None:
+                    app.world.setBlockProperties(x, y, z, props.copy())
+        app.redstone.mark_dirty()
+        app.redstone.update(50)
+        app.redstone.update(100)
+        app._fitWorldToViewport(notify=False)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        app.tooltipTimer = 0
+        app._render()
+        save_capture(screen, output_dir / f"{prefix}_closed.png")
+        app._interactBlock(5, 1, 2)
+        app.redstone.update(50)
+        app.redstone.update(50)
+        app._render()
+        save_capture(screen, output_dir / f"{prefix}_motion.png")
+        app.redstone.update(50)
+        app._render()
+        save_capture(screen, output_dir / f"{prefix}_open.png")
+
+    capture_piston_door("piston_door", "redstone_piston_door")
+    capture_piston_door("flush_piston_door", "redstone_flush_door")
 
     app._openWorldLibrary()
     app.assetManager.drawBackground(screen)
