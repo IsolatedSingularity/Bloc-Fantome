@@ -46,9 +46,27 @@ SKYBOX_PANORAMAS = [
         ("world1", "1.png"), ("world1", "2.png"), ("world1", "3.png"),
     )
 ]
+WORLD_MAP_ROOT = os.path.join(PROJECT_ROOT, "Assets", "World Map", "WorldBuilder")
+WORLD_MAP_RELEASE_FILES = [
+    os.path.join(WORLD_MAP_ROOT, "ui", filename)
+    for filename in (
+        "question_mark.png", "question_mark_blink.png", "question_mark_shadow.png",
+        "worldbuilder_title.png", "next_world_arrow.png", "prev_world_arrow.png",
+        *(f"flag{index}.png" for index in range(1, 7)),
+        *(f"bonus_flag{index}.png" for index in range(1, 7)),
+    )
+] + [
+    os.path.join(WORLD_MAP_ROOT, "audio", filename)
+    for filename in (
+        "m_game_6_1.mp3", "m_game_6_3.mp3", "m_game_6_4.mp3", "m_game_6_5.mp3",
+        "m_game_8_1.mp3", "m_game_8_3.mp3", "m_game_8_4.mp3",
+        "m_game_i_1.mp3", "m_game_i_2.mp3", "m_game_i_3.mp3",
+        "s_button_click_2.mp3", "s_goal_mission_4.mp3", "s_rollover_1.mp3",
+    )
+]
 
 # Version info
-VERSION = "2.5.3"
+VERSION = "2.6.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -99,6 +117,13 @@ def build(debug: bool = False, diagnostic: bool = False):
             "Required spherical skybox panorama(s) are missing: "
             + ", ".join(missing_skyboxes)
             + ". Run Code/tools/build_skybox_panoramas.py before packaging."
+        )
+    missing_world_map = [path for path in WORLD_MAP_RELEASE_FILES if not os.path.isfile(path)]
+    if missing_world_map:
+        raise FileNotFoundError(
+            "Required WorldBuilder map presentation asset(s) are missing: "
+            + ", ".join(missing_world_map)
+            + ". See Assets/World Map/WORLDBUILDER_LOCAL_SETUP.md."
         )
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.

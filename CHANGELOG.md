@@ -57,6 +57,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Executable crash on startup (pygame event handling)
 - Conda auto-activation terminal error
 
+## [2.6.0] - 2026-08-25
+
+### Added
+- A dedicated three-dimension World Map with persistent WorldBuilder-style objective markers.
+- Builder objectives for the Overworld crossing, Nether redstone gate, and End island beacon.
+- Responsive native window resizing with a 960×640 minimum plus F11 and Alt+Enter fullscreen.
+
+### Changed
+- World Map sessions now preserve and restore the live build, camera, hotbars, undo history, weather, and display state.
+- Release packaging validates and installs the curated local WorldBuilder UI/audio set.
+- README media now includes the three map hubs, objective view, and terrain/canvas hover demonstrations.
+
+### Removed
+- Redundant tracked `WorldBuilder.zip` and `Black Mesa Skyboxes.zip` archives after validating their extracted payloads.
+
 ## [1.0.0] - 2026-01-18
 
 ### Added

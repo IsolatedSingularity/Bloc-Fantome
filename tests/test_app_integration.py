@@ -8,7 +8,7 @@ import unittest
 import struct
 import gzip
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -37,6 +37,8 @@ class AppIntegrationTests(unittest.TestCase):
         pygame.display.quit()
 
     def setUp(self):
+        if self.app.worldMapActive:
+            self.app._exitWorldMap()
         self.app.world.resize(
             app_module.GRID_WIDTH,
             app_module.GRID_DEPTH,
@@ -49,6 +51,94 @@ class AppIntegrationTests(unittest.TestCase):
         self.app.currentBuildPath = None
         self.app.worldCenteredRotation = False
         self.app.undoManager.clear()
+
+    def test_world_map_session_restores_live_build_exactly(self):
+        marker = (3, 4, 2)
+        self.app.world.setBlock(*marker, app_module.BlockType.DIAMOND_BLOCK)
+        original_blocks = dict(self.app.world.blocks)
+        original_size = (self.app.world.width, self.app.world.depth, self.app.world.height)
+
+        self.app._openWorldMap()
+        self.assertTrue(self.app.worldMapActive)
+        self.assertEqual(self.app.worldMapMode, "hub")
+        self.assertEqual((self.app.world.width, self.app.world.depth), (48, 48))
+        self.app._startWorldMapLevel()
+        self.assertEqual(self.app.worldMapMode, "level")
+        self.assertEqual(len(self.app.hotbar), 9)
+        self.assertTrue(self.app._exitWorldMap())
+
+        self.assertFalse(self.app.worldMapActive)
+        self.assertEqual(
+            (self.app.world.width, self.app.world.depth, self.app.world.height),
+            original_size,
+        )
+        self.assertEqual(self.app.world.blocks, original_blocks)
+
+    def test_each_world_map_objective_has_exact_completable_state(self):
+        from engine.block_state import BlockProperties
+        from engine.world_map import build_level, objective_progress
+
+        for dimension in app_module.WORLD_MAP_DIMENSIONS:
+            with self.subTest(dimension=dimension):
+                objective = build_level(self.app.world, dimension)
+                current, total, done = objective_progress(self.app.world, objective)
+                self.assertFalse(done)
+                self.assertLess(current, total)
+                for position, block_name in objective.targets.items():
+                    self.app.world.setBlock(*position, app_module.BlockType[block_name])
+                if objective.powered_target is not None:
+                    self.app.world.setBlockProperties(
+                        *objective.powered_target, BlockProperties(powered=True)
+                    )
+                self.assertEqual(objective_progress(self.app.world, objective), (total, total, True))
+
+    def test_world_map_progress_save_keeps_the_users_persistent_hotbar(self):
+        original_hotbar = [block.name for block in self.app.hotbar]
+        original_progress = dict(self.app.worldMapCompleted)
+        self.app._openWorldMap()
+        self.app._startWorldMapLevel()
+        self.assertNotEqual([block.name for block in self.app.hotbar], original_hotbar)
+        self.app.worldMapCompleted[app_module.DIMENSION_OVERWORLD] = True
+        writer = mock_open()
+        try:
+            with patch("builtins.open", writer):
+                self.app._saveAppConfig()
+            payload = "".join(
+                call.args[0] for call in writer().write.call_args_list
+            )
+            saved = json.loads(payload)
+            self.assertEqual(saved["hotbar"], original_hotbar)
+            self.assertTrue(saved["worldMapCompleted"][app_module.DIMENSION_OVERWORLD])
+        finally:
+            self.app.worldMapCompleted = original_progress
+            self.app._exitWorldMap()
+
+    def test_responsive_minimum_reflows_controls_and_preserves_camera_center(self):
+        old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
+        old_offset = (self.app.renderer.offsetX, self.app.renderer.offsetY)
+        try:
+            self.app._applyWindowSize(700, 500, recreate=False)
+            self.assertEqual((app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT), (960, 640))
+            canvas = pygame.Rect(0, 0, 960 - app_module.PANEL_WIDTH, 640)
+            for rect in (
+                self.app.worldMapButtonRect,
+                self.app.terrainViewButtonRect,
+                self.app.shrinkCanvasButtonRect,
+                self.app.growCanvasButtonRect,
+                self.app.terrainNoiseButtonRect,
+                self.app.fitWorldButtonRect,
+            ):
+                self.assertTrue(canvas.contains(rect), rect)
+            self.assertEqual(
+                self.app.renderer.offsetX - old_offset[0],
+                ((960 - app_module.PANEL_WIDTH) - (old_size[0] - app_module.PANEL_WIDTH)) / 2,
+            )
+            self.assertLessEqual(
+                self.app.tutorialScreen.panelX + self.app.tutorialScreen.panelWidth,
+                960,
+            )
+        finally:
+            self.app._applyWindowSize(*old_size, recreate=False)
 
     def test_json_structures_are_cursor_placeable(self):
         for name in app_module.JSON_STRUCTURE_LIBRARY:

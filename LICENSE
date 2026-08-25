@@ -34,3 +34,9 @@ Third-party asset notices
   locally under private asset usage grants. Private license files and proprietary
   media packages are intentionally excluded from Git. See `Assets/Skyboxes/SKYBOX_LOCAL_SETUP.md`
   and `Assets/LICENSES_PRIVATE.md` for local configuration details.
+
+- WorldBuilder selector artwork and audio are third-party materials recovered from
+  the repository owner's licensed local archive and are not licensed under the MIT
+  License above. Only the map presentation subset is used; the original runtime is
+  not distributed. See `Assets/World Map/WORLDBUILDER_LOCAL_SETUP.md` for the
+  expected private paths and source-checkout fallback behavior.

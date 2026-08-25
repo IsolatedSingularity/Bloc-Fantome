@@ -60,6 +60,15 @@ class SkyboxRenderer:
     def variants(self, dimension: str) -> tuple[SkyboxVariant, ...]:
         return SKYBOX_VARIANTS.get(dimension, ())
 
+    def resize(self, viewport_size: tuple[int, int]) -> None:
+        """Rebuild only viewport-sized derivatives after a window resize."""
+        viewport_size = tuple(map(int, viewport_size))
+        if viewport_size == self.viewport_size:
+            return
+        self.viewport_size = viewport_size
+        self._panoramas.clear()
+        self._atmospheres.clear()
+
     def _source_path(self, variant: SkyboxVariant) -> str:
         projected = os.path.join(self.root, variant.panorama_path)
         return projected if os.path.isfile(projected) else os.path.join(

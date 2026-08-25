@@ -54,7 +54,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.5.3'
+        myappid = 'blocfantome.builder.2.6.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -170,9 +170,16 @@ from runtime_paths import (
     SKYBOXES_DIR,
     SOUNDS_DIR,
     TEXTURES_DIR,
+    WORLD_MAP_DIR,
     WORLDS_DIR,
 )
 from ui.fonts import load_ui_font, render_tracked_text
+from engine.world_map import (
+    DIMENSION_ORDER as WORLD_MAP_DIMENSIONS,
+    build_hub as build_world_map_hub,
+    build_level as build_world_map_level,
+    objective_progress as world_map_objective_progress,
+)
 
 # Grass tint color (plains biome - sampled from colormap)
 GRASS_TINT = (124, 189, 107)
@@ -3156,6 +3163,24 @@ class TutorialScreen:
             self.panelWidth, self.panelHeight = 400, 500
             self.panelX = self.screenWidth - self.panelWidth - 20
             self.panelY = (self.screenHeight - self.panelHeight) // 2
+        self._layoutPanelControls()
+
+    def resize(self, screenWidth: int, screenHeight: int) -> None:
+        """Reflow and clamp the draggable tutorial after a window resize."""
+        old_width, old_height = self.screenWidth, self.screenHeight
+        self.screenWidth = int(screenWidth)
+        self.screenHeight = int(screenHeight)
+        if self.advanced:
+            self.panelWidth = min(448, max(360, self.screenWidth - 32))
+            self.panelHeight = min(640, max(500, self.screenHeight - 32))
+        else:
+            self.panelWidth = min(400, max(340, self.screenWidth - 32))
+            self.panelHeight = min(500, max(420, self.screenHeight - 32))
+        if old_width > 0 and old_height > 0:
+            self.panelX += (self.screenWidth - old_width)
+            self.panelY += (self.screenHeight - old_height) // 2
+        self.panelX = max(8, min(self.screenWidth - self.panelWidth - 8, self.panelX))
+        self.panelY = max(8, min(self.screenHeight - self.panelHeight - 8, self.panelY))
         self._layoutPanelControls()
 
     def advancedHotbarNames(self, stepIndex: int) -> tuple[str, ...]:
@@ -8938,10 +8963,18 @@ class BlocFantome:
         self._setAppIconEarly()
         
         # Set up display
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption(TITLE)
+        try:
+            from pygame._sdl2.video import Window
+            Window.from_display_module().minimum_size = (960, 640)
+        except (ImportError, AttributeError, pygame.error):
+            pass
         self.clock = pygame.time.Clock()
         self.running = True
+        self.minimumWindowSize = (960, 640)
+        self.windowedSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.fullscreen = False
         
         # Initialize the modular engine implementations. The legacy in-file
         # classes remain temporarily for compatibility but are no longer active.
@@ -9018,11 +9051,13 @@ class BlocFantome:
         self.renderStats = {"candidates": 0, "screen_candidates": 0, "drawn": 0, "occluded": 0}
         self._fogSurfaceKey = None
         self._fogSurface = None
-        self.fitWorldButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 112, 10, 100, 28)
-        self.terrainNoiseButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 146, 10, 30, 28)
-        self.growCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 180, 10, 30, 28)
-        self.shrinkCanvasButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 214, 10, 30, 28)
-        self.terrainViewButtonRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH - 384, 10, 166, 28)
+        self.fitWorldButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.terrainNoiseButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.growCanvasButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.shrinkCanvasButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.terrainViewButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.worldMapButtonRect = pygame.Rect(0, 0, 0, 0)
+        self._layoutWindowControls()
         self._canvasResizePreviewSurface = None
         self._terrainNoisePreviewSurface = None
         self._terrainNoisePreviewSeed = None
@@ -9227,6 +9262,13 @@ class BlocFantome:
         self.tutorialScreen.onTutorialEnd = self._onTutorialEnd
         self.tutorialAdvancedMode = False
         self._tutorialSessionSnapshot = None
+        self._worldMapSessionSnapshot = None
+        self.worldMapActive = False
+        self.worldMapMode = "hub"
+        self.worldMapScene = None
+        self.worldMapObjective = None
+        self.worldMapProgress = (0, 0, False)
+        self.worldMapCompleted = {dimension: False for dimension in WORLD_MAP_DIMENSIONS}
         self.redstoneLabActive = False
         self.interactionMode = False
         self.redstoneLabButtonRect = pygame.Rect(0, 0, 0, 0)
@@ -9460,6 +9502,10 @@ class BlocFantome:
         print(
             f"Audio: {self.musicBackendName} | mixer={pygame.mixer.get_init()} "
             f"| buffer={AUDIO_BUFFER_SIZE}"
+        )
+        from ui.world_map import WorldMapView
+        self.worldMapView = WorldMapView(
+            WORLD_MAP_DIR, self.font, self.smallFont, self.assetManager.audioRouter
         )
         
         # ============ BLOCK PREVIEW GHOST ============
@@ -9830,6 +9876,11 @@ class BlocFantome:
                     # Restore search history
                     self.searchHistory = config.get("searchHistory", [])[:self.maxSearchHistory]
                     self.musicController.last_track = config.get("lastMusicTrack")
+                    savedMapProgress = config.get("worldMapCompleted", {})
+                    for dimension in WORLD_MAP_DIMENSIONS:
+                        self.worldMapCompleted[dimension] = bool(
+                            savedMapProgress.get(dimension, False)
+                        )
                     
         except Exception as e:
             print(f"Could not load app config: {e}")
@@ -9837,25 +9888,33 @@ class BlocFantome:
     def _saveAppConfig(self) -> None:
         """Save app preferences to config file"""
         try:
+            mapState = self._worldMapSessionSnapshot if self.worldMapActive else None
+            mapToggles = mapState.get("toggles", {}) if mapState else {}
+            lastMusicTrack = (
+                mapState.get("lastMusicTrack") if mapState
+                else self.musicController.last_track
+            )
             config = {
                 "expandedCategories": self.expandedCategories,
                 "blocksExpanded": self.blocksExpanded,
                 "problemsExpanded": self.problemsExpanded,
                 "experimentalExpanded": self.experimentalExpanded,
                 "structuresExpanded": self.structuresExpanded,
-                "showGrid": self.showGrid,
-                "lightingEnabled": self.lightingEnabled,
+                "showGrid": mapToggles.get("showGrid", self.showGrid),
+                "lightingEnabled": mapToggles.get("lightingEnabled", self.lightingEnabled),
                 "showBlockTooltip": self.showBlockTooltip,
                 "worldCenteredRotation": self.worldCenteredRotation,
-                "skyboxesEnabled": self.skyboxesEnabled,
+                "skyboxesEnabled": mapToggles.get("skyboxesEnabled", self.skyboxesEnabled),
                 "skyboxSelections": dict(self.skyboxRenderer.selected_indices),
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
-                "hotbar": [b.name for b in self.hotbar],
+                "hotbar": [
+                    b.name for b in (mapState["hotbar"] if mapState else self.hotbar)
+                ],
                 "searchHistory": self.searchHistory,
                 "lastMusicTrack": (
-                    os.path.basename(self.musicController.last_track)
-                    if self.musicController.last_track else None
+                    os.path.basename(lastMusicTrack) if lastMusicTrack else None
                 ),
+                "worldMapCompleted": dict(self.worldMapCompleted),
             }
             with open(APP_CONFIG_FILE, 'w') as f:
                 json.dump(config, f, indent=2)
@@ -10030,7 +10089,6 @@ class BlocFantome:
             f"View rotated: {self.renderer.viewRotation * 90}° around "
             f"{'world center' if self.worldCenteredRotation else 'cursor'}"
         )
-
     def _invalidateViewCaches(
         self, *, keepWorldOrder: bool = False, keepZoomFallback: bool = False
     ) -> None:
@@ -10051,6 +10109,59 @@ class BlocFantome:
         if not keepWorldOrder:
             self._renderChunkAnchor = None
         self._screenCullAnchorOffset = None
+
+    def _layoutWindowControls(self) -> None:
+        """Attach the top controls to the live viewport width."""
+        right = WINDOW_WIDTH - PANEL_WIDTH
+        self.fitWorldButtonRect = pygame.Rect(right - 112, 10, 100, 28)
+        self.terrainNoiseButtonRect = pygame.Rect(right - 146, 10, 30, 28)
+        self.growCanvasButtonRect = pygame.Rect(right - 180, 10, 30, 28)
+        self.shrinkCanvasButtonRect = pygame.Rect(right - 214, 10, 30, 28)
+        self.terrainViewButtonRect = pygame.Rect(right - 384, 10, 166, 28)
+        self.worldMapButtonRect = pygame.Rect(right - 506, 10, 116, 28)
+
+    def _applyWindowSize(self, width: int, height: int, *, recreate: bool = True) -> None:
+        """Apply a crisp native-size window and preserve the camera's visual center."""
+        global WINDOW_WIDTH, WINDOW_HEIGHT
+        old_width, old_height = WINDOW_WIDTH, WINDOW_HEIGHT
+        if not self.fullscreen:
+            width = max(self.minimumWindowSize[0], int(width))
+            height = max(self.minimumWindowSize[1], int(height))
+            self.windowedSize = (width, height)
+        else:
+            width, height = int(width), int(height)
+        if recreate:
+            flags = pygame.FULLSCREEN if self.fullscreen else pygame.RESIZABLE
+            self.screen = pygame.display.set_mode((width, height), flags)
+        WINDOW_WIDTH, WINDOW_HEIGHT = width, height
+        canvas_delta_x = ((width - PANEL_WIDTH) - (old_width - PANEL_WIDTH)) / 2.0
+        canvas_delta_y = (height - old_height) / 2.0
+        self.renderer.offsetX += canvas_delta_x
+        self.renderer.offsetY += canvas_delta_y
+        self.targetOffsetX += canvas_delta_x
+        self.targetOffsetY += canvas_delta_y
+        self._layoutWindowControls()
+        self.tutorialScreen.resize(width, height)
+        self.skyboxRenderer.resize((width, height))
+        self.assetManager._createBackground(self.currentDimension)
+        self._panelBackgroundCacheKey = None
+        self._settingsPanelCacheKey = None
+        self._minimapCacheKey = None
+        self._fogSurfaceKey = None
+        self._canvasResizePreviewSurface = None
+        self._terrainNoisePreviewSurface = None
+        self._invalidateViewCaches()
+
+    def _toggleFullscreen(self) -> None:
+        """Toggle native desktop fullscreen while retaining the last window size."""
+        if self.fullscreen:
+            self.fullscreen = False
+            self._applyWindowSize(*self.windowedSize)
+        else:
+            self.windowedSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
+            info = pygame.display.Info()
+            self.fullscreen = True
+            self._applyWindowSize(info.current_w, info.current_h)
 
     def _afterWorldEdit(self, affectedPositions=()) -> None:
         """Invalidate derived application state after one logical world edit."""
@@ -10416,7 +10527,9 @@ class BlocFantome:
             "world": snapshot,
             "sceneTerrainMode": self.sceneTerrainMode,
             "hotbar": list(self.hotbar),
+            "hotbarSelectedSlot": self.hotbarSelectedSlot,
             "selectedBlock": self.selectedBlock,
+            "interactionMode": self.interactionMode,
             "currentBuildPath": self.currentBuildPath,
             "undo": list(self.undoManager.undo_stack),
             "redo": list(self.undoManager.redo_stack),
@@ -10438,6 +10551,7 @@ class BlocFantome:
             },
             "celestialAngle": self.celestialAngle,
             "moonPhase": self.moonPhase,
+            "lastMusicTrack": self.musicController.last_track,
         }
 
     def _beginTutorial(self, *, advanced: bool) -> None:
@@ -10627,11 +10741,13 @@ class BlocFantome:
         self.sceneStructureBounds = self.world.sceneStructureBounds
         self.sceneTerrainMode = state["sceneTerrainMode"]
         self.hotbar = list(state["hotbar"])
+        self.hotbarSelectedSlot = state["hotbarSelectedSlot"]
         self.selectedBlock = state["selectedBlock"]
         self.currentBuildPath = state["currentBuildPath"]
         self.undoManager.undo_stack[:] = state["undo"]
         self.undoManager.redo_stack[:] = state["redo"]
         self.zoomLevel = state["zoom"]
+        self.renderer.setZoom(self.zoomLevel)
         self.cameraFocusZ = state["cameraFocusZ"]
         self.currentViewLayer = state["currentViewLayer"]
         self.currentBuildHeight = state["currentBuildHeight"]
@@ -10648,6 +10764,8 @@ class BlocFantome:
             self._startHorrorRain()
         self.tutorialAdvancedMode = False
         self.tutorialScreen.setAdvanced(False)
+        self._setInteractionMode(state.get("interactionMode", False))
+        self.tooltipTimer = 0
         self.redstone.active_motions.clear()
         self.redstone.mark_dirty()
         self._visibleOrderCaches.clear()
@@ -10657,6 +10775,225 @@ class BlocFantome:
         self._playMenuMusic(snapshot.dimension)
         print("Tutorial ended - restored the previous build")
         return True
+
+    def _captureWorldMapSession(self) -> None:
+        """Snapshot the live editor before entering the isolated World Map."""
+        if self._worldMapSessionSnapshot is not None:
+            return
+        from engine.world_snapshot import WorldSnapshot
+
+        snapshot = WorldSnapshot(
+            width=self.world.width,
+            depth=self.world.depth,
+            height=self.world.height,
+            min_y=self.world.min_y,
+            dimension=self.currentDimension,
+            blocks=dict(self.world.blocks),
+            properties={pos: props.copy() for pos, props in self.world.blockProperties.items()},
+            liquid_levels=dict(self.world.liquidLevels),
+            liquid_sources=frozenset(self.world.liquidSources),
+            liquid_falling=frozenset(self.world.liquidFalling),
+            scene_metadata=dict(self.sceneMetadata),
+            structure_positions=frozenset(self.sceneStructurePositions),
+            exterior_glass_positions=frozenset(self.sceneExteriorGlassPositions),
+        )
+        self._worldMapSessionSnapshot = {
+            "world": snapshot,
+            "sceneTerrainMode": self.sceneTerrainMode,
+            "hotbar": list(self.hotbar),
+            "hotbarSelectedSlot": self.hotbarSelectedSlot,
+            "selectedBlock": self.selectedBlock,
+            "interactionMode": self.interactionMode,
+            "currentBuildPath": self.currentBuildPath,
+            "undo": list(self.undoManager.undo_stack),
+            "redo": list(self.undoManager.redo_stack),
+            "zoom": self.zoomLevel,
+            "cameraFocusZ": self.cameraFocusZ,
+            "currentViewLayer": self.currentViewLayer,
+            "currentBuildHeight": self.currentBuildHeight,
+            "renderer": (self.renderer.offsetX, self.renderer.offsetY, self.renderer.viewRotation),
+            "toggles": {
+                name: getattr(self, name)
+                for name in (
+                    "rainEnabled", "snowEnabled", "horrorRainEnabled", "lightingEnabled",
+                    "celestialEnabled", "cloudsEnabled", "skyboxesEnabled", "showGrid",
+                )
+                if hasattr(self, name)
+            },
+            "celestialAngle": self.celestialAngle,
+            "moonPhase": self.moonPhase,
+            "lastMusicTrack": self.musicController.last_track,
+        }
+
+    def _worldMapMusicFiles(self, dimension: str) -> List[str]:
+        groups = {
+            DIMENSION_OVERWORLD: ("m_game_6_1.mp3", "m_game_6_3.mp3", "m_game_6_4.mp3", "m_game_6_5.mp3"),
+            DIMENSION_NETHER: ("m_game_8_1.mp3", "m_game_8_3.mp3", "m_game_8_4.mp3"),
+            DIMENSION_END: ("m_game_i_1.mp3", "m_game_i_2.mp3", "m_game_i_3.mp3"),
+        }
+        audio_root = os.path.join(WORLD_MAP_DIR, "audio")
+        return [
+            os.path.join(audio_root, filename)
+            for filename in groups[dimension]
+            if os.path.isfile(os.path.join(audio_root, filename))
+        ]
+
+    def _prepareWorldMapScene(self, dimension: str) -> None:
+        self.currentDimension = dimension
+        self.world.setDimension(dimension)
+        self.assetManager._createBackground(dimension)
+        self.sceneStructurePositions = self.world.sceneStructurePositions
+        self.sceneExteriorGlassPositions = set()
+        self.sceneStructureBounds = self.world.sceneStructureBounds
+        self.sceneTerrainMode = "all"
+        self.currentBuildPath = None
+        self.undoManager.clear()
+        self.redstone.active_motions.clear()
+        self.redstone.mark_dirty()
+        self.lightingDirty = True
+        self._visibleOrderCaches.clear()
+        self._invalidateViewCaches()
+        tracks = self._worldMapMusicFiles(dimension)
+        if tracks:
+            self.musicController.set_playlist(tracks, fade=False)
+        else:
+            self._playMenuMusic(dimension)
+
+    def _openWorldMap(self) -> None:
+        """Enter the map without allowing its temporary worlds to replace the build."""
+        if self.worldMapActive:
+            return
+        if self.redstoneLabActive:
+            self._toggleRedstoneLab()
+        elif self.tutorialScreen.visible:
+            self.tutorialScreen.hide()
+            self._restoreTutorialSession()
+        self._captureWorldMapSession()
+        if self.rainEnabled:
+            self._stopRain()
+        if self.snowEnabled:
+            self._stopSnow()
+        if self.horrorRainEnabled:
+            self._stopHorrorRain()
+        self.rainEnabled = False
+        self.snowEnabled = False
+        self.horrorRainEnabled = False
+        self.worldMapActive = True
+        self._switchWorldMapHub(self.currentDimension)
+
+    def _switchWorldMapHub(self, dimension: str) -> None:
+        self.tooltipTimer = 0
+        self.worldMapMode = "hub"
+        self.worldMapObjective = None
+        self.worldMapProgress = (0, 0, False)
+        self.worldMapScene = build_world_map_hub(self.world, dimension)
+        self.sceneMetadata = {
+            "name": self.worldMapScene.title,
+            "mode": "world_map_hub",
+            "dimension": dimension,
+        }
+        self._prepareWorldMapScene(dimension)
+        self.showGrid = False
+        self.interactionMode = False
+        self.worldMapView.set_hub(dimension, self.worldMapScene)
+        self._fitWorldToViewport(notify=False)
+
+    def _cycleWorldMap(self, delta: int) -> None:
+        index = WORLD_MAP_DIMENSIONS.index(self.currentDimension)
+        self._switchWorldMapHub(WORLD_MAP_DIMENSIONS[(index + delta) % len(WORLD_MAP_DIMENSIONS)])
+
+    def _startWorldMapLevel(self) -> None:
+        self.tooltipTimer = 0
+        self.worldMapMode = "level"
+        self.worldMapObjective = build_world_map_level(self.world, self.currentDimension)
+        self.sceneMetadata = {
+            "name": self.worldMapObjective.title,
+            "mode": "world_map_objective",
+            "dimension": self.currentDimension,
+        }
+        self._prepareWorldMapScene(self.currentDimension)
+        self.showGrid = True
+        self.interactionMode = False
+        self.hotbar = [BlockType[name] for name in self.worldMapObjective.hotbar]
+        self.hotbarSelectedSlot = 0
+        self.selectedBlock = self.hotbar[0]
+        self.redstone.update(0)
+        self.worldMapProgress = world_map_objective_progress(self.world, self.worldMapObjective)
+        self.worldMapView.set_level(self.currentDimension, self.worldMapObjective)
+        self._fitWorldToViewport(notify=False)
+
+    def _returnToWorldMapHub(self) -> None:
+        self._switchWorldMapHub(self.currentDimension)
+
+    def _exitWorldMap(self) -> bool:
+        state = self._worldMapSessionSnapshot
+        if state is None:
+            self.worldMapActive = False
+            return False
+        self._worldMapSessionSnapshot = None
+        snapshot = state["world"]
+        if self.rainEnabled:
+            self._stopRain()
+        if self.snowEnabled:
+            self._stopSnow()
+        if self.horrorRainEnabled:
+            self._stopHorrorRain()
+        self.world.replace(snapshot)
+        self.currentDimension = snapshot.dimension
+        self.world.setDimension(snapshot.dimension)
+        self.assetManager._createBackground(snapshot.dimension)
+        self.sceneMetadata = dict(snapshot.scene_metadata)
+        self.sceneStructurePositions = self.world.sceneStructurePositions
+        self.sceneExteriorGlassPositions = set(snapshot.exterior_glass_positions)
+        self.sceneStructureBounds = self.world.sceneStructureBounds
+        self.sceneTerrainMode = state["sceneTerrainMode"]
+        self.hotbar = list(state["hotbar"])
+        self.hotbarSelectedSlot = state["hotbarSelectedSlot"]
+        self.selectedBlock = state["selectedBlock"]
+        self.currentBuildPath = state["currentBuildPath"]
+        self.undoManager.undo_stack[:] = state["undo"]
+        self.undoManager.redo_stack[:] = state["redo"]
+        self.zoomLevel = state["zoom"]
+        self.renderer.setZoom(self.zoomLevel)
+        self.cameraFocusZ = state["cameraFocusZ"]
+        self.currentViewLayer = state["currentViewLayer"]
+        self.currentBuildHeight = state["currentBuildHeight"]
+        self.renderer.offsetX, self.renderer.offsetY, self.renderer.viewRotation = state["renderer"]
+        self.targetOffsetX, self.targetOffsetY = self.renderer.offsetX, self.renderer.offsetY
+        for name, enabled in state["toggles"].items():
+            setattr(self, name, enabled)
+        self.celestialAngle = state["celestialAngle"]
+        self.moonPhase = state["moonPhase"]
+        if self.rainEnabled:
+            self._startRain()
+        if self.snowEnabled:
+            self._startSnow()
+        if self.horrorRainEnabled:
+            self._startHorrorRain()
+        self.worldMapActive = False
+        self.worldMapMode = "hub"
+        self.worldMapObjective = None
+        self._setInteractionMode(state["interactionMode"])
+        self.tooltipTimer = 0
+        self.redstone.active_motions.clear()
+        self.redstone.mark_dirty()
+        self.lightingDirty = True
+        self._visibleOrderCaches.clear()
+        self._invalidateViewCaches()
+        self._playMenuMusic(snapshot.dimension)
+        return True
+
+    def _handleWorldMapAction(self, action) -> None:
+        if action == "exit":
+            self._exitWorldMap()
+        elif action == "hub":
+            self._returnToWorldMapHub()
+        elif action == "previous":
+            self._cycleWorldMap(-1)
+        elif action == "next":
+            self._cycleWorldMap(1)
+        elif action == "start":
+            self._startWorldMapLevel()
 
     def _buildAdvancedTutorialScene(self, stepIndex: int, dimension: str) -> None:
         """Build one deterministic, focused 32x32 interactive lesson scene."""
@@ -11314,16 +11651,33 @@ class BlocFantome:
     def _handleEvents(self) -> None:
         """Handle pygame events"""
         for event in pygame.event.get():
-            if self.worldLibrary.visible:
-                if event.type == pygame.QUIT:
-                    self.running = False
+            if event.type == pygame.QUIT:
+                self.running = False
+                continue
+            if event.type == pygame.VIDEORESIZE:
+                self._applyWindowSize(event.w, event.h)
+                continue
+            if event.type == pygame.KEYDOWN and (
+                event.key == pygame.K_F11
+                or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT)
+            ):
+                self._toggleFullscreen()
+                continue
+            if self.worldMapActive:
+                action = self.worldMapView.handle_event(event)
+                if action is not None:
+                    self._handleWorldMapAction(action)
                     continue
+                if self.worldMapMode == "hub":
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        self._exitWorldMap()
+                    elif event.type == pygame.USEREVENT + 1:
+                        self.musicController.handle_end_event()
+                    continue
+            if self.worldLibrary.visible:
                 self._handleWorldLibraryAction(self.worldLibrary.handle_event(event))
                 continue
             if self.buildLibrary.visible:
-                if event.type == pygame.QUIT:
-                    self.running = False
-                    continue
                 self._handleBuildLibraryAction(self.buildLibrary.handle_event(event))
                 continue
 
@@ -11331,10 +11685,7 @@ class BlocFantome:
             if self.tutorialScreen.handleEvent(event):
                 continue
             
-            if event.type == pygame.QUIT:
-                self.running = False
-            
-            elif event.type == pygame.USEREVENT + 1:
+            if event.type == pygame.USEREVENT + 1:
                 self.musicController.handle_end_event()
             
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -11386,6 +11737,11 @@ class BlocFantome:
         # If settings menu is open, handle settings clicks
         if self.settingsMenuOpen:
             self._handleSettingsClick(mouseX, mouseY)
+            return
+
+        if event.button == 1 and not self.worldMapActive and self.worldMapButtonRect.collidepoint(mouseX, mouseY):
+            self.assetManager.playClickSound()
+            self._openWorldMap()
             return
 
         if event.button == 1 and self.fitWorldButtonRect.collidepoint(mouseX, mouseY):
@@ -11556,6 +11912,13 @@ class BlocFantome:
     def _handleKeyDown(self, event):
         """Handle keyboard input"""
         mods = pygame.key.get_mods()
+
+        if self.worldMapActive and event.key == pygame.K_ESCAPE:
+            if self.worldMapMode == "level":
+                self._returnToWorldMapHub()
+            else:
+                self._exitWorldMap()
+            return
 
         if event.key == pygame.K_i and not self.searchActive:
             if self.redstoneLabActive:
@@ -13200,6 +13563,15 @@ class BlocFantome:
         self._updateSpecialBlocks(dt)
         if self.redstone.update(dt):
             self.lightingDirty = True
+        if self.worldMapActive and self.worldMapMode == "level" and self.worldMapObjective:
+            progress = world_map_objective_progress(self.world, self.worldMapObjective)
+            self.worldMapProgress = progress
+            if progress[2] and not self.worldMapView.completed_now:
+                first_completion = not self.worldMapCompleted[self.currentDimension]
+                self.worldMapCompleted[self.currentDimension] = True
+                self.worldMapView.mark_complete()
+                if first_completion:
+                    self._saveAppConfig()
         self._updateRedstoneParticles(dt)
         
         # Update liquid flow
@@ -16730,7 +17102,7 @@ class BlocFantome:
 
     def _autoSave(self):
         """Perform auto-save if enabled and interval has passed"""
-        if not self.autoSaveEnabled:
+        if not self.autoSaveEnabled or self.worldMapActive:
             return
         
         currentTime = pygame.time.get_ticks()
@@ -19881,6 +20253,11 @@ class BlocFantome:
         
         # Draw grid overlay if enabled
         self._renderGrid()
+
+        if self.worldMapActive and self.worldMapMode == "level" and self.worldMapObjective:
+            self.worldMapView.render_targets(
+                self.screen, self.renderer, self.worldMapObjective, self.world
+            )
         
         # Draw block highlight (outline around hovered block)
         self._renderBlockHighlight()
@@ -19918,6 +20295,13 @@ class BlocFantome:
         
         # Draw placement particles
         self._renderPlacementParticles()
+
+        if self.worldMapActive and self.worldMapMode == "hub":
+            self.worldMapView.render_hub(
+                self.screen, self.renderer, self.worldMapCompleted
+            )
+            pygame.display.flip()
+            return
         
         # Draw UI panel
         self._renderPanel()
@@ -19938,7 +20322,8 @@ class BlocFantome:
         self._renderCanvasResizeControls()
         
         # Draw dimension indicator (top left)
-        self._renderDimensionIndicator()
+        if not self.worldMapActive:
+            self._renderDimensionIndicator()
         
         # Draw mirror mode indicator
         self._renderMirrorIndicator()
@@ -19981,6 +20366,9 @@ class BlocFantome:
         
         # Draw tutorial overlay (on top of everything)
         self.tutorialScreen.render(self.screen)
+
+        if self.worldMapActive and self.worldMapMode == "level":
+            self.worldMapView.render_level(self.screen, self.worldMapProgress)
         
         # Draw horror visual effects (very last, for maximum creepiness)
         self._renderHorrorEffects()
@@ -20147,6 +20535,15 @@ class BlocFantome:
         self.assetManager.drawButton(
             self.screen, self.fitWorldButtonRect, label, self.smallFont, hovered, False
         )
+        if not self.worldMapActive:
+            self.assetManager.drawButton(
+                self.screen,
+                self.worldMapButtonRect,
+                "World Map",
+                self.smallFont,
+                self.worldMapButtonRect.collidepoint(mouseX, mouseY),
+                False,
+            )
         self._renderTerrainNoiseButton()
 
     def _renderTerrainNoiseButton(self) -> None:

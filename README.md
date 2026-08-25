@@ -258,6 +258,24 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ---
 
+## World Map
+
+The **World Map** button opens three purpose-built selector hubs instead of placing another structure into the current build. The Overworld is a village survey crossed by water, the Nether is a bastion and fortress war table, and the End is a broken atlas of drifting islands. Each map has one active WorldBuilder-style marker and several reserved routes. Hovering the active marker restores the small orbit and blink of the original selector; completing its objective fixes a flag to the map, with progress remembered between launches.
+
+![Overworld, Nether, and End World Map hubs](References/world_map_montage.png)
+
+The first route in each dimension is a focused builder puzzle: repair the Overworld crossing, complete and power the Nether redstone line, or bridge the End islands and light the End City beacon. These levels borrow the real block palette and redstone simulation, but they run in an isolated session. Returning to the editor restores the build, camera, hotbar, undo history, weather, and display settings that were active before the map opened.
+
+![World Map builder objective](References/world_map_objective.png)
+
+The top controls are now attached to the live viewport. The window can be snapped or maximized down to a guarded 960×640 minimum, while F11 or Alt+Enter toggles native fullscreen. Text remains rendered at its final size and only viewport-sized caches are rebuilt, keeping the display crisp without turning every resize into a full content reload.
+
+| Local terrain preview | Center-preserving canvas controls |
+|---|---|
+| ![Terrain hover preview](References/terrain_hover.gif) | ![Canvas resize controls](References/canvas_controls.gif) |
+
+---
+
 ## The Geometry of Blocks
 
 ### Isometric Projection

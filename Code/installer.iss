@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.5.3"
+#define MyAppVersion "2.6.0"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -75,6 +75,7 @@ Source: "..\Assets\Sound Hub\*"; DestDir: "{app}\Assets\Sound Hub"; Flags: ignor
 Source: "..\Assets\Icons\*"; DestDir: "{app}\Assets\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Fonts\*"; DestDir: "{app}\Assets\Fonts"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Skyboxes\*"; DestDir: "{app}\Assets\Skyboxes"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Assets\World Map\*"; DestDir: "{app}\Assets\World Map"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\References\Titles\horror.png"; DestDir: "{app}\References\Titles"; Flags: ignoreversion
 
 ; Optional: Extensive Library (comment out if not needed - saves space)

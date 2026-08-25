@@ -72,6 +72,8 @@ zekton.zip
 Assets/Skyboxes/
 *.skybox.zip
 Black Mesa Skyboxes.zip
+WorldBuilder.zip
+Assets/World Map/WorldBuilder/
 Assets/LICENSES_PRIVATE.md
 Assets/**/LICENSE_PRIVATE*
 Assets/**/LICENSE*.txt

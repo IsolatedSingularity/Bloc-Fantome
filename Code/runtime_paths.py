@@ -27,6 +27,7 @@ FONTS_DIR = os.path.join(ASSETS_DIR, "Fonts")
 SKYBOXES_DIR = os.path.join(
     ASSETS_DIR, "Skyboxes", "Black Mesa", "assets", "minecraft", "optifine", "sky"
 )
+WORLD_MAP_DIR = os.path.join(ASSETS_DIR, "World Map", "WorldBuilder")
 REFERENCES_DIR = (
     os.path.join(BASE_DIR, "References")
     if getattr(sys, "frozen", False)

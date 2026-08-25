@@ -5,6 +5,9 @@ from pathlib import Path
 import random
 import sys
 import time
+from unittest.mock import patch
+
+from PIL import Image
 
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -33,6 +36,25 @@ def save_capture(surface: pygame.Surface, path: Path) -> None:
             if attempt == 19:
                 raise
             time.sleep(0.05)
+
+
+def save_gif(frames: list[pygame.Surface], path: Path, duration: int = 750) -> None:
+    """Save a small, palette-bounded README animation from native frames."""
+    images = []
+    for surface in frames:
+        rgb = pygame.image.tostring(surface, "RGB")
+        image = Image.frombytes("RGB", surface.get_size(), rgb)
+        image.thumbnail((960, 640), Image.Resampling.LANCZOS)
+        images.append(image.quantize(colors=192, method=Image.Quantize.MEDIANCUT))
+    images[0].save(
+        path,
+        save_all=True,
+        append_images=images[1:],
+        duration=duration,
+        loop=0,
+        optimize=True,
+        disposal=2,
+    )
 
 
 def render(output_dir: Path) -> None:
@@ -321,6 +343,65 @@ def render(output_dir: Path) -> None:
     app._render()
     save_capture(screen, output_dir / "redstone_lab.png")
     app._toggleRedstoneLab()
+
+    # World Map product art: three dedicated selector hubs, an objective, and
+    # the exact selector marker behavior framed inside the real editor window.
+    map_frames = []
+    app._openWorldMap()
+    for dimension in app_module.WORLD_MAP_DIMENSIONS:
+        app._switchWorldMapHub(dimension)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        app._render()
+        frame = screen.copy()
+        map_frames.append(frame)
+        save_capture(frame, output_dir / f"world_map_{dimension}.png")
+    montage = pygame.Surface((1200, 322))
+    montage.fill((17, 18, 23))
+    montage_font = app_module.load_ui_font(24, bold=True)
+    for index, (dimension, frame) in enumerate(zip(app_module.WORLD_MAP_DIMENSIONS, map_frames)):
+        panel = pygame.transform.smoothscale(frame, (392, 261))
+        x = 6 + index * 398
+        montage.blit(panel, (x, 48))
+        label = montage_font.render(dimension.upper(), True, (246, 231, 179))
+        montage.blit(label, label.get_rect(center=(x + 196, 25)))
+        pygame.draw.rect(montage, (126, 130, 142), (x, 48, 392, 261), 1)
+    save_capture(montage, output_dir / "world_map_montage.png")
+
+    app._switchWorldMapHub(app_module.DIMENSION_OVERWORLD)
+    app._startWorldMapLevel()
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app._render()
+    save_capture(screen, output_dir / "world_map_objective.png")
+    app._exitWorldMap()
+
+    # Compact hover demonstrations for README: the held terrain seed preview
+    # and the paired center-preserving canvas controls.
+    app.currentDimension = app_module.DIMENSION_OVERWORLD
+    app.world.setDimension(app_module.DIMENSION_OVERWORLD)
+    app.world.resize(32, 32, 24, min_y=0, preserve=False)
+    app._createInitialFloor()
+    app._fitWorldToViewport(notify=False)
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app._render()
+    terrain_frames = [screen.copy()]
+    with patch.object(pygame.mouse, "get_pos", return_value=app.terrainNoiseButtonRect.center):
+        app._render()
+        terrain_frames.append(screen.copy())
+    terrain_frames.append(terrain_frames[0])
+    save_gif(terrain_frames, output_dir / "terrain_hover.gif")
+
+    control_frames = []
+    for point in (
+        (-100, -100), app.growCanvasButtonRect.center,
+        app.shrinkCanvasButtonRect.center, (-100, -100),
+    ):
+        with patch.object(pygame.mouse, "get_pos", return_value=point):
+            app._render()
+            control_frames.append(screen.copy())
+    save_gif(control_frames, output_dir / "canvas_controls.gif", duration=650)
 
     random.seed(1161)
     for dimension, effect, filename in (
