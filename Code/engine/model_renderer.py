@@ -223,7 +223,8 @@ class BlockModelRenderer:
 
     def detail_boxes(self, kind: str, facing: Facing = Facing.SOUTH,
                      is_open: bool = False,
-                     half: SlabPosition = SlabPosition.BOTTOM) -> tuple[Box, ...]:
+                     half: SlabPosition = SlabPosition.BOTTOM,
+                     delay: int = 1) -> tuple[Box, ...]:
         """Return compact Minecraft-shaped boxes for common structure details."""
         if kind == "fence":
             return (
@@ -273,10 +274,14 @@ class BlockModelRenderer:
         if kind == "redstone_dust":
             return ((0, 0, 0, 16, 16, 1),)
         if kind == "repeater":
-            return (
+            delay = max(1, min(4, int(delay)))
+            canonical = (
                 (0, 0, 0, 16, 16, 2),
-                (4, 6, 2, 6, 8, 7), (10, 8, 2, 12, 10, 7),
+                (7, 11, 2, 9, 13, 8),
+                (7, 3 + delay * 2, 2, 9, 5 + delay * 2, 8),
             )
+            turns = (facing.value - Facing.SOUTH.value) % 4
+            return tuple(self._rotate_box(box, turns) for box in canonical)
         if kind == "lever":
             base = {
                 Facing.NORTH: (5, 8, 0, 11, 15, 3),
@@ -284,13 +289,30 @@ class BlockModelRenderer:
                 Facing.EAST: (1, 5, 0, 8, 11, 3),
                 Facing.WEST: (8, 5, 0, 15, 11, 3),
             }[facing]
-            handle = {
-                Facing.NORTH: (7, 6, 3, 9, 10, 11),
-                Facing.SOUTH: (7, 6, 3, 9, 10, 11),
-                Facing.EAST: (6, 7, 3, 10, 9, 11),
-                Facing.WEST: (6, 7, 3, 10, 9, 11),
-            }[facing]
-            return base, handle
+            # Two staggered handle segments provide a readable on/off lean at
+            # isometric scale without distorting the source texture.
+            lean = 1 if is_open else -1
+            if facing in (Facing.NORTH, Facing.SOUTH):
+                lean *= 1 if facing == Facing.SOUTH else -1
+                handle = (
+                    (7, 7, 3, 9, 9, 7),
+                    (7, 7 + lean, 7, 9, 9 + lean, 12),
+                )
+            else:
+                lean *= 1 if facing == Facing.EAST else -1
+                handle = (
+                    (7, 7, 3, 9, 9, 7),
+                    (7 + lean, 7, 7, 9 + lean, 9, 12),
+                )
+            return (base,) + handle
+        if kind == "button":
+            depth = 1 if is_open else 2
+            return ({
+                Facing.NORTH: (5, 16 - depth, 6, 11, 16, 10),
+                Facing.SOUTH: (5, 0, 6, 11, depth, 10),
+                Facing.EAST: (16 - depth, 5, 6, 16, 11, 10),
+                Facing.WEST: (0, 5, 6, depth, 11, 10),
+            }[facing],)
         if kind == "piston":
             if not is_open:
                 return self.cube_boxes()
@@ -404,6 +426,57 @@ class BlockModelRenderer:
         surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
         for box in boxes:
             self._draw_box(surface, box, top, side, front)
+        return surface
+
+    def render_clear_glass(self, neighbor_mask: int) -> pygame.Surface:
+        """Render a six-neighbor connected clear-glass variant.
+
+        Neighbor bits are above, below, visible-Y, opposite-Y, visible-X, and
+        opposite-X. Shared face boundaries are omitted, so a glass wall reads
+        as one clear sheet while objects behind it remain visible.
+        """
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        top = (
+            self._project(0, 0, 16), self._project(16, 0, 16),
+            self._project(16, 16, 16), self._project(0, 16, 16),
+        )
+        left = (
+            self._project(0, 16, 16), self._project(16, 16, 16),
+            self._project(16, 16, 0), self._project(0, 16, 0),
+        )
+        right = (
+            self._project(16, 0, 16), self._project(16, 16, 16),
+            self._project(16, 16, 0), self._project(16, 0, 0),
+        )
+        above = bool(neighbor_mask & 1)
+        below = bool(neighbor_mask & 2)
+        visible_y = bool(neighbor_mask & 4)
+        opposite_y = bool(neighbor_mask & 8)
+        visible_x = bool(neighbor_mask & 16)
+        opposite_x = bool(neighbor_mask & 32)
+        outline = (194, 230, 241, 115)
+
+        def face(points, fill, boundaries):
+            pygame.draw.polygon(surface, fill, points)
+            for connected, start, end in boundaries:
+                if not connected:
+                    pygame.draw.line(surface, outline, start, end, 1)
+
+        if not above:
+            face(top, (118, 202, 228, 18), (
+                (opposite_y, top[0], top[1]), (visible_x, top[1], top[2]),
+                (visible_y, top[2], top[3]), (opposite_x, top[3], top[0]),
+            ))
+        if not visible_y:
+            face(left, (91, 166, 198, 14), (
+                (above, left[0], left[1]), (visible_x, left[1], left[2]),
+                (below, left[2], left[3]), (opposite_x, left[3], left[0]),
+            ))
+        if not visible_x:
+            face(right, (103, 181, 211, 14), (
+                (above, right[0], right[1]), (visible_y, right[1], right[2]),
+                (below, right[2], right[3]), (opposite_y, right[3], right[0]),
+            ))
         return surface
 
     def render_piston(self, cap, side, back, facing: Facing,

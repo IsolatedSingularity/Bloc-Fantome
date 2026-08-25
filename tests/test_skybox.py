@@ -27,6 +27,13 @@ def test_all_supplied_skies_are_uniquely_distributed_across_dimensions():
     }
     assert len(paths) == len(set(paths)) == 7
     assert all(os.path.isfile(os.path.join(SKYBOXES_DIR, path)) for path in paths)
+    assert all(
+        os.path.isfile(os.path.join(SKYBOXES_DIR, variant.panorama_path))
+        for variants in SKYBOX_VARIANTS.values() for variant in variants
+    )
+    assert [variants[0].name for variants in SKYBOX_VARIANTS.values()] == [
+        "sky_day01_07", "Xen Sky 2", "Xen Sky 6",
+    ]
 
 
 def test_renderer_smoothscales_lazily_rotates_and_bounds_its_cache():
@@ -45,16 +52,15 @@ def test_renderer_smoothscales_lazily_rotates_and_bounds_its_cache():
     assert renderer.rotation > start
 
 
-def test_automatic_swap_and_celestial_mapping_crossfade_in_time():
+def test_manual_selection_wraps_crossfades_and_does_not_auto_swap():
     renderer = SkyboxRenderer(SKYBOXES_DIR, (320, 180))
     renderer.update(0, "nether")
-    renderer.update(renderer.AUTO_SWAP_MS, "nether")
+    renderer.update(120_000, "nether", celestial_enabled=True, celestial_angle=500)
+    assert renderer.current_index == 0
+
+    assert renderer.cycle("nether", 1) == "Ashen Dawn"
     assert renderer.current_index == 1
     assert renderer.previous_index == 0
     renderer.update(renderer.CROSSFADE_MS, "nether")
     assert renderer.previous_index is None
-
-    renderer.update(0, "overworld", celestial_enabled=True, celestial_angle=500)
-    assert renderer.current_index == 2
-    renderer.update(0, "overworld", celestial_enabled=True, celestial_angle=330)
-    assert renderer.current_index == 1
+    assert renderer.cycle("nether", 1) == "Xen Sky 2"

@@ -34,9 +34,21 @@ ZEKTON_FONT = os.path.join(
     PROJECT_ROOT, "Assets", "Fonts", "Zekton", "Zekton-Regular.otf"
 )
 HORROR_TITLE = os.path.join(PROJECT_ROOT, "References", "Titles", "horror.png")
+SKYBOX_PANORAMA_ROOT = os.path.join(
+    PROJECT_ROOT, "Assets", "Skyboxes", "Black Mesa", "assets", "minecraft",
+    "optifine", "sky", "panoramas",
+)
+SKYBOX_PANORAMAS = [
+    os.path.join(SKYBOX_PANORAMA_ROOT, world, filename)
+    for world, filename in (
+        ("world0", "dawn.png"), ("world0", "day.png"),
+        ("world0", "dusk.png"), ("world0", "night.png"),
+        ("world1", "1.png"), ("world1", "2.png"), ("world1", "3.png"),
+    )
+]
 
 # Version info
-VERSION = "2.5.1"
+VERSION = "2.5.3"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -80,6 +92,13 @@ def build(debug: bool = False, diagnostic: bool = False):
     if not os.path.isfile(HORROR_TITLE):
         raise FileNotFoundError(
             f"Required splash title artwork is missing: {HORROR_TITLE}"
+        )
+    missing_skyboxes = [path for path in SKYBOX_PANORAMAS if not os.path.isfile(path)]
+    if missing_skyboxes:
+        raise FileNotFoundError(
+            "Required spherical skybox panorama(s) are missing: "
+            + ", ".join(missing_skyboxes)
+            + ". Run Code/tools/build_skybox_panoramas.py before packaging."
         )
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.

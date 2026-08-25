@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 
 
@@ -43,8 +44,8 @@ def test_dead_duplicate_types_are_not_exported():
 
 def test_block_enum_name_and_value_contract():
     values = [(member.name, member.value) for member in blocFantome.BlockType]
-    assert len(values) == 339
-    assert _digest(values) == "75eee78cf8208c8b35c066cd5b025dd892139a098b313f3063277b856d22d857"
+    assert len(values) == 340
+    assert _digest(values) == "8ef8365c6f45454d4a1ecb022164e8263c90e8ed759dd6462d8a95015019697a"
 
 
 def test_block_catalog_and_sound_contract():
@@ -56,9 +57,9 @@ def test_block_catalog_and_sound_contract():
         (block.name, vars(sound))
         for block, sound in blocFantome.BLOCK_SOUNDS.items()
     ]
-    assert len(definitions) == len(sounds) == 338
-    assert _digest(definitions) == "8fccdfdad67277b127e02cbe93fb3c337d41a61957b775301b8af89a38009760"
-    assert _digest(sounds) == "c0326c648ad5677261707f4a7b348b03371e0db12d0f15379ac0f90a5e470e7e"
+    assert len(definitions) == len(sounds) == 339
+    assert _digest(definitions) == "e85e4cb9105c7192f255cf9c1e3fcfc85c5c0be437aa465303a0a02944fddfa2"
+    assert _digest(sounds) == "b58593730d6308e173fb5166ecfe348ebf5c3776db569a00f55eb9bbd6ba5f98"
 
 
 def test_category_order_and_membership_contract():
@@ -67,7 +68,7 @@ def test_category_order_and_membership_contract():
         for name, blocks in blocFantome.BLOCK_CATEGORIES.items()
     ]
     assert len(categories) == 12
-    assert _digest(categories) == "9932d502bef84727057c3d28d12e26b5d113369d1bba97c6966bb465a8a7d4fe"
+    assert _digest(categories) == "255a0e711c48419d87e741957fe81bf23d7c6ebf0ffbd63f1b2d1ce94a6a7f92"
 
 
 def test_structure_tutorial_and_weather_summary_contract():
@@ -86,7 +87,7 @@ def test_structure_tutorial_and_weather_summary_contract():
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
     assert len(structures) == 40
-    assert _digest(structures) == "80c2612d4a7342e0c76e2361bd467632ed5c2755d8756228676e485205fbe8d1"
+    assert _digest(structures) == "07a28ad6b7b3f109caa3f56b513e9b2d147ff2bdfb375b8c042923d69d3d7c0e"
     assert len(tutorial) == 17
     assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
     assert _digest(blocFantome.DIMENSION_WEATHER) == "ba1a097351944d2a2aa27be50da2a101866f25f4b52f952fb757e0beb3f5da65"
@@ -107,6 +108,15 @@ def test_visible_product_name_is_accented_while_executable_name_stays_compatible
     assert '#define MyAppName "Bloc Fantôme"' in installer
     assert '#define MyAppExeName "BlocFantome.exe"' in installer
     assert 'Name: "{group}\\{#MyAppName}"' in installer
+    build_version = re.search(r'^VERSION = "([^"]+)"', build_script, re.MULTILINE).group(1)
+    installer_version = re.search(
+        r'^#define MyAppVersion "([^"]+)"', installer, re.MULTILINE
+    ).group(1)
+    runtime_version = re.search(
+        r"blocfantome\.builder\.([0-9.]+)",
+        (ROOT / "Code" / "blocFantome.py").read_text(encoding="utf-8"),
+    ).group(1)
+    assert build_version == installer_version == runtime_version
 
 
 def test_structure_registry_composition_does_not_mutate_builtin_mapping():

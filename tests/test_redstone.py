@@ -18,6 +18,7 @@ def _definitions():
         BlockType.REDSTONE_WALL_TORCH, BlockType.LEVER,
         BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
         BlockType.PISTON_HEAD, BlockType.REDSTONE_LAMP,
+        BlockType.STONE_BUTTON,
     ):
         definitions[block] = detail(block.name)
     return definitions
@@ -239,6 +240,34 @@ def test_wire_connection_mask_encodes_north_east_south_west():
     _place(world, (3, 2, 1), BlockType.REDSTONE_DUST)  # north, bit 0
     _place(world, (3, 4, 1), BlockType.LEVER)          # south, bit 2
     assert redstone.wire_connection_mask(center) == 0b0101
+
+
+def test_wire_does_not_connect_visually_to_consumers_that_cannot_emit_power():
+    world, redstone = _world()
+    center = (3, 3, 1)
+    _place(world, center, BlockType.REDSTONE_DUST)
+    _place(world, (3, 2, 1), BlockType.REDSTONE_LAMP)
+    _place(world, (4, 3, 1), BlockType.PISTON, facing=Facing.EAST)
+    assert redstone.wire_connection_mask(center) == 0
+
+
+def test_stone_button_powers_for_twenty_game_ticks_then_releases():
+    world, redstone = _world()
+    position = (2, 2, 1)
+    _place(world, position, BlockType.STONE_BUTTON, facing=Facing.SOUTH)
+    _place(world, (3, 2, 1), BlockType.REDSTONE_DUST)
+
+    assert redstone.press_button(position)
+    redstone.update(0)
+    assert world.getBlockProperties(*position).powered
+    assert world.getBlockProperties(3, 2, 1).redstonePower == 15
+
+    for _ in range(19):
+        redstone.update(50)
+        assert world.getBlockProperties(*position).powered
+    redstone.update(50)
+    assert not world.getBlockProperties(*position).powered
+    assert world.getBlockProperties(3, 2, 1).redstonePower == 0
 
 
 def test_piston_chain_limit_is_twelve_blocks():

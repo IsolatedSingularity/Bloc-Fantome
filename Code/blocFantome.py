@@ -54,7 +54,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.5.1'
+        myappid = 'blocfantome.builder.2.5.3'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -558,6 +558,7 @@ class _LegacyBlockType(Enum):
     PISTON = 544
     STICKY_PISTON = 545
     PISTON_HEAD = 546
+    STONE_BUTTON = 547
 
 
 from domain.blocks import BlockType
@@ -923,6 +924,7 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.PISTON: BlockDefinition("Piston", "piston_top.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
     BlockType.STICKY_PISTON: BlockDefinition("Sticky Piston", "piston_top_sticky.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
     BlockType.PISTON_HEAD: BlockDefinition("Piston Head", "piston_top.png", "piston_side.png", "piston_inner.png", transparent=True, modelKind="piston_head"),
+    BlockType.STONE_BUTTON: BlockDefinition("Stone Button", "stone.png", "stone.png", "stone.png", transparent=True, modelKind="button"),
     # Cold blocks
     BlockType.SNOW: BlockDefinition("Snow Block", "snow.png", "snow.png", "snow.png"),
     BlockType.ICE: BlockDefinition("Ice", "ice.png", "ice.png", "ice.png", transparent=True),
@@ -1404,6 +1406,7 @@ BLOCK_SOUNDS[BlockType.REPEATER] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.PISTON] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.STICKY_PISTON] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.PISTON_HEAD] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.STONE_BUTTON] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.POLISHED_TUFF_SLAB] = SoundDefinition("tuff", "tuff")
 
 
@@ -1523,6 +1526,7 @@ BLOCK_CATEGORIES = {
     ],
     "Redstone": [
         BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH, BlockType.LEVER,
+        BlockType.STONE_BUTTON,
         BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
         BlockType.REDSTONE_LAMP, BlockType.REDSTONE_BLOCK,
     ],
@@ -2673,46 +2677,47 @@ STRUCTURE_HORROR_MONOLITH = {
     ]
 }
 
-STRUCTURE_PISTON_DOOR = {
-    "name": "2x2 Exposed Piston Door",
-    "blocks": [
-        # Compact 6x4 stone foundation and a raised wiring shelf.
-        *[(x, y, 0, BlockType.STONE_BRICKS) for x in range(6) for y in range(4)],
-        # The lever-powered bus closes the door naturally on the first game tick.
-        *[(0, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.EAST, sticky=True))
-          for z in (1, 2)],
-        *[(5, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.WEST, sticky=True))
-          for z in (1, 2)],
-        # The two sticky halves push inward and pull back into their exposed bays.
-        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (1, 4) for z in (1, 2)],
-        (5, 1, 2, BlockType.LEVER,
-         BlockProperties(facing=Facing.SOUTH, powered=True, redstonePower=15)),
-        *[(x, 1, z, BlockType.REDSTONE_DUST) for x in range(5) for z in (1, 2)],
-        (5, 1, 1, BlockType.REDSTONE_DUST),
-    ],
-}
+def _pistonDoorStructure(*, framed: bool) -> Dict:
+    """Build a readable, supported, single-lever 2x2 piston door."""
+    blocks = [
+        (x, y, 0, BlockType.STONE_BRICKS)
+        for x in range(11) for y in range(7)
+    ]
+    # Door pistons and the two retractable halves.
+    for z in (1, 2):
+        blocks.extend((
+            (3, 3, z, BlockType.STICKY_PISTON,
+             BlockProperties(facing=Facing.EAST, sticky=True)),
+            (8, 3, z, BlockType.STICKY_PISTON,
+             BlockProperties(facing=Facing.WEST, sticky=True)),
+            (4, 3, z, BlockType.STONE_BRICKS),
+            (7, 3, z, BlockType.STONE_BRICKS),
+        ))
+    # Lower bus is floor-supported and directly powers the lower pair.
+    blocks.append((0, 2, 1, BlockType.LEVER, BlockProperties(facing=Facing.SOUTH)))
+    blocks.extend((x, 2, 1, BlockType.REDSTONE_DUST) for x in range(1, 10))
+    # Route around the left bank and climb exactly one supported block.
+    blocks.extend((1, y, 1, BlockType.REDSTONE_DUST) for y in range(3, 7))
+    blocks.append((2, 6, 1, BlockType.REDSTONE_DUST))
+    blocks.append((2, 5, 1, BlockType.POLISHED_DEEPSLATE))
+    blocks.append((2, 5, 2, BlockType.REDSTONE_DUST))
+    # Every upper wire has a real supporting shelf and powers the upper pair.
+    blocks.extend((x, 4, 1, BlockType.POLISHED_DEEPSLATE) for x in range(3, 9))
+    blocks.extend((x, 4, 2, BlockType.REDSTONE_DUST) for x in range(2, 10))
+    if framed:
+        blocks.extend((x, 3, 3, BlockType.DEEPSLATE_BRICKS) for x in range(2, 10))
+        blocks.extend(
+            (x, 3, z, BlockType.DEEPSLATE_BRICKS)
+            for x in (2, 9) for z in (1, 2)
+        )
+    return {
+        "name": "2x2 Flush Piston Door" if framed else "2x2 Exposed Piston Door",
+        "blocks": blocks,
+    }
 
-STRUCTURE_FLUSH_PISTON_DOOR = {
-    "name": "2x2 Flush Piston Door",
-    "blocks": [
-        *[(x, y, 0, BlockType.STONE_BRICKS) for x in range(6) for y in range(5)],
-        *[(0, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.EAST, sticky=True)) for z in (1, 2)],
-        *[(5, 2, z, BlockType.STICKY_PISTON,
-           BlockProperties(facing=Facing.WEST, sticky=True)) for z in (1, 2)],
-        # Matching stone halves park in the jambs, making the closed face seamless.
-        *[(x, 2, z, BlockType.STONE_BRICKS) for x in (1, 4) for z in (1, 2)],
-        *[(x, 2, 3, BlockType.STONE_BRICKS) for x in range(6)],
-        *[(x, y, z, BlockType.STONE_BRICKS)
-          for x in (0, 5) for y in (3, 4) for z in (1, 2)],
-        (5, 1, 2, BlockType.LEVER,
-         BlockProperties(facing=Facing.SOUTH, powered=True, redstonePower=15)),
-        *[(x, 1, z, BlockType.REDSTONE_DUST) for x in range(5) for z in (1, 2)],
-        (5, 1, 1, BlockType.REDSTONE_DUST),
-    ],
-}
+
+STRUCTURE_PISTON_DOOR = _pistonDoorStructure(framed=False)
+STRUCTURE_FLUSH_PISTON_DOOR = _pistonDoorStructure(framed=True)
 
 PREMADE_STRUCTURES = {
     "piston_door": STRUCTURE_PISTON_DOOR,
@@ -3035,6 +3040,46 @@ class TutorialScreen:
             "demo": "clear"  # Clear for fresh start
         }
     ]
+
+    ADVANCED_OBJECTIVES = (
+        "Build freely in one marked bay; then remove a block without changing tools.",
+        "Pan, zoom, and rotate until the observatory stays centered from all four views.",
+        "Select three materials from the lesson hotbar and extend their matching columns.",
+        "Use Fill to complete one outlined floor and one vertical wall section.",
+        "Cycle 1x1, 2x2, and 3x3 brushes on the three measured construction pads.",
+        "Undo the five obvious mistakes, then redo one and correct it by hand.",
+        "Enable mirror mode and complete the empty half of the tall guardian statue.",
+        "Rotate around the asymmetric monument and identify its four directional markers.",
+        "Release water and lava into separate bowls, then join them in the center channel.",
+        "Place a structure on an empty foundation without colliding with the sample pavilion.",
+        "Inspect the layered Nether terrain, then add a safe bridge between the two ledges.",
+        "Explore the shaped End island and extend the tower without flattening the terrain.",
+        "Toggle weather while viewing the open courtyard and its drainage channels.",
+        "Move the five light types through the cave and compare their reach and color.",
+        "Save the temple, alter one tower, then reload to verify the saved version.",
+        "Inspect the monolith from every side. The lesson remains fully editable.",
+        "Combine any three tools in the open graduation arena, then return to your build.",
+    )
+
+    ADVANCED_HOTBARS = (
+        ("grass", "dirt", "stone", "oak_planks", "cobblestone", "bricks", "glass", "oak_log", "water"),
+        ("stone_bricks", "glass", "oak_log", "oak_planks", "cobblestone", "quartz_block", "glowstone", "bricks", "stone"),
+        ("red_wool", "blue_wool", "yellow_wool", "green_wool", "white_wool", "purple_wool", "glass", "stone", "oak_planks"),
+        ("stone_bricks", "quartz_block", "sandstone", "smooth_stone", "prismarine", "bricks", "cobblestone", "stone", "dirt"),
+        ("oak_log", "spruce_log", "birch_log", "jungle_log", "dark_oak_log", "stone", "cobblestone", "bricks", "glass"),
+        ("stone", "cobblestone", "mossy_cobblestone", "andesite", "diorite", "granite", "stone_bricks", "dirt", "netherrack"),
+        ("red_wool", "blue_wool", "yellow_wool", "green_wool", "purple_wool", "quartz_block", "stone_bricks", "glass", "glowstone"),
+        ("stone_bricks", "oak_planks", "stone", "oak_log", "glass", "quartz_block", "cobblestone", "bricks", "glowstone"),
+        ("water", "lava", "ice", "packed_ice", "obsidian", "prismarine", "clay", "sandstone", "stone_bricks"),
+        ("bookshelf", "crafting_table", "furnace", "chest", "enchanting_table", "oak_planks", "stone_bricks", "glass", "glowstone"),
+        ("netherrack", "soul_sand", "nether_bricks", "glowstone", "magma_block", "obsidian", "quartz_block", "lava", "crying_obsidian"),
+        ("end_stone", "purpur_block", "obsidian", "bedrock", "quartz_block", "glass", "glowstone", "stone", "purple_wool"),
+        ("snow", "ice", "packed_ice", "white_wool", "white_concrete", "quartz_block", "glass", "clay", "water"),
+        ("glowstone", "sea_lantern", "jack_o_lantern", "shroomlight", "magma_block", "lava", "crying_obsidian", "redstone_block", "gold_block"),
+        ("chest", "ender_chest", "bookshelf", "jukebox", "crafting_table", "quartz_block", "stone_bricks", "glowstone", "oak_planks"),
+        ("crying_obsidian", "obsidian", "bone_block", "netherrack", "soul_sand", "magma_block", "black_wool", "stone", "redstone_block"),
+        ("diamond_block", "emerald_block", "gold_block", "iron_block", "lapis_block", "redstone_block", "copper_block", "stone_bricks", "glass"),
+    )
     
     def __init__(self, screenWidth: int, screenHeight: int):
         """
@@ -3053,6 +3098,7 @@ class TutorialScreen:
         self.dragOffset = (0, 0)
         self.restoreHovered = False
         self.showOnStartup = True
+        self.advanced = False
         
         # Callback for demo structure loading (set by main app)
         self.onStepChange = None
@@ -3099,6 +3145,21 @@ class TutorialScreen:
         self.nextHovered = False
         self.skipHovered = False
         self.checkboxHovered = False
+
+    def setAdvanced(self, advanced: bool) -> None:
+        """Switch between the compact primer and the expanded field guide."""
+        self.advanced = bool(advanced)
+        if self.advanced:
+            self.panelWidth, self.panelHeight = 448, 640
+            self.panelX, self.panelY = 18, 78
+        else:
+            self.panelWidth, self.panelHeight = 400, 500
+            self.panelX = self.screenWidth - self.panelWidth - 20
+            self.panelY = (self.screenHeight - self.panelHeight) // 2
+        self._layoutPanelControls()
+
+    def advancedHotbarNames(self, stepIndex: int) -> tuple[str, ...]:
+        return self.ADVANCED_HOTBARS[stepIndex]
 
     def _layoutPanelControls(self) -> None:
         """Keep every interactive rectangle attached to the draggable panel."""
@@ -3403,6 +3464,7 @@ class TutorialScreen:
             "quartz_block": BlockType.QUARTZ_BLOCK,
             "smooth_stone": BlockType.SMOOTH_STONE,
             "sandstone": BlockType.SANDSTONE,
+            "clay": BlockType.CLAY,
             "deepslate": BlockType.STONE,  # Use stone as fallback (no DEEPSLATE)
             "white_concrete": BlockType.WHITE_CONCRETE,
             "blue_stained_glass": BlockType.BLUE_STAINED_GLASS,
@@ -3496,6 +3558,9 @@ class TutorialScreen:
 
         if self.minimized:
             self._renderMinimizedTile(screen)
+            return
+        if self.advanced:
+            self._renderAdvanced(screen)
             return
         
         # Get current step content
@@ -3628,6 +3693,132 @@ class TutorialScreen:
         self._drawButton(screen, self.skipButtonRect, "Skip", self.skipHovered, False)
         
         # Draw checkbox
+        self._drawCheckbox(screen)
+
+    def _renderAdvanced(self, screen: pygame.Surface) -> None:
+        """Render the dedicated 32x32 field-guide interface."""
+        step = self.TUTORIAL_STEPS[self.currentStep]
+        isHorror = step.get("is_horror", False)
+        panel = pygame.Rect(self.panelX, self.panelY, self.panelWidth, self.panelHeight)
+        shadow = pygame.Surface((panel.width + 12, panel.height + 12), pygame.SRCALPHA)
+        shadow.fill((0, 0, 0, 115))
+        screen.blit(shadow, (panel.x + 6, panel.y + 7))
+        pygame.draw.rect(screen, (15, 12, 18) if isHorror else (20, 22, 28), panel, border_radius=6)
+        pygame.draw.rect(screen, (116, 46, 88) if isHorror else (75, 112, 132), panel, 2, border_radius=6)
+
+        rail = pygame.Rect(panel.x + 10, panel.y + 52, 42, panel.height - 132)
+        pygame.draw.rect(screen, (12, 14, 18), rail, border_radius=4)
+        spacing = max(22, (rail.height - 16) // len(self.TUTORIAL_STEPS))
+        for index in range(len(self.TUTORIAL_STEPS)):
+            cy = rail.y + 10 + index * spacing
+            active = index == self.currentStep
+            pygame.draw.circle(
+                screen, (235, 81, 62) if isHorror and active else
+                (96, 204, 217) if active else (68, 72, 82),
+                (rail.centerx, cy), 6 if active else 4,
+            )
+            if active:
+                number = self.labNumberFont.render(str(index + 1), True, (245, 245, 245)) if hasattr(self, "labNumberFont") else self.smallFont.render(str(index + 1), True, (245, 245, 245))
+                screen.blit(number, number.get_rect(midleft=(rail.right + 7, cy)))
+
+        header = self.smallFont.render("ADVANCED FIELD GUIDE  •  32 × 32", True, (140, 206, 214))
+        screen.blit(header, (panel.x + 18, panel.y + 16))
+        pygame.draw.rect(screen, (60, 64, 74), self.minimizeButtonRect, border_radius=2)
+        pygame.draw.line(screen, (235, 235, 238),
+                         (self.minimizeButtonRect.x + 5, self.minimizeButtonRect.bottom - 6),
+                         (self.minimizeButtonRect.right - 5, self.minimizeButtonRect.bottom - 6), 2)
+
+        contentX = panel.x + 68
+        title = self.titleFont.render(step["title"], True, (250, 248, 244))
+        screen.blit(title, (contentX, panel.y + 60))
+        progress = self.smallFont.render(
+            f"LESSON {self.currentStep + 1:02d} / {len(self.TUTORIAL_STEPS):02d}",
+            True, (145, 151, 162),
+        )
+        screen.blit(progress, (contentX, panel.y + 98))
+        bar = pygame.Rect(contentX, panel.y + 122, panel.right - contentX - 18, 5)
+        pygame.draw.rect(screen, (48, 52, 60), bar)
+        fill = bar.copy()
+        fill.width = round(bar.width * (self.currentStep + 1) / len(self.TUTORIAL_STEPS))
+        pygame.draw.rect(screen, (91, 190, 205), fill)
+
+        objective = pygame.Rect(contentX, panel.y + 142, panel.right - contentX - 18, 80)
+        pygame.draw.rect(screen, (28, 34, 41), objective, border_radius=4)
+        pygame.draw.rect(screen, (69, 101, 116), objective, 1, border_radius=4)
+        label = self.smallFont.render("TRY IT", True, (103, 213, 224))
+        screen.blit(label, (objective.x + 12, objective.y + 8))
+        words = self.ADVANCED_OBJECTIVES[self.currentStep].split()
+        lines = [""]
+        for word in words:
+            candidate = f"{lines[-1]} {word}".strip()
+            if self.smallFont.size(candidate)[0] <= objective.width - 24:
+                lines[-1] = candidate
+            else:
+                lines.append(word)
+        for index, line in enumerate(lines[:2]):
+            surf = self.smallFont.render(line, True, (220, 224, 226))
+            screen.blit(surf, (objective.x + 12, objective.y + 31 + index * 19))
+
+        hotbarY = panel.y + 240
+        names = self.ADVANCED_HOTBARS[self.currentStep]
+        slot = 34
+        for index, name in enumerate(names):
+            x = contentX + index * (slot + 3)
+            rect = pygame.Rect(x, hotbarY, slot, slot)
+            pygame.draw.rect(screen, (13, 16, 20), rect)
+            pygame.draw.rect(screen, (80, 87, 98), rect, 1)
+            blockType = self._iconNameToBlockType(name)
+            icon = self.assetManager.getPanelPreviewIcon(blockType) if self.assetManager and blockType else None
+            if icon is None and self.assetManager and blockType:
+                icon = self.assetManager.getBlockSprite(blockType)
+            if icon:
+                icon = pygame.transform.smoothscale(icon, (28, 28))
+                screen.blit(icon, icon.get_rect(center=rect.center))
+            key = self.smallFont.render(str(index + 1), True, (235, 235, 235))
+            screen.blit(key, (rect.x + 2, rect.y + 1))
+
+        contentY = hotbarY + 52
+        dimensionNotes = {
+            10: (
+                "• Compare both terrain levels",
+                "• Read the netherrack and basalt layers",
+                "• Extend the bridge between ledges",
+                "• Mark a safe route above the lava trench",
+            ),
+            11: (
+                "• Study the island's irregular top",
+                "• Keep its tapered underside and exposed void",
+                "• Extend the purpur tower",
+                "• Add supports without flattening the ground",
+            ),
+        }
+        meaningful = list(dimensionNotes.get(
+            self.currentStep, [line for line in step["content"] if line][:6]
+        ))
+        maxContentWidth = panel.right - contentX - 18
+        for line in meaningful:
+            isBullet = line.startswith(("- ", "• "))
+            clean = line[2:] if isBullet else line
+            wrapped = [""]
+            for word in clean.split():
+                prefix = "• " if isBullet and len(wrapped) == 1 else "  " if isBullet else ""
+                candidate = f"{wrapped[-1]} {word}".strip()
+                if self.contentFont.size(prefix + candidate)[0] <= maxContentWidth:
+                    wrapped[-1] = candidate
+                else:
+                    wrapped.append(word)
+            for lineIndex, segment in enumerate(wrapped):
+                if contentY + self.contentFont.get_height() >= self.backButtonRect.top - 8:
+                    break
+                prefix = "• " if isBullet and lineIndex == 0 else "  " if isBullet else ""
+                surf = self.contentFont.render(prefix + segment, True, (211, 215, 220))
+                screen.blit(surf, (contentX, contentY))
+                contentY += 27
+
+        self._drawButton(screen, self.backButtonRect, "Back", self.backHovered, self.currentStep == 0)
+        nextText = "Finish" if self.currentStep == len(self.TUTORIAL_STEPS) - 1 else "Next"
+        self._drawButton(screen, self.nextButtonRect, nextText, self.nextHovered, False)
+        self._drawButton(screen, self.skipButtonRect, "Exit", self.skipHovered, False)
         self._drawCheckbox(screen)
 
     def _renderMinimizedTile(self, screen: pygame.Surface) -> None:
@@ -3791,6 +3982,7 @@ class AssetManager:
         # Stairs: (blockType, facing) -> sprite
         self.stairSprites: Dict[Tuple, pygame.Surface] = {}
         self.detailSprites: Dict[Tuple, pygame.Surface] = {}
+        self.clearGlassSprites: Dict[int, pygame.Surface] = {}
         self.redstoneLampSprites: Dict[bool, pygame.Surface] = {}
         self.specialBlockTextures: Dict[BlockType, Tuple[pygame.Surface, pygame.Surface, pygame.Surface]] = {}
         
@@ -7832,7 +8024,7 @@ class AssetManager:
             return self.blockSprites.get(blockType)
         stateful = definition.modelKind in {
             "redstone_dust", "redstone_torch", "lever", "repeater",
-            "piston", "piston_head",
+            "button", "piston", "piston_head",
         }
         key = (
             blockType, facing, bool(isOpen), half,
@@ -7880,12 +8072,17 @@ class AssetManager:
             elif definition.modelKind == "piston_head":
                 sprite = self.blockModelRenderer.render_piston_head(*textures, facing)
             else:
+                modelOpen = (
+                    bool(powered)
+                    if definition.modelKind in {"button", "lever"}
+                    else bool(isOpen)
+                )
                 boxes = self.blockModelRenderer.detail_boxes(
-                    definition.modelKind, facing, bool(isOpen), half
+                    definition.modelKind, facing, modelOpen, half, delay
                 )
                 sprite = self.blockModelRenderer.render_boxes(boxes, *textures)
             if powered and definition.modelKind in {
-                "redstone_dust", "redstone_torch", "repeater", "lever"
+                "redstone_dust", "redstone_torch", "repeater", "lever", "button"
             }:
                 sprite = self._withRedstoneGlow(sprite, definition.modelKind)
             self.detailSprites[key] = sprite
@@ -7900,10 +8097,15 @@ class AssetManager:
         if dot is None or vertical is None or horizontal is None:
             return dot or vertical or horizontal
         texture = pygame.Surface(dot.get_size(), pygame.SRCALPHA)
-        texture.blit(dot, (0, 0))
         width, height = texture.get_size()
         mid_x, mid_y = width // 2, height // 2
         mask = max(0, min(15, int(mask)))
+        # Vanilla uses the isolated dot for no links and junctions/corners;
+        # straight runs are only the corresponding line model.
+        northSouth = bool(mask & 0b0101)
+        eastWest = bool(mask & 0b1010)
+        if mask == 0 or (northSouth and eastWest):
+            texture.blit(dot, (0, 0))
         if mask & 0b0001:  # north
             texture.blit(vertical, (0, 0), pygame.Rect(0, 0, width, mid_y + 1))
         if mask & 0b0010:  # east
@@ -7949,6 +8151,18 @@ class AssetManager:
         if icon is not None:
             cached = icon.copy()
             self.panelPreviewIcons[blockType] = cached
+        return cached
+
+    def getConnectedGlassSprite(self, neighborMask: int) -> Optional[pygame.Surface]:
+        """Return one of the bounded six-neighbor clear-glass variants."""
+        neighborMask = max(0, min(63, int(neighborMask)))
+        if neighborMask & 0b010101 == 0b010101:
+            return None
+        cached = self.clearGlassSprites.get(neighborMask)
+        if cached is not None:
+            return cached
+        cached = self.blockModelRenderer.render_clear_glass(neighborMask)
+        self.clearGlassSprites[neighborMask] = cached
         return cached
 
     def getScaledSprite(
@@ -8997,6 +9211,9 @@ class BlocFantome:
         self.skyboxRenderer = SkyboxRenderer(
             SKYBOXES_DIR, (WINDOW_WIDTH, WINDOW_HEIGHT)
         )
+        self.skyboxPrevRect = pygame.Rect(0, 0, 0, 0)
+        self.skyboxNextRect = pygame.Rect(0, 0, 0, 0)
+        self.skyboxToggleRect = pygame.Rect(0, 0, 0, 0)
         
         # Sub-category expanded state (within Blocks section)
         self.expandedCategories: Dict[str, bool] = {}
@@ -9010,6 +9227,11 @@ class BlocFantome:
         self.tutorialScreen.onTutorialEnd = self._onTutorialEnd
         self.tutorialAdvancedMode = False
         self._tutorialSessionSnapshot = None
+        self.redstoneLabActive = False
+        self.interactionMode = False
+        self.redstoneLabButtonRect = pygame.Rect(0, 0, 0, 0)
+        self.redstoneLabComponentRects: Dict[BlockType, pygame.Rect] = {}
+        self.labSmallFont = load_ui_font(13)
         
         # Experimental lighting system
         self.lightingEnabled = False
@@ -9579,6 +9801,12 @@ class BlocFantome:
                         "worldCenteredRotation", False
                     )
                     self.skyboxesEnabled = config.get("skyboxesEnabled", False)
+                    selections = config.get("skyboxSelections", {})
+                    for dimension, index in selections.items():
+                        if dimension in self.skyboxRenderer.selected_indices:
+                            self.skyboxRenderer.set_selection(
+                                dimension, int(index), crossfade=False
+                            )
                     
                     # Restore favorites (by block name)
                     savedFavorites = config.get("favoriteBlocks", [])
@@ -9620,6 +9848,7 @@ class BlocFantome:
                 "showBlockTooltip": self.showBlockTooltip,
                 "worldCenteredRotation": self.worldCenteredRotation,
                 "skyboxesEnabled": self.skyboxesEnabled,
+                "skyboxSelections": dict(self.skyboxRenderer.selected_indices),
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
                 "hotbar": [b.name for b in self.hotbar],
                 "searchHistory": self.searchHistory,
@@ -10204,7 +10433,7 @@ class BlocFantome:
                 for name in (
                     "rainEnabled", "snowEnabled", "horrorRainEnabled",
                     "lightingEnabled", "celestialEnabled", "cloudsEnabled",
-                    "skyboxesEnabled",
+                    "skyboxesEnabled", "showGrid",
                 ) if hasattr(self, name)
             },
             "celestialAngle": self.celestialAngle,
@@ -10215,10 +10444,163 @@ class BlocFantome:
         """Start a non-destructive basic or expanded 32 x 32 tutorial session."""
         self._captureTutorialSession()
         self.tutorialAdvancedMode = bool(advanced)
+        self.tutorialScreen.setAdvanced(advanced)
         self.tutorialScreen.show()
         if advanced:
-            self.tooltipText = "Advanced Tutorial: expanded 32 x 32 showcases"
-            self.tooltipTimer = 2400
+            # The field guide identifies itself; a second banner obscures the
+            # first lesson and makes the initial scene harder to inspect.
+            self.tooltipTimer = 0
+
+    def _setInteractionMode(self, enabled: bool) -> None:
+        """Enable a safe hand tool that can use controls but never edit cells."""
+        self.interactionMode = bool(enabled)
+        try:
+            cursor = pygame.SYSTEM_CURSOR_HAND if enabled else pygame.SYSTEM_CURSOR_ARROW
+            pygame.mouse.set_cursor(cursor)
+        except (pygame.error, AttributeError):
+            pass
+        self.tooltipText = "Interact hand: ON (I to exit)" if enabled else "Interact hand: OFF"
+        self.tooltipTimer = 1700
+
+    def _toggleRedstoneLab(self) -> None:
+        """Swap non-destructively between the live build and a focused circuit lab."""
+        if self.redstoneLabActive:
+            self.redstoneLabActive = False
+            self._setInteractionMode(False)
+            self._restoreTutorialSession()
+            self.tooltipText = "Returned to your build"
+            self.tooltipTimer = 1800
+            return
+
+        if self.tutorialScreen.visible:
+            self.tutorialScreen.hide()
+            self._restoreTutorialSession()
+        self._captureTutorialSession()
+        self.redstoneLabActive = True
+        self._setInteractionMode(True)
+        self.currentDimension = DIMENSION_OVERWORLD
+        self.world.resize(32, 32, 24, min_y=0, preserve=False)
+        self.world.setDimension(DIMENSION_OVERWORLD)
+        self.assetManager._createBackground(DIMENSION_OVERWORLD)
+        self.sceneMetadata = {"name": "Redstone Fundamentals Lab", "mode": "redstone_lab"}
+        self.sceneStructurePositions.clear()
+        self.sceneExteriorGlassPositions.clear()
+        self.sceneTerrainMode = "all"
+        self.currentBuildPath = None
+        self.undoManager.clear()
+        # The laboratory floor is intentionally a teaching grid. Preserve the
+        # editor preference in the session snapshot, but always show it here.
+        self.showGrid = True
+
+        bt = BlockType
+        with self.world.bulkUpdate():
+            # A dark, gridded laboratory floor with clear redstone work bays.
+            for x in range(32):
+                for y in range(32):
+                    floor = bt.POLISHED_DEEPSLATE if (x + y) % 2 else bt.DEEPSLATE_TILES
+                    self.world.setBlock(x, y, 0, floor)
+            for x in range(1, 31):
+                self.world.setBlock(x, 1, 1, bt.QUARTZ_BLOCK)
+                self.world.setBlock(x, 30, 1, bt.QUARTZ_BLOCK)
+            for y in range(1, 31):
+                self.world.setBlock(1, y, 1, bt.QUARTZ_BLOCK)
+                self.world.setBlock(30, y, 1, bt.QUARTZ_BLOCK)
+
+            def place(pos, block, **state):
+                self.world.setBlock(*pos, block)
+                if state:
+                    self.world.setBlockProperties(*pos, BlockProperties(**state))
+
+            # Signal-strength lane: fifteen visible dust levels from a source.
+            place((3, 4, 1), bt.REDSTONE_BLOCK)
+            for x in range(4, 19):
+                place((x, 4, 1), bt.REDSTONE_DUST)
+            place((20, 4, 1), bt.REDSTONE_LAMP)
+
+            # Lever-controlled lamp, deliberately open and easy to trace.
+            place((3, 9, 1), bt.LEVER, facing=Facing.SOUTH)
+            for x in range(4, 11):
+                place((x, 9, 1), bt.REDSTONE_DUST)
+            place((11, 9, 1), bt.REDSTONE_LAMP)
+
+            # Twenty-tick button pulse through an adjustable repeater into a piston.
+            place((3, 14, 1), bt.STONE_BUTTON, facing=Facing.SOUTH)
+            for x in range(4, 9):
+                place((x, 14, 1), bt.REDSTONE_DUST)
+            place((9, 14, 1), bt.REPEATER, facing=Facing.EAST, repeaterDelay=2)
+            place((10, 14, 1), bt.REDSTONE_DUST)
+            place((11, 14, 1), bt.STICKY_PISTON, facing=Facing.EAST, sticky=True)
+            place((12, 14, 1), bt.RED_WOOL)
+
+            # Repeater-delay lane with four source-backed settings.
+            for lane, delay in enumerate((1, 2, 3, 4)):
+                y = 19 + lane * 2
+                place((3, y, 1), bt.LEVER, facing=Facing.SOUTH)
+                place((4, y, 1), bt.REDSTONE_DUST)
+                place((5, y, 1), bt.REPEATER, facing=Facing.EAST, repeaterDelay=delay)
+                place((6, y, 1), bt.REDSTONE_DUST)
+                place((7, y, 1), bt.REDSTONE_LAMP)
+
+            # Two readable 2x2 door bays. Each has a visible two-level bus and
+            # a lever at the front; the first exposes mechanics, the second is framed.
+            self._placeLabDoor((17, 10), framed=False)
+            self._placeLabDoor((17, 21), framed=True)
+
+        self.hotbar = [
+            bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.LEVER, bt.STONE_BUTTON,
+            bt.REPEATER, bt.PISTON, bt.STICKY_PISTON, bt.REDSTONE_LAMP,
+            bt.REDSTONE_BLOCK,
+        ]
+        self.selectedBlock = bt.REDSTONE_DUST
+        self.redstone.active_motions.clear()
+        self.redstone.mark_dirty()
+        self.redstone.update(0)
+        self._normalizeSpecialBlockTopology()
+        self._fitWorldToViewport(notify=False)
+        self.lightingDirty = True
+        self._invalidateViewCaches()
+        self.tooltipText = "Redstone Lab: click controls with the hand tool"
+        self.tooltipTimer = 2600
+
+    def _placeLabDoor(self, origin: Tuple[int, int], *, framed: bool) -> None:
+        """Place a one-control, supported 2x2 piston-door teaching circuit."""
+        ox, oy = origin
+        bt = BlockType
+
+        def place(pos, block, **state):
+            self.world.setBlock(*pos, block)
+            if state:
+                self.world.setBlockProperties(*pos, BlockProperties(**state))
+
+        # Door faces north/south: two piston banks close toward the center.
+        for z in (1, 2):
+            place((ox, oy, z), bt.STICKY_PISTON, facing=Facing.EAST, sticky=True)
+            place((ox + 5, oy, z), bt.STICKY_PISTON, facing=Facing.WEST, sticky=True)
+            place((ox + 1, oy, z), bt.STONE_BRICKS)
+            place((ox + 4, oy, z), bt.STONE_BRICKS)
+
+        # Lower bus sits on the floor behind the doorway.
+        for x in range(ox, ox + 6):
+            place((x, oy - 1, 1), bt.REDSTONE_DUST)
+        # Upper bus is supported by a shelf and linked by a visible dust stair.
+        for x in range(ox, ox + 6):
+            place((x, oy + 1, 1), bt.POLISHED_DEEPSLATE)
+            place((x, oy + 1, 2), bt.REDSTONE_DUST)
+        place((ox - 1, oy + 1, 1), bt.POLISHED_DEEPSLATE)
+        place((ox - 1, oy + 1, 2), bt.REDSTONE_DUST)
+        place((ox - 1, oy + 2, 1), bt.REDSTONE_DUST)
+        for y in range(oy - 1, oy + 3):
+            place((ox - 2, y, 1), bt.REDSTONE_DUST)
+        place((ox - 3, oy - 1, 1), bt.LEVER, facing=Facing.SOUTH)
+        place((ox - 2, oy - 1, 1), bt.REDSTONE_DUST)
+        place((ox - 1, oy - 1, 1), bt.REDSTONE_DUST)
+
+        if framed:
+            for x in range(ox - 1, ox + 7):
+                place((x, oy, 3), bt.DEEPSLATE_BRICKS)
+            for x in (ox - 1, ox + 6):
+                for z in range(1, 4):
+                    place((x, oy, z), bt.DEEPSLATE_BRICKS)
 
     def _restoreTutorialSession(self) -> bool:
         state = self._tutorialSessionSnapshot
@@ -10265,6 +10647,7 @@ class BlocFantome:
         if self.horrorRainEnabled:
             self._startHorrorRain()
         self.tutorialAdvancedMode = False
+        self.tutorialScreen.setAdvanced(False)
         self.redstone.active_motions.clear()
         self.redstone.mark_dirty()
         self._visibleOrderCaches.clear()
@@ -10274,6 +10657,278 @@ class BlocFantome:
         self._playMenuMusic(snapshot.dimension)
         print("Tutorial ended - restored the previous build")
         return True
+
+    def _buildAdvancedTutorialScene(self, stepIndex: int, dimension: str) -> None:
+        """Build one deterministic, focused 32x32 interactive lesson scene."""
+        bt = BlockType
+        self.world.resize(32, 32, 32, min_y=0, preserve=False)
+        self.world.setDimension(dimension)
+        self.sceneMetadata = {
+            "name": f"Advanced Lesson {stepIndex + 1}",
+            "tutorial_step": stepIndex,
+        }
+        self.sceneStructurePositions.clear()
+        self.sceneExteriorGlassPositions.clear()
+        self.undoManager.clear()
+
+        def put(x, y, z, block, props=None):
+            if self.world.isInBounds(x, y, z):
+                self.world.setBlock(x, y, z, block)
+                if props is not None:
+                    self.world.setBlockProperties(x, y, z, props.copy())
+
+        def column(x, y, z1, z2, block):
+            for z in range(z1, z2 + 1):
+                put(x, y, z, block)
+
+        def outline(x1, y1, x2, y2, z, block):
+            for x in range(x1, x2 + 1):
+                put(x, y1, z, block)
+                put(x, y2, z, block)
+            for y in range(y1 + 1, y2):
+                put(x1, y, z, block)
+                put(x2, y, z, block)
+
+        def platform(x1, y1, x2, y2, z, block):
+            for x in range(x1, x2 + 1):
+                for y in range(y1, y2 + 1):
+                    put(x, y, z, block)
+
+        with self.world.bulkUpdate():
+            if stepIndex == 11:
+                # A shaped End island: noisy topography continues below the city.
+                for x in range(32):
+                    for y in range(32):
+                        dx, dy = x - 15.5, y - 15.5
+                        distance = (dx / 15.0) ** 2 + (dy / 13.2) ** 2
+                        jitter = (((x * 29 + y * 17) % 13) - 6) * 0.012
+                        if distance + jitter > 1.0:
+                            continue
+                        top = 3 + ((x * 7 + y * 11) % 3) - (1 if distance > 0.72 else 0)
+                        bottom = max(0, top - max(1, round(4 * (1.0 - distance))))
+                        for z in range(bottom, top + 1):
+                            put(x, y, z, bt.END_STONE)
+            else:
+                floor = bt.NETHERRACK if dimension == DIMENSION_NETHER else bt.GRASS
+                if stepIndex == 15:
+                    floor = bt.DEEPSLATE_TILES
+                for x in range(32):
+                    for y in range(32):
+                        top = 0
+                        if dimension == DIMENSION_NETHER:
+                            top = ((x * 13 + y * 7) % 5 == 0) + ((x + y) % 11 == 0)
+                        for z in range(top + 1):
+                            put(x, y, z, floor if z == top else bt.NETHERRACK)
+
+            # A restrained perimeter makes the larger canvas legible.
+            if stepIndex != 11:
+                for x in range(1, 31):
+                    put(x, 1, 1, bt.SMOOTH_STONE)
+                    put(x, 30, 1, bt.SMOOTH_STONE)
+                for y in range(1, 31):
+                    put(1, y, 1, bt.SMOOTH_STONE)
+                    put(30, y, 1, bt.SMOOTH_STONE)
+
+            if stepIndex == 0:
+                platform(4, 4, 13, 13, 1, bt.OAK_PLANKS)
+                platform(18, 4, 27, 13, 1, bt.STONE_BRICKS)
+                platform(4, 18, 13, 27, 1, bt.BRICKS)
+                platform(18, 18, 27, 27, 1, bt.QUARTZ_BLOCK)
+                for x, y, block in ((4, 4, bt.OAK_LOG), (27, 4, bt.STONE_BRICKS),
+                                    (4, 27, bt.BRICKS), (27, 27, bt.QUARTZ_PILLAR)):
+                    column(x, y, 2, 6, block)
+                    put(x, y, 7, bt.GLOWSTONE)
+                for i in range(4, 28):
+                    put(15, i, 1, bt.SMOOTH_STONE)
+                    put(16, i, 1, bt.SMOOTH_STONE)
+                    put(i, 15, 1, bt.SMOOTH_STONE)
+                    put(i, 16, 1, bt.SMOOTH_STONE)
+            elif stepIndex == 1:
+                platform(8, 8, 23, 23, 1, bt.STONE_BRICKS)
+                outline(10, 10, 21, 21, 2, bt.COBBLESTONE)
+                for x, y in ((10, 10), (21, 10), (10, 21), (21, 21)):
+                    column(x, y, 2, 10 if (x + y) % 3 else 13, bt.OAK_LOG)
+                for z in range(3, 11):
+                    put(15, 15, z, bt.QUARTZ_PILLAR)
+                    put(16, 16, z, bt.GLASS if z % 2 else bt.GLOWSTONE)
+                for x in range(11, 21):
+                    put(x, 10, 8, bt.GLASS)
+                put(12, 18, 4, bt.RED_WOOL)
+                put(20, 12, 7, bt.BLUE_WOOL)
+            elif stepIndex == 2:
+                palette = (bt.RED_WOOL, bt.BLUE_WOOL, bt.YELLOW_WOOL, bt.GREEN_WOOL,
+                           bt.WHITE_WOOL, bt.PURPLE_WOOL, bt.GLASS, bt.STONE, bt.OAK_PLANKS)
+                for index, block in enumerate(palette):
+                    x = 4 + (index % 5) * 6
+                    y = 7 + (index // 5) * 13
+                    platform(x, y, x + 3, y + 3, 1, bt.SMOOTH_STONE)
+                    column(x + 1, y + 1, 2, 4 + index % 3, block)
+                    put(x + 2, y + 2, 2, block)
+            elif stepIndex == 3:
+                outline(4, 5, 14, 14, 1, bt.STONE_BRICKS)
+                outline(18, 5, 27, 14, 1, bt.QUARTZ_BLOCK)
+                outline(5, 18, 26, 27, 1, bt.PRISMARINE)
+                for x in range(18, 28):
+                    column(x, 14, 2, 5, bt.SANDSTONE if x in (18, 27) else bt.AIR)
+                for level in range(3):
+                    outline(7 + level, 20 + level, 24 - level, 26 - level, 2 + level, bt.SMOOTH_STONE)
+            elif stepIndex == 4:
+                for size, x in ((1, 5), (2, 14), (3, 23)):
+                    platform(x - 2, 7, x + size + 2, 14, 1, bt.SMOOTH_STONE)
+                    for bx in range(size):
+                        for by in range(size):
+                            column(x + bx, 10 + by, 2, 3 + size, bt.OAK_LOG)
+                    outline(x - 2, 19, x + size + 2, 26, 1, bt.QUARTZ_BLOCK)
+            elif stepIndex == 5:
+                platform(5, 7, 26, 24, 1, bt.STONE_BRICKS)
+                for x in range(6, 26):
+                    column(x, 12, 2, 6, bt.POLISHED_ANDESITE)
+                for x in range(8, 24, 4):
+                    for z in range(3, 6):
+                        put(x, 12, z, bt.GLASS)
+                outline(9, 15, 22, 22, 2, bt.MOSSY_STONE_BRICKS)
+            elif stepIndex == 6:
+                for y in range(3, 29):
+                    put(15, y, 1, bt.QUARTZ_BLOCK)
+                    put(16, y, 1, bt.QUARTZ_BLOCK)
+                # Detailed left half of a tall guardian; mirror mode completes it.
+                for z in range(2, 13):
+                    width = 2 if z < 5 else 4 if z < 9 else 3
+                    for x in range(15 - width, 16):
+                        put(x, 15, z, bt.STONE_BRICKS if z % 3 else bt.PURPLE_WOOL)
+                column(10, 15, 4, 9, bt.QUARTZ_PILLAR)
+                for x, y in ((7, 8), (7, 22), (24, 8), (24, 22)):
+                    outline(x - 2, y - 2, x + 2, y + 2, 1, bt.PRISMARINE)
+                    put(x, y, 1, bt.WATER)
+            elif stepIndex == 7:
+                platform(8, 8, 23, 23, 1, bt.BLACKSTONE)
+                for z in range(2, 14):
+                    outline(11 + z // 5, 11 + z // 5, 20 - z // 5, 20 - z // 5, z, bt.STONE_BRICKS)
+                column(12, 12, 2, 7, bt.RED_WOOL)
+                column(20, 12, 2, 10, bt.BLUE_WOOL)
+                column(20, 20, 2, 5, bt.YELLOW_WOOL)
+                column(12, 20, 2, 12, bt.GREEN_WOOL)
+            elif stepIndex == 8:
+                # Two deep bowls, raised reservoirs, and a central reaction channel.
+                for cx, liquid, rim in ((9, bt.WATER, bt.PRISMARINE), (23, bt.LAVA, bt.NETHER_BRICKS)):
+                    for radius in range(5, 1, -1):
+                        outline(cx - radius, 6 + (5 - radius), cx + radius, 16 - (5 - radius),
+                                1 + (5 - radius), rim)
+                    platform(cx - 2, 9, cx + 2, 13, 1, bt.CLAY if liquid == bt.WATER else bt.OBSIDIAN)
+                    put(cx, 11, 5, liquid)
+                    column(cx, 11, 2, 4, bt.GLASS)
+                for x in range(10, 23):
+                    put(x, 21, 1, bt.STONE_BRICKS)
+                    put(x, 23, 1, bt.STONE_BRICKS)
+                platform(15, 21, 17, 23, 1, bt.OBSIDIAN)
+            elif stepIndex == 9:
+                for x1, y1, x2, y2 in ((3, 4, 13, 13), (18, 4, 28, 13), (3, 18, 13, 28), (18, 18, 28, 28)):
+                    outline(x1, y1, x2, y2, 1, bt.QUARTZ_BLOCK)
+                # One sample pavilion; three pads remain free for placement.
+                for x, y in ((20, 20), (26, 20), (20, 26), (26, 26)):
+                    column(x, y, 2, 7, bt.OAK_LOG)
+                for x in range(20, 27):
+                    for y in range(20, 27):
+                        if x in (20, 26) or y in (20, 26):
+                            put(x, y, 8, bt.OAK_PLANKS)
+                put(23, 23, 2, bt.ENCHANTING_TABLE)
+            elif stepIndex == 10:
+                for x in range(3, 29):
+                    for y in range(3, 29):
+                        extra = ((x * 11 + y * 5) % 4)
+                        for z in range(1, 1 + extra):
+                            put(x, y, z, bt.NETHERRACK if (x + y) % 5 else bt.SOUL_SOIL)
+                for x, y, height in ((7, 8, 8), (12, 23, 11), (24, 9, 9), (25, 25, 7)):
+                    column(x, y, self.world.getHighestBlock(x, y) + 1,
+                           self.world.getHighestBlock(x, y) + height, bt.WARPED_STEM)
+                    put(x, y, self.world.getHighestBlock(x, y) + 1, bt.SHROOMLIGHT)
+                for x in range(8, 25):
+                    put(x, 16, 7, bt.NETHER_BRICKS)
+            elif stepIndex == 11:
+                # End-city teaching tower follows the terrain rather than a flat slab.
+                baseZ = self.world.getHighestBlock(16, 16) + 1
+                for z in range(baseZ, baseZ + 14):
+                    outline(12, 12, 19, 19, z, bt.PURPUR_BLOCK if z % 4 else bt.PURPUR_PILLAR)
+                for x in range(10, 22):
+                    put(x, 15, baseZ + 7, bt.END_STONE_BRICKS)
+                for x, y in ((5, 12), (25, 8), (23, 24)):
+                    top = self.world.getHighestBlock(x, y)
+                    column(x, y, top + 1, top + 4, bt.CHORUS_PLANT)
+                    put(x, y, top + 5, bt.CHORUS_FLOWER)
+            elif stepIndex == 12:
+                platform(5, 5, 26, 26, 1, bt.STONE_BRICKS)
+                outline(7, 7, 24, 24, 2, bt.QUARTZ_BLOCK)
+                for x in range(9, 23):
+                    put(x, 15, 2, bt.WATER if x % 5 == 0 else bt.STONE_BRICKS)
+                for x, y in ((7, 7), (24, 7), (7, 24), (24, 24)):
+                    column(x, y, 3, 8, bt.QUARTZ_PILLAR)
+                for x in range(10, 22, 3):
+                    put(x, 10, 2, bt.SNOW)
+                    put(x, 21, 2, bt.ICE)
+            elif stepIndex == 13:
+                platform(4, 5, 27, 26, 1, bt.DEEPSLATE)
+                for x in range(4, 28):
+                    column(x, 5, 2, 8 + (x % 3), bt.DEEPSLATE)
+                    column(x, 26, 2, 7 + (x % 4), bt.DEEPSLATE)
+                for y in range(6, 26):
+                    column(4, y, 2, 7 + (y % 3), bt.DEEPSLATE)
+                    column(27, y, 2, 8 + (y % 2), bt.DEEPSLATE)
+                lights = (bt.GLOWSTONE, bt.SEA_LANTERN, bt.JACK_O_LANTERN, bt.SHROOMLIGHT, bt.MAGMA_BLOCK)
+                for index, block in enumerate(lights):
+                    put(8 + index * 4, 15, 2, block)
+                    column(8 + index * 4, 17, 2, 4 + index, bt.STONE_BRICKS)
+            elif stepIndex == 14:
+                platform(5, 5, 26, 26, 1, bt.QUARTZ_BLOCK)
+                for level in range(4):
+                    outline(7 + level, 7 + level, 24 - level, 24 - level,
+                            2 + level, bt.STONE_BRICKS if level % 2 else bt.QUARTZ_BLOCK)
+                for x, y in ((8, 8), (23, 8), (8, 23), (23, 23)):
+                    column(x, y, 2, 10, bt.QUARTZ_PILLAR)
+                    put(x, y, 11, bt.GLOWSTONE)
+                column(15, 15, 5, 14, bt.GOLD_BLOCK)
+                column(16, 16, 5, 12, bt.LAPIS_BLOCK)
+                put(15, 13, 5, bt.CHEST)
+                put(16, 13, 5, bt.ENDER_CHEST)
+            elif stepIndex == 15:
+                for radius in range(11, 3, -2):
+                    outline(16 - radius, 16 - radius, 16 + radius, 16 + radius,
+                            1 + (11 - radius) // 2, bt.BLACKSTONE)
+                for z in range(2, 19):
+                    radius = max(1, 4 - z // 6)
+                    for x in range(16 - radius, 17 + radius):
+                        for y in range(16 - radius, 17 + radius):
+                            if abs(x - 16) + abs(y - 16) <= radius + 1:
+                                put(x, y, z, bt.CRYING_OBSIDIAN if (x + y + z) % 5 == 0 else bt.OBSIDIAN)
+                for x, y in ((5, 5), (27, 5), (5, 27), (27, 27)):
+                    column(x, y, 2, 7, bt.BONE_BLOCK)
+                    put(x, y, 8, bt.REDSTONE_BLOCK)
+            else:
+                outline(3, 3, 28, 28, 1, bt.QUARTZ_BLOCK)
+                for x in range(6, 27, 5):
+                    for y in range(6, 27, 5):
+                        platform(x, y, x + 2, y + 2, 1, bt.SMOOTH_STONE)
+                for x, block in enumerate((bt.DIAMOND_BLOCK, bt.EMERALD_BLOCK, bt.GOLD_BLOCK,
+                                           bt.IRON_BLOCK, bt.LAPIS_BLOCK), start=8):
+                    column(x * 2 - 8, 16, 2, 4 + (x % 3), block)
+                outline(10, 10, 21, 21, 2, bt.GLASS)
+
+        if stepIndex == 5:
+            mistakes = (
+                (9, 12, 4, bt.DIRT), (13, 12, 5, bt.NETHERRACK),
+                (17, 12, 3, bt.SAND), (21, 12, 6, bt.GRAVEL),
+                (15, 19, 2, bt.RED_WOOL),
+            )
+            for x, y, z, block in mistakes:
+                self._placeBlockWithUndo(x, y, z, block)
+
+        self.currentBuildHeight = (
+            max(0, self.world.occupiedBounds[1][2])
+            if self.world.occupiedBounds is not None else 0
+        )
+        self.currentViewLayer = 0
+        self.redstone.active_motions.clear()
+        self.redstone.mark_dirty()
+        self.lightingDirty = True
 
     def _onTutorialStepChange(self, stepIndex: int) -> None:
         """Handle tutorial step change - load demo structure for the step"""
@@ -10297,9 +10952,10 @@ class BlocFantome:
             requiredDimension = DIMENSION_END
         # Note: Horror stays in overworld but with special effects
         
-        # Switch dimension if needed (BEFORE loading demo, so floor is correct)
-        # Skip for save: demos as they handle their own dimension
-        if not (demo and demo.startswith("save:")):
+        # Switch dimension before building the lesson. Basic save-based demos
+        # carry their own dimension, while advanced lessons replace those
+        # saves with dedicated 32x32 scenes and therefore need this route too.
+        if self.tutorialAdvancedMode or not (demo and demo.startswith("save:")):
             if self.currentDimension != requiredDimension:
                 self._switchDimension(
                     requiredDimension,
@@ -10320,7 +10976,10 @@ class BlocFantome:
         
         # ===== Override hotbar for specific tutorial panels =====
         step = TutorialScreen.TUTORIAL_STEPS[stepIndex]
-        icons = step.get("icons", [])
+        icons = (
+            list(self.tutorialScreen.advancedHotbarNames(stepIndex))
+            if self.tutorialAdvancedMode else step.get("icons", [])
+        )
         
         # Map icon names to BlockTypes for hotbar - every panel gets appropriate blocks
         iconToBlock = {
@@ -10365,6 +11024,7 @@ class BlocFantome:
             "diamond_block": BlockType.DIAMOND_BLOCK, "emerald_block": BlockType.EMERALD_BLOCK,
             "gold_block": BlockType.GOLD_BLOCK, "iron_block": BlockType.IRON_BLOCK,
             "lapis_block": BlockType.LAPIS_BLOCK, "redstone_block": BlockType.REDSTONE_BLOCK,
+            "copper_block": BlockType.COPPER_BLOCK, "black_wool": BlockType.BLACK_WOOL,
             # Clay
             "clay": BlockType.CLAY, "white_concrete": BlockType.WHITE_CONCRETE,
         }
@@ -10477,7 +11137,10 @@ class BlocFantome:
                 self.horrorRainEnabled = False
                 self._stopHorrorRain()
         
-        if demo == "clear":
+        if self.tutorialAdvancedMode:
+            self._buildAdvancedTutorialScene(stepIndex, requiredDimension)
+            print(f"Advanced tutorial step {stepIndex + 1}: built focused 32 x 32 scene")
+        elif demo == "clear":
             # Clear the world and create floor
             self.world.clear()
             self._createInitialFloor()
@@ -10600,8 +11263,9 @@ class BlocFantome:
         
         self._normalizeSpecialBlockTopology()
 
-        if title in ("The Nether", "The End") and self.world.occupiedBounds is not None:
-            self._frameTutorialShowcase()
+        # Every lesson is framed on selection, including large advanced scenes.
+        if self.world.occupiedBounds is not None:
+            self._fitWorldToViewport(notify=False)
 
         # Horror mode: pause music AFTER demo is loaded (so dimension music starts first)
         if is_horror:
@@ -10767,6 +11431,18 @@ class BlocFantome:
                 self._handlePanelClick(mouseX, mouseY)
                 self.assetManager.playClickSound()
             return
+
+        # The hand tool is deliberately non-destructive: primary click uses a
+        # component, secondary click does nothing, and middle drag still pans.
+        # This belongs on mouse-down; MOUSEMOTION events expose ``buttons`` and
+        # do not have the click-only ``button`` field.
+        if self.interactionMode:
+            if event.button == 1:
+                if self.hoveredSourceBlock:
+                    self._interactBlock(*self.hoveredSourceBlock)
+                return
+            if event.button == 3:
+                return
         
         if event.button == 1:  # Left click - place block
             # Alt+Click for eyedropper
@@ -10846,7 +11522,7 @@ class BlocFantome:
                 )
                 self._setVolume(self.draggingSlider, newVolume)
             return
-        
+
         # Check panel hover
         self.panelHovered = mouseX > WINDOW_WIDTH - PANEL_WIDTH
         
@@ -10880,6 +11556,14 @@ class BlocFantome:
     def _handleKeyDown(self, event):
         """Handle keyboard input"""
         mods = pygame.key.get_mods()
+
+        if event.key == pygame.K_i and not self.searchActive:
+            if self.redstoneLabActive:
+                self.tooltipText = "The Redstone Lab keeps the hand tool active"
+                self.tooltipTimer = 1700
+            else:
+                self._setInteractionMode(not self.interactionMode)
+            return
         
         # If search is active, handle text input
         if self.searchActive:
@@ -10943,7 +11627,9 @@ class BlocFantome:
         
         if event.key == pygame.K_ESCAPE:
             # Close menus in order
-            if self.historyPanelOpen:
+            if self.redstoneLabActive:
+                self._toggleRedstoneLab()
+            elif self.historyPanelOpen:
                 self.historyPanelOpen = False
             elif self.settingsMenuOpen:
                 self.settingsMenuOpen = False
@@ -11427,6 +12113,17 @@ class BlocFantome:
     
     def _handlePanelClick(self, mouseX: int, mouseY: int):
         """Handle click on the inventory panel with three main dropdown buttons"""
+        if self.redstoneLabButtonRect.collidepoint(mouseX, mouseY):
+            self._toggleRedstoneLab()
+            return
+        if self.redstoneLabActive:
+            for blockType, rect in self.redstoneLabComponentRects.items():
+                if rect.collidepoint(mouseX, mouseY):
+                    self._selectBlockForPlacement(blockType)
+                    self.tooltipText = f"{BLOCK_DEFINITIONS[blockType].name}: selected"
+                    self.tooltipTimer = 1300
+                    return
+            return
         if self.tutorialTomeRect.collidepoint(mouseX, mouseY):
             self.toggleActionPulseUntil["tutorial"] = pygame.time.get_ticks() + 450
             self._beginTutorial(advanced=True)
@@ -11580,8 +12277,14 @@ class BlocFantome:
                 return
             dimY += 35
 
-            # Check optimized rotating skybox toggle.
-            if dimY <= panelY <= dimY + 30 and ICON_MARGIN + 10 <= panelX <= PANEL_WIDTH - ICON_MARGIN - 10:
+            # Sky preset arrows flank the enable/disable button.
+            if self.skyboxPrevRect.collidepoint(mouseX, mouseY):
+                self._cycleSkybox(-1)
+                return
+            if self.skyboxNextRect.collidepoint(mouseX, mouseY):
+                self._cycleSkybox(1)
+                return
+            if self.skyboxToggleRect.collidepoint(mouseX, mouseY):
                 self._toggleSkyboxes()
                 return
             dimY += 35
@@ -12221,6 +12924,13 @@ class BlocFantome:
             self.world.setBlockProperties(x, y, z, props)
             self.redstone.mark_dirty()
             self._playRedstoneSound("redstone_click", (x, y, z))
+            return True
+        if blockType == BlockType.STONE_BUTTON:
+            if not self.redstone.press_button((x, y, z)):
+                return False
+            self.redstone.update(0)
+            self._playRedstoneSound("redstone_click", (x, y, z))
+            self.lightingDirty = True
             return True
         return self._toggleDoor(x, y, z)
 
@@ -17774,7 +18484,22 @@ class BlocFantome:
         ]
         width = max(point[0] for point in projected) - min(point[0] for point in projected) + TILE_WIDTH
         height = max(point[1] for point in projected) - min(point[1] for point in projected) + TILE_HEIGHT + BLOCK_HEIGHT
-        availableWidth = WINDOW_WIDTH - PANEL_WIDTH - 56
+        canvasLeft = 0
+        canvasRight = WINDOW_WIDTH - PANEL_WIDTH
+        targetX = (canvasLeft + canvasRight) / 2.0
+        availableWidth = canvasRight - canvasLeft - 56
+        if self.tutorialScreen.visible and not self.tutorialScreen.minimized:
+            tutorialLeft = max(canvasLeft, self.tutorialScreen.panelX)
+            tutorialRight = min(canvasRight, self.tutorialScreen.panelX + self.tutorialScreen.panelWidth)
+            if tutorialLeft < tutorialRight:
+                leftSpace = tutorialLeft - canvasLeft - 18
+                rightSpace = canvasRight - tutorialRight - 18
+                if rightSpace >= leftSpace:
+                    canvasLeft = tutorialRight + 18
+                else:
+                    canvasRight = tutorialLeft - 18
+                availableWidth = max(120, canvasRight - canvasLeft - 38)
+                targetX = (canvasLeft + canvasRight) / 2.0
         availableHeight = WINDOW_HEIGHT - 92
         self.zoomLevel = round(max(self.zoomMin, min(self.zoomMax, min(
             availableWidth / max(1, width),
@@ -17789,7 +18514,6 @@ class BlocFantome:
             (minZ + maxZ) / 2.0,
         )
         screenX, screenY = self.renderer.worldToScreen(*centerWorld)
-        targetX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
         targetY = WINDOW_HEIGHT / 2.0
         self.renderer.offsetX += targetX - screenX
         self.renderer.offsetY += targetY - screenY
@@ -19645,7 +20369,7 @@ class BlocFantome:
             print("Lighting: OFF")
 
     def _toggleSkyboxes(self) -> None:
-        """Toggle licensed, automatically swapping dimension panoramas."""
+        """Toggle the selected licensed spherical dimension panorama."""
         self.skyboxesEnabled = not self.skyboxesEnabled
         if self.skyboxesEnabled:
             self.skyboxRenderer.update(
@@ -19663,6 +20387,18 @@ class BlocFantome:
                 )
         else:
             self.tooltipText = "Skybox disabled"
+        self.tooltipTimer = 1600
+
+    def _cycleSkybox(self, delta: int) -> None:
+        """Select the previous/next themed sky for the current dimension."""
+        if not self.skyboxRenderer.available(self.currentDimension):
+            self.tooltipText = "Skybox assets are unavailable"
+            self.tooltipTimer = 1600
+            return
+        self.skyboxesEnabled = True
+        name = self.skyboxRenderer.cycle(self.currentDimension, delta)
+        self.skyboxRenderer.update(0, self.currentDimension)
+        self.tooltipText = f"Skybox: {name}"
         self.tooltipTimer = 1600
 
     def _cameraWorldCenter(self) -> Tuple[int, int]:
@@ -19858,6 +20594,39 @@ class BlocFantome:
             for pos in neighbors
         )
 
+    def _clearGlassFaceMask(self, x: int, y: int, z: int) -> int:
+        """Return exposed top/left/right faces against adjacent clear glass."""
+        neighbors = self._clearGlassNeighborMask(x, y, z)
+        mask = 0 if neighbors & 1 else 1
+        if not neighbors & 4:
+            mask |= 2
+        if not neighbors & 16:
+            mask |= 4
+        return mask
+
+    def _clearGlassNeighborMask(self, x: int, y: int, z: int) -> int:
+        """Encode six screen-relative same-glass neighbors for connected edges."""
+        mask = 0
+        blocks = self.world.blocks
+        if blocks.get((x, y, z + 1), BlockType.AIR) == BlockType.GLASS:
+            mask |= 1
+        if blocks.get((x, y, z - 1), BlockType.AIR) == BlockType.GLASS:
+            mask |= 2
+        sideDirections = (
+            ((0, 1), (1, 0)),
+            ((1, 0), (0, -1)),
+            ((0, -1), (-1, 0)),
+            ((-1, 0), (0, 1)),
+        )[self.renderer.viewRotation]
+        visibleY, visibleX = sideDirections
+        for bit, (dx, dy) in (
+            (4, visibleY), (8, (-visibleY[0], -visibleY[1])),
+            (16, visibleX), (32, (-visibleX[0], -visibleX[1])),
+        ):
+            if blocks.get((x + dx, y + dy, z), BlockType.AIR) == BlockType.GLASS:
+                mask |= bit
+        return mask
+
     def _isStructureSurfaceForView(self, x: int, y: int, z: int,
                                    blockType: BlockType) -> bool:
         """Reject structure interiors using only the faces this camera can see."""
@@ -19979,6 +20748,9 @@ class BlocFantome:
                 or screenY + spriteHeight < -margin
                 or screenY > WINDOW_HEIGHT + margin
             ):
+                continue
+            if blockType == BlockType.GLASS and self._clearGlassFaceMask(x, y, z) == 0:
+                occluded += 1
                 continue
             plan.append(item)
         self._screenPlanCacheKey = key
@@ -20136,7 +20908,11 @@ class BlocFantome:
                 blockDef = BLOCK_DEFINITIONS.get(displayBlockType)
                 props = self.world.getBlockProperties(x, y, z)
                 
-                if displayBlockType == BlockType.OXIDIZING_COPPER:
+                if displayBlockType == BlockType.GLASS:
+                    sprite = self.assetManager.getConnectedGlassSprite(
+                        self._clearGlassNeighborMask(x, y, z)
+                    )
+                elif displayBlockType == BlockType.OXIDIZING_COPPER:
                     stage = props.oxidationStage if props else 0
                     sprite = self.assetManager.copperStageSprites.get(
                         max(0, min(3, int(stage))),
@@ -20206,6 +20982,7 @@ class BlocFantome:
 
                 flipped = (
                     viewRot in (1, 3)
+                    and displayBlockType != BlockType.GLASS
                     and not (blockDef and (blockDef.isDoor or blockDef.isStair))
                 )
                 sprite = self.assetManager.getScaledSprite(
@@ -20442,6 +21219,9 @@ class BlocFantome:
     
     def _renderPanel(self) -> None:
         """Render the inventory panel with three main dropdown buttons: Blocks, Problems, Structures"""
+        if self.redstoneLabActive:
+            self._renderRedstoneLabPanel()
+            return
         panelRect = pygame.Rect(WINDOW_WIDTH - PANEL_WIDTH, 0, PANEL_WIDTH, WINDOW_HEIGHT)
         panelX = WINDOW_WIDTH - PANEL_WIDTH
         
@@ -20508,9 +21288,9 @@ class BlocFantome:
         if self.structuresExpanded:
             totalHeight += len(PREMADE_STRUCTURES) * 35 + 15
         
-        # Controls section (7 primary + header + expand button always + extra if expanded)
+        # Controls section (8 primary + header + expand button always + extra if expanded)
         totalHeight += 22  # Header
-        totalHeight += 7 * self.hotkeyRowHeight  # Primary controls
+        totalHeight += 8 * self.hotkeyRowHeight  # Primary controls
         totalHeight += 60  # Expand/collapse button with spacing
         totalHeight += 200  # Volume section + padding
         if self.hotkeysExpanded:
@@ -20845,27 +21625,39 @@ class BlocFantome:
                 )
             dimY += 35
 
-            # Cached, slowly rotating sky panorama. The active variant changes
-            # automatically per dimension and with the Overworld day cycle.
+            # Cached spherical panorama with persistent manual preset arrows.
             skyboxBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
+            arrowWidth = 28
+            self.skyboxPrevRect = pygame.Rect(skyboxBtnRect.x, dimY, arrowWidth, 30)
+            self.skyboxNextRect = pygame.Rect(skyboxBtnRect.right - arrowWidth, dimY, arrowWidth, 30)
+            self.skyboxToggleRect = pygame.Rect(
+                self.skyboxPrevRect.right + 4, dimY,
+                skyboxBtnRect.width - arrowWidth * 2 - 8, 30,
+            )
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
-                skyboxHovered = skyboxBtnRect.collidepoint(mouseX, mouseY)
+                skyboxHovered = self.skyboxToggleRect.collidepoint(mouseX, mouseY)
                 skyboxName = self.skyboxRenderer.active_name(self.currentDimension)
                 skyboxLabel = (
-                    f"Skybox: {skyboxName}" if self.skyboxesEnabled
-                    else "Skybox: OFF"
+                    skyboxName if self.skyboxesEnabled else "Skybox: OFF"
+                )
+                self.assetManager.drawButton(
+                    self.screen, self.skyboxPrevRect, "‹", self.smallFont,
+                    self.skyboxPrevRect.collidepoint(mouseX, mouseY), False,
                 )
                 self.assetManager.drawPanelRow(
                     self.screen,
-                    skyboxBtnRect,
+                    self.skyboxToggleRect,
                     skyboxLabel,
                     self.smallFont,
                     hovered=skyboxHovered,
                     active=self.skyboxesEnabled,
-                    icon=self.assetManager.getPanelPreviewIcon(BlockType.END_PORTAL),
                     effectStyle="void" if self.skyboxesEnabled else None,
                     effectColors=((145, 72, 220, 150), (68, 155, 210, 130)),
                     effectTint=(100, 70, 145),
+                )
+                self.assetManager.drawButton(
+                    self.screen, self.skyboxNextRect, "›", self.smallFont,
+                    self.skyboxNextRect.collidepoint(mouseX, mouseY), False,
                 )
             dimY += 35
             
@@ -21072,6 +21864,7 @@ class BlocFantome:
             ("MMB", "Drag", "Pan camera"),
             ("F", "Fill (rectangle)"),
             ("B", "Brush size"),
+            ("I", "Interact hand"),
             ("Ctrl", "Z/Y", "Undo/Redo"),
         ]
         
@@ -21202,6 +21995,7 @@ class BlocFantome:
         # Store gear button rect for click detection
         self.settingsGearRect = gearRect
         self._renderTutorialTomeButton(gearRect)
+        self._renderRedstoneLabButton(self.tutorialTomeRect)
         
         # Draw scroll indicator if needed
         if self.maxScroll > 0:
@@ -21263,6 +22057,109 @@ class BlocFantome:
             self.screen.blit(backdrop, box)
             pygame.draw.rect(self.screen, (126, 78, 150), box, 1)
             self.screen.blit(label, label.get_rect(center=box.center))
+
+    def _renderRedstoneLabButton(self, anchorRect: pygame.Rect) -> None:
+        """Draw the persistent redstone-dust workspace switch."""
+        size = anchorRect.width
+        rect = pygame.Rect(anchorRect.x, anchorRect.y - size - 6, size, size)
+        self.redstoneLabButtonRect = rect
+        hovered = rect.collidepoint(pygame.mouse.get_pos())
+        self.assetManager.drawButton(
+            self.screen, rect, "", self.smallFont, hovered=hovered,
+            selected=self.redstoneLabActive,
+        )
+        center = rect.center
+        red = (242, 52, 36) if hovered or self.redstoneLabActive else (184, 38, 31)
+        points = (
+            (center[0] - 11, center[1]), (center[0] - 4, center[1]),
+            (center[0], center[1] - 6), (center[0] + 5, center[1] + 5),
+            (center[0] + 12, center[1] + 5),
+        )
+        pygame.draw.lines(self.screen, (48, 8, 8), False,
+                          [(x + 1, y + 2) for x, y in points], 4)
+        pygame.draw.lines(self.screen, red, False, points, 3)
+        for point in (points[0], points[2], points[-1]):
+            pygame.draw.circle(self.screen, (255, 116, 74), point, 3)
+        if hovered:
+            labelText = "Return to Build" if self.redstoneLabActive else "Redstone Lab"
+            label = self.smallFont.render(labelText, True, (245, 245, 245))
+            box = label.get_rect(midright=(rect.left - 6, rect.centery)).inflate(10, 6)
+            pygame.draw.rect(self.screen, (24, 18, 24), box, border_radius=3)
+            pygame.draw.rect(self.screen, (164, 51, 43), box, 1, border_radius=3)
+            self.screen.blit(label, label.get_rect(center=box.center))
+
+    def _renderRedstoneLabPanel(self) -> None:
+        """Render the lab's redstone-only palette and concise behavior guide."""
+        panelX = WINDOW_WIDTH - PANEL_WIDTH
+        panelRect = pygame.Rect(panelX, 0, PANEL_WIDTH, WINDOW_HEIGHT)
+        pygame.draw.rect(self.screen, (17, 14, 18), panelRect)
+        for y in range(0, WINDOW_HEIGHT, 32):
+            pygame.draw.line(self.screen, (32, 24, 29), (panelX, y), (WINDOW_WIDTH, y))
+        pygame.draw.rect(self.screen, (112, 36, 37), panelRect, 2)
+
+        title = self.font.render("REDSTONE LAB", True, (245, 224, 215))
+        self.screen.blit(title, (panelX + 14, 14))
+        mode = self.labSmallFont.render("HAND TOOL  •  CONTROLS ONLY", True, (238, 91, 69))
+        self.screen.blit(mode, (panelX + 14, 45))
+        pygame.draw.line(self.screen, (108, 42, 43), (panelX + 12, 68), (WINDOW_WIDTH - 12, 68), 1)
+
+        # Keep the interaction shortcut visible even though the normal panel
+        # is replaced by the lab guide.
+        hotkeyY = 76
+        self._renderHotkeyRow(("I", "Interact cursor (active)"), panelX + 4, hotkeyY)
+        pygame.draw.line(self.screen, (108, 42, 43), (panelX + 12, 105), (WINDOW_WIDTH - 12, 105), 1)
+
+        components = (
+            (BlockType.REDSTONE_DUST, "Carries 15 → 0; climbs one supported step."),
+            (BlockType.REDSTONE_TORCH, "Inverts its support; burnout is simulated."),
+            (BlockType.LEVER, "Latching source. Click to toggle power."),
+            (BlockType.STONE_BUTTON, "Pulse source. Releases after 20 game ticks."),
+            (BlockType.REPEATER, "Directional delay 1–4; click to adjust."),
+            (BlockType.PISTON, "Pushes up to 12 blocks; never quasi-powered."),
+            (BlockType.STICKY_PISTON, "Pushes and pulls the nearest movable block."),
+            (BlockType.REDSTONE_LAMP, "Lights on power; four-tick off delay."),
+            (BlockType.REDSTONE_BLOCK, "Constant strength-15 power source."),
+        )
+        self.redstoneLabComponentRects = {}
+        y = 114
+        mouse = pygame.mouse.get_pos()
+        for blockType, description in components:
+            rect = pygame.Rect(panelX + 10, y, PANEL_WIDTH - 20, 58)
+            self.redstoneLabComponentRects[blockType] = rect
+            selected = self.selectedBlock == blockType
+            hovered = rect.collidepoint(mouse)
+            fill = (64, 29, 31) if selected else (36, 28, 31) if hovered else (26, 22, 24)
+            pygame.draw.rect(self.screen, fill, rect, border_radius=4)
+            pygame.draw.rect(
+                self.screen, (222, 66, 51) if selected else (73, 49, 51),
+                rect, 2 if selected else 1, border_radius=4,
+            )
+            icon = self.assetManager.getPanelPreviewIcon(blockType)
+            if icon:
+                icon = pygame.transform.smoothscale(icon, (36, 36))
+                self.screen.blit(icon, icon.get_rect(center=(rect.x + 25, rect.centery)))
+            name = self.smallFont.render(BLOCK_DEFINITIONS[blockType].name, True, (246, 236, 230))
+            self.screen.blit(name, (rect.x + 50, rect.y + 7))
+            words = description.split()
+            detailLines = [""]
+            for word in words:
+                candidate = f"{detailLines[-1]} {word}".strip()
+                if self.labSmallFont.size(candidate)[0] <= rect.width - 58:
+                    detailLines[-1] = candidate
+                elif len(detailLines) == 1:
+                    detailLines.append(word)
+                else:
+                    detailLines[-1] = f"{detailLines[-1]}…"
+                    break
+            for lineIndex, line in enumerate(detailLines[:2]):
+                detail = self.labSmallFont.render(line, True, (184, 165, 162))
+                self.screen.blit(detail, (rect.x + 50, rect.y + 29 + lineIndex * 13))
+            y += 63
+
+        footer = self.labSmallFont.render("Esc / dust icon: return to build", True, (180, 158, 157))
+        self.screen.blit(footer, (panelX + 12, WINDOW_HEIGHT - 65))
+        anchor = pygame.Rect(WINDOW_WIDTH - 50, WINDOW_HEIGHT - 50, 38, 38)
+        self._renderRedstoneLabButton(anchor.move(0, 44))
     
     def _renderStatus(self) -> None:
         """Render status information"""

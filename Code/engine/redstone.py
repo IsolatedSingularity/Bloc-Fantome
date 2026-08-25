@@ -68,6 +68,7 @@ class RedstoneSimulator:
         self._accumulator = 0
         self._repeater_updates: Dict[Position, tuple[bool, int]] = {}
         self._lamp_off_updates: Dict[Position, int] = {}
+        self._button_updates: Dict[Position, int] = {}
         self._torch_history: Dict[Position, deque[int]] = {}
         self._torch_cooldown: Dict[Position, int] = {}
         self._game_tick = 0
@@ -86,7 +87,7 @@ class RedstoneSimulator:
         """Powered circuitry eligible for restrained visual sparks."""
         bt = self.block_type
         for block in (bt.REDSTONE_DUST, bt.REDSTONE_TORCH,
-                      bt.REDSTONE_WALL_TORCH, bt.REPEATER):
+                      bt.REDSTONE_WALL_TORCH, bt.REPEATER, bt.STONE_BUTTON):
             for pos in self.world.blockTypePositions.get(block, ()):
                 props = self.world.getBlockProperties(*pos)
                 if props and props.powered:
@@ -174,7 +175,9 @@ class RedstoneSimulator:
         if block == bt.REDSTONE_BLOCK:
             return 15
         props = self.world.getBlockProperties(*source) or BlockProperties()
-        if block in (bt.LEVER, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH):
+        if block in (
+            bt.LEVER, bt.STONE_BUTTON, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH
+        ):
             return 15 if props.powered else 0
         if block == bt.REPEATER and props.powered:
             return 15 if _add(source, _facing_offset(props.facing)) == target else 0
@@ -223,19 +226,41 @@ class RedstoneSimulator:
         if self.world.getBlock(*pos) != self.block_type.REDSTONE_DUST:
             return 0
         bt = self.block_type
-        connectable = {
-            bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
-            bt.LEVER, bt.REPEATER, bt.PISTON, bt.STICKY_PISTON,
-            bt.REDSTONE_LAMP, bt.REDSTONE_BLOCK,
-        }
         x, y, z = pos
         mask = 0
         for bit, (dx, dy, _) in enumerate(HORIZONTAL):
             side = (x + dx, y + dy, z)
             candidates = (side, (side[0], side[1], z + 1), (side[0], side[1], z - 1))
-            if any(self.world.getBlock(*candidate) in connectable for candidate in candidates):
+            direction = Facing(bit)
+            if any(self._wire_connects_to(candidate, direction) for candidate in candidates):
                 mask |= 1 << bit
         return mask
+
+    def _wire_connects_to(self, pos: Position, direction: Facing) -> bool:
+        """Match Java wire's can-connect rule without connecting to consumers."""
+        bt = self.block_type
+        block = self.world.getBlock(*pos)
+        if block == bt.REDSTONE_DUST:
+            return True
+        if block == bt.REPEATER:
+            props = self.world.getBlockProperties(*pos) or BlockProperties()
+            return props.facing in (direction, direction.opposite())
+        return block in {
+            bt.REDSTONE_BLOCK, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
+            bt.LEVER, bt.STONE_BUTTON,
+        }
+
+    def press_button(self, pos: Position) -> bool:
+        """Press a stone button for the source-backed twenty game ticks."""
+        if self.world.getBlock(*pos) != self.block_type.STONE_BUTTON:
+            return False
+        props = self._props(pos)
+        props.powered = True
+        props.redstonePower = 15
+        self._set_props(pos, props)
+        self._button_updates[pos] = 20
+        self.mark_dirty()
+        return True
 
     def _update_dust(self) -> bool:
         bt = self.block_type
@@ -382,6 +407,20 @@ class RedstoneSimulator:
     def _tick_components(self) -> bool:
         changed = False
         changed |= self._tick_lamp_off_updates()
+        for pos, ticks in list(self._button_updates.items()):
+            ticks -= 1
+            if ticks > 0:
+                self._button_updates[pos] = ticks
+                continue
+            self._button_updates.pop(pos, None)
+            if self.world.getBlock(*pos) != self.block_type.STONE_BUTTON:
+                continue
+            props = self._props(pos)
+            if props.powered:
+                props.powered = False
+                props.redstonePower = 0
+                self._set_props(pos, props)
+                changed = True
         for pos, (desired, ticks) in list(self._repeater_updates.items()):
             ticks -= 1
             if ticks > 0:
@@ -416,7 +455,8 @@ class RedstoneSimulator:
         definition = self.definitions.get(block)
         if block in {
             bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
-            bt.LEVER, bt.REPEATER, bt.WATER, bt.LAVA, bt.FIRE, bt.SOUL_FIRE,
+            bt.LEVER, bt.STONE_BUTTON, bt.REPEATER,
+            bt.WATER, bt.LAVA, bt.FIRE, bt.SOUL_FIRE,
         } or (definition and (
             definition.isDoor
             or definition.modelKind in {

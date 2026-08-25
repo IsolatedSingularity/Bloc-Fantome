@@ -42,6 +42,14 @@ def render(output_dir: Path) -> None:
     app = app_module.BlocFantome()
     if not app.assetManager.loadAllAssets():
         raise RuntimeError("Could not load visual-check assets")
+    app.tutorialScreen.setAssets(
+        app.assetManager.buttonNormal,
+        app.assetManager.buttonHover,
+        app.assetManager.checkboxTexture,
+        app.assetManager.checkboxSelectedTexture,
+        app.assetManager.clickSound,
+        app.assetManager,
+    )
 
     splash = SplashScreen(
         screen,
@@ -209,11 +217,17 @@ def render(output_dir: Path) -> None:
     tutorial.minimized = False
 
     app._beginTutorial(advanced=True)
-    tutorial.panelX = 720
-    tutorial.panelY = 130
-    tutorial._layoutPanelControls()
     app._render()
     save_capture(screen, output_dir / "tutorial_advanced.png")
+    for step_index, filename in (
+        (6, "tutorial_advanced_mirror.png"),
+        (8, "tutorial_advanced_liquids.png"),
+        (11, "tutorial_advanced_end.png"),
+    ):
+        tutorial.currentStep = step_index
+        app._onTutorialStepChange(step_index)
+        app._render()
+        save_capture(screen, output_dir / filename)
     tutorial.hide()
 
     app._render()
@@ -303,6 +317,11 @@ def render(output_dir: Path) -> None:
         save_capture(screen, output_dir / filename)
     app.skyboxesEnabled = False
 
+    app._toggleRedstoneLab()
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab.png")
+    app._toggleRedstoneLab()
+
     random.seed(1161)
     for dimension, effect, filename in (
         (app_module.DIMENSION_OVERWORLD, "rain", "weather_overworld_rain.png"),
@@ -367,13 +386,16 @@ def render(output_dir: Path) -> None:
         app.redstone.mark_dirty()
         app.redstone.update(50)
         app.redstone.update(100)
+        app._interactBlock(0, 2, 1)
+        app.redstone.update(50)
+        app.redstone.update(100)
         app._fitWorldToViewport(notify=False)
         app.renderer.offsetX = app.targetOffsetX
         app.renderer.offsetY = app.targetOffsetY
         app.tooltipTimer = 0
         app._render()
         save_capture(screen, output_dir / f"{prefix}_closed.png")
-        app._interactBlock(5, 1, 2)
+        app._interactBlock(0, 2, 1)
         app.redstone.update(50)
         app.redstone.update(50)
         app._render()
@@ -384,6 +406,22 @@ def render(output_dir: Path) -> None:
 
     capture_piston_door("piston_door", "redstone_piston_door")
     capture_piston_door("flush_piston_door", "redstone_flush_door")
+
+    # Dense connected clear glass: internal seams are culled while the stone
+    # specimen remains visible through the pavilion.
+    app.world.resize(16, 16, 16, min_y=0, preserve=False)
+    with app.world.bulkUpdate():
+        app._createInitialFloor()
+        for x in range(3, 13):
+            for y in range(3, 13):
+                for z in range(1, 9):
+                    if x in (3, 12) or y in (3, 12) or z in (1, 8):
+                        app.world.setBlock(x, y, z, app_module.BlockType.GLASS)
+        for z in range(1, 7):
+            app.world.setBlock(8, 8, z, app_module.BlockType.REDSTONE_BLOCK)
+    app._fitWorldToViewport(notify=False)
+    app._render()
+    save_capture(screen, output_dir / "connected_clear_glass.png")
 
     app._openWorldLibrary()
     app.assetManager.drawBackground(screen)

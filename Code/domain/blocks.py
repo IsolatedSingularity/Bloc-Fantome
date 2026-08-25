@@ -346,6 +346,7 @@ class BlockType(Enum):
     PISTON = 544
     STICKY_PISTON = 545
     PISTON_HEAD = 546
+    STONE_BUTTON = 547
 
 
 class Facing(Enum):

@@ -2,7 +2,6 @@ Next
 
 - Performance scout + other language
 - Past a certain zoom too close i can no longer pan (in worlds or terrains at least)
-- resizable window & fullscreen
 - optimize larger window and block distribution and rendering logic
 
 - Individual block refines (maybe functionality too)

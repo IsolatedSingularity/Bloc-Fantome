@@ -989,7 +989,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.selectedBlock, app_module.BlockType.OBSIDIAN)
         self.assertIsNone(self.app._tutorialSessionSnapshot)
 
-    def test_advanced_tutorial_uses_expanded_scaled_showcases_and_restores(self):
+    def test_advanced_tutorial_uses_dedicated_32x32_showcases_and_restores(self):
         self.app.world.setBlock(2, 3, 1, app_module.BlockType.EMERALD_BLOCK)
         original_blocks = dict(self.app.world.blocks)
         basic_count = len(app_module.STRUCTURE_WELCOME_SHOWCASE["blocks"])
@@ -1003,6 +1003,43 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertGreater(non_floor, basic_count)
         self.app.tutorialScreen.hide()
         self.assertEqual(dict(self.app.world.blocks), original_blocks)
+
+    def test_every_advanced_lesson_has_a_fitted_scene_and_matching_hotbar(self):
+        self.app._beginTutorial(advanced=True)
+        tutorial = self.app.tutorialScreen
+        try:
+            for index, names in enumerate(tutorial.ADVANCED_HOTBARS):
+                self.app._onTutorialStepChange(index)
+                self.assertEqual((self.app.world.width, self.app.world.depth), (32, 32))
+                title = tutorial.TUTORIAL_STEPS[index]["title"]
+                expected_dimension = (
+                    app_module.DIMENSION_NETHER if "Nether" in title else
+                    app_module.DIMENSION_END if "End" in title else
+                    app_module.DIMENSION_OVERWORLD
+                )
+                self.assertEqual(self.app.currentDimension, expected_dimension)
+                self.assertEqual(self.app.world.dimension, expected_dimension)
+                self.assertIsNotNone(self.app.world.occupiedBounds)
+                self.assertGreater(len(self.app.world.blocks), 250)
+                expected = [tutorial._iconNameToBlockType(name) for name in names]
+                self.assertNotIn(None, expected)
+                self.assertEqual(self.app.hotbar, expected)
+                self.assertGreater(self.app.zoomLevel, 0)
+                self.assertLessEqual(self.app.zoomLevel, 1)
+
+            # The advanced liquid lesson contains both controlled reservoirs,
+            # and the End lesson has non-flat terrain beneath its tower.
+            self.app._onTutorialStepChange(8)
+            self.assertIn(app_module.BlockType.WATER, self.app.world.blocks.values())
+            self.assertIn(app_module.BlockType.LAVA, self.app.world.blocks.values())
+            self.app._onTutorialStepChange(11)
+            endHeights = {
+                self.app.world.getHighestBlock(x, y)
+                for x in range(10, 22) for y in range(10, 22)
+            }
+            self.assertGreater(len(endHeights), 3)
+        finally:
+            tutorial.hide()
 
     def test_tutorial_window_drags_minimizes_and_restores(self):
         tutorial = app_module.TutorialScreen(
@@ -1438,9 +1475,15 @@ class AppIntegrationTests(unittest.TestCase):
                 (min(pos[1] for pos in occupied) + max(pos[1] for pos in occupied)) / 2,
                 (min(pos[2] for pos in occupied) + max(pos[2] for pos in occupied)) / 2,
             )
-            self.assertEqual(self.app.zoomLevel, 1.0)
-            self.assertGreater(self.app.renderer.worldToScreen(*center)[1], 400)
-            self.assertLess(self.app.renderer.worldToScreen(*center)[1], 430)
+            self.assertGreater(self.app.zoomLevel, 0.0)
+            self.assertLessEqual(self.app.zoomLevel, 1.0)
+            centerScreen = self.app.renderer.worldToScreen(*center)
+            self.assertAlmostEqual(
+                centerScreen[0],
+                (app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) / 2,
+                delta=2,
+            )
+            self.assertAlmostEqual(centerScreen[1], 400, delta=2)
 
     def test_door_uses_two_synchronized_cells_and_undo(self):
         self.assertTrue(self.app._placeDoorWithUndo(
@@ -1777,30 +1820,88 @@ class AppIntegrationTests(unittest.TestCase):
             self.app.redstone.update(50)
 
             for _cycle in range(3):
+                # Lever starts off: the two halves are parked beside the opening.
                 self.assertTrue(all(
-                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
-                    for x in (2, 3) for z in (1, 2)
-                ), [
-                    (x, z, self.app.world.getBlock(x, 2, z).name)
-                    for x in range(6) for z in (1, 2)
-                ] + [
-                    ("dust", x, z, getattr(
-                        self.app.world.getBlockProperties(x, 1, z),
-                        "redstonePower", None
-                    )) for x in range(5) for z in (1, 2)
-                ])
-                self.assertTrue(self.app._interactBlock(5, 1, 2))
+                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.AIR
+                    for x in (5, 6) for z in (1, 2)
+                ))
+                self.assertTrue(self.app._interactBlock(0, 2, 1))
                 self.app.redstone.update(50)
                 self.assertTrue(all(
-                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.AIR
-                    for x in (2, 3) for z in (1, 2)
+                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.STONE_BRICKS
+                    for x in (5, 6) for z in (1, 2)
                 ))
-                self.assertTrue(all(
-                    self.app.world.getBlock(x, 2, z) == app_module.BlockType.STONE_BRICKS
-                    for x in (1, 4) for z in (1, 2)
-                ))
-                self.assertTrue(self.app._interactBlock(5, 1, 2))
+                self.assertTrue(self.app._interactBlock(0, 2, 1))
                 self.app.redstone.update(50)
+                self.assertTrue(all(
+                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.STONE_BRICKS
+                    for x in (4, 7) for z in (1, 2)
+                ))
+
+    def test_redstone_lab_is_interact_only_and_restores_the_live_build(self):
+        marker = (2, 2, 2)
+        self.app.world.setBlock(*marker, app_module.BlockType.DIAMOND_BLOCK)
+        self.app.showGrid = False
+        original_bounds = (
+            self.app.world.width, self.app.world.depth, self.app.world.height
+        )
+
+        self.app._toggleRedstoneLab()
+        self.assertTrue(self.app.redstoneLabActive)
+        self.assertTrue(self.app.interactionMode)
+        self.assertTrue(self.app.showGrid)
+        self.assertEqual((self.app.world.width, self.app.world.depth), (32, 32))
+        self.assertEqual(self.app.sceneMetadata["mode"], "redstone_lab")
+        self.assertIn(app_module.BlockType.STONE_BUTTON, self.app.hotbar)
+        self.assertEqual(
+            self.app.world.getBlock(3, 14, 1), app_module.BlockType.STONE_BUTTON
+        )
+        self.assertTrue(self.app._interactBlock(14, 9, 1))
+        self.app.redstone.update(50)
+        self.assertTrue(all(
+            self.app.world.getBlock(x, 10, z) == app_module.BlockType.STONE_BRICKS
+            for x in (19, 20) for z in (1, 2)
+        ))
+
+        # Moving the pointer in hand mode must never read the click-only
+        # ``button`` field from a MOUSEMOTION event.
+        self.app._handleMouseMotion(SimpleNamespace(pos=(300, 300)))
+        lever = (3, 9, 1)
+        before = self.app.world.getBlockProperties(*lever).powered
+        self.app.hoveredSourceBlock = lever
+        self.app._handleMouseDown(SimpleNamespace(button=1, pos=(300, 300)))
+        self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered, before)
+
+        self.app._toggleRedstoneLab()
+        self.assertFalse(self.app.redstoneLabActive)
+        self.assertFalse(self.app.interactionMode)
+        self.assertFalse(self.app.showGrid)
+        self.assertEqual(
+            (self.app.world.width, self.app.world.depth, self.app.world.height),
+            original_bounds,
+        )
+        self.assertEqual(self.app.world.getBlock(*marker), app_module.BlockType.DIAMOND_BLOCK)
+
+    def test_connected_clear_glass_culls_internal_faces_and_reuses_variants(self):
+        self.app.world.resize(12, 12, 12, min_y=0, preserve=False)
+        with self.app.world.bulkUpdate():
+            for x in range(2, 10):
+                for y in range(2, 10):
+                    for z in range(1, 9):
+                        self.app.world.setBlock(x, y, z, app_module.BlockType.GLASS)
+
+        visibleMasks = [
+            self.app._clearGlassFaceMask(x, y, z)
+            for x in range(2, 10) for y in range(2, 10) for z in range(1, 9)
+        ]
+        self.assertIn(0, visibleMasks)
+        self.assertLess(sum(mask != 0 for mask in visibleMasks), len(visibleMasks) // 2)
+        self.assertEqual(self.app._clearGlassFaceMask(9, 9, 8), 0b111)
+
+        first = self.app.assetManager.getConnectedGlassSprite(0b111)
+        second = self.app.assetManager.getConnectedGlassSprite(0b111)
+        self.assertIs(first, second)
+        self.assertGreater(first.get_bounding_rect(min_alpha=1).width, 0)
 
     def test_new_audio_defaults_are_eighty_percent(self):
         self.assertEqual(
