@@ -18,6 +18,9 @@ class FakeChannel:
         self.stops = 0
         self.end_event = 0
         self.paused = False
+        self.queued = []
+        self.current_sound = None
+        self.queued_sound = None
 
     def get_busy(self):
         return self.busy
@@ -27,10 +30,27 @@ class FakeChannel:
 
     def play(self, sound, loops=0):
         self.busy = True
+        self.current_sound = sound
         self.played.append((sound, loops))
+
+    def queue(self, sound):
+        self.queued.append(sound)
+        self.queued_sound = sound
+
+    def get_sound(self):
+        return self.current_sound
+
+    def get_queue(self):
+        return self.queued_sound
+
+    def simulate_queued_start(self):
+        self.current_sound = self.queued_sound
+        self.queued_sound = None
 
     def stop(self):
         self.busy = False
+        self.current_sound = None
+        self.queued_sound = None
         self.stops += 1
 
     def set_endevent(self, event_type):
@@ -59,8 +79,8 @@ class FakeMixer:
     def Channel(self, index):
         return self.channels.setdefault(index, FakeChannel(index))
 
-    def Sound(self, path):
-        return FakeSound(path)
+    def Sound(self, path=None, *, buffer=None):
+        return FakeSound(path if path is not None else "buffer")
 
 
 class FakeMusic:
@@ -135,6 +155,44 @@ class AudioRouterTests(unittest.TestCase):
         self.assertEqual(mixer.channels[31].end_event, 42)
         self.assertFalse(backend.get_busy())
 
+    def test_preloaded_sequence_queues_each_fragment_without_restarting_channel(self):
+        mixer = FakeMixer()
+        backend = AUDIO.PreloadedMusicBackend(mixer, channel_index=31)
+        self.assertTrue(backend.load_sequence(["one.mp3", "two.mp3", "three.mp3"]))
+        backend.play()
+        channel = mixer.channels[31]
+        self.assertEqual(channel.played[-1][0].path, "one.mp3")
+        self.assertEqual(channel.queued[-1].path, "two.mp3")
+        channel.simulate_queued_start()
+        self.assertTrue(backend.maintain_sequence())
+        self.assertEqual(channel.queued[-1].path, "three.mp3")
+        channel.simulate_queued_start()
+        self.assertTrue(backend.maintain_sequence())
+        self.assertEqual(channel.queued[-1].path, "one.mp3")
+
+    def test_controller_poll_keeps_sequence_primed_without_end_events(self):
+        mixer = FakeMixer()
+        backend = AUDIO.PreloadedMusicBackend(mixer, channel_index=31)
+        controller = AUDIO.MusicController(backend)
+        self.assertTrue(controller.set_sequence(["one.mp3", "two.mp3", "three.mp3"]))
+        channel = mixer.channels[31]
+        channel.simulate_queued_start()
+        controller.update(16)
+        self.assertEqual(channel.queued[-1].path, "three.mp3")
+        self.assertEqual(controller.last_track, "two.mp3")
+
+    def test_worldbuilder_intro_plays_once_then_only_score_fragments_loop(self):
+        mixer = FakeMixer()
+        backend = AUDIO.PreloadedMusicBackend(mixer, channel_index=31)
+        controller = AUDIO.MusicController(backend)
+        tracks = ["intro-a.mp3", "intro-b.mp3", "score-a.mp3", "score-b.mp3"]
+        self.assertTrue(controller.set_sequence(tracks, loop_start=2))
+        channel = mixer.channels[31]
+        for expected in ("score-a.mp3", "score-b.mp3", "score-a.mp3"):
+            channel.simulate_queued_start()
+            controller.update(16)
+            self.assertEqual(channel.queued[-1].path, expected)
+
 
 class MusicControllerTests(unittest.TestCase):
     def test_immediate_dimension_replacement_has_no_silent_pending_state(self):
@@ -204,6 +262,13 @@ class MusicControllerTests(unittest.TestCase):
         controller.set_playlist(["one.ogg"], fade=False)
         controller.update(controller.fade_in_ms)
         self.assertAlmostEqual(music.volume, 0.4)
+
+    def test_sequence_falls_back_to_normal_playlist_for_streaming_backend(self):
+        music = FakeMusic()
+        controller = AUDIO.MusicController(music, shuffle=lambda tracks: None)
+        self.assertTrue(controller.set_sequence(["one.mp3", "two.mp3"]))
+        self.assertFalse(controller.sequence_mode)
+        self.assertEqual(music.loaded[-1], "one.mp3")
 
 
 if __name__ == "__main__":

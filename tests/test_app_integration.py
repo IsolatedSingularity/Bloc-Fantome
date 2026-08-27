@@ -28,6 +28,7 @@ except ImportError:
 class AppIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        pygame.font.init()
         cls.app = app_module.BlocFantome()
         if not cls.app.assetManager.loadAllAssets():
             raise RuntimeError("Integration fixture could not load application assets")
@@ -79,26 +80,110 @@ class AppIntegrationTests(unittest.TestCase):
         from engine.world_map import build_level, objective_progress
 
         for dimension in app_module.WORLD_MAP_DIMENSIONS:
-            with self.subTest(dimension=dimension):
-                objective = build_level(self.app.world, dimension)
-                current, total, done = objective_progress(self.app.world, objective)
-                self.assertFalse(done)
-                self.assertLess(current, total)
-                for position, block_name in objective.targets.items():
-                    self.app.world.setBlock(*position, app_module.BlockType[block_name])
-                if objective.powered_target is not None:
-                    self.app.world.setBlockProperties(
-                        *objective.powered_target, BlockProperties(powered=True)
+            if dimension == "ocean":
+                continue
+            for route_index in range(2):
+                with self.subTest(dimension=dimension, route=route_index):
+                    objective = build_level(self.app.world, dimension, route_index)
+                    self.assertTrue(objective.source_templates)
+                    self.assertIsNone(objective.powered_target)
+                    self.assertFalse(any("REDSTONE" in name for name in objective.hotbar))
+                    self.assertFalse(any("REDSTONE" in block.name for block in self.app.world.blocks.values()))
+                    current, total, done = objective_progress(self.app.world, objective)
+                    self.assertFalse(done)
+                    self.assertLess(current, total)
+                    for position, block_name in objective.targets.items():
+                        self.app.world.setBlock(*position, app_module.BlockType[block_name])
+                    if objective.powered_target is not None:
+                        self.app.world.setBlockProperties(
+                            *objective.powered_target, BlockProperties(powered=True)
+                        )
+                    self.assertEqual(objective_progress(self.app.world, objective), (total, total, True))
+
+    def test_world_map_controls_switch_tabs_start_and_return(self):
+        self.app._openWorldMap()
+        self.assertEqual(self.app._worldViewportRight(), app_module.WINDOW_WIDTH)
+        self.app._render()
+        self.app._handleWorldMapAction("dimension:end")
+        self.assertEqual(self.app.currentDimension, app_module.DIMENSION_END)
+        self.app._handleWorldMapAction("previous")
+        self.assertEqual(self.app.currentDimension, app_module.DIMENSION_NETHER)
+        self.app._handleWorldMapAction("start")
+        self.assertEqual(self.app.worldMapMode, "level")
+        self.app._handleWorldMapAction("hub")
+        self.assertEqual(self.app.worldMapMode, "hub")
+        self.assertTrue(self.app._exitWorldMap())
+
+    def test_every_world_map_route_opens_with_a_valid_nine_slot_hotbar(self):
+        self.app._openWorldMap()
+        for dimension in app_module.WORLD_MAP_DIMENSIONS:
+            if dimension == "ocean":
+                continue
+            for route_index in range(2):
+                with self.subTest(dimension=dimension, route=route_index):
+                    self.app._switchWorldMapHub(dimension)
+                    self.app._startWorldMapLevel(route_index)
+                    self.assertEqual(len(self.app.hotbar), 9)
+                    self.assertTrue(all(isinstance(block, app_module.BlockType) for block in self.app.hotbar))
+                    self.assertFalse(self.app.showGrid)
+                    self.assertEqual(self.app._worldViewportRight(), app_module.WINDOW_WIDTH)
+                    self.app._handleKeyDown(
+                        pygame.event.Event(pygame.KEYDOWN, key=pygame.K_g, unicode="g")
                     )
-                self.assertEqual(objective_progress(self.app.world, objective), (total, total, True))
+                    self.assertFalse(self.app.showGrid)
+        self.app._exitWorldMap()
+
+    def test_ocean_world_map_is_a_locked_preview_without_objective_entry(self):
+        self.app._openWorldMap()
+        self.app._switchWorldMapHub("ocean")
+        self.assertEqual(self.app.worldMapDimension, "ocean")
+        self.assertEqual(self.app.currentDimension, app_module.DIMENSION_OVERWORLD)
+        self.assertFalse(self.app.worldMapScene.playable_anchors)
+        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 4)
+        self.app._startWorldMapLevel(0)
+        self.assertEqual(self.app.worldMapMode, "hub")
+        self.assertIsNone(self.app.worldMapObjective)
+        self.app._exitWorldMap()
+
+    def test_overworld_map_has_deep_skirt_but_frames_the_play_surface(self):
+        self.app._openWorldMap()
+        self.assertEqual(self.app.world.min_y, -40)
+        self.assertLessEqual(self.app.world.occupiedBounds[0][2], -40)
+        self.assertEqual(self.app.worldMapScene.framing_bounds, ((4, 5, 0), (43, 42, 12)))
+        self.assertGreater(self.app.zoomLevel, 0.35)
+        self.app._exitWorldMap()
+
+    def test_middle_drag_is_direct_at_close_zoom_even_over_hotbar(self):
+        self.app.zoomLevel = self.app.zoomMax
+        self.app.renderer.setZoom(self.app.zoomLevel)
+        self.app.smoothCameraEnabled = True
+        start_x = (app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) // 2
+        start_y = app_module.WINDOW_HEIGHT - 40
+        before = (self.app.renderer.offsetX, self.app.renderer.offsetY)
+        self.app._handleMouseDown(SimpleNamespace(button=2, pos=(start_x, start_y)))
+        self.assertTrue(self.app.panning)
+        self.app._handleMouseMotion(SimpleNamespace(pos=(start_x + 37, start_y - 19)))
+        self.assertEqual(
+            (self.app.renderer.offsetX, self.app.renderer.offsetY),
+            (before[0] + 37, before[1] - 19),
+        )
+        self.assertEqual(
+            (self.app.targetOffsetX, self.app.targetOffsetY),
+            (self.app.renderer.offsetX, self.app.renderer.offsetY),
+        )
+        self.app._handleMouseUp(SimpleNamespace(button=2))
+        self.assertFalse(self.app.panning)
 
     def test_world_map_progress_save_keeps_the_users_persistent_hotbar(self):
         original_hotbar = [block.name for block in self.app.hotbar]
-        original_progress = dict(self.app.worldMapCompleted)
+        original_progress = {
+            dimension: list(progress)
+            for dimension, progress in self.app.worldMapCompleted.items()
+        }
         self.app._openWorldMap()
         self.app._startWorldMapLevel()
         self.assertNotEqual([block.name for block in self.app.hotbar], original_hotbar)
-        self.app.worldMapCompleted[app_module.DIMENSION_OVERWORLD] = True
+        self.app.worldMapCompleted[app_module.DIMENSION_OVERWORLD][0] = True
         writer = mock_open()
         try:
             with patch("builtins.open", writer):
@@ -108,14 +193,21 @@ class AppIntegrationTests(unittest.TestCase):
             )
             saved = json.loads(payload)
             self.assertEqual(saved["hotbar"], original_hotbar)
-            self.assertTrue(saved["worldMapCompleted"][app_module.DIMENSION_OVERWORLD])
+            self.assertEqual(
+                saved["worldMapCompleted"][app_module.DIMENSION_OVERWORLD],
+                [True, False],
+            )
         finally:
             self.app.worldMapCompleted = original_progress
             self.app._exitWorldMap()
 
     def test_responsive_minimum_reflows_controls_and_preserves_camera_center(self):
         old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
-        old_offset = (self.app.renderer.offsetX, self.app.renderer.offsetY)
+        old_zoom = self.app.zoomLevel
+        old_canvas_width = old_size[0] - app_module.PANEL_WIDTH
+        old_center = self.app.renderer._screenToWorldPoint(
+            old_canvas_width // 2, old_size[1] // 2, self.app.cameraFocusZ
+        )
         try:
             self.app._applyWindowSize(700, 500, recreate=False)
             self.assertEqual((app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT), (960, 640))
@@ -129,10 +221,16 @@ class AppIntegrationTests(unittest.TestCase):
                 self.app.fitWorldButtonRect,
             ):
                 self.assertTrue(canvas.contains(rect), rect)
-            self.assertEqual(
-                self.app.renderer.offsetX - old_offset[0],
-                ((960 - app_module.PANEL_WIDTH) - (old_size[0] - app_module.PANEL_WIDTH)) / 2,
+            new_center = self.app.renderer._screenToWorldPoint(
+                (960 - app_module.PANEL_WIDTH) // 2, 640 // 2, self.app.cameraFocusZ
             )
+            self.assertAlmostEqual(new_center[0], old_center[0], delta=0.1)
+            self.assertAlmostEqual(new_center[1], old_center[1], delta=0.1)
+            expected_scale = min(
+                (960 - app_module.PANEL_WIDTH) / old_canvas_width,
+                640 / old_size[1],
+            )
+            self.assertAlmostEqual(self.app.zoomLevel, old_zoom * expected_scale, places=3)
             self.assertLessEqual(
                 self.app.tutorialScreen.panelX + self.app.tutorialScreen.panelWidth,
                 960,
@@ -249,15 +347,19 @@ class AppIntegrationTests(unittest.TestCase):
         self.app.assetManager.drawPanelRow(
             plain, rect, "Rain: ON", self.app.smallFont, icon=icon
         )
-        self.app.assetManager.drawPanelRow(
-            animated,
-            rect,
-            "Rain: ON",
-            self.app.smallFont,
-            icon=icon,
-            effectStyle="rain",
-            effectColors=((100, 140, 220, 220),),
-        )
+        # Pin the animation phase so at least one drop crosses the icon area;
+        # an arbitrary real clock can legitimately place all eight drops to
+        # its left and make this foreground-order assertion intermittent.
+        with patch.object(pygame.time, "get_ticks", return_value=1000):
+            self.app.assetManager.drawPanelRow(
+                animated,
+                rect,
+                "Rain: ON",
+                self.app.smallFont,
+                icon=icon,
+                effectStyle="rain",
+                effectColors=((100, 140, 220, 220),),
+            )
         icon_area = pygame.Rect(rect.right - rect.height, rect.top, rect.height, rect.height)
         self.assertNotEqual(
             pygame.image.tobytes(plain.subsurface(icon_area), "RGBA"),
@@ -794,6 +896,21 @@ class AppIntegrationTests(unittest.TestCase):
                     })
                 self.assertEqual(reached, set(bottom))
 
+        north = renderer.stair_occupancy(
+            app_module.Facing.NORTH,
+            app_module.StairShape.STRAIGHT,
+            app_module.SlabPosition.BOTTOM,
+        )
+        north_upper = {(x, y) for x, y, z in north if z == 1}
+        self.assertEqual(north_upper, {(0, 0), (1, 0)})
+        east = renderer.stair_occupancy(
+            app_module.Facing.EAST,
+            app_module.StairShape.STRAIGHT,
+            app_module.SlabPosition.BOTTOM,
+        )
+        east_upper = {(x, y) for x, y, z in east if z == 1}
+        self.assertEqual(east_upper, {(1, 0), (1, 1)})
+
     def test_copper_stage_round_trips_and_nearby_sculk_sensor_pulses(self):
         copper = (3, 3, 1)
         sensor = (5, 3, 1)
@@ -1180,7 +1297,7 @@ class AppIntegrationTests(unittest.TestCase):
         from engine.world_catalog import WORLD_ENTRIES, world_catalog
 
         entries = world_catalog(app_module.WORLDS_DIR)
-        self.assertEqual(len(entries), 13)
+        self.assertEqual(len(entries), 15)
         self.assertEqual({entry.category for entry in entries}, {"Overworld", "Nether", "The End"})
         for entry in WORLD_ENTRIES:
             path = Path(app_module.WORLDS_DIR) / entry.filename
@@ -1199,6 +1316,34 @@ class AppIntegrationTests(unittest.TestCase):
                     block.get("minecraft"),
                     {"minecraft:jigsaw", "minecraft:structure_block", "minecraft:structure_void"},
                 )
+
+    def test_new_dimension_worlds_expose_source_backed_scene_contracts(self):
+        expected = {
+            "nether_fortress_biomes_1161.json.gz": ("nether", False),
+            "ocean_monument_1161.json.gz": ("overworld", True),
+        }
+        for filename, (dimension, underwater) in expected.items():
+            with self.subTest(filename=filename):
+                path = Path(app_module.WORLDS_DIR) / filename
+                with gzip.open(path, "rt", encoding="utf-8") as handle:
+                    data = json.load(handle)
+                self.assertEqual(data["dimension"], dimension)
+                self.assertEqual(bool(data["scene"].get("underwater")), underwater)
+                self.assertGreater(data["scene"]["structure_blocks"], 1000)
+                self.assertGreater(len(data["blocks"]), 250000)
+        with gzip.open(
+            Path(app_module.WORLDS_DIR) / "nether_fortress_biomes_1161.json.gz",
+            "rt", encoding="utf-8",
+        ) as handle:
+            nether = json.load(handle)
+        self.assertEqual(len(nether["scene"]["biome_regions"]), 5)
+        with gzip.open(
+            Path(app_module.WORLDS_DIR) / "ocean_monument_1161.json.gz",
+            "rt", encoding="utf-8",
+        ) as handle:
+            ocean = json.load(handle)
+        self.assertEqual(len(ocean["scene"]["decorations"]), 4)
+        self.assertIn("elder_guardian", {item["type"] for item in ocean["scene"]["decorations"]})
 
     def test_end_city_world_structure_sits_above_terrain(self):
         path = Path(app_module.WORLDS_DIR) / "end_city_1161.json.gz"
@@ -1993,10 +2138,10 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertIs(first, second)
         self.assertGreater(first.get_bounding_rect(min_alpha=1).width, 0)
 
-    def test_new_audio_defaults_are_eighty_percent(self):
+    def test_music_starts_lower_while_ambient_and_effects_retain_headroom(self):
         self.assertEqual(
             (self.app.musicVolume, self.app.ambientVolume, self.app.effectsVolume),
-            (0.8, 0.8, 0.8),
+            (0.4, 0.8, 0.8),
         )
         self.assertEqual(app_module.BLOCK_ACTION_GAIN_SCALE, 0.875)
 

@@ -34,24 +34,27 @@ ZEKTON_FONT = os.path.join(
     PROJECT_ROOT, "Assets", "Fonts", "Zekton", "Zekton-Regular.otf"
 )
 HORROR_TITLE = os.path.join(PROJECT_ROOT, "References", "Titles", "horror.png")
-SKYBOX_PANORAMA_ROOT = os.path.join(
+SKYBOX_ATLAS_ROOT = os.path.join(
     PROJECT_ROOT, "Assets", "Skyboxes", "Black Mesa", "assets", "minecraft",
-    "optifine", "sky", "panoramas",
+    "optifine", "sky",
 )
-SKYBOX_PANORAMAS = [
-    os.path.join(SKYBOX_PANORAMA_ROOT, world, filename)
+SKYBOX_ATLASES = [
+    os.path.join(SKYBOX_ATLAS_ROOT, world, filename)
     for world, filename in (
         ("world0", "dawn.png"), ("world0", "day.png"),
         ("world0", "dusk.png"), ("world0", "night.png"),
         ("world1", "1.png"), ("world1", "2.png"), ("world1", "3.png"),
     )
 ]
+WORLD_MAP_TEMPLATE_BUNDLE = os.path.join(SCRIPT_DIR, "world_map_templates.json.gz")
 WORLD_MAP_ROOT = os.path.join(PROJECT_ROOT, "Assets", "World Map", "WorldBuilder")
 WORLD_MAP_RELEASE_FILES = [
     os.path.join(WORLD_MAP_ROOT, "ui", filename)
     for filename in (
         "question_mark.png", "question_mark_blink.png", "question_mark_shadow.png",
-        "worldbuilder_title.png", "next_world_arrow.png", "prev_world_arrow.png",
+        "question_mark_rollover_blink.png", "flag_rollover_blink.png",
+        "worldbuilder_title.png", "font_extended.png",
+        "next_world_arrow.png", "prev_world_arrow.png",
         *(f"flag{index}.png" for index in range(1, 7)),
         *(f"bonus_flag{index}.png" for index in range(1, 7)),
     )
@@ -61,12 +64,16 @@ WORLD_MAP_RELEASE_FILES = [
         "m_game_6_1.mp3", "m_game_6_3.mp3", "m_game_6_4.mp3", "m_game_6_5.mp3",
         "m_game_8_1.mp3", "m_game_8_3.mp3", "m_game_8_4.mp3",
         "m_game_i_1.mp3", "m_game_i_2.mp3", "m_game_i_3.mp3",
-        "s_button_click_2.mp3", "s_goal_mission_4.mp3", "s_rollover_1.mp3",
+        "m_game_a_1.mp3", "m_game_a_2.mp3", "m_game_a_3.mp3",
+        "m_intro_1.mp3", "m_intro_2.mp3",
+        "s_button_click_2.mp3", "s_goal_mission_4.mp3",
+        "s_rollover_1.mp3", "s_rollover_2.mp3",
+        "s_plan_click_2.mp3", "s_goal_bonus_2.mp3",
     )
 ]
 
 # Version info
-VERSION = "2.6.0"
+VERSION = "2.6.4"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -111,12 +118,16 @@ def build(debug: bool = False, diagnostic: bool = False):
         raise FileNotFoundError(
             f"Required splash title artwork is missing: {HORROR_TITLE}"
         )
-    missing_skyboxes = [path for path in SKYBOX_PANORAMAS if not os.path.isfile(path)]
+    missing_skyboxes = [path for path in SKYBOX_ATLASES if not os.path.isfile(path)]
     if missing_skyboxes:
         raise FileNotFoundError(
-            "Required spherical skybox panorama(s) are missing: "
+            "Required cubemap skybox atlas file(s) are missing: "
             + ", ".join(missing_skyboxes)
-            + ". Run Code/tools/build_skybox_panoramas.py before packaging."
+        )
+    if not os.path.isfile(WORLD_MAP_TEMPLATE_BUNDLE):
+        raise FileNotFoundError(
+            "Required source-derived World Map template bundle is missing: "
+            + WORLD_MAP_TEMPLATE_BUNDLE
         )
     missing_world_map = [path for path in WORLD_MAP_RELEASE_FILES if not os.path.isfile(path)]
     if missing_world_map:
@@ -218,7 +229,9 @@ def build(debug: bool = False, diagnostic: bool = False):
         "bastion_hoglin_stable_1161",
         "bastion_housing_units_1161",
         "basalt_deltas_1161",
+        "nether_fortress_biomes_1161",
         "end_city_1161",
+        "ocean_monument_1161",
         "ancient_city_121",
         "trial_chamber_121",
         "village_plains_1161",
@@ -229,6 +242,7 @@ def build(debug: bool = False, diagnostic: bool = False):
     ):
         source_path = os.path.join(WORLDS_DIR, f"{world_name}.json.gz")
         cmd.append(f"--add-data={source_path}{os.pathsep}worlds")
+    cmd.append(f"--add-data={WORLD_MAP_TEMPLATE_BUNDLE}{os.pathsep}.")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)

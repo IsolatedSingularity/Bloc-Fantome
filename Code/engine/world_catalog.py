@@ -17,6 +17,14 @@ class WorldEntry:
 
 WORLD_ENTRIES = (
     WorldEntry(
+        "nether_fortress_biomes_1161",
+        "Nether Fortress Expanse",
+        "Java 1.16.1 | Nether",
+        "A long fortress spanning warped, crimson, soul-sand, basalt, and wastes regions.",
+        "nether_fortress_biomes_1161.json.gz",
+        "Nether",
+    ),
+    WorldEntry(
         "bastion_treasure_1161",
         "Treasure Bastion",
         "Java 1.16.1 | Nether",
@@ -63,6 +71,14 @@ WORLD_ENTRIES = (
         "Source-shaped recursive city on a broad editable End island.",
         "end_city_1161.json.gz",
         "The End",
+    ),
+    WorldEntry(
+        "ocean_monument_1161",
+        "Deep Ocean Monument",
+        "Java 1.16.1 | Overworld",
+        "An underwater monument habitat with canonical ruins, wreck, and decorative guardians.",
+        "ocean_monument_1161.json.gz",
+        "Overworld",
     ),
     WorldEntry(
         "ancient_city_121",

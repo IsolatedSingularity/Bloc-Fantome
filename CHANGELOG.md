@@ -57,6 +57,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Executable crash on startup (pygame event handling)
 - Conda auto-activation terminal error
 
+## [2.6.4] - 2026-08-27
+
+### Added
+- Added an ignored, lossless WorldBuilder reference corpus with the original archives, byte-identical DCR movies, raw ProjectorRays and shockwave-extractor output, searchable Lingo/cast indexes, rebuild tools, and an agent-first entrypoint.
+- Added map-specific, texture-derived travelers: villager and bee, strider and blaze, shulker and endermite, and cod and salmon.
+
+### Changed
+- Reconstructed the mission question mark, blink, and shadow directly from the Director cast palettes, bit depths, registrations, and two-sprite Lingo behavior, including its idle orbit and 200 ms hover clock.
+- Tightened the Nether hub framing around a full-screen five-biome landscape while keeping its bastion and fortress pieces inside the map volume.
+- Expanded the End map volume so the complete ship and upper deck remain visible.
+- Rebuilt the Deep Ocean hub around a full 58 x 58 monument exterior and replaced decorative water blocks with animated screen-space caustics.
+- Made every World Map hub use the complete window viewport for more readable, unzoomed presentation.
+
+### Fixed
+- Removed clipped Nether structures, the clipped End ship, guessed marker recoloring, and the undersized handmade Ocean Monument.
+
+## [2.6.3] - 2026-08-26
+
+### Added
+- Added ambient WorldBuilder-style travelers to every map hub and an underwater map volume with guardians, light shafts, bubbles, and particles.
+- Added source-template warm and cold ruin clusters plus an intact with-mast shipwreck to the Deep Ocean hub and editable ocean world.
+
+### Changed
+- Rebuilt the map marker from the recovered native WorldBuilder black silhouette, white detail mask, green rollover rays, mission copy, and selector sounds.
+- Expanded the Nether hub to a 92 x 92 irregular generated landscape with distinct warped, crimson, soul-sand, basalt, lava, bastion, and source-generator fortress regions.
+- Restyled map and objective navigation with the recovered cyan WorldBuilder panels and orange arrow art.
+- Rendered skyboxes as complete camera-locked cubemap enclosures with native-detail 1080p sampling, no panorama scrolling, fog, haze, vignette, or equator seam.
+- World Map music now plays its intro once and loops each dimension's score family continuously across hubs and objectives.
+
+### Fixed
+- Kept underwater presentation across the complete map viewport and tapered the seabed edge instead of exposing a dry UI-side strip or thick slab.
+- Removed the remaining yellow marker tint and low-resolution sky intermediates.
+
+## [2.6.2] - 2026-08-26
+
+### Added
+- Added a locked Deep Ocean World Map with a monument, canonical ruin and shipwreck pieces, underwater atmosphere, and source-textured decorative guardians.
+- Added editable 256 x 256 Nether Fortress Expanse and Deep Ocean Monument worlds to the Worlds gallery.
+- Added the canonical End ship to the End map and a fortress crossing to the Nether map and its second repair route.
+
+### Changed
+- Lowered startup music to 40 percent and reduced the mixer buffer for more responsive map sounds.
+- Rebuilt WorldBuilder music playback as an ordered predecoded queue with MP3 padding trim for uninterrupted fragment transitions.
+- Made skybox turns smooth and camera-linked with perspective cubemap projection, horizon haze, and no autonomous rotation.
+- Replaced the black question-mark mask with the recovered WorldBuilder amber/detail composition and restyled all map navigation controls.
+- Reworked village paths, Nether biome regions, global plains-house geometry, and canonical stair orientation.
+
+### Fixed
+- Removed the startup tutorial pop-in by staging its terrain before the splash fade completes.
+- Removed the LEGO badge and prevented locked Ocean routes from opening unfinished objectives.
+- Kept all new map and gallery terrain grounded without floating objective grids or redstone levels.
+
+## [2.6.1] - 2026-08-26
+
+### Added
+- Java 1.16.1 NBT-derived village, bastion, and End City pieces for every World Map hub and repair route.
+- Native 1920x1080 visual and benchmark coverage for fullscreen presentation.
+
+### Changed
+- Reworked the splash into a darker generated Deep Dark pattern without translucent circular decoration.
+- Replaced scrolling equirectangular sky panoramas with camera-linked cubemap faces and made skyboxes opt-in for every session.
+- Isolated World Map objectives from the normal editor panel and adopted the recovered WorldBuilder marker, shadow, rollover, arrow, and translucent grey HUD assets.
+- Resizing now increases native block render scale while preserving the world-space camera center.
+
+### Fixed
+- Removed the floating objective grid and every redstone requirement from World Map levels.
+- Removed the skybox longitude wrap and equator projection seam while keeping the licensed sky choices available.
+- Prevented the level return control from overlapping the normal right-side editor UI.
+
 ## [2.6.0] - 2026-08-25
 
 ### Added

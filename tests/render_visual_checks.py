@@ -334,7 +334,7 @@ def render(output_dir: Path) -> None:
     ):
         app.currentDimension = dimension
         app.world.setDimension(dimension)
-        app.skyboxRenderer.update(0, dimension)
+        app.skyboxRenderer.update(0, dimension, view_rotation=app.renderer.viewRotation)
         app._render()
         save_capture(screen, output_dir / filename)
     app.skyboxesEnabled = False
@@ -344,7 +344,7 @@ def render(output_dir: Path) -> None:
     save_capture(screen, output_dir / "redstone_lab.png")
     app._toggleRedstoneLab()
 
-    # World Map product art: three dedicated selector hubs, an objective, and
+    # World Map product art: four dedicated selector hubs, an objective, and
     # the exact selector marker behavior framed inside the real editor window.
     map_frames = []
     app._openWorldMap()
@@ -356,25 +356,55 @@ def render(output_dir: Path) -> None:
         frame = screen.copy()
         map_frames.append(frame)
         save_capture(frame, output_dir / f"world_map_{dimension}.png")
+        if dimension == app_module.DIMENSION_OVERWORLD:
+            # Capture the recovered WorldBuilder 200 ms hover-swap frame and
+            # mission copy beneath the palette-correct selector.
+            app.worldMapView._hovered_node = 1
+            with patch("pygame.time.get_ticks", return_value=200):
+                app._render()
+            save_capture(screen, output_dir / "world_map_overworld_hover.png")
+            app.worldMapView._hovered_node = None
     montage = pygame.Surface((1200, 322))
     montage.fill((17, 18, 23))
     montage_font = app_module.load_ui_font(24, bold=True)
     for index, (dimension, frame) in enumerate(zip(app_module.WORLD_MAP_DIMENSIONS, map_frames)):
-        panel = pygame.transform.smoothscale(frame, (392, 261))
-        x = 6 + index * 398
-        montage.blit(panel, (x, 48))
+        panel = pygame.transform.smoothscale(frame, (288, 192))
+        x = 6 + index * 296
+        montage.blit(panel, (x, 62))
         label = montage_font.render(dimension.upper(), True, (246, 231, 179))
-        montage.blit(label, label.get_rect(center=(x + 196, 25)))
-        pygame.draw.rect(montage, (126, 130, 142), (x, 48, 392, 261), 1)
+        montage.blit(label, label.get_rect(center=(x + 144, 32)))
+        pygame.draw.rect(montage, (126, 130, 142), (x, 62, 288, 192), 1)
     save_capture(montage, output_dir / "world_map_montage.png")
 
+    for dimension in app_module.WORLD_MAP_DIMENSIONS:
+        if dimension == "ocean":
+            continue
+        for route_index in range(2):
+            app._switchWorldMapHub(dimension)
+            app._startWorldMapLevel(route_index)
+            app.renderer.offsetX = app.targetOffsetX
+            app.renderer.offsetY = app.targetOffsetY
+            app._render()
+            filename = f"world_map_objective_{dimension}_{route_index + 1}.png"
+            save_capture(screen, output_dir / filename)
+            if dimension == app_module.DIMENSION_OVERWORLD and route_index == 0:
+                save_capture(screen, output_dir / "world_map_objective.png")
+    app._exitWorldMap()
+
+    # Native 1080p regression: rebuild sprites at the resized zoom and capture
+    # the campaign HUD without scaling a 1200x800 framebuffer.
+    app._applyWindowSize(1920, 1080)
+    screen = app.screen
+    app._openWorldMap()
     app._switchWorldMapHub(app_module.DIMENSION_OVERWORLD)
-    app._startWorldMapLevel()
+    app._startWorldMapLevel(0)
     app.renderer.offsetX = app.targetOffsetX
     app.renderer.offsetY = app.targetOffsetY
     app._render()
-    save_capture(screen, output_dir / "world_map_objective.png")
+    save_capture(screen, output_dir / "world_map_objective_1080p.png")
     app._exitWorldMap()
+    app._applyWindowSize(1200, 800)
+    screen = app.screen
 
     # Compact hover demonstrations for README: the held terrain seed preview
     # and the paired center-preserving canvas controls.
@@ -530,7 +560,46 @@ def render(output_dir: Path) -> None:
         app._render()
         save_capture(screen, output_dir / filename)
 
-    # README art: a full editor frame, not an isolated renderer export.
+    # README dimension art: renderer-only captures in the structure's actual
+    # dimension. These intentionally omit the panel, HUD, hotbar, and controls.
+    def capture_clean_dimension(world_name: str, dimension: str, filename: str) -> None:
+        app._loadBuildingFromPath(
+            str(Path(app_module.WORLDS_DIR) / world_name),
+            silent=True,
+        )
+        app.currentDimension = dimension
+        app.world.setDimension(dimension)
+        app.assetManager._createBackground(dimension)
+        if app.sceneStructurePositions:
+            app._fitPositionsToViewport(app.sceneStructurePositions, notify=False)
+        else:
+            app._fitWorldToViewport(notify=False)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        clean = pygame.Surface((app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH, app_module.WINDOW_HEIGHT))
+        old_screen = app.screen
+        app.screen = clean
+        app.skyboxRenderer.resize(clean.get_size())
+        app.skyboxRenderer.update(0, dimension, view_rotation=app.renderer.viewRotation)
+        if not app.skyboxRenderer.render(clean, dimension):
+            app.assetManager.drawBackground(clean)
+        app._renderWorld()
+        save_capture(clean, output_dir / filename)
+        app.screen = old_screen
+        app.skyboxRenderer.resize(old_screen.get_size())
+
+    capture_clean_dimension(
+        "bastion_bridge_1161.json.gz",
+        app_module.DIMENSION_NETHER,
+        "nether.png",
+    )
+    capture_clean_dimension(
+        "end_city_1161.json.gz",
+        app_module.DIMENSION_END,
+        "end.png",
+    )
+
+    # Additional editor-frame art for the Worlds gallery.
     app.structuresExpanded = False
     app.worldsExpanded = False
     app._loadBuildingFromPath(

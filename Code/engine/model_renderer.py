@@ -161,8 +161,12 @@ class BlockModelRenderer:
         else:
             occupied.add((1, 0, 1))
 
+        # The canonical upper step above is authored on +X (east), while
+        # Minecraft's NORTH state rises toward -Y. Rotate the canonical volume
+        # back one quarter-turn before applying the Java facing. The previous
+        # direct mapping made every village roof stair appear 90 degrees off.
         rotated = {
-            self._rotate_voxel(voxel, facing.value) for voxel in occupied
+            self._rotate_voxel(voxel, facing.value - 1) for voxel in occupied
         }
         if half == SlabPosition.TOP:
             rotated = {(x, y, 1 - z) for x, y, z in rotated}

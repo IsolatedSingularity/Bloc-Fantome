@@ -79,7 +79,12 @@ def render_ancient_city_background_surface(
     size=(1200, 800),
     cube_width: int = 64,
 ) -> pygame.Surface:
-    """Render a deterministic Ancient City mosaic with sculk-lit accents."""
+    """Render a dark, structured Deep Dark block mosaic.
+
+    The splash is intentionally a generated pattern rather than a screenshot.
+    Broad deepslate lanes and clustered sculk fields evoke an Ancient City
+    floor plan without placing translucent fog shapes behind the wordmark.
+    """
     width, height = size
     cube_width = max(32, int(cube_width))
     usable = [texture for texture in textures if texture is not None]
@@ -91,32 +96,33 @@ def render_ancient_city_background_surface(
     result.fill((4, 7, 10))
     rows = height // row_step + 4
     columns = width // cube_width + 4
-    # Keep deepslate as the Deep Dark foundation while making sculk and its
-    # growth blocks the dominant material rather than isolated accents.
-    pattern = (0, 2, 0, 3, 2, 1, 2, 0, 4, 2, 3, 5, 0, 2, 1, 2)
+    center_column = columns // 2
     for row in range(-2, rows):
         offset_x = (row & 1) * (cube_width // 2)
         for column in range(-2, columns):
-            selector = pattern[(column * 5 + row * 7) % len(pattern)] % len(cubes)
+            # Ancient City-inspired lanes remain mostly tiled deepslate. Sculk
+            # grows in coherent deterministic patches around them instead of
+            # appearing as an evenly shuffled wallpaper.
+            lane = abs(column - center_column) <= 1 or row % 10 in (0, 1)
+            noise = (column * 37 + row * 61 + column * row * 17) & 31
+            patch = ((column // 3) * 11 + (row // 3) * 7) & 7
+            if lane:
+                selector = 1 if noise in (0, 13) else 0
+            elif patch in (1, 2, 5):
+                selector = 2
+                if noise == 3 and len(cubes) > 3:
+                    selector = 3
+                elif noise == 19 and len(cubes) > 5:
+                    selector = 5
+            elif noise == 7 and len(cubes) > 4:
+                selector = 4
+            else:
+                selector = 1 if noise in (4, 17, 29) else 0
+            selector %= len(cubes)
             result.blit(cubes[selector], (column * cube_width + offset_x, row * row_step))
     darkness = pygame.Surface(result.get_size(), pygame.SRCALPHA)
-    darkness.fill((1, 2, 6, 194))
+    darkness.fill((0, 2, 5, 214))
     result.blit(darkness, (0, 0))
-
-    # Build the fog once at quarter resolution and upscale it into soft wisps.
-    # The cached splash PNG therefore has no procedural work during startup.
-    fog_size = (max(1, width // 4), max(1, height // 4))
-    fog = pygame.Surface(fog_size, pygame.SRCALPHA)
-    wisps = (
-        ((-35, 92, 210, 70), (92, 31, 126, 28)),
-        ((105, 112, 190, 58), (119, 43, 151, 25)),
-        ((205, 72, 145, 50), (74, 25, 111, 22)),
-        ((30, 142, 260, 48), (109, 37, 144, 18)),
-    )
-    for bounds, color in wisps:
-        pygame.draw.ellipse(fog, color, bounds)
-    fog = pygame.transform.smoothscale(fog, (width, height))
-    result.blit(fog, (0, 0))
     return result
 
 

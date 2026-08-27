@@ -154,6 +154,8 @@ Step through the portal and the world transforms. Netherrack stretches beneath y
 
 Journey to the edge of existence itself. End stone forms an alien landscape floating in an infinite void, its pale yellow surface stark against the absolute darkness that surrounds it. The atmosphere here is different. Ethereal. Empty. *Unsettling*. Distant, haunting tones drift through the emptiness, and the purple-tinged sky holds no stars, no sun, no moon. End cities rise from the void, their purpur spires reaching toward nothing. This is a place of endings, where the familiar rules of the world no longer apply.
 
+![End Dimension](References/end.png)
+
 ---
 
 ![Weather Header](References/Weather.png)
@@ -260,9 +262,11 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ## World Map
 
-The **World Map** button opens three purpose-built selector hubs instead of placing another structure into the current build. The Overworld is a village survey crossed by water, the Nether is a bastion and fortress war table, and the End is a broken atlas of drifting islands. Each map has one active WorldBuilder-style marker and several reserved routes. Hovering the active marker restores the small orbit and blink of the original selector; completing its objective fixes a flag to the map, with progress remembered between launches.
+The **World Map** button opens four purpose-built selector hubs instead of placing another structure into the current build. The Overworld is a village survey crossed by water, the Nether is a full-screen five-biome bastion and fortress war table, the End is a broken atlas of drifting islands with its complete ship, and the locked Deep Ocean preview is built around a full-scale monument. Small Minecraft-textured travelers bring each map to life without changing its routes or levels.
 
-![Overworld, Nether, and End World Map hubs](References/world_map_montage.png)
+The mission marker is reconstructed from the WorldBuilder Director cast rather than approximated from its outline: the mint, green-grey, and black question mark is registered over a separate green shadow, follows the original two-pixel idle orbit, and swaps to the recovered blink cast every 200 ms while hovered. Completing an objective fixes a flag to the map, with progress remembered between launches.
+
+![Overworld, Nether, End, and Deep Ocean World Map hubs](References/world_map_montage.png)
 
 The first route in each dimension is a focused builder puzzle: repair the Overworld crossing, complete and power the Nether redstone line, or bridge the End islands and light the End City beacon. These levels borrow the real block palette and redstone simulation, but they run in an isolated session. Returning to the editor restores the build, camera, hotbar, undo history, weather, and display settings that were active before the map opened.
 

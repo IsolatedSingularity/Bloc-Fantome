@@ -54,15 +54,15 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.6.0'
+        myappid = 'blocfantome.builder.2.6.4'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
 
-# A 4096-sample signed-16 stereo buffer prioritizes uninterrupted OST playback
-# on ordinary Windows audio devices.  The release backend decodes one track at
-# a time, so this is mainly headroom for effects and device scheduling jitter.
-AUDIO_BUFFER_SIZE = max(2048, int(os.environ.get("BLOC_FANTOME_AUDIO_BUFFER", "4096")))
+# A 1024-sample signed-16 stereo buffer keeps UI and map feedback responsive.
+# The map score is decoded and queued ahead, so it no longer needs a large
+# latency buffer to hide fragment-boundary disk work.
+AUDIO_BUFFER_SIZE = max(512, int(os.environ.get("BLOC_FANTOME_AUDIO_BUFFER", "1024")))
 pygame.mixer.pre_init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 # Initialize pygame
 pygame.init()
@@ -179,6 +179,7 @@ from engine.world_map import (
     build_hub as build_world_map_hub,
     build_level as build_world_map_level,
     objective_progress as world_map_objective_progress,
+    source_template_metadata as world_map_source_template,
 )
 
 # Grass tint color (plains biome - sampled from colormap)
@@ -2092,22 +2093,48 @@ STRUCTURE_BLOCK_SHOWCASE = {
 
 # ===== END TUTORIAL SHOWCASE STRUCTURES =====
 
-# Simple house structure (relative positions and block types)
+def _sourceBackedStructureBlocks(templateName: str):
+    """Convert one bundled Java template into cursor-placeable app records."""
+    records = []
+    for record in world_map_source_template(templateName)["blocks"]:
+        x, y, z = map(int, record[:3])
+        blockType = BlockType[str(record[3])]
+        state = record[4] if isinstance(record[4], dict) else {}
+        definition = BLOCK_DEFINITIONS.get(blockType)
+        properties = None
+        if state and definition and (
+            definition.isDoor or definition.isStair or definition.isSlab
+            or definition.modelKind
+        ):
+            properties = BlockProperties(
+                facing=Facing.__members__.get(
+                    str(state.get("facing", "south")).upper(), Facing.SOUTH
+                ),
+                isOpen=str(state.get("open", "false")).casefold() == "true",
+                slabPosition=(
+                    SlabPosition.TOP
+                    if state.get("half" if definition.isStair else "type") == "top"
+                    else SlabPosition.BOTTOM
+                ),
+                stairShape=StairShape.__members__.get(
+                    str(state.get("shape", "straight")).upper(), StairShape.STRAIGHT
+                ),
+                doorHalf=DoorHalf.__members__.get(
+                    str(state.get("half", "lower")).upper(), DoorHalf.LOWER
+                ),
+                doorHinge=DoorHinge.__members__.get(
+                    str(state.get("hinge", "left")).upper(), DoorHinge.LEFT
+                ),
+            )
+        records.append((x, y, z, blockType, properties))
+    return records
+
+
+# Canonical Java 1.16.1 plains house, shared by the quick House shortcut and
+# the Structures library so roofs and materials cannot drift between routes.
 STRUCTURE_HOUSE = {
-    "name": "Simple House",
-    "blocks": [
-        # Floor (oak planks)
-        *[(x, y, 0, BlockType.OAK_PLANKS) for x in range(5) for y in range(5)],
-        
-        # Walls (cobblestone) - front wall with door gap
-        *[(0, y, z, BlockType.COBBLESTONE) for y in range(5) for z in range(1, 4)],
-        *[(4, y, z, BlockType.COBBLESTONE) for y in range(5) for z in range(1, 4)],
-        *[(x, 0, z, BlockType.COBBLESTONE) for x in range(1, 4) for z in range(1, 4) if not (x == 2 and z < 3)],
-        *[(x, 4, z, BlockType.COBBLESTONE) for x in range(1, 4) for z in range(1, 4)],
-        
-        # Roof (oak planks) - flat for simplicity
-        *[(x, y, 4, BlockType.OAK_PLANKS) for x in range(5) for y in range(5)],
-    ]
+    "name": "Plains House",
+    "blocks": _sourceBackedStructureBlocks("plains_house"),
 }
 
 # Tree structure
@@ -2124,79 +2151,11 @@ STRUCTURE_TREE = {
     ]
 }
 
-# Villager House Structure (5x5 Plains Village House)
+# Villager House uses the same canonical source rather than a second handmade
+# roof with unstated stair facings.
 STRUCTURE_VILLAGER_HOUSE = {
     "name": "Villager House",
-    "blocks": [
-        # Foundation - Layer 1 (5x5 cobblestone floor)
-        *[(x, y, 0, BlockType.COBBLESTONE) for x in range(5) for y in range(5)],
-        
-        # Layer 2 - First wall level (oak logs at corners, oak planks between)
-        # Corner pillars
-        (0, 0, 1, BlockType.OAK_LOG),
-        (4, 0, 1, BlockType.OAK_LOG),
-        (0, 4, 1, BlockType.OAK_LOG),
-        (4, 4, 1, BlockType.OAK_LOG),
-        # Walls - front (y=0) with door gap at x=2
-        (1, 0, 1, BlockType.OAK_PLANKS),
-        (3, 0, 1, BlockType.OAK_PLANKS),
-        # Walls - back (y=4)
-        *[(x, 4, 1, BlockType.OAK_PLANKS) for x in range(1, 4)],
-        # Walls - left (x=0)
-        *[(0, y, 1, BlockType.OAK_PLANKS) for y in range(1, 4)],
-        # Walls - right (x=4)
-        *[(4, y, 1, BlockType.OAK_PLANKS) for y in range(1, 4)],
-        
-        # Layer 3 - Second wall level (windows on sides)
-        # Corner pillars
-        (0, 0, 2, BlockType.OAK_LOG),
-        (4, 0, 2, BlockType.OAK_LOG),
-        (0, 4, 2, BlockType.OAK_LOG),
-        (4, 4, 2, BlockType.OAK_LOG),
-        # Front wall with door gap
-        (1, 0, 2, BlockType.OAK_PLANKS),
-        (3, 0, 2, BlockType.OAK_PLANKS),
-        # Back wall
-        *[(x, 4, 2, BlockType.OAK_PLANKS) for x in range(1, 4)],
-        # Left wall with window (glass at center)
-        (0, 1, 2, BlockType.OAK_PLANKS),
-        (0, 2, 2, BlockType.GLASS),
-        (0, 3, 2, BlockType.OAK_PLANKS),
-        # Right wall with window
-        (4, 1, 2, BlockType.OAK_PLANKS),
-        (4, 2, 2, BlockType.GLASS),
-        (4, 3, 2, BlockType.OAK_PLANKS),
-        
-        # Layer 4 - Third wall level
-        # Corner pillars
-        (0, 0, 3, BlockType.OAK_LOG),
-        (4, 0, 3, BlockType.OAK_LOG),
-        (0, 4, 3, BlockType.OAK_LOG),
-        (4, 4, 3, BlockType.OAK_LOG),
-        # Front wall
-        *[(x, 0, 3, BlockType.OAK_PLANKS) for x in range(1, 4)],
-        # Back wall
-        *[(x, 4, 3, BlockType.OAK_PLANKS) for x in range(1, 4)],
-        # Left wall
-        *[(0, y, 3, BlockType.OAK_PLANKS) for y in range(1, 4)],
-        # Right wall
-        *[(4, y, 3, BlockType.OAK_PLANKS) for y in range(1, 4)],
-        
-        # Layer 5 - Ceiling (flat 5x5 oak planks)
-        *[(x, y, 4, BlockType.OAK_PLANKS) for x in range(5) for y in range(5)],
-        
-        # Layer 6 - Roof edges (oak stairs - using planks as substitute)
-        # Left edge stairs
-        *[(0, y, 5, BlockType.OAK_STAIRS) for y in range(5)],
-        # Right edge stairs
-        *[(4, y, 5, BlockType.OAK_STAIRS) for y in range(5)],
-        
-        # Layer 7 - Roof middle
-        *[(1, y, 5, BlockType.OAK_STAIRS) for y in range(5)],
-        *[(3, y, 5, BlockType.OAK_STAIRS) for y in range(5)],
-        # Peak
-        *[(2, y, 5, BlockType.OAK_PLANKS) for y in range(5)],
-    ]
+    "blocks": _sourceBackedStructureBlocks("plains_house"),
 }
 
 # Nether Portal Structure (4 wide x 5 tall obsidian frame with portal inside)
@@ -9216,7 +9175,7 @@ class BlocFantome:
         self.ghostPreviewAlpha = 100  # Transparency level
         
         # Volume controls (0.0 to 1.0)
-        self.musicVolume = 0.8
+        self.musicVolume = 0.4
         self.ambientVolume = 0.8
         self.effectsVolume = 0.8
         
@@ -9265,10 +9224,12 @@ class BlocFantome:
         self._worldMapSessionSnapshot = None
         self.worldMapActive = False
         self.worldMapMode = "hub"
+        self.worldMapDimension = self.currentDimension
         self.worldMapScene = None
         self.worldMapObjective = None
+        self.worldMapSelectedRoute = 0
         self.worldMapProgress = (0, 0, False)
-        self.worldMapCompleted = {dimension: False for dimension in WORLD_MAP_DIMENSIONS}
+        self.worldMapCompleted = {dimension: [False, False] for dimension in WORLD_MAP_DIMENSIONS}
         self.redstoneLabActive = False
         self.interactionMode = False
         self.redstoneLabButtonRect = pygame.Rect(0, 0, 0, 0)
@@ -9505,7 +9466,11 @@ class BlocFantome:
         )
         from ui.world_map import WorldMapView
         self.worldMapView = WorldMapView(
-            WORLD_MAP_DIR, self.font, self.smallFont, self.assetManager.audioRouter
+            WORLD_MAP_DIR,
+            self.font,
+            self.smallFont,
+            self.assetManager.audioRouter,
+            self.assetManager,
         )
         
         # ============ BLOCK PREVIEW GHOST ============
@@ -9846,13 +9811,20 @@ class BlocFantome:
                     self.worldCenteredRotation = config.get(
                         "worldCenteredRotation", False
                     )
-                    self.skyboxesEnabled = config.get("skyboxesEnabled", False)
-                    selections = config.get("skyboxSelections", {})
-                    for dimension, index in selections.items():
-                        if dimension in self.skyboxRenderer.selected_indices:
-                            self.skyboxRenderer.set_selection(
-                                dimension, int(index), crossfade=False
-                            )
+                    # Skyboxes are a per-session opt-in. Keep the chosen preset,
+                    # but never let an enabled state take over the next launch.
+                    self.skyboxesEnabled = False
+                    # Migrate the first skybox release to the intended presets:
+                    # Overworld Night and End Void Aurora. Once migrated, user
+                    # choices persist normally.
+                    skybox_defaults_version = int(config.get("skyboxDefaultsVersion", 0))
+                    if skybox_defaults_version >= 1:
+                        selections = config.get("skyboxSelections", {})
+                        for dimension, index in selections.items():
+                            if dimension in self.skyboxRenderer.selected_indices:
+                                self.skyboxRenderer.set_selection(
+                                    dimension, int(index), crossfade=False
+                                )
                     
                     # Restore favorites (by block name)
                     savedFavorites = config.get("favoriteBlocks", [])
@@ -9878,9 +9850,14 @@ class BlocFantome:
                     self.musicController.last_track = config.get("lastMusicTrack")
                     savedMapProgress = config.get("worldMapCompleted", {})
                     for dimension in WORLD_MAP_DIMENSIONS:
-                        self.worldMapCompleted[dimension] = bool(
-                            savedMapProgress.get(dimension, False)
-                        )
+                        saved = savedMapProgress.get(dimension, (False, False))
+                        if isinstance(saved, list):
+                            self.worldMapCompleted[dimension] = [
+                                bool(value) for value in (saved + [False, False])[:2]
+                            ]
+                        else:
+                            # The one-route preview stored a single boolean.
+                            self.worldMapCompleted[dimension] = [bool(saved), False]
                     
         except Exception as e:
             print(f"Could not load app config: {e}")
@@ -9904,8 +9881,9 @@ class BlocFantome:
                 "lightingEnabled": mapToggles.get("lightingEnabled", self.lightingEnabled),
                 "showBlockTooltip": self.showBlockTooltip,
                 "worldCenteredRotation": self.worldCenteredRotation,
-                "skyboxesEnabled": mapToggles.get("skyboxesEnabled", self.skyboxesEnabled),
+                "skyboxesEnabled": False,
                 "skyboxSelections": dict(self.skyboxRenderer.selected_indices),
+                "skyboxDefaultsVersion": 1,
                 "favoriteBlocks": [b.name for b in self.favoriteBlocks],
                 "hotbar": [
                     b.name for b in (mapState["hotbar"] if mapState else self.hotbar)
@@ -9914,7 +9892,10 @@ class BlocFantome:
                 "lastMusicTrack": (
                     os.path.basename(lastMusicTrack) if lastMusicTrack else None
                 ),
-                "worldMapCompleted": dict(self.worldMapCompleted),
+                "worldMapCompleted": {
+                    dimension: list(progress)
+                    for dimension, progress in self.worldMapCompleted.items()
+                },
             }
             with open(APP_CONFIG_FILE, 'w') as f:
                 json.dump(config, f, indent=2)
@@ -10004,13 +9985,15 @@ class BlocFantome:
         # Create initial floor (needed for splash screen fade)
         self._createInitialFloor()
         
+        # Stage the first tutorial beneath the splash so its terrain and panel
+        # are revealed together instead of popping in one blocking load later.
+        showStartupTutorial = self.tutorialScreen.shouldShowOnStartup()
+        if showStartupTutorial:
+            self._beginTutorial(advanced=False)
+
         # Show splash screen (also starts music during fade)
         if not self._showSplashScreen(startupSplash):
             return  # User quit during splash
-        
-        # Show tutorial on startup if enabled
-        if self.tutorialScreen.shouldShowOnStartup():
-            self._beginTutorial(advanced=False)
         
         print("\n=== Bloc Fantôme Started ===")
         print("Controls:")
@@ -10057,7 +10040,7 @@ class BlocFantome:
             rotationMode = "world center"
         else:
             anchorScreenX, anchorScreenY = pygame.mouse.get_pos()
-            viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+            viewportRight = self._worldViewportRight()
             cursorOnCanvas = (
                 0 <= anchorScreenX < viewportRight
                 and 0 <= anchorScreenY < WINDOW_HEIGHT
@@ -10120,10 +10103,22 @@ class BlocFantome:
         self.terrainViewButtonRect = pygame.Rect(right - 384, 10, 166, 28)
         self.worldMapButtonRect = pygame.Rect(right - 506, 10, 116, 28)
 
+    def _worldViewportRight(self) -> int:
+        """Return the live canvas edge; every World Map surface owns the window."""
+        if getattr(self, "worldMapActive", False):
+            return WINDOW_WIDTH
+        return WINDOW_WIDTH - PANEL_WIDTH
+
     def _applyWindowSize(self, width: int, height: int, *, recreate: bool = True) -> None:
         """Apply a crisp native-size window and preserve the camera's visual center."""
         global WINDOW_WIDTH, WINDOW_HEIGHT
         old_width, old_height = WINDOW_WIDTH, WINDOW_HEIGHT
+        map_canvas = bool(getattr(self, "worldMapActive", False))
+        old_canvas_width = old_width if map_canvas else old_width - PANEL_WIDTH
+        old_center = self.renderer._screenToWorldPoint(
+            old_canvas_width // 2, old_height // 2, self.cameraFocusZ
+        )
+        old_zoom = self.zoomLevel
         if not self.fullscreen:
             width = max(self.minimumWindowSize[0], int(width))
             height = max(self.minimumWindowSize[1], int(height))
@@ -10134,12 +10129,22 @@ class BlocFantome:
             flags = pygame.FULLSCREEN if self.fullscreen else pygame.RESIZABLE
             self.screen = pygame.display.set_mode((width, height), flags)
         WINDOW_WIDTH, WINDOW_HEIGHT = width, height
-        canvas_delta_x = ((width - PANEL_WIDTH) - (old_width - PANEL_WIDTH)) / 2.0
-        canvas_delta_y = (height - old_height) / 2.0
-        self.renderer.offsetX += canvas_delta_x
-        self.renderer.offsetY += canvas_delta_y
-        self.targetOffsetX += canvas_delta_x
-        self.targetOffsetY += canvas_delta_y
+        new_canvas_width = width if map_canvas else width - PANEL_WIDTH
+        native_scale = min(
+            new_canvas_width / max(1, old_canvas_width),
+            height / max(1, old_height),
+        )
+        self.zoomLevel = round(
+            max(self.zoomMin, min(self.zoomMax, old_zoom * native_scale)), 3
+        )
+        self.renderer.setZoom(self.zoomLevel)
+        center_x, center_y = self.renderer.worldToScreen(
+            old_center[0], old_center[1], self.cameraFocusZ
+        )
+        self.renderer.offsetX += new_canvas_width / 2.0 - center_x
+        self.renderer.offsetY += height / 2.0 - center_y
+        self.targetOffsetX = self.renderer.offsetX
+        self.targetOffsetY = self.renderer.offsetY
         self._layoutWindowControls()
         self.tutorialScreen.resize(width, height)
         self.skyboxRenderer.resize((width, height))
@@ -10825,23 +10830,37 @@ class BlocFantome:
             "lastMusicTrack": self.musicController.last_track,
         }
 
-    def _worldMapMusicFiles(self, dimension: str) -> List[str]:
+    def _worldMapMusicSequence(
+        self, dimension: str, *, include_intro: bool = False
+    ) -> Tuple[List[str], int]:
         groups = {
             DIMENSION_OVERWORLD: ("m_game_6_1.mp3", "m_game_6_3.mp3", "m_game_6_4.mp3", "m_game_6_5.mp3"),
             DIMENSION_NETHER: ("m_game_8_1.mp3", "m_game_8_3.mp3", "m_game_8_4.mp3"),
             DIMENSION_END: ("m_game_i_1.mp3", "m_game_i_2.mp3", "m_game_i_3.mp3"),
+            "ocean": ("m_game_a_1.mp3", "m_game_a_2.mp3", "m_game_a_3.mp3"),
         }
         audio_root = os.path.join(WORLD_MAP_DIR, "audio")
-        return [
+        intro_names = ("m_intro_1.mp3", "m_intro_2.mp3") if include_intro else ()
+        intro = [
+            os.path.join(audio_root, filename)
+            for filename in intro_names
+            if os.path.isfile(os.path.join(audio_root, filename))
+        ]
+        score = [
             os.path.join(audio_root, filename)
             for filename in groups[dimension]
             if os.path.isfile(os.path.join(audio_root, filename))
         ]
+        return intro + score, len(intro)
 
-    def _prepareWorldMapScene(self, dimension: str) -> None:
-        self.currentDimension = dimension
-        self.world.setDimension(dimension)
-        self.assetManager._createBackground(dimension)
+    def _prepareWorldMapScene(
+        self, dimension: str, *, runtime_dimension: str | None = None,
+        include_intro: bool = False,
+    ) -> None:
+        runtime_dimension = runtime_dimension or dimension
+        self.currentDimension = runtime_dimension
+        self.world.setDimension(runtime_dimension)
+        self.assetManager._createBackground(runtime_dimension)
         self.sceneStructurePositions = self.world.sceneStructurePositions
         self.sceneExteriorGlassPositions = set()
         self.sceneStructureBounds = self.world.sceneStructureBounds
@@ -10853,9 +10872,22 @@ class BlocFantome:
         self.lightingDirty = True
         self._visibleOrderCaches.clear()
         self._invalidateViewCaches()
-        tracks = self._worldMapMusicFiles(dimension)
+        tracks, loop_start = self._worldMapMusicSequence(
+            dimension, include_intro=include_intro
+        )
         if tracks:
-            self.musicController.set_playlist(tracks, fade=False)
+            current = [
+                os.path.normcase(os.path.abspath(track))
+                for track in self.musicController.tracks
+            ]
+            desired = [os.path.normcase(os.path.abspath(track)) for track in tracks]
+            same_family = current == desired or (
+                not include_intro
+                and len(current) >= len(desired)
+                and current[-len(desired):] == desired
+            )
+            if not same_family or not self.musicController.get_busy():
+                self.musicController.set_sequence(tracks, loop_start=loop_start)
         else:
             self._playMenuMusic(dimension)
 
@@ -10879,51 +10911,71 @@ class BlocFantome:
         self.snowEnabled = False
         self.horrorRainEnabled = False
         self.worldMapActive = True
-        self._switchWorldMapHub(self.currentDimension)
+        self._switchWorldMapHub(self.currentDimension, include_intro=True)
 
-    def _switchWorldMapHub(self, dimension: str) -> None:
+    def _switchWorldMapHub(self, dimension: str, *, include_intro: bool = False) -> None:
         self.tooltipTimer = 0
         self.worldMapMode = "hub"
         self.worldMapObjective = None
         self.worldMapProgress = (0, 0, False)
+        self.worldMapDimension = dimension
         self.worldMapScene = build_world_map_hub(self.world, dimension)
         self.sceneMetadata = {
             "name": self.worldMapScene.title,
             "mode": "world_map_hub",
             "dimension": dimension,
+            "underwater": dimension == "ocean",
+            "waterline": 26 if dimension == "ocean" else None,
+            "decorations": (
+                (
+                    {"type": "guardian", "position": (25, 53, 12), "scale": 0.8},
+                    {"type": "guardian", "position": (71, 58, 15), "scale": 0.75},
+                    {"type": "elder_guardian", "position": (47, 40, 18), "scale": 0.9},
+                )
+                if dimension == "ocean" else ()
+            ),
         }
-        self._prepareWorldMapScene(dimension)
+        self._prepareWorldMapScene(
+            dimension,
+            runtime_dimension=self.worldMapScene.runtime_dimension,
+            include_intro=include_intro,
+        )
         self.showGrid = False
         self.interactionMode = False
         self.worldMapView.set_hub(dimension, self.worldMapScene)
-        self._fitWorldToViewport(notify=False)
+        self._fitBoundsToViewport(self.worldMapScene.framing_bounds, notify=False)
 
     def _cycleWorldMap(self, delta: int) -> None:
-        index = WORLD_MAP_DIMENSIONS.index(self.currentDimension)
+        index = WORLD_MAP_DIMENSIONS.index(self.worldMapDimension)
         self._switchWorldMapHub(WORLD_MAP_DIMENSIONS[(index + delta) % len(WORLD_MAP_DIMENSIONS)])
 
-    def _startWorldMapLevel(self) -> None:
+    def _startWorldMapLevel(self, route_index: int = 0) -> None:
+        if self.worldMapDimension == "ocean":
+            return
         self.tooltipTimer = 0
         self.worldMapMode = "level"
-        self.worldMapObjective = build_world_map_level(self.world, self.currentDimension)
+        self.worldMapSelectedRoute = max(0, min(1, int(route_index)))
+        self.worldMapObjective = build_world_map_level(
+            self.world, self.worldMapDimension, self.worldMapSelectedRoute
+        )
         self.sceneMetadata = {
             "name": self.worldMapObjective.title,
             "mode": "world_map_objective",
-            "dimension": self.currentDimension,
+            "dimension": self.worldMapDimension,
         }
-        self._prepareWorldMapScene(self.currentDimension)
-        self.showGrid = True
+        self._prepareWorldMapScene(self.worldMapDimension)
+        self.showGrid = False
         self.interactionMode = False
         self.hotbar = [BlockType[name] for name in self.worldMapObjective.hotbar]
         self.hotbarSelectedSlot = 0
         self.selectedBlock = self.hotbar[0]
         self.redstone.update(0)
         self.worldMapProgress = world_map_objective_progress(self.world, self.worldMapObjective)
-        self.worldMapView.set_level(self.currentDimension, self.worldMapObjective)
+        self.worldMapView.set_level(self.worldMapDimension, self.worldMapObjective)
         self._fitWorldToViewport(notify=False)
 
     def _returnToWorldMapHub(self) -> None:
-        self._switchWorldMapHub(self.currentDimension)
+        self._switchWorldMapHub(self.worldMapDimension)
 
     def _exitWorldMap(self) -> bool:
         state = self._worldMapSessionSnapshot
@@ -10993,7 +11045,13 @@ class BlocFantome:
         elif action == "next":
             self._cycleWorldMap(1)
         elif action == "start":
-            self._startWorldMapLevel()
+            self._startWorldMapLevel(0)
+        elif isinstance(action, str) and action.startswith("start:"):
+            self._startWorldMapLevel(int(action.split(":", 1)[1]))
+        elif isinstance(action, str) and action.startswith("dimension:"):
+            dimension = action.split(":", 1)[1]
+            if dimension in WORLD_MAP_DIMENSIONS and dimension != self.worldMapDimension:
+                self._switchWorldMapHub(dimension)
 
     def _buildAdvancedTutorialScene(self, stepIndex: int, dimension: str) -> None:
         """Build one deterministic, focused 32x32 interactive lesson scene."""
@@ -11708,7 +11766,7 @@ class BlocFantome:
         mouseX, mouseY = pygame.mouse.get_pos()
         
         # Check if mouse is over the panel - scroll inventory
-        if mouseX > WINDOW_WIDTH - PANEL_WIDTH:
+        if mouseX > self._worldViewportRight():
             # Accumulate high-resolution Windows wheel deltas into a target;
             # the frame update eases toward it instead of jumping per notch.
             wheelDelta = float(getattr(event, "precise_y", event.y))
@@ -11744,16 +11802,18 @@ class BlocFantome:
             self._openWorldMap()
             return
 
-        if event.button == 1 and self.fitWorldButtonRect.collidepoint(mouseX, mouseY):
+        editor_controls = not self.worldMapActive
+        if editor_controls and event.button == 1 and self.fitWorldButtonRect.collidepoint(mouseX, mouseY):
             self._fitWorldToViewport()
             self.assetManager.playClickSound()
             return
-        if event.button == 1 and self.terrainNoiseButtonRect.collidepoint(mouseX, mouseY):
+        if editor_controls and event.button == 1 and self.terrainNoiseButtonRect.collidepoint(mouseX, mouseY):
             self._applyLocalTerrainNoise()
             self.assetManager.playClickSound()
             return
         if (
             event.button == 1
+            and editor_controls
             and self.sceneStructurePositions
             and self.terrainViewButtonRect.collidepoint(mouseX, mouseY)
         ):
@@ -11768,11 +11828,11 @@ class BlocFantome:
             self.tooltipTimer = 1400
             self.assetManager.playClickSound()
             return
-        if event.button == 1 and self.shrinkCanvasButtonRect.collidepoint(mouseX, mouseY):
+        if editor_controls and event.button == 1 and self.shrinkCanvasButtonRect.collidepoint(mouseX, mouseY):
             self._resizeCanvas(-16)
             self.assetManager.playClickSound()
             return
-        if event.button == 1 and self.growCanvasButtonRect.collidepoint(mouseX, mouseY):
+        if editor_controls and event.button == 1 and self.growCanvasButtonRect.collidepoint(mouseX, mouseY):
             self._resizeCanvas(16)
             self.assetManager.playClickSound()
             return
@@ -11782,10 +11842,21 @@ class BlocFantome:
             return
         
         # Check if clicking on panel
-        if mouseX > WINDOW_WIDTH - PANEL_WIDTH:
+        if mouseX > self._worldViewportRight():
             if event.button == 1:  # Left click
                 self._handlePanelClick(mouseX, mouseY)
                 self.assetManager.playClickSound()
+            return
+
+        # Middle drag is a canvas camera gesture, including at maximum zoom and
+        # over the visual hotbar. Start it before controls that only own primary
+        # and secondary clicks.
+        if event.button == 2 and mouseX <= self._worldViewportRight():
+            self.panning = True
+            self.panStartX = mouseX
+            self.panStartY = mouseY
+            self.targetOffsetX = self.renderer.offsetX
+            self.targetOffsetY = self.renderer.offsetY
             return
 
         # The hand tool is deliberately non-destructive: primary click uses a
@@ -11852,10 +11923,6 @@ class BlocFantome:
                     return
             self._removeBlockAtMouse(mouseX, mouseY)
         
-        elif event.button == 2:  # Middle click - start panning
-            self.panning = True
-            self.panStartX = mouseX
-            self.panStartY = mouseY
     
     def _handleMouseUp(self, event):
         """Handle mouse button release"""
@@ -11880,20 +11947,18 @@ class BlocFantome:
             return
 
         # Check panel hover
-        self.panelHovered = mouseX > WINDOW_WIDTH - PANEL_WIDTH
+        self.panelHovered = mouseX > self._worldViewportRight()
         
         # Handle panning
         if self.panning:
             dx = mouseX - self.panStartX
             dy = mouseY - self.panStartY
-            if self.smoothCameraEnabled:
-                # Update target offset for smooth following
-                self.targetOffsetX += dx
-                self.targetOffsetY += dy
-            else:
-                # Direct camera movement
-                self.renderer.offsetX += dx
-                self.renderer.offsetY += dy
+            # Pointer drag must remain one-to-one. Easing this gesture makes a
+            # close view feel stuck because the target outruns the camera.
+            self.renderer.offsetX += dx
+            self.renderer.offsetY += dy
+            self.targetOffsetX = self.renderer.offsetX
+            self.targetOffsetY = self.renderer.offsetY
             self.panStartX = mouseX
             self.panStartY = mouseY
             return
@@ -12061,7 +12126,8 @@ class BlocFantome:
         
         # Toggle grid (F4 or G)
         elif event.key == pygame.K_F4 or event.key == pygame.K_g:
-            self.showGrid = not self.showGrid
+            if not (self.worldMapActive and self.worldMapMode == "level"):
+                self.showGrid = not self.showGrid
         
         # Mirror mode toggle
         elif event.key == pygame.K_m:
@@ -13557,8 +13623,11 @@ class BlocFantome:
             self.skyboxRenderer.update(
                 dt,
                 self.currentDimension,
+                view_rotation=self.renderer.viewRotation,
                 celestial_enabled=self.celestialEnabled,
                 celestial_angle=self.celestialAngle,
+                camera_offset=(self.renderer.offsetX, self.renderer.offsetY),
+                zoom=self.zoomLevel,
             )
         self._updateSpecialBlocks(dt)
         if self.redstone.update(dt):
@@ -13567,8 +13636,8 @@ class BlocFantome:
             progress = world_map_objective_progress(self.world, self.worldMapObjective)
             self.worldMapProgress = progress
             if progress[2] and not self.worldMapView.completed_now:
-                first_completion = not self.worldMapCompleted[self.currentDimension]
-                self.worldMapCompleted[self.currentDimension] = True
+                first_completion = not self.worldMapCompleted[self.worldMapDimension][self.worldMapSelectedRoute]
+                self.worldMapCompleted[self.worldMapDimension][self.worldMapSelectedRoute] = True
                 self.worldMapView.mark_complete()
                 if first_completion:
                     self._saveAppConfig()
@@ -17677,12 +17746,14 @@ class BlocFantome:
     
     def _handleHotbarClick(self, mouseX: int, mouseY: int, button: int) -> bool:
         """Handle clicks on the hotbar. Returns True if click was on hotbar."""
+        if button not in (1, 3):
+            return False
         slotSize = 50
         padding = 4
         hotbarWidth = len(self.hotbar) * (slotSize + padding) + padding
         hotbarHeight = slotSize + padding * 2
         
-        startX = (WINDOW_WIDTH - PANEL_WIDTH - hotbarWidth) // 2
+        startX = (self._worldViewportRight() - hotbarWidth) // 2
         startY = WINDOW_HEIGHT - hotbarHeight - 10
         
         # Check if click is within hotbar bounds
@@ -17809,7 +17880,7 @@ class BlocFantome:
         hotbarWidth = len(self.hotbar) * (slotSize + padding) + padding
         hotbarHeight = slotSize + padding * 2
         
-        startX = (WINDOW_WIDTH - PANEL_WIDTH - hotbarWidth) // 2
+        startX = (self._worldViewportRight() - hotbarWidth) // 2
         startY = WINDOW_HEIGHT - hotbarHeight - 10
         
         # Background
@@ -18778,7 +18849,7 @@ class BlocFantome:
         if oldZoom != self.zoomLevel:
             # Calculate zoom factor change
             zoomFactor = self.zoomLevel / oldZoom
-            viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
+            viewportWidth = self._worldViewportRight()
             anchorX = cursorX if cursorX is not None else viewportWidth // 2
             anchorY = cursorY if cursorY is not None else WINDOW_HEIGHT // 2
             # If cursor position provided, adjust offset to keep cursor position stationary
@@ -18857,7 +18928,7 @@ class BlocFantome:
         width = max(point[0] for point in projected) - min(point[0] for point in projected) + TILE_WIDTH
         height = max(point[1] for point in projected) - min(point[1] for point in projected) + TILE_HEIGHT + BLOCK_HEIGHT
         canvasLeft = 0
-        canvasRight = WINDOW_WIDTH - PANEL_WIDTH
+        canvasRight = self._worldViewportRight()
         targetX = (canvasLeft + canvasRight) / 2.0
         availableWidth = canvasRight - canvasLeft - 56
         if self.tutorialScreen.visible and not self.tutorialScreen.minimized:
@@ -20205,7 +20276,7 @@ class BlocFantome:
 
     def _render(self) -> None:
         """Render the game"""
-        # Skyboxes are lazy panoramas with a constant two-blit scrolling path.
+        # Skyboxes are cached cubemap views linked to camera quarter-turns.
         # Missing local assets fall back to the normal dimension texture.
         skyboxDrawn = False
         if self.skyboxesEnabled:
@@ -20242,8 +20313,18 @@ class BlocFantome:
                 (0, 0),
             )
         
+        # Underwater map/world scenes replace the open-sky backdrop before any
+        # terrain is drawn, so the build sits inside a water volume rather than
+        # under a flat blue screen tint.
+        self._renderUnderwaterBackdrop()
+
         # Draw grid and blocks
         self._renderWorld()
+
+        # Curated ocean scenes use a cached screen-space water grade plus a
+        # handful of source-textured decorative guardians. This remains
+        # intentionally simulation-free and outside the block render loop.
+        self._renderUnderwaterScene()
 
         # Piston bodies commit atomically, then animate their captured cells at 60 FPS.
         self._renderPistonMotions()
@@ -20300,6 +20381,14 @@ class BlocFantome:
             self.worldMapView.render_hub(
                 self.screen, self.renderer, self.worldMapCompleted
             )
+            pygame.display.flip()
+            return
+
+        if self.worldMapActive and self.worldMapMode == "level":
+            # Campaign construction owns the full canvas. Keep only its
+            # objective card, source UI arrow, and focused material hotbar.
+            self._renderHotbar()
+            self.worldMapView.render_level(self.screen, self.worldMapProgress)
             pygame.display.flip()
             return
         
@@ -20367,9 +20456,6 @@ class BlocFantome:
         # Draw tutorial overlay (on top of everything)
         self.tutorialScreen.render(self.screen)
 
-        if self.worldMapActive and self.worldMapMode == "level":
-            self.worldMapView.render_level(self.screen, self.worldMapProgress)
-        
         # Draw horror visual effects (very last, for maximum creepiness)
         self._renderHorrorEffects()
 
@@ -20495,16 +20581,166 @@ class BlocFantome:
         
         return litSprite
 
+    def _guardianSceneSprite(self, elder: bool = False) -> pygame.Surface:
+        cache = getattr(self, "_guardianSceneSprites", None)
+        if cache is None:
+            cache = self._guardianSceneSprites = {}
+        if elder in cache:
+            return cache[elder]
+        sprite = pygame.Surface((54, 42), pygame.SRCALPHA)
+        points = ((7, 21), (14, 7), (40, 7), (48, 21), (40, 35), (14, 35))
+        pygame.draw.polygon(sprite, (91, 145, 133), points)
+        texture_name = "guardian_elder.png" if elder else "guardian.png"
+        try:
+            atlas = pygame.image.load(os.path.join(ENTITY_DIR, texture_name)).convert_alpha()
+            patch = atlas.subsurface((8, 8, 16, 16)).copy()
+            sprite.blit(pygame.transform.scale(patch, (30, 28)), (12, 7))
+        except (OSError, pygame.error, ValueError):
+            pygame.draw.rect(sprite, (126, 174, 153), (13, 8, 29, 27))
+        spike = (185, 219, 201) if elder else (132, 194, 172)
+        for triangle in (
+            ((15, 7), (18, 0), (22, 8)), ((32, 7), (36, 0), (39, 9)),
+            ((15, 35), (18, 41), (22, 34)), ((33, 34), (38, 41), (40, 33)),
+            ((7, 17), (0, 13), (8, 24)), ((47, 17), (54, 13), (47, 25)),
+        ):
+            pygame.draw.polygon(sprite, spike, triangle)
+        pygame.draw.rect(sprite, (235, 226, 173), (21, 14, 13, 10))
+        pygame.draw.rect(sprite, (181, 43, 38), (25, 16, 6, 6))
+        pygame.draw.rect(sprite, (22, 18, 16), (27, 17, 3, 4))
+        cache[elder] = sprite
+        return sprite
+
+    def _renderUnderwaterBackdrop(self) -> None:
+        if not self.sceneMetadata.get("underwater"):
+            return
+        viewportWidth = WINDOW_WIDTH if self.worldMapActive else self._worldViewportRight()
+        size = (viewportWidth, WINDOW_HEIGHT)
+        cache = getattr(self, "_underwaterBackdropCache", None)
+        if cache is None:
+            cache = self._underwaterBackdropCache = {}
+        backdrop = cache.get(size)
+        if backdrop is None:
+            backdrop = pygame.Surface(size)
+            for y in range(WINDOW_HEIGHT):
+                depth = y / max(1, WINDOW_HEIGHT - 1)
+                color = (
+                    round(10 - 7 * depth),
+                    round(104 - 70 * depth),
+                    round(139 - 72 * depth),
+                )
+                pygame.draw.line(backdrop, color, (0, y), (viewportWidth, y))
+            cache[size] = backdrop
+        self.screen.blit(backdrop, (0, 0))
+
+        # Broad, translucent light shafts taper continuously from the water
+        # surface. They do not introduce a horizon or equator band.
+        light = pygame.Surface(size, pygame.SRCALPHA)
+        drift = math.sin(pygame.time.get_ticks() * 0.00022) * 28
+        for index in range(5):
+            top_x = int(viewportWidth * (0.08 + index * 0.21) + drift)
+            width = 70 + index * 13
+            pygame.draw.polygon(
+                light,
+                (119, 225, 232, 16),
+                ((top_x, 0), (top_x + width, 0),
+                 (top_x + width * 2, WINDOW_HEIGHT),
+                 (top_x - width // 2, WINDOW_HEIGHT)),
+            )
+        self.screen.blit(light, (0, 0))
+
+    def _renderUnderwaterScene(self) -> None:
+        if not self.sceneMetadata.get("underwater"):
+            return
+        viewportWidth = WINDOW_WIDTH if self.worldMapActive else self._worldViewportRight()
+        size = (viewportWidth, WINDOW_HEIGHT)
+        cache = getattr(self, "_underwaterSurfaceCache", None)
+        if cache is None:
+            cache = self._underwaterSurfaceCache = {}
+        water = cache.get(size)
+        if water is None:
+            water = pygame.Surface(size, pygame.SRCALPHA)
+            for y in range(WINDOW_HEIGHT):
+                depth = y / max(1, WINDOW_HEIGHT - 1)
+                pygame.draw.line(
+                    water,
+                    (4, 58, 76, round(26 + depth * 32)),
+                    (0, y), (viewportWidth, y),
+                )
+            cache[size] = water
+        self.screen.blit(water, (0, 0))
+
+        now = pygame.time.get_ticks()
+        phase = now * 0.001
+        # Animated screen-space caustics replace the old perimeter water-block
+        # ceiling. Two crossing sine families produce a restrained refraction
+        # pattern over the rendered map without obscuring block textures.
+        caustics = pygame.Surface(size, pygame.SRCALPHA)
+        for band in range(9):
+            base_y = 34 + band * max(52, WINDOW_HEIGHT // 11)
+            points = []
+            reverse = []
+            for x in range(-24, viewportWidth + 25, 24):
+                wave = math.sin(x * 0.028 + phase * 0.72 + band * 0.83)
+                crossing = math.sin(x * 0.017 - phase * 0.48 + band * 1.17)
+                points.append((x, round(base_y + wave * 5 + crossing * 3)))
+                reverse.append((x, round(base_y + 15 - wave * 3 + crossing * 5)))
+            alpha = max(5, 18 - band)
+            if len(points) > 1:
+                pygame.draw.lines(caustics, (132, 235, 231, alpha), False, points, 1)
+                pygame.draw.lines(caustics, (83, 199, 211, max(4, alpha - 5)), False, reverse, 1)
+        self.screen.blit(caustics, (0, 0))
+
+        for index in range(34):
+            x = int((index * 97 + math.sin(phase * 0.7 + index) * 31) % max(1, viewportWidth))
+            y = int((index * 61 + phase * (7 + index % 5)) % max(1, WINDOW_HEIGHT))
+            alpha = 55 + (index * 17) % 85
+            mote = pygame.Surface((3, 3), pygame.SRCALPHA)
+            pygame.draw.circle(mote, (170, 229, 226, alpha), (1, 1), 1)
+            self.screen.blit(mote, (x, y))
+        for index in range(20):
+            x = (index * 149 + 41) % max(1, viewportWidth)
+            y = int(WINDOW_HEIGHT - ((now * 0.018 + index * 71) % WINDOW_HEIGHT))
+            pygame.draw.circle(self.screen, (166, 229, 235), (x, y), 1 + index % 3, 1)
+
+        for index, decoration in enumerate(self.sceneMetadata.get("decorations", ())):
+            if not isinstance(decoration, dict):
+                continue
+            position = decoration.get("position")
+            if not isinstance(position, (list, tuple)) or len(position) != 3:
+                continue
+            screenX, screenY = self.renderer.worldToScreen(*map(float, position))
+            screenY += math.sin(now * 0.0022 + index * 1.7) * 5
+            elder = decoration.get("type") == "elder_guardian"
+            source = self._guardianSceneSprite(elder)
+            display_scale = max(
+                0.45,
+                min(1.35, self.zoomLevel * float(decoration.get("scale", 1.0)) * 1.8),
+            )
+            rendered = pygame.transform.scale(
+                source,
+                (
+                    max(18, round(source.get_width() * display_scale)),
+                    max(14, round(source.get_height() * display_scale)),
+                ),
+            )
+            rect = rendered.get_rect(center=(round(screenX), round(screenY)))
+            if rect.right >= 0 and rect.left < viewportWidth and rect.bottom >= 0 and rect.top < WINDOW_HEIGHT:
+                self.screen.blit(rendered, rect)
+
     def _renderDimensionFog(self) -> None:
         """Blend a cached horizon fog over the world viewport."""
-        if not self.lightingEnabled:
+        if (
+            not self.lightingEnabled
+            or self.skyboxesEnabled
+            or bool(self.sceneMetadata.get("underwater"))
+        ):
             return
         fogColor, maxAlpha = {
             DIMENSION_OVERWORLD: ((184, 210, 224), 34),
             DIMENSION_NETHER: ((94, 25, 20), 52),
             DIMENSION_END: ((58, 40, 78), 42),
         }[self.currentDimension]
-        viewportWidth = WINDOW_WIDTH - PANEL_WIDTH
+        viewportWidth = self._worldViewportRight()
         key = (viewportWidth, WINDOW_HEIGHT, self.currentDimension, fogColor, maxAlpha)
         if key != self._fogSurfaceKey:
             fog = pygame.Surface((viewportWidth, WINDOW_HEIGHT), pygame.SRCALPHA)
@@ -20766,12 +21002,13 @@ class BlocFantome:
             print("Lighting: OFF")
 
     def _toggleSkyboxes(self) -> None:
-        """Toggle the selected licensed spherical dimension panorama."""
+        """Toggle the selected licensed cubemap sky."""
         self.skyboxesEnabled = not self.skyboxesEnabled
         if self.skyboxesEnabled:
             self.skyboxRenderer.update(
                 0,
                 self.currentDimension,
+                view_rotation=self.renderer.viewRotation,
                 celestial_enabled=self.celestialEnabled,
                 celestial_angle=self.celestialAngle,
             )
@@ -20794,12 +21031,16 @@ class BlocFantome:
             return
         self.skyboxesEnabled = True
         name = self.skyboxRenderer.cycle(self.currentDimension, delta)
-        self.skyboxRenderer.update(0, self.currentDimension)
+        self.skyboxRenderer.update(
+            0,
+            self.currentDimension,
+            view_rotation=self.renderer.viewRotation,
+        )
         self.tooltipText = f"Skybox: {name}"
         self.tooltipTimer = 1600
 
     def _cameraWorldCenter(self) -> Tuple[int, int]:
-        viewportCenterX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
+        viewportCenterX = self._worldViewportRight() // 2
         viewportCenterY = WINDOW_HEIGHT // 2
         return self.renderer.screenToWorld(
             viewportCenterX, viewportCenterY, self.cameraFocusZ
@@ -20826,7 +21067,7 @@ class BlocFantome:
         if self.zoomLevel <= 0.25:
             viewportRadius = math.ceil(
                 max(
-                    (WINDOW_WIDTH - PANEL_WIDTH)
+                    self._worldViewportRight()
                     / max(1.0, TILE_WIDTH * self.zoomMin),
                     WINDOW_HEIGHT / max(1.0, TILE_HEIGHT * self.zoomMin),
                 ) / chunkSize
@@ -21071,7 +21312,7 @@ class BlocFantome:
         maxY = max(point[1] for point in corners)
         halfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
         spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
-        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        viewportRight = self._worldViewportRight()
         return not (
             maxX + halfWidth < -margin
             or minX - halfWidth > viewportRight + margin
@@ -21083,7 +21324,7 @@ class BlocFantome:
         screenX, screenY = self.renderer.worldToScreen(x, y, z)
         halfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
         spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
-        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        viewportRight = self._worldViewportRight()
         return not (
             screenX + halfWidth < -margin
             or screenX - halfWidth > viewportRight + margin
@@ -21126,7 +21367,7 @@ class BlocFantome:
         spriteHalfWidth = max(1, int(TILE_WIDTH * self.zoomLevel) // 2)
         spriteHeight = max(1, int((TILE_HEIGHT + BLOCK_HEIGHT) * self.zoomLevel))
         margin = self._worldSurfaceMargin
-        viewportRight = WINDOW_WIDTH - PANEL_WIDTH
+        viewportRight = self._worldViewportRight()
         for item in blocksToDraw:
             _, x, y, z, blockType = item
             if rotation == 0:
@@ -21239,7 +21480,7 @@ class BlocFantome:
         )
         if canCacheSurface:
             cacheSize = (
-                WINDOW_WIDTH - PANEL_WIDTH + self._worldSurfaceMargin * 2,
+                self._worldViewportRight() + self._worldSurfaceMargin * 2,
                 WINDOW_HEIGHT + self._worldSurfaceMargin * 2,
             )
             if incrementalZoomBuild:
@@ -22007,7 +22248,12 @@ class BlocFantome:
             lightingBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             if dimY + 30 >= startY and dimY <= startY + availableHeight:
                 lightingHovered = lightingBtnRect.collidepoint(mouseX, mouseY)
-                lightingLabel = "Lighting + Fog: ON" if self.lightingEnabled else "Lighting + Fog: OFF"
+                lightingMode = (
+                    "Lighting + AO"
+                    if self.skyboxesEnabled or bool(self.sceneMetadata.get("underwater"))
+                    else "Lighting + Fog"
+                )
+                lightingLabel = f"{lightingMode}: {'ON' if self.lightingEnabled else 'OFF'}"
                 self.assetManager.drawPanelRow(
                     self.screen,
                     lightingBtnRect,
@@ -22022,7 +22268,7 @@ class BlocFantome:
                 )
             dimY += 35
 
-            # Cached spherical panorama with persistent manual preset arrows.
+            # Cached camera-linked cubemap with persistent manual preset arrows.
             skyboxBtnRect = pygame.Rect(panelX + ICON_MARGIN + 10, dimY, PANEL_WIDTH - 2 * ICON_MARGIN - 20, 30)
             arrowWidth = 28
             self.skyboxPrevRect = pygame.Rect(skyboxBtnRect.x, dimY, arrowWidth, 30)

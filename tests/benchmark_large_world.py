@@ -150,6 +150,10 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("scenes", nargs="*", help="scene ids without .json.gz")
     parser.add_argument("--repetitions", type=int, default=5)
+    parser.add_argument(
+        "--viewport", default="1200x800",
+        help="native benchmark viewport as WIDTHxHEIGHT (default: 1200x800)",
+    )
     parser.add_argument("--json-output", type=Path)
     return parser.parse_args(argv)
 
@@ -161,6 +165,13 @@ def main(argv=None) -> int:
     app = blocFantome.BlocFantome()
     if not app.assetManager.loadAllAssets():
         raise RuntimeError("assets unavailable")
+    try:
+        viewport_width, viewport_height = (
+            int(part) for part in args.viewport.lower().split("x", 1)
+        )
+    except (TypeError, ValueError) as exc:
+        raise ValueError("--viewport must use WIDTHxHEIGHT") from exc
+    app._applyWindowSize(viewport_width, viewport_height)
     print(
         f"viewport={app.screen.get_width()}x{app.screen.get_height()} "
         f"distance={app.renderDistanceChunks} chunks repetitions={args.repetitions}"

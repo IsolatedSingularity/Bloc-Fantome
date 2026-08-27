@@ -20,7 +20,9 @@ SCENES = (
     "trial_chamber_121",
     "bastion_treasure_1161",
     "bastion_hoglin_stable_1161",
+    "nether_fortress_biomes_1161",
     "end_city_1161",
+    "ocean_monument_1161",
     "village_plains_1161",
 )
 

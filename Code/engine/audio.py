@@ -1,8 +1,10 @@
 """Bounded music and sound-effect routing for Bloc Fantôme."""
 
 from collections import defaultdict
+from array import array
 import os
 import random
+import sys
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence
 
 
@@ -25,35 +27,166 @@ class PreloadedMusicBackend:
         self._volume = 1.0
         self._end_event = 0
         self._preloaded: Dict[str, Any] = {}
+        self._sequence: list[tuple[str, Any]] = []
+        self._sequence_index = 0
+        self._queued_index: Optional[int] = None
+        self._sequence_loop_start = 0
         self.stop_posts_end_event = False
+
+    def _trim_mp3_padding(self, path: str, sound: Any) -> Any:
+        """Remove decoded MP3 encoder silence without adding a dependency.
+
+        The recovered WorldBuilder score is made from short, beat-sized MP3
+        fragments. SDL decodes their encoder delay and tail padding as real
+        silence, so playing the files one after another creates an audible
+        stumble. ``Sound.get_raw`` exposes the already-decoded mixer PCM; a
+        small threshold scan can trim only that empty padding and construct a
+        normal mixer Sound from the remaining bytes.
+        """
+        if not str(path).casefold().endswith(".mp3"):
+            return sound
+        get_raw = getattr(sound, "get_raw", None)
+        get_init = getattr(self._mixer, "get_init", None)
+        if get_raw is None or get_init is None:
+            return sound
+        mixer_format = get_init()
+        if not mixer_format or int(mixer_format[1]) != -16:
+            return sound
+        channels = max(1, int(mixer_format[2]))
+        raw = get_raw()
+        samples = array("h")
+        samples.frombytes(raw)
+        if sys.byteorder != "little":
+            samples.byteswap()
+        frame_count = len(samples) // channels
+        threshold = 96
+        first = None
+        last = None
+        for frame in range(frame_count):
+            base = frame * channels
+            if any(abs(samples[base + channel]) > threshold for channel in range(channels)):
+                first = frame
+                break
+        if first is None:
+            return sound
+        for frame in range(frame_count - 1, first - 1, -1):
+            base = frame * channels
+            if any(abs(samples[base + channel]) > threshold for channel in range(channels)):
+                last = frame + 1
+                break
+        if last is None:
+            return sound
+        # Retain a sub-millisecond guard around the musical transient.
+        first = max(0, first - 32)
+        last = min(frame_count, last + 32)
+        if first == 0 and last == frame_count:
+            return sound
+        trimmed = samples[first * channels:last * channels]
+        if sys.byteorder != "little":
+            trimmed.byteswap()
+        try:
+            return self._mixer.Sound(buffer=trimmed.tobytes())
+        except (TypeError, ValueError):
+            return sound
+
+    def _decode(self, path: str) -> Any:
+        decoded = self._mixer.Sound(path)
+        return self._trim_mp3_padding(path, decoded)
 
     def preload(self, path: str) -> None:
         """Decode a bounded startup track without replacing current playback."""
         path = str(path)
         if path == self._path or path in self._preloaded:
             return
-        self._preloaded[path] = self._mixer.Sound(path)
+        self._preloaded[path] = self._decode(path)
         self._preloaded[path].set_volume(self._volume)
         while len(self._preloaded) > 3:
             self._preloaded.pop(next(iter(self._preloaded)))
 
     def load(self, path: str) -> None:
         self.stop()
+        self._sequence = []
+        self._sequence_index = 0
+        self._queued_index = None
+        self._sequence_loop_start = 0
         path = str(path)
         if self._sound is not None and self._path:
             self._preloaded[self._path] = self._sound
         self._sound = self._preloaded.pop(path, None)
         if self._sound is None:
-            self._sound = self._mixer.Sound(path)
+            self._sound = self._decode(path)
         self._path = path
         self._sound.set_volume(self._volume)
         self._logger(f"Music decoded: {os.path.basename(self._path)}")
+
+    def load_sequence(self, paths: Iterable[str], *, loop_start: int = 0) -> bool:
+        """Decode ordered fragments and optionally keep an intro outside the loop."""
+        ordered = list(dict.fromkeys(str(path) for path in paths if path))
+        if not ordered:
+            return False
+        self.stop()
+        sequence = []
+        for path in ordered:
+            sound = self._preloaded.pop(path, None)
+            if sound is None:
+                sound = self._decode(path)
+            sound.set_volume(self._volume)
+            sequence.append((path, sound))
+        self._sequence = sequence
+        self._sequence_index = 0
+        self._queued_index = None
+        self._sequence_loop_start = max(0, min(int(loop_start), len(sequence) - 1))
+        self._path, self._sound = sequence[0]
+        self._logger(
+            "Music sequence decoded: "
+            + ", ".join(os.path.basename(path) for path, _sound in sequence)
+        )
+        return True
 
     def play(self) -> None:
         if self._sound is None:
             raise RuntimeError("No decoded music track is loaded")
         self._channel.set_volume(self._volume)
         self._channel.play(self._sound)
+        if len(self._sequence) > 1:
+            self._queued_index = 1
+            self._channel.queue(self._sequence[1][1])
+
+    def advance_sequence(self) -> bool:
+        """Queue the fragment after the one SDL has just started playing."""
+        if not self._sequence or self._queued_index is None:
+            return False
+        if hasattr(self._channel, "get_sound") and hasattr(self._channel, "get_queue"):
+            return self.maintain_sequence()
+        self._sequence_index = self._queued_index
+        self._path, self._sound = self._sequence[self._sequence_index]
+        next_index = self._sequence_index + 1
+        if next_index >= len(self._sequence):
+            next_index = self._sequence_loop_start
+        self._queued_index = next_index
+        self._channel.queue(self._sequence[next_index][1])
+        return True
+
+    def maintain_sequence(self) -> bool:
+        """Keep one fragment queued even when SDL posts no intermediate event."""
+        if len(self._sequence) < 2:
+            return False
+        current = self._channel.get_sound()
+        current_index = next(
+            (index for index, (_path, sound) in enumerate(self._sequence) if sound is current),
+            self._sequence_index,
+        )
+        advanced = current_index != self._sequence_index
+        if advanced:
+            self._sequence_index = current_index
+            self._path, self._sound = self._sequence[current_index]
+        if self._channel.get_busy() and self._channel.get_queue() is None:
+            next_index = current_index + 1
+            if next_index >= len(self._sequence):
+                next_index = self._sequence_loop_start
+            self._queued_index = next_index
+            self._channel.queue(self._sequence[next_index][1])
+        return advanced
 
     def stop(self) -> None:
         # Channel.stop can post its configured end event on some SDL_mixer
@@ -74,6 +207,8 @@ class PreloadedMusicBackend:
     def set_volume(self, volume: float) -> None:
         self._volume = max(0.0, min(1.0, float(volume)))
         self._channel.set_volume(self._volume)
+        for _path, sound in self._sequence:
+            sound.set_volume(self._volume)
 
     def set_endevent(self, event_type: int = 0) -> None:
         self._end_event = int(event_type)
@@ -193,6 +328,7 @@ class MusicController:
         self.fading_out = False
         self._expected_stop_events = 0
         self.last_track: Optional[str] = None
+        self.sequence_mode = False
 
     def set_endevent(self, event_type: int) -> None:
         """Configure natural track completion on either supported backend."""
@@ -226,6 +362,7 @@ class MusicController:
         playlist = list(dict.fromkeys(str(track) for track in tracks if track))
         if not playlist:
             return False
+        self.sequence_mode = False
         self._shuffle(playlist)
         self._avoid_immediate_repeat(playlist)
         if fade and self._music.get_busy():
@@ -235,6 +372,34 @@ class MusicController:
             self.fading_out = True
             return True
         self._activate(playlist)
+        return True
+
+    def set_sequence(self, tracks: Iterable[str], *, loop_start: int = 0) -> bool:
+        """Play an ordered WorldBuilder family, with an optional one-shot intro."""
+        sequence = list(dict.fromkeys(str(track) for track in tracks if track))
+        loader = getattr(self._music, "load_sequence", None)
+        if not sequence or loader is None:
+            return self.set_playlist(sequence, fade=False)
+        try:
+            try:
+                loaded = loader(sequence, loop_start=loop_start)
+            except TypeError:
+                loaded = loader(sequence)
+            if not loaded:
+                return False
+            self._music.set_volume(0.0)
+            self._music.play()
+        except Exception as exc:
+            self._logger(f"Could not play music sequence: {exc}")
+            return False
+        self.tracks = sequence
+        self.index = 0
+        self.pending_tracks = None
+        self.fading_out = False
+        self.fading_in = True
+        self.fade_elapsed_ms = 0.0
+        self.sequence_mode = True
+        self.last_track = sequence[0]
         return True
 
     def _activate(self, tracks: list[str]) -> None:
@@ -257,6 +422,7 @@ class MusicController:
 
         if not self.tracks:
             return False
+        self.sequence_mode = False
         attempts = len(self.tracks)
         while attempts:
             if self.index >= len(self.tracks):
@@ -292,9 +458,18 @@ class MusicController:
             return False
         if self.fading_out:
             return False
+        if self.sequence_mode:
+            advanced = bool(self._music.advance_sequence())
+            if advanced:
+                self.last_track = getattr(self._music, "path", self.last_track)
+            return advanced
         return self.play_next()
 
     def update(self, elapsed_ms: float) -> None:
+        if self.sequence_mode:
+            maintainer = getattr(self._music, "maintain_sequence", None)
+            if maintainer is not None and maintainer():
+                self.last_track = getattr(self._music, "path", self.last_track)
         if self.fading_out:
             self.fade_elapsed_ms += elapsed_ms
             progress = min(1.0, self.fade_elapsed_ms / self.fade_out_ms)
@@ -320,4 +495,5 @@ class MusicController:
         self.pending_tracks = None
         self.fading_in = False
         self.fading_out = False
+        self.sequence_mode = False
         self._music.stop()
