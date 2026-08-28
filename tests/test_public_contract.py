@@ -108,6 +108,9 @@ def test_visible_product_name_is_accented_while_executable_name_stays_compatible
     assert '#define MyAppName "Bloc Fantôme"' in installer
     assert '#define MyAppExeName "BlocFantome.exe"' in installer
     assert 'Name: "{group}\\{#MyAppName}"' in installer
+    assert 'Name: "{userprograms}\\Miette.lnk"' in installer
+    assert 'textures\\entity\\enderdragon\\dragon.png' in installer
+    assert 'DestName: "enderdragon.png"' in installer
     build_version = re.search(r'^VERSION = "([^"]+)"', build_script, re.MULTILINE).group(1)
     installer_version = re.search(
         r'^#define MyAppVersion "([^"]+)"', installer, re.MULTILINE

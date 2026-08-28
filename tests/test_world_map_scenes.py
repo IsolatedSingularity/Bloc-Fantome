@@ -46,9 +46,12 @@ def test_nether_hub_is_tightly_framed_and_contains_all_five_source_biome_palette
 def test_end_ship_and_city_templates_are_not_clipped_by_the_map_volume():
     world = _world()
     scene = build_hub(world, "end")
-    assert (world.width, world.depth, world.height) == (64, 60, 40)
-    assert scene.framing_bounds == ((5, 5, 0), (63, 56, 35))
-    assert world.occupiedBounds[1][2] == 34
+    assert (world.width, world.depth, world.height, world.min_y) == (94, 82, 84, -16)
+    assert scene.framing_bounds == ((2, 2, -10), (92, 78, 56))
+    assert world.occupiedBounds[1][2] == 48
+    assert len(world.sceneStructurePositions) > 4_400
+    assert scene.playable_anchors[1] == (72, 12, 44)
+    assert ("dragon_head", (85, 12, 26)) in scene.landmarks
     assert all(world.isInBounds(*position) for position in world.sceneStructurePositions)
 
 
@@ -73,3 +76,6 @@ def test_ocean_hub_has_full_58_block_monument_without_decorative_water_blocks():
     assert counts[BlockType.GOLD_BLOCK] == 8
     assert counts[BlockType.WATER] == 0
     assert scene.source_templates[0] == "ocean_monument_generator"
+    assert scene.locked_anchors == ((16, 73, 11), (93, 70, 11))
+    assert scene.route_labels == ("Ocean Ruins", "Sunken Ship")
+    assert counts[BlockType.CLAY] > 100

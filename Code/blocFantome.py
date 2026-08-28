@@ -54,7 +54,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.6.4'
+        myappid = 'blocfantome.builder.2.6.5'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -181,6 +181,13 @@ from engine.world_map import (
     objective_progress as world_map_objective_progress,
     source_template_metadata as world_map_source_template,
 )
+
+WORLD_MAP_HUB_ZOOM_SCALE = {
+    DIMENSION_OVERWORLD: 1.0,
+    DIMENSION_NETHER: 1.12,
+    DIMENSION_END: 1.18,
+    "ocean": 1.08,
+}
 
 # Grass tint color (plains biome - sampled from colormap)
 GRASS_TINT = (124, 189, 107)
@@ -9010,6 +9017,8 @@ class BlocFantome:
         self.renderStats = {"candidates": 0, "screen_candidates": 0, "drawn": 0, "occluded": 0}
         self._fogSurfaceKey = None
         self._fogSurface = None
+        self._worldMapFogKey = None
+        self._worldMapFogLayers = ()
         self.fitWorldButtonRect = pygame.Rect(0, 0, 0, 0)
         self.terrainNoiseButtonRect = pygame.Rect(0, 0, 0, 0)
         self.growCanvasButtonRect = pygame.Rect(0, 0, 0, 0)
@@ -10096,12 +10105,12 @@ class BlocFantome:
     def _layoutWindowControls(self) -> None:
         """Attach the top controls to the live viewport width."""
         right = WINDOW_WIDTH - PANEL_WIDTH
-        self.fitWorldButtonRect = pygame.Rect(right - 112, 10, 100, 28)
-        self.terrainNoiseButtonRect = pygame.Rect(right - 146, 10, 30, 28)
-        self.growCanvasButtonRect = pygame.Rect(right - 180, 10, 30, 28)
-        self.shrinkCanvasButtonRect = pygame.Rect(right - 214, 10, 30, 28)
-        self.terrainViewButtonRect = pygame.Rect(right - 384, 10, 166, 28)
-        self.worldMapButtonRect = pygame.Rect(right - 506, 10, 116, 28)
+        self.worldMapButtonRect = pygame.Rect(right // 2 - 58, 10, 116, 28)
+        self.terrainViewButtonRect = pygame.Rect(self.worldMapButtonRect.left - 172, 10, 166, 28)
+        self.shrinkCanvasButtonRect = pygame.Rect(self.worldMapButtonRect.right + 6, 10, 30, 28)
+        self.growCanvasButtonRect = pygame.Rect(self.worldMapButtonRect.right + 40, 10, 30, 28)
+        self.terrainNoiseButtonRect = pygame.Rect(self.worldMapButtonRect.right + 74, 10, 30, 28)
+        self.fitWorldButtonRect = pygame.Rect(self.worldMapButtonRect.right + 108, 10, 100, 28)
 
     def _worldViewportRight(self) -> int:
         """Return the live canvas edge; every World Map surface owns the window."""
@@ -10153,9 +10162,12 @@ class BlocFantome:
         self._settingsPanelCacheKey = None
         self._minimapCacheKey = None
         self._fogSurfaceKey = None
+        self._worldMapFogKey = None
         self._canvasResizePreviewSurface = None
         self._terrainNoisePreviewSurface = None
         self._invalidateViewCaches()
+        if self.worldMapActive and self.worldMapMode == "hub" and self.worldMapScene is not None:
+            self._frameWorldMapHub()
 
     def _toggleFullscreen(self) -> None:
         """Toggle native desktop fullscreen while retaining the last window size."""
@@ -10943,7 +10955,32 @@ class BlocFantome:
         self.showGrid = False
         self.interactionMode = False
         self.worldMapView.set_hub(dimension, self.worldMapScene)
+        self._frameWorldMapHub()
+
+    def _frameWorldMapHub(self) -> None:
+        """Apply the authored, non-interactive selector camera for this map."""
+        if self.worldMapScene is None:
+            return
+        self.renderer.setViewRotation(0)
         self._fitBoundsToViewport(self.worldMapScene.framing_bounds, notify=False)
+        scale = WORLD_MAP_HUB_ZOOM_SCALE[self.worldMapDimension]
+        self.zoomLevel = round(
+            max(self.zoomMin, min(self.zoomMax, self.zoomLevel * scale)), 3
+        )
+        self.renderer.setZoom(self.zoomLevel)
+        (min_x, min_y, min_z), (max_x, max_y, max_z) = self.worldMapScene.framing_bounds
+        center = (
+            (min_x + max_x) / 2.0,
+            (min_y + max_y) / 2.0,
+            (min_z + max_z) / 2.0,
+        )
+        screen_x, screen_y = self.renderer.worldToScreen(*center)
+        self.renderer.offsetX += WINDOW_WIDTH / 2.0 - screen_x
+        self.renderer.offsetY += WINDOW_HEIGHT / 2.0 - screen_y
+        self.targetOffsetX = self.renderer.offsetX
+        self.targetOffsetY = self.renderer.offsetY
+        self.cameraFocusZ = round(center[2])
+        self._invalidateViewCaches()
 
     def _cycleWorldMap(self, delta: int) -> None:
         index = WORLD_MAP_DIMENSIONS.index(self.worldMapDimension)
@@ -11763,6 +11800,8 @@ class BlocFantome:
     
     def _handleMouseWheel(self, event):
         """Handle mouse wheel scrolling for zoom (world) or inventory (panel)"""
+        if self.worldMapActive and self.worldMapMode == "hub":
+            return
         mouseX, mouseY = pygame.mouse.get_pos()
         
         # Check if mouse is over the panel - scroll inventory
@@ -11851,7 +11890,11 @@ class BlocFantome:
         # Middle drag is a canvas camera gesture, including at maximum zoom and
         # over the visual hotbar. Start it before controls that only own primary
         # and secondary clicks.
-        if event.button == 2 and mouseX <= self._worldViewportRight():
+        if (
+            event.button == 2
+            and mouseX <= self._worldViewportRight()
+            and not (self.worldMapActive and self.worldMapMode == "hub")
+        ):
             self.panning = True
             self.panStartX = mouseX
             self.panStartY = mouseY
@@ -12153,12 +12196,15 @@ class BlocFantome:
         # View rotation (Q/E keys)
         elif event.key == pygame.K_q:
             # Rotate view counter-clockwise
-            self._rotateViewAndRecenter(-1)
+            if not (self.worldMapActive and self.worldMapMode == "hub"):
+                self._rotateViewAndRecenter(-1)
         elif event.key == pygame.K_e:
             # Rotate view clockwise
-            self._rotateViewAndRecenter(1)
+            if not (self.worldMapActive and self.worldMapMode == "hub"):
+                self._rotateViewAndRecenter(1)
         elif event.key == pygame.K_HOME:
-            self._fitWorldToViewport()
+            if not (self.worldMapActive and self.worldMapMode == "hub"):
+                self._fitWorldToViewport()
         
         # Fill tool (F key, without ctrl)
         elif event.key == pygame.K_f and not (mods & pygame.KMOD_CTRL):
@@ -20317,6 +20363,7 @@ class BlocFantome:
         # terrain is drawn, so the build sits inside a water volume rather than
         # under a flat blue screen tint.
         self._renderUnderwaterBackdrop()
+        self._renderWorldMapBackdropFog()
 
         # Draw grid and blocks
         self._renderWorld()
@@ -20730,6 +20777,12 @@ class BlocFantome:
     def _renderDimensionFog(self) -> None:
         """Blend a cached horizon fog over the world viewport."""
         if (
+            self.worldMapActive
+            and self.worldMapMode == "hub"
+            and self.worldMapDimension == DIMENSION_OVERWORLD
+        ):
+            return
+        if (
             not self.lightingEnabled
             or self.skyboxesEnabled
             or bool(self.sceneMetadata.get("underwater"))
@@ -20752,6 +20805,48 @@ class BlocFantome:
             self._fogSurface = fog
             self._fogSurfaceKey = key
         self.screen.blit(self._fogSurface, (0, 0))
+
+    def _renderWorldMapBackdropFog(self) -> None:
+        """Drift dense Overworld selector fog behind, never over, the map."""
+        if not (
+            self.worldMapActive
+            and self.worldMapMode == "hub"
+            and self.worldMapDimension == DIMENSION_OVERWORLD
+        ):
+            return
+        size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        if self._worldMapFogKey != size:
+            layers = []
+            low_size = (max(240, size[0] // 4), max(160, size[1] // 4))
+            for layer_index in range(3):
+                low = pygame.Surface(low_size, pygame.SRCALPHA)
+                for index in range(24):
+                    center_x = (index * 83 + layer_index * 127) % low_size[0]
+                    center_y = (
+                        low_size[1] * (0.18 + 0.31 * layer_index)
+                        + ((index * 37 + layer_index * 19) % 43) - 21
+                    )
+                    radius_x = 34 + (index * 17 + layer_index * 13) % 72
+                    radius_y = 13 + (index * 11 + layer_index * 7) % 31
+                    alpha = 22 + (index * 9 + layer_index * 15) % 32
+                    pygame.draw.ellipse(
+                        low,
+                        (204, 220, 224, alpha),
+                        (
+                            center_x - radius_x,
+                            round(center_y - radius_y),
+                            radius_x * 2,
+                            radius_y * 2,
+                        ),
+                    )
+                layers.append(pygame.transform.smoothscale(low, size))
+            self._worldMapFogLayers = tuple(layers)
+            self._worldMapFogKey = size
+        now = pygame.time.get_ticks() / 1000.0
+        for index, layer in enumerate(self._worldMapFogLayers):
+            offset = round((now * (7.0 + index * 4.5)) % WINDOW_WIDTH)
+            self.screen.blit(layer, (-offset, 0))
+            self.screen.blit(layer, (WINDOW_WIDTH - offset, 0))
 
     def _renderFitWorldButton(self) -> None:
         mouseX, mouseY = pygame.mouse.get_pos()

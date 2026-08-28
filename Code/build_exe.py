@@ -48,6 +48,10 @@ SKYBOX_ATLASES = [
 ]
 WORLD_MAP_TEMPLATE_BUNDLE = os.path.join(SCRIPT_DIR, "world_map_templates.json.gz")
 WORLD_MAP_ROOT = os.path.join(PROJECT_ROOT, "Assets", "World Map", "WorldBuilder")
+DRAGON_HEAD_TEXTURE = os.path.join(
+    PROJECT_ROOT, "Assets", "Extensive Library", "textures", "entity",
+    "enderdragon", "dragon.png",
+)
 WORLD_MAP_RELEASE_FILES = [
     os.path.join(WORLD_MAP_ROOT, "ui", filename)
     for filename in (
@@ -73,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.6.4"
+VERSION = "2.6.5"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -128,6 +132,11 @@ def build(debug: bool = False, diagnostic: bool = False):
         raise FileNotFoundError(
             "Required source-derived World Map template bundle is missing: "
             + WORLD_MAP_TEMPLATE_BUNDLE
+        )
+    if not os.path.isfile(DRAGON_HEAD_TEXTURE):
+        raise FileNotFoundError(
+            "Required End ship dragon-head texture is missing: "
+            + DRAGON_HEAD_TEXTURE
         )
     missing_world_map = [path for path in WORLD_MAP_RELEASE_FILES if not os.path.isfile(path)]
     if missing_world_map:

@@ -139,7 +139,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.worldMapDimension, "ocean")
         self.assertEqual(self.app.currentDimension, app_module.DIMENSION_OVERWORLD)
         self.assertFalse(self.app.worldMapScene.playable_anchors)
-        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 4)
+        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 2)
         self.app._startWorldMapLevel(0)
         self.assertEqual(self.app.worldMapMode, "hub")
         self.assertIsNone(self.app.worldMapObjective)
@@ -221,6 +221,7 @@ class AppIntegrationTests(unittest.TestCase):
                 self.app.fitWorldButtonRect,
             ):
                 self.assertTrue(canvas.contains(rect), rect)
+            self.assertEqual(self.app.worldMapButtonRect.centerx, canvas.centerx)
             new_center = self.app.renderer._screenToWorldPoint(
                 (960 - app_module.PANEL_WIDTH) // 2, 640 // 2, self.app.cameraFocusZ
             )
@@ -237,6 +238,20 @@ class AppIntegrationTests(unittest.TestCase):
             )
         finally:
             self.app._applyWindowSize(*old_size, recreate=False)
+
+    def test_world_map_hub_camera_is_fixed_and_resets_to_authored_rotation(self):
+        self.app.renderer.setViewRotation(2)
+        self.app._openWorldMap()
+        self.app._switchWorldMapHub(app_module.DIMENSION_END)
+        zoom = self.app.zoomLevel
+        offset = (self.app.renderer.offsetX, self.app.renderer.offsetY)
+        self.assertEqual(self.app.renderer.viewRotation, 0)
+        self.app._handleMouseWheel(SimpleNamespace(y=1, precise_y=1.0))
+        self.app._handleMouseDown(SimpleNamespace(button=2, pos=(400, 300)))
+        self.assertEqual(self.app.zoomLevel, zoom)
+        self.assertEqual((self.app.renderer.offsetX, self.app.renderer.offsetY), offset)
+        self.assertFalse(self.app.panning)
+        self.app._exitWorldMap()
 
     def test_json_structures_are_cursor_placeable(self):
         for name in app_module.JSON_STRUCTURE_LIBRARY:

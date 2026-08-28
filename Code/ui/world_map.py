@@ -22,6 +22,7 @@ DIMENSION_COLORS = {
     "end": (180, 144, 211),
     "ocean": (70, 174, 202),
 }
+MISSION_MARKER_SCALE = 1.25
 
 # Director positions sprites by their cast registration point, not by image
 # centre. These values come from the preserved World Builder CASt chunks.
@@ -29,6 +30,11 @@ QUESTION_REGISTRATION = {
     "question_mark": (18, 12),
     "question_mark_blink": (32, 27),
     "question_mark_shadow": (15, -17),
+}
+QUESTION_SOURCE_SIZES = {
+    "question_mark": (20, 27),
+    "question_mark_blink": (48, 42),
+    "question_mark_shadow": (15, 8),
 }
 
 TRAVELER_TEXTURES = {
@@ -122,9 +128,9 @@ class WorldMapView:
         self._surfaces: dict[str, pygame.Surface] = {}
         self._scaled_cache: dict[tuple, pygame.Surface] = {}
         self._sounds = {}
-        self._hover_sound_index = 0
         self._ocean_overlays: dict[tuple[int, int], pygame.Surface] = {}
         self._traveler_sprites: dict[tuple[str, int], pygame.Surface] = {}
+        self._dragon_texture = None
         self.worldbuilder_font = None
         self._load_assets()
 
@@ -246,6 +252,22 @@ class WorldMapView:
             except pygame.error:
                 self.worldbuilder_font = None
 
+        dragon_candidates = (
+            os.path.join(ui_root, "enderdragon.png"),
+            os.path.abspath(os.path.join(
+                self.root, "..", "..", "Extensive Library", "textures",
+                "entity", "enderdragon", "dragon.png",
+            )),
+        )
+        for path in dragon_candidates:
+            if not os.path.isfile(path):
+                continue
+            try:
+                self._dragon_texture = pygame.image.load(path).convert_alpha()
+                break
+            except pygame.error:
+                pass
+
         audio_root = os.path.join(self.root, "audio")
         sound_files = {
             "hover_1": "s_rollover_1.mp3",
@@ -300,8 +322,7 @@ class WorldMapView:
                 None,
             )
             if hovered is not None and hovered != self._hovered_node:
-                self.play(f"hover_{1 + self._hover_sound_index % 2}")
-                self._hover_sound_index += 1
+                self.play("hover_1")
             self._hovered_node = hovered
             return None
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
@@ -322,6 +343,8 @@ class WorldMapView:
                     return f"dimension:{dimension}"
             for index, rect in enumerate(self.node_hit_rects):
                 if rect.collidepoint(event.pos):
+                    if self.dimension == "ocean":
+                        return None
                     self.play("plan")
                     return f"start:{index}"
         elif self.completed_now and self.continue_rect.collidepoint(event.pos):
@@ -372,7 +395,11 @@ class WorldMapView:
             )
             screen.blit(rendered, rendered.get_rect(center=rect.center))
 
-    def _scaled(self, name: str, scale: int = 2, tint=None):
+    @staticmethod
+    def _scaled_size(value: int, scale: float) -> int:
+        return max(1, int(value * scale + 0.5))
+
+    def _scaled(self, name: str, scale: float = 2, tint=None):
         source = self._surfaces.get(name)
         if source is None:
             return None
@@ -382,12 +409,15 @@ class WorldMapView:
             return cached
         if tint is not None:
             source = self._tint_sprite(source, tint)
-        size = (max(1, source.get_width() * scale), max(1, source.get_height() * scale))
+        size = (
+            self._scaled_size(source.get_width(), scale),
+            self._scaled_size(source.get_height(), scale),
+        )
         cached = pygame.transform.scale(source, size)
         self._scaled_cache[key] = cached
         return cached
 
-    def _question(self, scale: int, *, active: bool = True) -> pygame.Surface:
+    def _question(self, scale: float, *, active: bool = True) -> pygame.Surface:
         """Return the palette-correct normal World Builder question cast."""
         key = ("source-question", scale, active)
         cached = self._scaled_cache.get(key)
@@ -396,13 +426,19 @@ class WorldMapView:
         source = self._surfaces.get("question_mark")
         if source is None:
             color = (18, 18, 18) if active else (104, 104, 108)
-            cached = self._text("?", color, scale=max(2, scale))
+            cached = self._text("?", color, scale=max(2, round(scale)))
             self._scaled_cache[key] = cached
             return cached
         low = source.copy()
         if not active:
-            low.set_alpha(105)
-        cached = pygame.transform.scale(low, (low.get_width() * scale, low.get_height() * scale))
+            low.set_alpha(170)
+        cached = pygame.transform.scale(
+            low,
+            (
+                self._scaled_size(low.get_width(), scale),
+                self._scaled_size(low.get_height(), scale),
+            ),
+        )
         self._scaled_cache[key] = cached
         return cached
 
@@ -411,6 +447,9 @@ class WorldMapView:
         surface: pygame.Surface, name: str, location: tuple[int, int]
     ) -> pygame.Rect:
         reg_x, reg_y = QUESTION_REGISTRATION[name]
+        source_width, source_height = QUESTION_SOURCE_SIZES[name]
+        reg_x = round(reg_x * surface.get_width() / source_width)
+        reg_y = round(reg_y * surface.get_height() / source_height)
         return surface.get_rect(topleft=(location[0] - reg_x, location[1] - reg_y))
 
     def _draw_marker(
@@ -432,7 +471,7 @@ class WorldMapView:
             prefix = "bonus_flag" if bonus else "flag"
             marker = self._scaled(f"{prefix}{1 + (now // 120) % 6}", 1)
         else:
-            marker = self._question(1, active=active)
+            marker = self._question(MISSION_MARKER_SCALE, active=active)
         if marker is None:
             marker = self.font.render("!" if completed else "?", True, (226, 54, 48) if completed else (255, 224, 72))
 
@@ -447,7 +486,7 @@ class WorldMapView:
         body_location = (x + round(2.0 * math.cos(theta)), y + round(2.0 * math.sin(theta)))
         shadow_location = (x + round(2.0 * math.cos(theta)), y)
 
-        shadow = self._scaled("question_mark_shadow", 1)
+        shadow = self._scaled("question_mark_shadow", MISSION_MARKER_SCALE)
         shadow_rect = None
         if shadow is not None:
             if not active:
@@ -458,7 +497,7 @@ class WorldMapView:
 
         marker_name = "question_mark"
         if hovered and (now // 200) % 2:
-            blink = self._scaled("question_mark_blink", 1)
+            blink = self._scaled("question_mark_blink", MISSION_MARKER_SCALE)
             if blink is not None:
                 marker = blink
                 marker_name = "question_mark_blink"
@@ -474,9 +513,11 @@ class WorldMapView:
             "overworld": ("REPAIR PLAINS HOUSE", "RESTORE VILLAGE HUB"),
             "nether": ("REPAIR BASTION GATE", "REPAIR THE FORTRESS"),
             "end": ("REPAIR THE END TOWER", "RESTORE CITY BRIDGE"),
-            "ocean": ("LOCKED OCEAN ROUTE", "LOCKED OCEAN ROUTE"),
+            "ocean": ("ANCIENT RUINS", "SUNKEN SHIP"),
         }
         action = actions.get(dimension, ("BUILD THE ROUTE",))[index]
+        if dimension == "ocean":
+            return ("COMING SOON", action)
         words = action.split()
         if len(action) <= 18:
             action_lines = (action,)
@@ -498,16 +539,21 @@ class WorldMapView:
             screen.blit(shadow, shadow.get_rect(midtop=(center_x + 1, y + 1)))
             screen.blit(text, text.get_rect(midtop=(center_x, y)))
 
-    @staticmethod
     def _worldbuilder_panel(
-        screen: pygame.Surface, rect: pygame.Rect, *, selected: bool = False
+        self, screen: pygame.Surface, rect: pygame.Rect, *, selected: bool = False
     ) -> None:
-        fill = (134, 222, 241) if selected else (132, 211, 228)
+        accent = DIMENSION_COLORS[self.dimension]
+        fill = tuple(
+            min(255, round(channel * (0.70 if selected else 0.60) + (86 if selected else 72)))
+            for channel in accent
+        )
+        highlight = tuple(min(255, channel + 58) for channel in accent)
+        shadow = tuple(max(18, round(channel * 0.65)) for channel in accent)
         pygame.draw.rect(screen, fill, rect)
-        pygame.draw.line(screen, (220, 243, 251), rect.topleft, (rect.right - 1, rect.top), 2)
-        pygame.draw.line(screen, (220, 243, 251), rect.topleft, (rect.left, rect.bottom - 1), 2)
-        pygame.draw.line(screen, (15, 172, 206), (rect.left, rect.bottom - 1), (rect.right - 1, rect.bottom - 1), 2)
-        pygame.draw.line(screen, (15, 172, 206), (rect.right - 1, rect.top), (rect.right - 1, rect.bottom - 1), 2)
+        pygame.draw.line(screen, highlight, rect.topleft, (rect.right - 1, rect.top), 2)
+        pygame.draw.line(screen, highlight, rect.topleft, (rect.left, rect.bottom - 1), 2)
+        pygame.draw.line(screen, shadow, (rect.left, rect.bottom - 1), (rect.right - 1, rect.bottom - 1), 2)
+        pygame.draw.line(screen, shadow, (rect.right - 1, rect.top), (rect.right - 1, rect.bottom - 1), 2)
 
     def _worldbuilder_arrow(
         self, screen: pygame.Surface, rect: pygame.Rect, *, previous: bool
@@ -628,30 +674,94 @@ class WorldMapView:
         self._traveler_sprites[key] = sprite
         return sprite
 
+    @staticmethod
+    def _traveler_state(route, index: int, now: float):
+        """Move continuously out and back so an open route never teleports."""
+        segment_count = len(route) - 1
+        phase = (now * (0.18 + index * 0.025) + index * 0.37) % (2 * segment_count)
+        reversed_path = phase > segment_count
+        travel = 2 * segment_count - phase if reversed_path else phase
+        segment = min(segment_count - 1, int(travel))
+        amount = travel - segment
+        start = route[segment]
+        end = route[segment + 1]
+        return (
+            tuple(
+                start[axis] + (end[axis] - start[axis]) * amount
+                for axis in range(3)
+            ),
+            reversed_path,
+        )
+
     def _render_travelers(self, screen: pygame.Surface, renderer) -> None:
         routes = getattr(self.scene, "ambient_routes", ())
         now = pygame.time.get_ticks() / 1000.0
         for index, route in enumerate(routes[:5]):
             if len(route) < 2:
                 continue
-            travel = (now * (0.18 + index * 0.025) + index * 0.37) % (len(route) - 1)
-            segment = int(travel)
-            amount = travel - segment
-            start = route[segment]
-            end = route[segment + 1]
-            world_position = tuple(
-                start[axis] + (end[axis] - start[axis]) * amount
-                for axis in range(3)
-            )
+            world_position, reversed_path = self._traveler_state(route, index, now)
             x, y = renderer.worldToScreen(*world_position)
             y += math.sin(now * 3.0 + index) * 1.5
             sprite = self._traveler_sprite(index)
+            if reversed_path:
+                sprite = pygame.transform.flip(sprite, True, False)
             screen.blit(sprite, sprite.get_rect(center=(round(x), round(y))))
+
+    def _dragon_head_sprite(self) -> pygame.Surface:
+        key = ("dragon-head-landmark",)
+        cached = self._scaled_cache.get(key)
+        if cached is not None:
+            return cached
+        colors = [(34, 32, 36), (24, 23, 27), (50, 47, 52)]
+        if self._dragon_texture is not None:
+            samples = ((128, 36), (151, 47), (182, 52))
+            colors = [
+                tuple(self._dragon_texture.get_at(point)[:3])
+                for point in samples
+            ]
+        sprite = pygame.Surface((34, 27), pygame.SRCALPHA)
+        top, left, right = colors
+        pygame.draw.polygon(sprite, top, ((5, 8), (17, 2), (30, 8), (18, 14)))
+        pygame.draw.polygon(sprite, left, ((5, 8), (18, 14), (18, 23), (5, 17)))
+        pygame.draw.polygon(sprite, right, ((18, 14), (30, 8), (30, 17), (18, 23)))
+        pygame.draw.polygon(sprite, top, ((18, 14), (27, 11), (33, 15), (24, 19)))
+        pygame.draw.polygon(sprite, right, ((24, 19), (33, 15), (33, 20), (24, 24)))
+        pygame.draw.polygon(sprite, (15, 14, 18), ((8, 6), (10, 0), (13, 4), (13, 8)))
+        pygame.draw.polygon(sprite, (15, 14, 18), ((23, 5), (25, 0), (28, 5), (27, 8)))
+        pygame.draw.line(sprite, (8, 8, 10), (5, 8), (18, 14), 1)
+        pygame.draw.line(sprite, (8, 8, 10), (18, 14), (30, 8), 1)
+        pygame.draw.rect(sprite, (239, 56, 255), (25, 15, 2, 2))
+        pygame.draw.rect(sprite, (10, 8, 12), (31, 17, 2, 1))
+        self._scaled_cache[key] = sprite
+        return sprite
+
+    def _render_landmarks(self, screen: pygame.Surface, renderer) -> None:
+        for kind, position in getattr(self.scene, "landmarks", ()):
+            if kind != "dragon_head":
+                continue
+            x, y = renderer.worldToScreen(*position)
+            source = self._dragon_head_sprite()
+            scale = max(1.0, min(1.65, renderer.zoomLevel * 3.5))
+            rendered = pygame.transform.scale(
+                source,
+                (
+                    self._scaled_size(source.get_width(), scale),
+                    self._scaled_size(source.get_height(), scale),
+                ),
+            )
+            outline = pygame.mask.from_surface(rendered).to_surface(
+                setcolor=(5, 4, 7, 255), unsetcolor=(0, 0, 0, 0)
+            )
+            rect = rendered.get_rect(midleft=(round(x - 8), round(y + 3)))
+            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                screen.blit(outline, rect.move(dx, dy))
+            screen.blit(rendered, rect)
 
     def render_hub(self, screen: pygame.Surface, renderer, completed: Mapping[str, object]) -> None:
         width, _height = screen.get_size()
         if self.dimension == "ocean":
             self._render_ocean_ambience(screen)
+        self._render_landmarks(screen, renderer)
         self._render_travelers(screen, renderer)
         title_rect = pygame.Rect(16, 14, min(520, width - 302), 82)
         self._panel(screen, title_rect)
@@ -691,14 +801,20 @@ class WorldMapView:
         )
         self.node_rects = []
         self.node_hit_rects = []
-        for index, world_anchor in enumerate(self.scene.playable_anchors):
+        anchors = self.scene.playable_anchors
+        if self.dimension == "ocean":
+            anchors = self.scene.locked_anchors
+        for index, world_anchor in enumerate(anchors):
             anchor = renderer.worldToScreen(*world_anchor)
             hovered = index == self._hovered_node
+            active = self.dimension != "ocean"
             node_rect = self._draw_marker(
                 screen,
                 anchor,
-                completed=index < len(progress) and bool(progress[index]),
-                active=True,
+                completed=(
+                    active and index < len(progress) and bool(progress[index])
+                ),
+                active=active,
                 hovered=hovered,
                 bonus=all_complete,
                 phase=index,

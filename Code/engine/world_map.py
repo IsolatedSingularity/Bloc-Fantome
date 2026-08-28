@@ -19,7 +19,7 @@ from domain.blocks import (
     SlabPosition,
     StairShape,
 )
-from runtime_paths import BUNDLED_DATA_DIR
+from runtime_paths import BUNDLED_DATA_DIR, WORLDS_DIR
 
 
 DIMENSION_ORDER = ("overworld", "nether", "end", "ocean")
@@ -37,6 +37,7 @@ class MapScene:
     framing_bounds: tuple[tuple[int, int, int], tuple[int, int, int]]
     source_templates: tuple[str, ...]
     ambient_routes: tuple[tuple[tuple[float, float, float], ...], ...] = ()
+    landmarks: tuple[tuple[str, tuple[float, float, float]], ...] = ()
 
     @property
     def runtime_dimension(self) -> str:
@@ -72,6 +73,36 @@ def source_template_metadata(name: str) -> Mapping[str, object]:
     if not isinstance(template, dict):
         raise KeyError(name)
     return template
+
+
+@lru_cache(maxsize=1)
+def _end_city_showcase_records() -> tuple[tuple[int, int, int, str, Mapping[str, str]], ...]:
+    """Load the already-bundled full End City structure without its terrain."""
+    path = os.path.join(WORLDS_DIR, "end_city_1161.json.gz")
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    structure = [
+        record for record in payload.get("blocks", ())
+        if record.get("role") == "structure"
+    ]
+    if not structure:
+        raise ValueError("Bundled End City world contains no structure records")
+    min_x = min(int(record["x"]) for record in structure)
+    min_y = min(int(record["y"]) for record in structure)
+    min_z = min(int(record["z"]) for record in structure)
+    return tuple(
+        (
+            int(record["x"]) - min_x,
+            int(record["y"]) - min_y,
+            int(record["z"]) - min_z,
+            str(record["type"]),
+            {
+                str(key): str(value)
+                for key, value in (record.get("state") or {}).items()
+            },
+        )
+        for record in structure
+    )
 
 
 def _put(world, x: int, y: int, z: int, block: BlockType, **state) -> None:
@@ -150,6 +181,26 @@ def _place_template(
         position = (ox + rx, oy + ry, oz + z)
         world.setBlock(*position, block)
         properties = _state_properties(world, block, state, rotation)
+        if properties is not None:
+            world.setBlockProperties(*position, properties)
+        placed.append((position, block))
+    world.sceneStructurePositions.update(position for position, _block in placed)
+    return placed
+
+
+def _place_records(
+    world,
+    records: Sequence[tuple[int, int, int, str, Mapping[str, str]]],
+    origin: tuple[int, int, int],
+) -> list[tuple[tuple[int, int, int], BlockType]]:
+    """Place normalized serialized records while retaining their authored state."""
+    ox, oy, oz = origin
+    placed = []
+    for x, y, z, block_name, state in records:
+        block = BlockType[block_name]
+        position = (ox + x, oy + y, oz + z)
+        world.setBlock(*position, block)
+        properties = _state_properties(world, block, state, 0)
         if properties is not None:
             world.setBlockProperties(*position, properties)
         placed.append((position, block))
@@ -690,41 +741,60 @@ def _nether_hub(world) -> MapScene:
 
 
 def _end_hub(world) -> MapScene:
-    # The rotated 29-block ship and its 24-block height need this full volume;
-    # the old 56x56x32 canvas clipped seven columns and its upper deck.
-    world.resize(64, 60, 40, min_y=0, preserve=False)
+    # Reuse the complete source-backed Worlds assembly instead of presenting a
+    # single tower as an End City. The extra headroom retains its vertical
+    # sprawl and the complete ship at native block scale.
+    world.resize(94, 82, 84, min_y=-16, preserve=False)
     world.setDimension("end")
-    islands = ((14, 17, 10, 3), (41, 16, 9, 5), (34, 43, 11, 2), (10, 47, 6, 6))
+    city_origin = (8, 28, 5)
+    city_records = _end_city_showcase_records()
+    city_columns = {(city_origin[0] + x, city_origin[1] + y) for x, y, _z, _block, _state in city_records}
+    city_island = set()
+    for x, y in city_columns:
+        for dx in range(-7, 8):
+            for dy in range(-7, 8):
+                if dx * dx + dy * dy <= 49:
+                    px, py = x + dx, y + dy
+                    if 1 <= px < world.width - 1 and 1 <= py < world.depth - 1:
+                        city_island.add((px, py))
     with world.bulkUpdate():
-        for cx, cy, radius, base in islands:
-            for x in range(max(0, cx - radius), min(64, cx + radius + 1)):
-                for y in range(max(0, cy - radius), min(60, cy + radius + 1)):
+        for x, y in city_island:
+            top = 4 if (x, y) in city_columns else 3 + ((x * 7 + y * 11) % 3)
+            edge = not all(
+                (x + dx, y + dy) in city_island
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+            )
+            thickness = 4 if edge else 8 + ((x * 13 + y * 5) % 5)
+            for z in range(top - thickness, top + 1):
+                _put(world, x, y, z, BlockType.END_STONE)
+
+        for cx, cy, radius, base in ((76, 55, 9, 3), (16, 12, 7, 5)):
+            for x in range(cx - radius, cx + radius + 1):
+                for y in range(cy - radius, cy + radius + 1):
                     distance = math.hypot(x - cx, y - cy)
-                    if distance <= radius:
-                        thickness = max(1, int((radius - distance) / 2))
-                        for z in range(max(0, base - thickness), base + 1):
+                    if distance <= radius + 0.35 * math.sin(x * 0.8 + y * 0.4):
+                        thickness = max(2, round((radius - distance) * 0.55) + 2)
+                        for z in range(base - thickness, base + 1):
                             _put(world, x, y, z, BlockType.END_STONE)
-        _place_template(world, "end_base", (29, 38, 3))
-        _place_template(world, "end_tower_base", (31, 40, 7))
-        _place_template(world, "end_tower_piece", (31, 40, 14))
-        _place_template(world, "end_tower_top", (30, 39, 18))
-        _place_template(world, "end_bridge", (11, 15, 5), rotation=1)
-        _place_template(world, "end_ship", (34, 7, 11), rotation=1)
+
+        _place_records(world, city_records, city_origin)
+        _place_template(world, "end_ship", (57, 6, 18), rotation=1)
 
     return MapScene(
         "end",
         "The Broken Atlas",
-        "Canonical End City pieces mark the surviving island routes.",
-        ((34, 43, 23), (15, 18, 10)),
-        ((41, 16, 14), (10, 47, 13)),
-        ("End Tower", "City Bridge", "Outer Isle", "Void Route"),
-        ((5, 5, 0), (63, 56, 35)),
-        ("end_base", "end_tower_base", "end_tower_piece", "end_tower_top", "end_bridge", "end_ship"),
+        "A complete End City climbs above the islands while its ship waits offshore.",
+        ((15, 62, 52), (72, 12, 44)),
+        ((76, 55, 14), (16, 12, 15)),
+        ("End City", "End Ship", "Outer Isle", "Void Route"),
+        ((2, 2, -10), (92, 78, 56)),
+        ("end_city_1161_world", "end_ship"),
         (
-            ((9, 17, 9), (19, 19, 11), (33, 39, 15)),
-            ((39, 14, 14), (32, 26, 11), (32, 43, 14)),
-            ((10, 47, 12), (20, 37, 9), (34, 43, 15)),
+            ((9, 34, 12), (27, 44, 16), (49, 58, 20)),
+            ((61, 12, 31), (72, 12, 34), (83, 12, 29)),
+            ((18, 69, 18), (38, 64, 24), (58, 49, 16)),
         ),
+        (("dragon_head", (85, 12, 26)),),
     )
 
 
@@ -742,33 +812,48 @@ def _ocean_hub(world) -> MapScene:
                 if edge > 1.0:
                     continue
                 footprint.add((x, y))
-                trench = 4.5 * math.exp(-((x - 49 - 0.18 * (y - 48)) ** 2) / 52.0)
-                floor = round(
-                    1.8 * math.sin(x * 0.13)
-                    + 1.4 * math.cos(y * 0.16)
-                    + 0.8 * math.sin((x + y) * 0.09)
-                    - trench
+                trench = 5.5 * math.exp(-((x - 49 - 0.18 * (y - 48)) ** 2) / 58.0)
+                shelf = 2.4 * math.exp(
+                    -(((x - 23) / 18.0) ** 2 + ((y - 70) / 13.0) ** 2)
                 )
-                floor = max(-7, min(5, floor))
+                ridge = 1.7 * math.sin(x * 0.075 + y * 0.11)
+                detail = 0.65 * math.sin(x * 0.39 - y * 0.27)
+                floor = round(
+                    1.9 * math.sin(x * 0.12)
+                    + 1.45 * math.cos(y * 0.155)
+                    + ridge + detail + shelf - trench
+                )
+                floor = max(-9, min(7, floor))
+                sediment = math.sin(x * 0.23 + y * 0.31) + math.cos(x * 0.17 - y * 0.21)
                 material = (
-                    BlockType.GRAVEL if (x * 3 + y * 5) % 13 < 4 else BlockType.SAND
+                    BlockType.CLAY if sediment < -1.0
+                    else BlockType.GRAVEL if sediment > 0.75
+                    else BlockType.SAND
                 )
                 thickness = 2 + round(max(0.0, 1.0 - edge) * 5)
                 lower = floor - thickness
                 for z in range(lower, floor):
                     _put(world, x, y, z, BlockType.STONE if z < floor - 2 else material)
                 _put(world, x, y, floor, material)
+                if (
+                    edge < 0.78
+                    and (x * 17 + y * 29) % 97 == 0
+                    and not (17 <= x <= 78 and 17 <= y <= 78)
+                ):
+                    _put(world, x, y, floor + 1, BlockType.STONE)
+                    if (x + y) % 3 == 0:
+                        _put(world, x, y, floor + 2, BlockType.GRAVEL)
         # Full 58x58 Java 1.16.1 monument footprint at native block scale.
         _ocean_monument(world, (19, 19, -1))
 
         # Vanilla ruin clusters combine one large template with satellite
         # pieces. Keep every member at native block scale and bury its base by
         # one block so it belongs to the seabed rather than sitting on it.
-        _place_template(world, "ocean_ruin_warm", (8, 65, 0), rotation=1)
-        _place_template(world, "ocean_ruin_warm_small", (24, 74, -1), rotation=2)
-        _place_template(world, "ocean_ruin_cold", (69, 8, 0), rotation=3)
-        _place_template(world, "ocean_ruin_cold_small", (78, 25, -1), rotation=1)
-        _place_template(world, "ocean_shipwreck", (61, 66, 0), rotation=3)
+        _place_template(world, "ocean_ruin_warm", (8, 65, 2), rotation=1)
+        _place_template(world, "ocean_ruin_warm_small", (24, 74, 1), rotation=2)
+        _place_template(world, "ocean_ruin_cold", (69, 8, 2), rotation=3)
+        _place_template(world, "ocean_ruin_cold_small", (78, 25, 1), rotation=1)
+        _place_template(world, "ocean_shipwreck", (67, 66, 0), rotation=3)
 
         for x, y in ((12, 18), (24, 51), (82, 44), (47, 83), (73, 31)):
             top = world.heightIndex.get((x, y), 0)
@@ -781,8 +866,8 @@ def _ocean_hub(world) -> MapScene:
         "The Drowned Survey",
         "A monument, two ruin fields, and an intact wreck rest below the current.",
         (),
-        ((47, 42, 23), (16, 73, 13), (76, 71, 17), (78, 18, 13)),
-        ("Monument", "Warm Ruins", "Shipwreck", "Cold Ruins"),
+        ((16, 73, 11), (93, 70, 11)),
+        ("Ocean Ruins", "Sunken Ship"),
         ((3, 3, -9), (92, 92, 25)),
         (
             "ocean_monument_generator", "ocean_ruin_warm",

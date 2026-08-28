@@ -57,6 +57,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Executable crash on startup (pygame event handling)
 - Conda auto-activation terminal error
 
+## [2.6.5] - 2026-08-27
+
+### Added
+- Added dense, drifting Overworld selector fog rendered strictly behind the map.
+- Added two visible, non-clickable Deep Ocean route placeholders and restored the End ship dragon head as a source-textured landmark.
+
+### Changed
+- Replaced the small End tower vignette with the full source-backed End City assembly and moved the second End mission marker onto the ship.
+- Gave Nether, End, and Deep Ocean closer authored cameras while locking every selector hub to its fixed perspective.
+- Enlarged mission question marks by 25 percent, tinted navigation controls per map, made travelers reverse continuously, and expanded the seabed with deterministic ridges, trenches, sediment, and outcrops.
+- Raised both ruin clusters and shifted the sunken ship six blocks away from the Ocean Monument.
+
+### Fixed
+- Kept the normal editor's World Map button centered across native fullscreen and responsive window sizes.
+- Removed the popping rollover cue, leaving one consistent WorldBuilder toot per marker entry.
+- Removed the obsolete Miette Start Menu shortcut during installation upgrades.
+
 ## [2.6.4] - 2026-08-27
 
 ### Added

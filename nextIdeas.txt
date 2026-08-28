@@ -7,6 +7,7 @@ Next
 - Individual block refines (maybe functionality too)
 - Biome selection and generation for all dimensions (with previews in right submenu)
 - Add other structures: fortress, stronghold, aquopolis, pyramid, etc.
+- Replace World Map traveler sprites with small true-3D entity models once the renderer has reusable entity geometry and atlas ownership.
 
 
 - file structure and documenting optimization

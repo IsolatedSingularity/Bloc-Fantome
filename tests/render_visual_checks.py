@@ -396,6 +396,12 @@ def render(output_dir: Path) -> None:
     app._applyWindowSize(1920, 1080)
     screen = app.screen
     app._openWorldMap()
+    for dimension in app_module.WORLD_MAP_DIMENSIONS:
+        app._switchWorldMapHub(dimension)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        app._render()
+        save_capture(screen, output_dir / f"world_map_{dimension}_1080p.png")
     app._switchWorldMapHub(app_module.DIMENSION_OVERWORLD)
     app._startWorldMapLevel(0)
     app.renderer.offsetX = app.targetOffsetX

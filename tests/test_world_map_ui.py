@@ -1,9 +1,10 @@
+import math
 import os
 
 import pygame
 
 from runtime_paths import WORLD_MAP_DIR
-from ui.world_map import QUESTION_REGISTRATION, WorldMapView
+from ui.world_map import MISSION_MARKER_SCALE, QUESTION_REGISTRATION, WorldMapView
 
 
 def setup_module():
@@ -87,15 +88,22 @@ def test_question_marker_uses_director_registration_idle_orbit_and_hover_clock(m
     normal = view._draw_marker(
         screen, (100, 100), completed=False, active=True, phase=0
     )
-    assert normal == pygame.Rect(84, 88, 20, 37)
+    assert normal == pygame.Rect(80, 85, 25, 46)
 
     screen.fill((0, 0, 0, 0))
     monkeypatch.setattr(pygame.time, "get_ticks", lambda: 200)
     blink = view._draw_marker(
         screen, (100, 100), completed=False, active=True, hovered=True, phase=0
     )
-    assert blink == pygame.Rect(70, 74, 48, 51)
+    assert blink == pygame.Rect(62, 67, 60, 64)
     assert blink.width > normal.width
+
+
+def test_displayed_question_marker_is_25_percent_larger_without_changing_source_cast():
+    view = _view()
+    assert MISSION_MARKER_SCALE == 1.25
+    assert view._surfaces["question_mark"].get_size() == (20, 27)
+    assert view._question(MISSION_MARKER_SCALE).get_size() == (25, 34)
 
 
 def test_dimension_tabs_are_real_hit_targets():
@@ -129,7 +137,22 @@ def test_hover_sound_fires_once_per_entry_across_larger_hit_target():
     view.handle_event(pygame.event.Event(pygame.MOUSEMOTION, pos=(120, 120)))
     view.handle_event(pygame.event.Event(pygame.MOUSEMOTION, pos=(10, 10)))
     view.handle_event(pygame.event.Event(pygame.MOUSEMOTION, pos=(130, 130)))
-    assert played == ["hover_1", "hover_2"]
+    assert played == ["hover_1", "hover_1"]
+
+
+def test_ocean_placeholders_hover_but_do_not_open_empty_levels():
+    view = _view()
+    view.dimension = "ocean"
+    view.node_hit_rects = [pygame.Rect(100, 100, 60, 60)]
+    played = []
+    view.play = played.append
+    view.handle_event(pygame.event.Event(pygame.MOUSEMOTION, pos=(110, 110)))
+    action = view.handle_event(
+        pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(110, 110))
+    )
+    assert played == ["hover_1"]
+    assert action is None
+    assert view._mission_copy("ocean", 0) == ("COMING SOON", "ANCIENT RUINS")
 
 
 def test_hover_copy_uses_worldbuilder_mission_language():
@@ -158,3 +181,11 @@ def test_each_map_uses_the_approved_texture_derived_traveler_pair():
                 if sprite.get_at((x, y)).a
             }
             assert len(colors) >= 3
+
+
+def test_open_traveler_routes_reverse_continuously_instead_of_teleporting():
+    route = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (2.0, 1.0, 0.0))
+    period = 4.0 / 0.18
+    before, _ = WorldMapView._traveler_state(route, 0, period - 0.001)
+    after, _ = WorldMapView._traveler_state(route, 0, period + 0.001)
+    assert math.dist(before, after) < 0.001

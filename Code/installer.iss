@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.6.4"
+#define MyAppVersion "2.6.5"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -76,6 +76,7 @@ Source: "..\Assets\Icons\*"; DestDir: "{app}\Assets\Icons"; Flags: ignoreversion
 Source: "..\Assets\Fonts\*"; DestDir: "{app}\Assets\Fonts"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Skyboxes\*"; DestDir: "{app}\Assets\Skyboxes"; Excludes: "Black Mesa\assets\minecraft\optifine\sky\panoramas\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\World Map\*"; DestDir: "{app}\Assets\World Map"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Assets\Extensive Library\textures\entity\enderdragon\dragon.png"; DestDir: "{app}\Assets\World Map\WorldBuilder\ui"; DestName: "enderdragon.png"; Flags: ignoreversion
 Source: "..\References\Titles\horror.png"; DestDir: "{app}\References\Titles"; Flags: ignoreversion
 
 ; Optional: Extensive Library (comment out if not needed - saves space)
@@ -94,6 +95,8 @@ Name: "{app}\screenshots"
 ; Force upgrades to replace shortcuts created by older sandboxed installers.
 Type: files; Name: "{group}\{#MyAppName}.lnk"
 Type: files; Name: "{group}\{cm:UninstallProgram,{#MyAppName}}.lnk"
+; Remove the obsolete standalone development shortcut from older local builds.
+Type: files; Name: "{userprograms}\Miette.lnk"
 ; 2.6.2 renders the source cube atlases directly; remove obsolete generated strips.
 Type: filesandordirs; Name: "{app}\Assets\Skyboxes\Black Mesa\assets\minecraft\optifine\sky\panoramas"
 
