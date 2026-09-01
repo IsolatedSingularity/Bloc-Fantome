@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.6.5"
+#define MyAppVersion "2.7.1"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -95,14 +95,18 @@ Name: "{app}\screenshots"
 ; Force upgrades to replace shortcuts created by older sandboxed installers.
 Type: files; Name: "{group}\{#MyAppName}.lnk"
 Type: files; Name: "{group}\{cm:UninstallProgram,{#MyAppName}}.lnk"
-; Remove the obsolete standalone development shortcut from older local builds.
+; Remove obsolete root-level shortcuts from older local/elevated builds. The
+; only Bloc Fantôme entries that should remain are inside the named group.
 Type: files; Name: "{userprograms}\Miette.lnk"
+Type: files; Name: "{commonprograms}\Miette.lnk"
+Type: files; Name: "{userprograms}\{#MyAppName}.lnk"
+Type: files; Name: "{commonprograms}\{#MyAppName}.lnk"
 ; 2.6.2 renders the source cube atlases directly; remove obsolete generated strips.
 Type: filesandordirs; Name: "{app}\Assets\Skyboxes\Black Mesa\assets\minecraft\optifine\sky\panoramas"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\Icons\Respawn_Anchor.ico"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\Icons\Respawn_Anchor.ico"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\Icons\Respawn_Anchor.ico"; Tasks: desktopicon
 
 [Registry]

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "dimension": "overworld",
+  "scene": {
+    "kind": "redstone_reference",
+    "source": "05_NORMALIZED/introspected_baked-fa39c585fb71.blocks.jsonl",
+    "minecraft_data_version": 1343,
+    "validation": "verified upstream simulation; copied cell-for-cell"
+  },
+  "blocks": [
+    {"x":0,"y":0,"z":0,"type":"STONE"},
+    {"x":1,"y":0,"z":0,"type":"STONE"},
+    {"x":2,"y":0,"z":0,"type":"STONE"},
+    {"x":3,"y":0,"z":0,"type":"STONE"},
+    {"x":4,"y":0,"z":0,"type":"STONE"},
+    {"x":5,"y":0,"z":0,"type":"STONE"},
+    {"x":6,"y":0,"z":0,"type":"STONE"},
+    {"x":7,"y":0,"z":0,"type":"STONE"},
+    {"x":0,"y":0,"z":1,"type":"LEVER","state":{"face":"floor","facing":"north","powered":"true"}},
+    {"x":1,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"15"}},
+    {"x":2,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"14"}},
+    {"x":3,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"13"}},
+    {"x":4,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"12"}},
+    {"x":5,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"11"}},
+    {"x":6,"y":0,"z":1,"type":"REDSTONE_DUST","state":{"power":"10"}},
+    {"x":7,"y":0,"z":1,"type":"REDSTONE_LAMP","state":{"lit":"true"}}
+  ]
+}

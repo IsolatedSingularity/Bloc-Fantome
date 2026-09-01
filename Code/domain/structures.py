@@ -19,6 +19,8 @@ from domain.dimensions import DIMENSION_OVERWORLD
 
 
 JSON_STRUCTURE_LIBRARY = {
+    "redstone_signal_line": "Verified Signal Line",
+    "redstone_ring_riser": "Verified Ring Riser",
     "bastion_bridge_edge": "Housing Units Bastion Piece",
     "bastion_remnant_no_lava": "Hoglin Stable Bastion Piece",
     "bastion_remnant_with_lava": "Treasure Bastion Lava Basin",
@@ -42,6 +44,7 @@ def properties_from_structure_state(
         or definition.isStair
         or definition.isSlab
         or definition.modelKind
+        or block_type == BlockType.REDSTONE_LAMP
     ):
         return None
     properties = BlockProperties()
@@ -69,13 +72,17 @@ def properties_from_structure_state(
         str(state_data.get("doorHinge", state_data.get("hinge", "left"))).upper(),
         DoorHinge.LEFT,
     )
-    powered_value = state_data.get("powered", False)
+    powered_value = state_data.get("powered", state_data.get("lit", False))
     properties.powered = powered_value is True or str(powered_value).casefold() == "true"
-    properties.redstonePower = max(0, min(15, int(state_data.get("redstonePower", 0))))
-    properties.repeaterDelay = max(1, min(4, int(state_data.get("repeaterDelay", 1))))
-    locked_value = state_data.get("repeaterLocked", False)
+    properties.redstonePower = max(0, min(15, int(
+        state_data.get("redstonePower", state_data.get("power", 0))
+    )))
+    properties.repeaterDelay = max(1, min(4, int(
+        state_data.get("repeaterDelay", state_data.get("delay", 1))
+    )))
+    locked_value = state_data.get("repeaterLocked", state_data.get("locked", False))
     properties.repeaterLocked = locked_value is True or str(locked_value).casefold() == "true"
-    extended_value = state_data.get("pistonExtended", False)
+    extended_value = state_data.get("pistonExtended", state_data.get("extended", False))
     properties.pistonExtended = extended_value is True or str(extended_value).casefold() == "true"
     sticky_value = state_data.get("sticky", False)
     properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
@@ -136,6 +143,7 @@ def load_json_structures(
                 ],
                 "dimension": save_data.get("dimension", DIMENSION_OVERWORLD),
                 "source_file": str(filepath),
+                "source_metadata": dict(save_data.get("scene", {})),
             }
         except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
             print(f"Could not load built-in structure '{structure_key}': {error}")

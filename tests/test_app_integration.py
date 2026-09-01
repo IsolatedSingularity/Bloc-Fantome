@@ -834,8 +834,11 @@ class AppIntegrationTests(unittest.TestCase):
         )
         eastHead = renderer.detail_boxes("piston_head", app_module.Facing.EAST)
         northHead = renderer.detail_boxes("piston_head", app_module.Facing.NORTH)
-        self.assertEqual(eastHead[1], (0, 6, 6, 12, 10, 10))
-        self.assertEqual(northHead[1], (6, 4, 6, 10, 16, 10))
+        # The vanilla piston-head rod overlaps the adjacent cell by four
+        # model pixels; keep the source-shaped extents in the renderer
+        # contract rather than clipping it to the local block.
+        self.assertEqual(eastHead[1], (-4, 6, 6, 12, 10, 10))
+        self.assertEqual(northHead[1], (6, 4, 6, 10, 20, 10))
         for block in (
             app_module.BlockType.LADDER,
             app_module.BlockType.CHAIN,
@@ -2041,86 +2044,80 @@ class AppIntegrationTests(unittest.TestCase):
             }
             self.assertGreater(len(colors), 8)
 
-    def test_both_piston_doors_are_natural_and_survive_repeated_cycles(self):
-        self.assertEqual(next(iter(app_module.PREMADE_STRUCTURES)), "piston_door")
-        for key, expected_name in (
-            ("piston_door", "2x2 Exposed Piston Door"),
-            ("flush_piston_door", "2x2 Flush Piston Door"),
+    def test_redstone_lab_switch_has_the_flat_inventory_item_sprite(self):
+        item = self.app.assetManager.getItemSprite("redstone.png")
+        self.assertIsNotNone(item)
+        self.assertEqual(item.get_size(), (16, 16))
+        with patch.object(
+            self.app.assetManager, "getPanelPreviewIcon",
+            side_effect=AssertionError("Lab switch should prefer item art"),
         ):
+            old_screen = self.app.screen
+            try:
+                self.app.screen = pygame.Surface((app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT))
+                self.app._renderRedstoneLabButton(pygame.Rect(1140, 700, 40, 40))
+            finally:
+                self.app.screen = old_screen
+
+    def test_structures_use_verified_reference_circuits_not_invented_doors(self):
+        self.assertNotIn("piston_door", app_module.PREMADE_STRUCTURES)
+        self.assertNotIn("flush_piston_door", app_module.PREMADE_STRUCTURES)
+        expected = {
+            "redstone_signal_line": ("Verified Signal Line", 16),
+            "redstone_ring_riser": ("Verified Ring Riser", 40),
+        }
+        for key, (name, count) in expected.items():
             structure = app_module.PREMADE_STRUCTURES[key]
-            self.assertEqual(structure["name"], expected_name)
-            self.assertEqual(sum(
-                1 for block in structure["blocks"]
-                if block[3] == app_module.BlockType.STICKY_PISTON
-            ), 4)
-            self.assertFalse(any(
-                block[3] == app_module.BlockType.PISTON_HEAD
-                for block in structure["blocks"]
-            ))
+            self.assertEqual(structure["name"], name)
+            self.assertEqual(len(structure["blocks"]), count)
+            self.assertTrue(structure["source_file"].endswith(f"{key}.json"))
 
-            self.app.world.resize(12, 12, 12, min_y=0, preserve=False)
-            self.app.redstone.active_motions.clear()
-            with self.app.world.bulkUpdate():
-                for block in structure["blocks"]:
-                    x, y, z, block_type, props = app_module._structureBlockParts(block)
-                    self.app.world.setBlock(x, y, z, block_type)
-                    if props is not None:
-                        self.app.world.setBlockProperties(x, y, z, props.copy())
-            self.app.redstone.mark_dirty()
-            self.app.redstone.update(50)
-
-            for _cycle in range(3):
-                # Lever starts off: the two halves are parked beside the opening.
-                self.assertTrue(all(
-                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.AIR
-                    for x in (5, 6) for z in (1, 2)
-                ))
-                self.assertTrue(self.app._interactBlock(0, 2, 1))
-                self.app.redstone.update(50)
-                self.assertTrue(all(
-                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.STONE_BRICKS
-                    for x in (5, 6) for z in (1, 2)
-                ))
-                self.assertTrue(self.app._interactBlock(0, 2, 1))
-                self.app.redstone.update(50)
-                self.assertTrue(all(
-                    self.app.world.getBlock(x, 3, z) == app_module.BlockType.STONE_BRICKS
-                    for x in (4, 7) for z in (1, 2)
-                ))
-
-    def test_redstone_lab_is_interact_only_and_restores_the_live_build(self):
+    def test_redstone_lab_is_editable_and_restores_the_live_build(self):
         marker = (2, 2, 2)
         self.app.world.setBlock(*marker, app_module.BlockType.DIAMOND_BLOCK)
         self.app.showGrid = False
         original_bounds = (
             self.app.world.width, self.app.world.depth, self.app.world.height
         )
+        original_camera = (
+            self.app.renderer.offsetX, self.app.renderer.offsetY,
+            self.app.renderer.viewRotation,
+            self.app.targetOffsetX, self.app.targetOffsetY,
+        )
 
         self.app._toggleRedstoneLab()
         self.assertTrue(self.app.redstoneLabActive)
-        self.assertTrue(self.app.interactionMode)
-        self.assertTrue(self.app.showGrid)
-        self.assertEqual((self.app.world.width, self.app.world.depth), (32, 32))
+        self.assertFalse(self.app.interactionMode)
+        self.assertFalse(self.app.showGrid)
+        self.assertEqual((self.app.world.width, self.app.world.depth, self.app.world.height), (24, 20, 12))
         self.assertEqual(self.app.sceneMetadata["mode"], "redstone_lab")
         self.assertIn(app_module.BlockType.STONE_BUTTON, self.app.hotbar)
+        self.assertIn(app_module.BlockType.SLIME_BLOCK, self.app.hotbar)
+        self.assertIn(app_module.BlockType.HONEY_BLOCK, self.app.hotbar)
         self.assertEqual(
-            self.app.world.getBlock(3, 14, 1), app_module.BlockType.STONE_BUTTON
+            self.app.world.getBlock(9, 10, 2), app_module.BlockType.LEVER
         )
-        self.assertTrue(self.app._interactBlock(14, 9, 1))
-        self.app.redstone.update(50)
-        self.assertTrue(all(
-            self.app.world.getBlock(x, 10, z) == app_module.BlockType.STONE_BRICKS
-            for x in (19, 20) for z in (1, 2)
-        ))
+        self.assertTrue(self.app._loadRedstoneLabCircuit("redstone_ring_riser"))
+        self.assertEqual(self.app.redstoneLabCircuitKey, "redstone_ring_riser")
+        self.assertEqual(self.app.world.getBlock(11, 8, 10), app_module.BlockType.LEVER)
 
-        # Moving the pointer in hand mode must never read the click-only
-        # ``button`` field from a MOUSEMOTION event.
+        # Test mode remains use-only and mouse motion must never read
+        # the click-only ``button`` field from a MOUSEMOTION event.
+        self.app._setInteractionMode(True)
         self.app._handleMouseMotion(SimpleNamespace(pos=(300, 300)))
-        lever = (3, 9, 1)
+        lever = (11, 8, 10)
         before = self.app.world.getBlockProperties(*lever).powered
         self.app.hoveredSourceBlock = lever
-        self.app._handleMouseDown(SimpleNamespace(button=1, pos=(300, 300)))
+        self.app._handleMouseDown(SimpleNamespace(button=3, pos=(300, 300)))
         self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered, before)
+
+        # Returning to build mode makes the component palette genuinely useful.
+        self.app._setInteractionMode(False)
+        self.app.selectedBlock = app_module.BlockType.REDSTONE_DUST
+        target = (8, 8, 1)
+        self.app.hoveredCell = target
+        self.app._placeBlockAtMouse(0, 0)
+        self.assertEqual(self.app.world.getBlock(*target), app_module.BlockType.REDSTONE_DUST)
 
         self.app._toggleRedstoneLab()
         self.assertFalse(self.app.redstoneLabActive)
@@ -2131,6 +2128,369 @@ class AppIntegrationTests(unittest.TestCase):
             original_bounds,
         )
         self.assertEqual(self.app.world.getBlock(*marker), app_module.BlockType.DIAMOND_BLOCK)
+        self.assertEqual(
+            (
+                self.app.renderer.offsetX, self.app.renderer.offsetY,
+                self.app.renderer.viewRotation,
+                self.app.targetOffsetX, self.app.targetOffsetY,
+            ),
+            original_camera,
+        )
+
+    def test_redstone_lab_panel_fits_the_minimum_window_without_footer_overlap(self):
+        old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
+        old_screen = self.app.screen
+        try:
+            app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT = 960, 640
+            self.app.screen = pygame.Surface((960, 640))
+            self.app.redstoneLabActive = True
+            self.app._renderRedstoneLabPanel()
+
+            component_bottom = max(
+                rect.bottom for rect in self.app.redstoneLabComponentRects.values()
+            )
+            self.assertLess(component_bottom, self.app.redstoneLabRulesRect.top)
+            self.assertLessEqual(
+                self.app.redstoneLabRulesRect.bottom,
+                app_module.WINDOW_HEIGHT - 66,
+            )
+            self.assertLess(self.app.redstoneLabRulesRect.bottom, self.app.redstoneLabButtonRect.top)
+        finally:
+            self.app.redstoneLabActive = False
+            self.app.screen = old_screen
+            app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT = old_size
+
+    def test_mouse_redstone_edits_recalculate_network_without_navigation(self):
+        """Ordinary editor placement/removal must invalidate redstone immediately."""
+        self.app.world.resize(8, 8, 4, min_y=0, preserve=False)
+        self.app.world.setBlock(2, 2, 0, app_module.BlockType.STONE)
+        self.app.world.setBlock(3, 2, 0, app_module.BlockType.STONE)
+        self.app.world.setBlock(3, 2, 1, app_module.BlockType.REDSTONE_DUST)
+        self.app.redstone.mark_dirty()
+        self.app.redstone.update(0)
+        self.assertEqual(
+            self.app.world.getBlockProperties(3, 2, 1).redstonePower, 0
+        )
+
+        self.app.selectedBlock = app_module.BlockType.REDSTONE_BLOCK
+        self.app.hoveredCell = (2, 2, 1)
+        self.app.hoveredFace = "top"
+        self.app._placeBlockAtMouse(0, 0)
+        self.app.redstone.update(0)
+        self.assertEqual(
+            self.app.world.getBlockProperties(3, 2, 1).redstonePower, 15
+        )
+
+        self.app.hoveredSourceBlock = (2, 2, 1)
+        self.app._removeBlockAtMouse(0, 0)
+        self.app.redstone.update(0)
+        self.assertEqual(
+            self.app.world.getBlockProperties(3, 2, 1).redstonePower, 0
+        )
+
+    def test_redstone_dust_mask_rotates_into_camera_space(self):
+        rotate = self.app._rotateRedstoneConnectionMask
+        self.assertEqual(rotate(0b0001, 0), 0b0001)
+        self.assertEqual(rotate(0b0001, 1), 0b1000)
+        self.assertEqual(rotate(0b0101, 2), 0b0101)
+        self.assertEqual(rotate(0b0011, 3), 0b0110)
+
+    def test_redstone_lab_world_map_round_trip_does_not_leak_lab_hotbar_or_grid(self):
+        original_hotbar = list(self.app.hotbar)
+        original_size = (
+            self.app.world.width, self.app.world.depth, self.app.world.height
+        )
+        self.app.showGrid = False
+        self.app._toggleRedstoneLab()
+        self.assertFalse(self.app.showGrid)
+        self.assertTrue(self.app.redstoneLabActive)
+        self.app._openWorldMap()
+        self.assertFalse(self.app.redstoneLabActive)
+        self.assertTrue(self.app.worldMapActive)
+        self.assertFalse(self.app.showGrid)
+        # Opening the map from the Lab first restores the live build; the
+        # temporary redstone palette must never leak into the map surface.
+        self.assertEqual(list(self.app.hotbar), original_hotbar)
+        self.assertTrue(self.app._exitWorldMap())
+        self.assertFalse(self.app.worldMapActive)
+        self.assertFalse(self.app.redstoneLabActive)
+        self.assertFalse(self.app.showGrid)
+        self.assertEqual(list(self.app.hotbar), original_hotbar)
+        self.assertEqual(
+            (self.app.world.width, self.app.world.depth, self.app.world.height),
+            original_size,
+        )
+
+    def test_redstone_lab_click_without_motion_hits_the_rendered_control(self):
+        self.app._toggleRedstoneLab()
+        self.app._setInteractionMode(True)
+        lever = (9, 10, 2)
+        sx, sy = self.app.renderer.worldToScreen(*lever)
+        # The click handler resolves the rendered source block itself; no
+        # synthetic MOUSEMOTION or pre-seeded hoveredSourceBlock is required.
+        before = self.app.world.getBlockProperties(*lever).powered
+        self.app._handleMouseDown(SimpleNamespace(button=3, pos=(int(sx), int(sy + 4))))
+        self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered, before)
+        self.app._setInteractionMode(False)
+        self.app._toggleRedstoneLab()
+
+    def test_redstone_lab_test_cursor_ignores_unanchored_zero_pointer(self):
+        old_active = self.app.redstoneLabActive
+        old_mode = self.app.interactionMode
+        old_screen = self.app.screen
+        try:
+            self.app.redstoneLabActive = True
+            self.app.interactionMode = True
+            self.app.hoveredSourceBlock = None
+            self.app.screen = pygame.Surface((app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT))
+            self.app.screen.fill((7, 8, 9))
+            with patch.object(pygame.mouse, "get_pos", return_value=(0, 0)):
+                self.app._renderRedstoneLabCursor()
+            self.assertEqual(self.app.screen.get_at((0, 0))[:3], (7, 8, 9))
+            self.assertEqual(
+                self.app.screen.get_bounding_rect(min_alpha=1).size,
+                (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT),
+            )
+        finally:
+            self.app.redstoneLabActive = old_active
+            self.app.interactionMode = old_mode
+            self.app.screen = old_screen
+
+    def test_redstone_lab_uses_fixed_preview_facing_until_r_rotates_it(self):
+        self.app._toggleRedstoneLab()
+        self.app.selectedBlock = app_module.BlockType.PISTON
+        self.app.previewFacing = app_module.Facing.SOUTH
+        self.app.hoveredFace = "left"
+        first = (6, 6, 1)
+        self.app.hoveredCell = first
+        self.app._placeBlockAtMouse(0, 0)
+        self.assertEqual(
+            self.app.world.getBlockProperties(*first).facing,
+            app_module.Facing.SOUTH,
+        )
+
+        with patch("pygame.key.get_mods", return_value=0):
+            self.app._handleKeyDown(SimpleNamespace(key=pygame.K_r))
+        self.assertEqual(self.app.previewFacing, app_module.Facing.WEST)
+        second = (7, 6, 1)
+        self.app.hoveredCell = second
+        self.app._placeBlockAtMouse(0, 0)
+        self.assertEqual(
+            self.app.world.getBlockProperties(*second).facing,
+            app_module.Facing.WEST,
+        )
+        self.app._toggleRedstoneLab()
+
+    def test_redstone_particles_only_use_source_backed_powered_emitters(self):
+        self.app.world.resize(8, 8, 5, min_y=0, preserve=False)
+        powered = app_module.BlockProperties(powered=True, redstonePower=15)
+        self.app.world.setBlock(2, 2, 1, app_module.BlockType.REDSTONE_DUST)
+        self.app.world.setBlockProperties(2, 2, 1, powered.copy())
+        self.app.world.setBlock(3, 2, 1, app_module.BlockType.REPEATER)
+        repeater = powered.copy()
+        repeater.facing = app_module.Facing.EAST
+        repeater.repeaterDelay = 4
+        self.app.world.setBlockProperties(3, 2, 1, repeater)
+        self.app.world.setBlock(4, 2, 1, app_module.BlockType.STONE_BUTTON)
+        self.app.world.setBlockProperties(4, 2, 1, powered.copy())
+        self.app.world.setBlock(5, 2, 1, app_module.BlockType.LEVER)
+        self.app.world.setBlockProperties(5, 2, 1, powered.copy())
+        self.app.redstoneParticles.clear()
+        self.app.redstoneParticleTimer = 100
+        with patch.object(app_module.random, "random", return_value=0.0):
+            self.app._updateRedstoneParticles(0)
+        positions = {particle["position"] for particle in self.app.redstoneParticles}
+        self.assertIn((2, 2, 1), positions)
+        self.assertIn((3, 2, 1), positions)
+        self.assertIn((5, 2, 1), positions)
+        self.assertNotIn((4, 2, 1), positions)
+        self.assertTrue(all("oz" in particle for particle in self.app.redstoneParticles))
+
+    def test_redstone_particle_rates_match_source_component_rules(self):
+        self.app.world.resize(8, 8, 5, min_y=0, preserve=False)
+        lever = app_module.BlockProperties(powered=True, redstonePower=15)
+        self.app.world.setBlock(2, 2, 1, app_module.BlockType.LEVER)
+        self.app.world.setBlockProperties(2, 2, 1, lever)
+        self.app.redstoneParticles.clear()
+        self.app.redstoneParticleTimer = 100
+        with patch.object(app_module.random, "random", return_value=0.30):
+            self.app._updateRedstoneParticles(0)
+        self.assertFalse(self.app.redstoneParticles)
+
+        self.app.redstoneParticleTimer = 100
+        with patch.object(app_module.random, "random", return_value=0.20):
+            self.app._updateRedstoneParticles(0)
+        self.assertTrue(self.app.redstoneParticles)
+
+    def test_directional_redstone_models_use_source_positions_and_facing(self):
+        renderer = self.app.assetManager.blockModelRenderer
+        self.assertEqual(
+            renderer.detail_boxes("repeater", app_module.Facing.SOUTH, delay=1),
+            ((0, 0, 0, 16, 16, 2), (7, 6, 2, 9, 8, 7), (7, 2, 2, 9, 4, 7)),
+        )
+        delay_one = renderer.detail_boxes(
+            "repeater", app_module.Facing.SOUTH, delay=1
+        )[-1]
+        delay_four = renderer.detail_boxes(
+            "repeater", app_module.Facing.SOUTH, delay=4
+        )[-1]
+        self.assertEqual(delay_one[1], 2)
+        self.assertEqual(delay_four[1], 8)
+        self.assertNotEqual(
+            renderer.detail_boxes("repeater", app_module.Facing.EAST, delay=1),
+            renderer.detail_boxes("repeater", app_module.Facing.SOUTH, delay=1),
+        )
+        repeater = self.app.assetManager.getDetailSprite(
+            app_module.BlockType.REPEATER,
+            app_module.Facing.SOUTH,
+            False,
+            app_module.SlabPosition.BOTTOM,
+            powered=False,
+            delay=1,
+        )
+        powered = self.app.assetManager.getDetailSprite(
+            app_module.BlockType.REPEATER,
+            app_module.Facing.SOUTH,
+            False,
+            app_module.SlabPosition.BOTTOM,
+            powered=True,
+            delay=1,
+        )
+        self.assertNotEqual(
+            pygame.image.tostring(repeater, "RGBA"),
+            pygame.image.tostring(powered, "RGBA"),
+        )
+
+    def test_redstone_dust_up_connections_use_vanilla_vertical_sheets(self):
+        """Ascending wire arms must use redstone_dust_up's edge planes."""
+        renderer = self.app.assetManager.blockModelRenderer
+        texture = pygame.Surface((16, 16), pygame.SRCALPHA)
+        texture.fill((255, 0, 0, 255))
+        for bit, edge in enumerate(("north", "east", "south", "west")):
+            with patch.object(renderer, "_draw_face") as draw_face:
+                with patch.object(renderer, "_project", side_effect=lambda x, y, z: (x, y, z)):
+                    renderer.render_redstone_dust(texture, texture, 1 << bit)
+            # The first call is the full horizontal dust plane; the second is
+            # the source redstone_dust_up plane. It spans the full vertical
+            # extent while staying on one cell boundary.
+            points = draw_face.call_args_list[1].args[1]
+            xs = {point[0] for point in points}
+            ys = {point[1] for point in points}
+            zs = {point[2] for point in points}
+            self.assertEqual(zs, {0, 16}, edge)
+            if bit in (0, 2):
+                self.assertEqual(len(ys), 1, edge)
+                self.assertIn(next(iter(ys)), (0.25, 15.75), edge)
+                self.assertEqual(xs, {0, 16}, edge)
+            else:
+                self.assertEqual(len(xs), 1, edge)
+                self.assertIn(next(iter(xs)), (0.25, 15.75), edge)
+                self.assertEqual(ys, {0, 16}, edge)
+
+    def test_locked_repeater_keeps_the_output_torch_under_the_lock_bar(self):
+        """The locked 1.16.1 model hides the input torch, not the output."""
+        renderer = self.app.assetManager.blockModelRenderer
+        texture = pygame.Surface((16, 16), pygame.SRCALPHA)
+        texture.fill((255, 0, 0, 255))
+        with patch.object(
+            renderer, "render_boxes", return_value=pygame.Surface((64, 64), pygame.SRCALPHA)
+        ) as render_boxes:
+            renderer.render_repeater(
+                texture, texture, texture, app_module.Facing.SOUTH,
+                delay=1, powered=False, locked=True, lock_texture=texture,
+            )
+        torch_boxes = render_boxes.call_args_list[0].args[0]
+        self.assertEqual(torch_boxes, ((7, 2, 2, 9, 7, 7),))
+
+    def test_piston_models_use_bottom_texture_and_cache_stable_states(self):
+        manager = self.app.assetManager
+        textures = manager.specialBlockTextures[app_module.BlockType.PISTON]
+        self.assertIs(textures[2], manager.textures["piston_bottom.png"])
+        retracted = manager.getDetailSprite(
+            app_module.BlockType.PISTON, app_module.Facing.EAST, False,
+            app_module.SlabPosition.BOTTOM,
+        )
+        extended = manager.getDetailSprite(
+            app_module.BlockType.PISTON, app_module.Facing.EAST, True,
+            app_module.SlabPosition.BOTTOM,
+        )
+        self.assertIs(retracted, manager.getDetailSprite(
+            app_module.BlockType.PISTON, app_module.Facing.EAST, False,
+            app_module.SlabPosition.BOTTOM,
+        ))
+        self.assertNotEqual(
+            pygame.image.tostring(retracted, "RGBA"),
+            pygame.image.tostring(extended, "RGBA"),
+        )
+        self.assertNotEqual(
+            pygame.image.tostring(
+                manager.getDetailSprite(
+                    app_module.BlockType.PISTON_HEAD, app_module.Facing.EAST,
+                    False, app_module.SlabPosition.BOTTOM, sticky=False,
+                ),
+                "RGBA",
+            ),
+            pygame.image.tostring(
+                manager.getDetailSprite(
+                    app_module.BlockType.PISTON_HEAD, app_module.Facing.EAST,
+                    False, app_module.SlabPosition.BOTTOM, sticky=True,
+                ),
+                "RGBA",
+            ),
+        )
+
+    def test_piston_head_rods_extend_into_the_adjacent_cell_for_all_facings(self):
+        renderer = self.app.assetManager.blockModelRenderer
+        expected = {
+            app_module.Facing.NORTH: (4, 20),
+            app_module.Facing.SOUTH: (-4, 12),
+            app_module.Facing.EAST: (-4, 12),
+            app_module.Facing.WEST: (4, 20),
+        }
+        for facing, span in expected.items():
+            stem = renderer.detail_boxes("piston_head", facing)[1]
+            axis = (stem[1], stem[4]) if facing in (
+                app_module.Facing.NORTH, app_module.Facing.SOUTH
+            ) else (stem[0], stem[3])
+            self.assertEqual(axis, span)
+
+    def test_moving_directional_models_are_not_mirrored_after_camera_rotation(self):
+        """Animated piston cells keep their camera-oriented model raster."""
+        from engine.redstone import MovingCell, PistonMotion
+
+        self.app.world.setBlock(2, 2, 1, app_module.BlockType.PISTON)
+        self.app.renderer.setViewRotation(1)
+        self.app.lightingEnabled = False
+        self.app.redstone.active_motions[:] = [PistonMotion(
+            piston=(2, 2, 1),
+            extending=True,
+            cells=(MovingCell(
+                app_module.BlockType.PISTON_HEAD,
+                app_module.BlockProperties(
+                    facing=app_module.Facing.EAST,
+                    pistonExtended=True,
+                ),
+                source=(3, 2, 1),
+                target=(4, 2, 1),
+            ),),
+            final_targets=frozenset({(4, 2, 1)}),
+            elapsed_ms=40,
+        )]
+
+        with patch.object(
+            self.app.assetManager,
+            "getScaledSprite",
+            wraps=self.app.assetManager.getScaledSprite,
+        ) as get_scaled:
+            self.app._renderPistonMotions()
+
+        self.assertTrue(get_scaled.call_args_list)
+        self.assertTrue(all(
+            call.kwargs.get("flipped") is False
+            for call in get_scaled.call_args_list
+        ))
+        self.app.redstone.active_motions.clear()
+        self.app.renderer.setViewRotation(0)
 
     def test_connected_clear_glass_culls_internal_faces_and_reuses_variants(self):
         self.app.world.resize(12, 12, 12, min_y=0, preserve=False)

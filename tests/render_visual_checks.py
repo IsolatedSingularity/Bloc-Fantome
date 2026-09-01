@@ -152,6 +152,127 @@ def render(output_dir: Path) -> None:
         sheet.blit(label, (x - 22, 580))
     save_capture(sheet, output_dir / "block_models.png")
 
+    # Redstone component sheet: keep the source-shaped models visible in every
+    # release QA run so a piston cycle or camera rotation cannot silently
+    # regress into a full cube/incorrect face. These are the same cached
+    # sprites used by the Lab, cropped only for presentation.
+    redstone_sheet = pygame.Surface((1100, 560))
+    redstone_sheet.fill((24, 20, 24))
+    redstone_sheet.blit(
+        font.render("Java 1.16.1 redstone component states", True, (240, 235, 225)),
+        (24, 18),
+    )
+    redstone_entries = (
+        ("DUST isolated", app.assetManager.getDetailSprite(
+            app_module.BlockType.REDSTONE_DUST, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, powered=False, connections=0,
+        )),
+        ("DUST straight", app.assetManager.getDetailSprite(
+            app_module.BlockType.REDSTONE_DUST, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, powered=True, power=15,
+            connections=0b0101,
+        )),
+        ("DUST corner", app.assetManager.getDetailSprite(
+            app_module.BlockType.REDSTONE_DUST, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, powered=True, power=15,
+            connections=0b0011,
+        )),
+        ("REPEATER 1t", app.assetManager.getDetailSprite(
+            app_module.BlockType.REPEATER, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, delay=1,
+        )),
+        ("REPEATER 4t ON", app.assetManager.getDetailSprite(
+            app_module.BlockType.REPEATER, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, delay=4, powered=True,
+        )),
+        ("REPEATER LOCKED", app.assetManager.getDetailSprite(
+            app_module.BlockType.REPEATER, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, delay=2, locked=True,
+        )),
+        ("LEVER OFF", app.assetManager.getDetailSprite(
+            app_module.BlockType.LEVER, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, powered=False,
+        )),
+        ("LEVER ON", app.assetManager.getDetailSprite(
+            app_module.BlockType.LEVER, app_module.Facing.SOUTH,
+            False, app_module.SlabPosition.BOTTOM, powered=True,
+        )),
+        ("PISTON RETRACTED", app.assetManager.getDetailSprite(
+            app_module.BlockType.PISTON, app_module.Facing.EAST,
+            False, app_module.SlabPosition.BOTTOM,
+        )),
+        ("PISTON EXTENDED", app.assetManager.getDetailSprite(
+            app_module.BlockType.PISTON, app_module.Facing.EAST,
+            True, app_module.SlabPosition.BOTTOM,
+        )),
+        ("STICKY EXTENDED", app.assetManager.getDetailSprite(
+            app_module.BlockType.STICKY_PISTON, app_module.Facing.EAST,
+            True, app_module.SlabPosition.BOTTOM,
+        )),
+        ("HEAD STICKY", app.assetManager.getDetailSprite(
+            app_module.BlockType.PISTON_HEAD, app_module.Facing.EAST,
+            False, app_module.SlabPosition.BOTTOM, sticky=True,
+        )),
+    )
+    for index, (label_text, sprite) in enumerate(redstone_entries):
+        bounds = sprite.get_bounding_rect(min_alpha=1)
+        cropped = sprite.subsurface(bounds)
+        scale = min(142 / max(1, cropped.get_width()), 122 / max(1, cropped.get_height()))
+        model = pygame.transform.scale(
+            cropped,
+            (max(1, round(cropped.get_width() * scale)),
+             max(1, round(cropped.get_height() * scale))),
+        )
+        column = index % 6
+        row = index // 6
+        x = 24 + column * 178
+        y = 60 + row * 245
+        redstone_sheet.blit(model, model.get_rect(center=(x + 72, y + 58)))
+        label = small.render(label_text, True, (215, 205, 195))
+        redstone_sheet.blit(label, label.get_rect(center=(x + 72, y + 142)))
+    save_capture(redstone_sheet, output_dir / "redstone_components.png")
+
+    orientation_sheet = pygame.Surface((960, 700))
+    orientation_sheet.fill((24, 20, 24))
+    orientation_sheet.blit(
+        font.render("Four-way redstone orientation", True, (240, 235, 225)),
+        (24, 18),
+    )
+    for column, facing in enumerate((
+        app_module.Facing.NORTH, app_module.Facing.EAST,
+        app_module.Facing.SOUTH, app_module.Facing.WEST,
+    )):
+        heading = small.render(facing.name, True, (238, 91, 69))
+        orientation_sheet.blit(heading, heading.get_rect(center=(120 + column * 235, 66)))
+        models = (
+            ("REPEATER", app.assetManager.getDetailSprite(
+                app_module.BlockType.REPEATER, facing, False,
+                app_module.SlabPosition.BOTTOM, delay=3, powered=True,
+            )),
+            ("PISTON", app.assetManager.getDetailSprite(
+                app_module.BlockType.PISTON, facing, False,
+                app_module.SlabPosition.BOTTOM,
+            )),
+            ("EXTENDED + HEAD", app.assetManager.getDetailSprite(
+                app_module.BlockType.STICKY_PISTON, facing, True,
+                app_module.SlabPosition.BOTTOM,
+            )),
+        )
+        for row, (label_text, sprite) in enumerate(models):
+            bounds = sprite.get_bounding_rect(min_alpha=1)
+            cropped = sprite.subsurface(bounds)
+            scale = min(170 / max(1, cropped.get_width()), 145 / max(1, cropped.get_height()))
+            model = pygame.transform.scale(
+                cropped,
+                (max(1, round(cropped.get_width() * scale)),
+                 max(1, round(cropped.get_height() * scale))),
+            )
+            center = (120 + column * 235, 155 + row * 195)
+            orientation_sheet.blit(model, model.get_rect(center=center))
+            label = small.render(label_text, True, (215, 205, 195))
+            orientation_sheet.blit(label, label.get_rect(center=(center[0], center[1] + 82)))
+    save_capture(orientation_sheet, output_dir / "redstone_orientations.png")
+
     special_sheet = pygame.Surface((1100, 730))
     special_sheet.fill((24, 20, 24))
     special_sheet.blit(
@@ -342,7 +463,32 @@ def render(output_dir: Path) -> None:
     app._toggleRedstoneLab()
     app._render()
     save_capture(screen, output_dir / "redstone_lab.png")
-    app._toggleRedstoneLab()
+    for turns in (1, 2, 3):
+        app.renderer.viewRotation = turns
+        app._fitWorldToViewport(notify=False)
+        app.renderer.offsetX = app.targetOffsetX
+        app.renderer.offsetY = app.targetOffsetY
+        app._render()
+        save_capture(screen, output_dir / f"redstone_lab_rotation_{turns}.png")
+    app.renderer.viewRotation = 0
+    app._fitWorldToViewport(notify=False)
+    app.renderer.offsetX = app.targetOffsetX
+    app.renderer.offsetY = app.targetOffsetY
+    app._setInteractionMode(True)
+    app.hoveredSourceBlock = (9, 10, 2)
+    app.hoveredFace = "top"
+    app.hoveredCell = (9, 10, 3)
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab_hand_cursor.png")
+    app._setInteractionMode(False)
+    # Explicit transition QA: the Lab's temporary palette/stage must not leak
+    # into the World Map or back into the live editor's inventory/grid state.
+    app._openWorldMap()
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab_to_world_map.png")
+    app._exitWorldMap()
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab_return_to_build.png")
 
     # World Map product art: four dedicated selector hubs, an objective, and
     # the exact selector marker behavior framed inside the real editor window.
@@ -490,39 +636,16 @@ def render(output_dir: Path) -> None:
     app._renderPanel()
     save_capture(screen, output_dir / "structure_panel.png")
 
-    def capture_piston_door(key, prefix):
-        app.world.resize(12, 12, 12, min_y=0, preserve=False)
-        app.redstone.active_motions.clear()
-        door = app_module.PREMADE_STRUCTURES[key]
-        with app.world.bulkUpdate():
-            for block in door["blocks"]:
-                x, y, z, block_type, props = app_module._structureBlockParts(block)
-                app.world.setBlock(x, y, z, block_type)
-                if props is not None:
-                    app.world.setBlockProperties(x, y, z, props.copy())
-        app.redstone.mark_dirty()
-        app.redstone.update(50)
-        app.redstone.update(100)
-        app._interactBlock(0, 2, 1)
-        app.redstone.update(50)
-        app.redstone.update(100)
-        app._fitWorldToViewport(notify=False)
-        app.renderer.offsetX = app.targetOffsetX
-        app.renderer.offsetY = app.targetOffsetY
-        app.tooltipTimer = 0
-        app._render()
-        save_capture(screen, output_dir / f"{prefix}_closed.png")
-        app._interactBlock(0, 2, 1)
-        app.redstone.update(50)
-        app.redstone.update(50)
-        app._render()
-        save_capture(screen, output_dir / f"{prefix}_motion.png")
-        app.redstone.update(50)
-        app._render()
-        save_capture(screen, output_dir / f"{prefix}_open.png")
-
-    capture_piston_door("piston_door", "redstone_piston_door")
-    capture_piston_door("flush_piston_door", "redstone_flush_door")
+    app._toggleRedstoneLab()
+    app._setInteractionMode(False)
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab_signal_build.png")
+    app._loadRedstoneLabCircuit("redstone_ring_riser")
+    app._setInteractionMode(True)
+    app._render()
+    save_capture(screen, output_dir / "redstone_lab_ring_test.png")
+    app._setInteractionMode(False)
+    app._toggleRedstoneLab()
 
     # Dense connected clear glass: internal seams are culled while the stone
     # specimen remains visible through the pavilion.

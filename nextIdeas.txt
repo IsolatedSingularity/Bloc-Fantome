@@ -1,8 +1,11 @@
 Next
 
+LUNA
+
+go through every single block and make sure the sound is properly right. if not fix it. also go through all the blocks and audit which should have proper transparency for non normal blocks like the skulk thing
+
 - Performance scout + other language
 - optimize larger window and block distribution and rendering logic
-- fix redstone (lab) and doors
 
 - Individual block refines (maybe functionality too)
 - Biome selection and generation for all dimensions (with previews in right submenu)

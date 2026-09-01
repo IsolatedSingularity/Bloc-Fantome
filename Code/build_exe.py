@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.6.5"
+VERSION = "2.7.1"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -220,6 +220,8 @@ def build(debug: bool = False, diagnostic: bool = False):
     # Curated JSON builds are read-only application data used by the tutorial
     # and the cursor-placeable Structures tab.
     for structure_name in (
+        "redstone_signal_line",
+        "redstone_ring_riser",
         "bastion_bridge_edge",
         "bastion_remnant_no_lava",
         "bastion_remnant_with_lava",

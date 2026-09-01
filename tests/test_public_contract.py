@@ -87,7 +87,7 @@ def test_structure_tutorial_and_weather_summary_contract():
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
     assert len(structures) == 40
-    assert _digest(structures) == "55cdfbe04bbc91497d5c2b185d9ce7d2f7f1bdeedf7bc23b6be23b812232f678"
+    assert _digest(structures) == "00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2"
     assert len(tutorial) == 17
     assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
     assert _digest(blocFantome.DIMENSION_WEATHER) == "ba1a097351944d2a2aa27be50da2a101866f25f4b52f952fb757e0beb3f5da65"
@@ -109,6 +109,11 @@ def test_visible_product_name_is_accented_while_executable_name_stays_compatible
     assert '#define MyAppExeName "BlocFantome.exe"' in installer
     assert 'Name: "{group}\\{#MyAppName}"' in installer
     assert 'Name: "{userprograms}\\Miette.lnk"' in installer
+    assert 'Name: "{commonprograms}\\Miette.lnk"' in installer
+    assert 'Name: "{userprograms}\\{#MyAppName}.lnk"' in installer
+    assert 'Name: "{commonprograms}\\{#MyAppName}.lnk"' in installer
+    assert 'Name: "{group}\\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"' in installer
+    assert 'IconFilename: "{app}\\Assets\\Icons\\Respawn_Anchor.ico"' in installer
     assert 'textures\\entity\\enderdragon\\dragon.png' in installer
     assert 'DestName: "enderdragon.png"' in installer
     build_version = re.search(r'^VERSION = "([^"]+)"', build_script, re.MULTILINE).group(1)
@@ -119,7 +124,7 @@ def test_visible_product_name_is_accented_while_executable_name_stays_compatible
         r"blocfantome\.builder\.([0-9.]+)",
         (ROOT / "Code" / "blocFantome.py").read_text(encoding="utf-8"),
     ).group(1)
-    assert build_version == installer_version == runtime_version
+    assert build_version == installer_version == runtime_version == blocFantome.APP_VERSION
 
 
 def test_structure_registry_composition_does_not_mutate_builtin_mapping():

@@ -110,6 +110,141 @@ class BlockModelRenderer:
         self._draw_face(surface, x_face, front, 0.85, (0, 0), (1, 0), (0, 1))
         self._draw_face(surface, top_face, top, 1.0, (0, 0), (1, 0), (0, 1))
 
+    def render_redstone_dust(
+        self, top_texture: pygame.Surface, wall_texture: pygame.Surface,
+        up_connections: int = 0,
+    ) -> pygame.Surface:
+        """Render Java wire's 0.25-voxel top model plus vertical UP connections.
+
+        Dust is not a one-voxel block. Drawing it through ``render_boxes``
+        used to give every isolated wire a visible cuboid wall and made a
+        straight run read like a row of red blocks. The vanilla model is a
+        horizontal plane at y=0.25 (the renderer's local z axis).
+        """
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        top_face = (
+            self._project(0, 0, 0.25), self._project(16, 0, 0.25),
+            self._project(16, 16, 0.25), self._project(0, 16, 0.25),
+        )
+        self._draw_face(surface, top_face, top_texture, 1.0, (0, 0), (1, 0), (0, 1))
+        # The Java ``redstone_dust_up`` model is a *vertical* sheet at the
+        # boundary with the supporting block.  (The similarly named
+        # ``redstone_dust_side`` model is the horizontal half-cell plane.)
+        # Keep the sheet one model pixel inside the edge, as vanilla does, so
+        # an ascending wire reads as a thin connection rather than a full
+        # solid wall.  The old editor used the wrong horizontal half-cell
+        # geometry here, which made upward runs disappear into the floor.
+        planes = {
+            0: (
+                self._project(0, 0.25, 0), self._project(16, 0.25, 0),
+                self._project(16, 0.25, 16), self._project(0, 0.25, 16),
+            ),
+            2: (
+                self._project(0, 15.75, 0), self._project(16, 15.75, 0),
+                self._project(16, 15.75, 16), self._project(0, 15.75, 16),
+            ),
+            1: (
+                self._project(15.75, 0, 0), self._project(15.75, 16, 0),
+                self._project(15.75, 16, 16), self._project(15.75, 0, 16),
+            ),
+            3: (
+                self._project(0.25, 0, 0), self._project(0.25, 16, 0),
+                self._project(0.25, 16, 16), self._project(0.25, 0, 16),
+            ),
+        }
+        for bit, points in planes.items():
+            if up_connections & (1 << bit):
+                self._draw_face(
+                    surface, points, wall_texture, 1.0,
+                    (0, 0), (1, 0), (0, 1),
+                )
+        return surface
+
+    def render_repeater(
+        self,
+        top_texture: pygame.Surface,
+        side_texture: pygame.Surface,
+        torch_texture: pygame.Surface,
+        facing: Facing,
+        delay: int = 1,
+        powered: bool = False,
+        locked: bool = False,
+        lock_texture: Optional[pygame.Surface] = None,
+    ) -> pygame.Surface:
+        """Render a source-shaped repeater, including delay and lock state.
+
+        The repeater is not a full cube: it is a smooth-stone two-pixel slab
+        with two redstone torches. The bundled Java models move the output
+        torch by two model pixels for each delay setting and replace the
+        torches with a cross-shaped lit model when powered. Keeping the
+        geometry here (rather than painting a single 16x16 repeater texture on
+        every face) preserves orientation when the camera rotates.
+        """
+        delay = max(1, min(4, int(delay)))
+        turns = (facing.value - Facing.SOUTH.value) % 4
+
+        def rotate_boxes(boxes: Iterable[Box]) -> tuple[Box, ...]:
+            return tuple(self._rotate_box(box, turns) for box in boxes)
+
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        # The top carries the repeater texture; all slab sides are smooth stone.
+        self._draw_box(surface, (0, 0, 0, 16, 16, 2), side_texture, side_texture, side_texture)
+        # Redstone's model uses the top face for the colored repeater graphic.
+        # Rotate the atlas with the model (the blockstate does not use
+        # ``uvlock``), so the arrows and torch markings follow R/camera turns.
+        oriented_top = pygame.transform.rotate(top_texture, turns * 90)
+        self._draw_face(
+            surface,
+            (
+                self._project(0, 0, 2), self._project(16, 0, 2),
+                self._project(16, 16, 2), self._project(0, 16, 2),
+            ),
+            oriented_top, 1.0, (0, 0), (1, 0), (0, 1),
+        )
+
+        # The unrotated Java model is the ``facing=south`` state. Its input
+        # torch is on the south/FACING edge (model z=6) and its output torch
+        # is on the north/opposite edge (model z=2). FACING is the side
+        # sampled for input, not the arrow/output direction.
+        input_y = 6
+        output_y = 2 + (delay - 1) * 2
+        if powered:
+            # Exact source cross-prisms for the two lit torches. The small
+            # top pixels are covered by these source-sized boxes at editor
+            # scale and remain visible at every camera rotation.
+            input_boxes = (
+                (7, input_y - 1, 2, 9, input_y + 3, 8),
+                (6, input_y, 2, 10, input_y + 2, 8),
+            )
+            output_boxes = (
+                (7, output_y - 1, 2, 9, output_y + 3, 8),
+                (6, output_y, 2, 10, output_y + 2, 8),
+            )
+        elif locked:
+            # A locked, unpowered repeater keeps only the source model's
+            # unlit output torch. The lock bar occupies the input-torch end;
+            # drawing an input torch underneath it made the state look like a
+            # second, incorrectly powered repeater.
+            input_boxes = ()
+            output_boxes = ((7, output_y, 2, 9, output_y + 5, 7),)
+        else:
+            input_boxes = ((7, input_y, 2, 9, input_y + 5, 7),)
+            output_boxes = ((7, output_y, 2, 9, output_y + 5, 7),)
+        torch_boxes = rotate_boxes(input_boxes + output_boxes)
+        torch_sprite = self.render_boxes(torch_boxes, torch_texture, torch_texture, torch_texture)
+        surface.blit(torch_sprite, (0, 0))
+
+        if locked:
+            lock_texture = lock_texture or side_texture
+            # Source locked repeater element is [2,2,z]..[14,4,z+2], where
+            # z=6,8,10,12 for the four delay states. Map model (x,y,z) to
+            # renderer (x,z,y) before applying the facing rotation.
+            lock_y = 6 + (delay - 1) * 2
+            lock_box = self._rotate_box((2, lock_y, 2, 14, lock_y + 2, 4), turns)
+            lock_sprite = self.render_boxes((lock_box,), lock_texture, lock_texture, lock_texture)
+            surface.blit(lock_sprite, (0, 0))
+        return surface
+
     @staticmethod
     def _texture_region(texture, rect) -> pygame.Surface:
         region = texture.subsurface(pygame.Rect(rect)).copy()
@@ -279,36 +414,25 @@ class BlockModelRenderer:
             return ((0, 0, 0, 16, 16, 1),)
         if kind == "repeater":
             delay = max(1, min(4, int(delay)))
+            # Source Java model coordinates map x -> x, model z -> our y,
+            # and model y -> our vertical z. The input torch is fixed at the
+            # near end; only the output torch moves for the four delay states.
             canonical = (
                 (0, 0, 0, 16, 16, 2),
-                (7, 11, 2, 9, 13, 8),
-                (7, 3 + delay * 2, 2, 9, 5 + delay * 2, 8),
+                (7, 6, 2, 9, 8, 7),
+                (7, 2 + (delay - 1) * 2, 2, 9, 4 + (delay - 1) * 2, 7),
             )
             turns = (facing.value - Facing.SOUTH.value) % 4
             return tuple(self._rotate_box(box, turns) for box in canonical)
         if kind == "lever":
-            base = {
-                Facing.NORTH: (5, 8, 0, 11, 15, 3),
-                Facing.SOUTH: (5, 1, 0, 11, 8, 3),
-                Facing.EAST: (1, 5, 0, 8, 11, 3),
-                Facing.WEST: (8, 5, 0, 15, 11, 3),
-            }[facing]
-            # Two staggered handle segments provide a readable on/off lean at
-            # isometric scale without distorting the source texture.
-            lean = 1 if is_open else -1
-            if facing in (Facing.NORTH, Facing.SOUTH):
-                lean *= 1 if facing == Facing.SOUTH else -1
-                handle = (
-                    (7, 7, 3, 9, 9, 7),
-                    (7, 7 + lean, 7, 9, 9 + lean, 12),
-                )
-            else:
-                lean *= 1 if facing == Facing.EAST else -1
-                handle = (
-                    (7, 7, 3, 9, 9, 7),
-                    (7 + lean, 7, 7, 9 + lean, 9, 12),
-                )
-            return (base,) + handle
+            # Source lever base is 6x8x3 (x=5..11, z=4..12 in the Java
+            # model). The old approximation used a 6x7 base in a different
+            # quadrant and two disconnected cuboids for the handle.
+            turns = facing.value % 4
+            return (
+                self._rotate_box((5, 4, 0, 11, 12, 3), turns),
+                self._rotate_box((7, 7, 3, 9, 9, 12), turns),
+            )
         if kind == "button":
             depth = 1 if is_open else 2
             return ({
@@ -320,12 +444,14 @@ class BlockModelRenderer:
         if kind == "piston":
             if not is_open:
                 return self.cube_boxes()
-            return ({
-                Facing.NORTH: (0, 4, 0, 16, 16, 16),
-                Facing.SOUTH: (0, 0, 0, 16, 12, 16),
-                Facing.EAST: (0, 0, 0, 12, 16, 16),
-                Facing.WEST: (4, 0, 0, 16, 16, 16),
-            }[facing],)
+            # ``piston_extended`` is the source Java 1.16.1 base model: the
+            # casing stops four model pixels short of the front. The piston
+            # head owns the separate four-pixel rod in its neighbouring cell;
+            # duplicating that rod here made cycling states smear a second
+            # casing-colored strip across the base sprite.
+            canonical = ((0, 4, 0, 16, 16, 16),)
+            turns = (facing.value - Facing.NORTH.value) % 4
+            return tuple(self._rotate_box(box, turns) for box in canonical)
         if kind == "piston_head":
             head = {
                 Facing.NORTH: (0, 0, 0, 16, 4, 16),
@@ -334,10 +460,14 @@ class BlockModelRenderer:
                 Facing.WEST: (0, 0, 0, 4, 16, 16),
             }[facing]
             stem = {
-                Facing.NORTH: (6, 4, 6, 10, 16, 10),
-                Facing.SOUTH: (6, 0, 6, 10, 12, 10),
-                Facing.EAST: (0, 6, 6, 12, 10, 10),
-                Facing.WEST: (4, 6, 6, 16, 10, 10),
+                # The template piston-head rod extends four model pixels
+                # into the adjacent piston cell. Keeping it inside 0..16
+                # clipped the rod at every facing and left a broken-looking
+                # gap during extension/retraction.
+                Facing.NORTH: (6, 4, 6, 10, 20, 10),
+                Facing.SOUTH: (6, -4, 6, 10, 12, 10),
+                Facing.EAST: (-4, 6, 6, 12, 10, 10),
+                Facing.WEST: (4, 6, 6, 20, 10, 10),
             }[facing]
             return head, stem
         if kind == "candle":
@@ -484,21 +614,104 @@ class BlockModelRenderer:
         return surface
 
     def render_piston(self, cap, side, back, facing: Facing,
-                      extended: bool) -> pygame.Surface:
-        """Render an oriented piston body with the cap on its true front face."""
+                      extended: bool, inner=None) -> pygame.Surface:
+        """Render an oriented piston body with source face roles.
+
+        ``cap`` is the piston platform, ``side`` is the casing texture,
+        ``back`` is the bottom texture used on the retracted opposite face,
+        and ``inner`` is the recessed texture exposed by an extended piston.
+        Keeping those roles distinct prevents the bottom texture from being
+        smeared across the visible casing whenever the piston cycles.
+        """
         surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
-        box = self.detail_boxes("piston", facing, extended)[0]
-        y_face = cap if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
-        x_face = cap if facing == Facing.EAST else back if facing == Facing.WEST else side
-        self._draw_box(surface, box, side, y_face, x_face)
+        boxes = self.detail_boxes("piston", facing, extended)
+        if not extended:
+            y_face = cap if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
+            x_face = cap if facing == Facing.EAST else back if facing == Facing.WEST else side
+            self._draw_box(surface, boxes[0], side, y_face, x_face)
+            return surface
+
+        # In the extended model the face toward the head exposes
+        # ``piston_inner``; the opposite face retains ``piston_bottom``. The
+        # head itself supplies the wooden/green platform texture.
+        inner = inner or back
+        y_face = inner if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
+        x_face = inner if facing == Facing.EAST else back if facing == Facing.WEST else side
+        self._draw_box(surface, boxes[0], side, y_face, x_face)
         return surface
 
-    def render_piston_head(self, cap, side, inner, facing: Facing) -> pygame.Surface:
-        """Render the four-voxel plate and axis-aligned arm without texture shear."""
+    def render_lever(self, base_texture, handle_texture, facing: Facing,
+                     powered: bool) -> pygame.Surface:
+        """Render the floor lever from the Java base and rotated handle model."""
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+
+        def rotate(point, turns):
+            x, y, z = point
+            for _ in range(turns % 4):
+                x, y = 16 - y, x
+            return x, y, z
+
+        base = (5, 4, 0, 11, 12, 3)
+        rotated_base = tuple(rotate((x, y, z), facing.value)
+                             for x, y, z in (
+                                 (base[0], base[1], base[2]),
+                                 (base[3], base[4], base[5]),
+                             ))
+        # Rotation can swap the min/max corners, so normalize them again.
+        xs = [point[0] for point in rotated_base]
+        ys = [point[1] for point in rotated_base]
+        self._draw_box_normalized(
+            surface,
+            (min(xs), min(ys), base[2], max(xs), max(ys), base[5]),
+            base_texture, base_texture, base_texture,
+        )
+
+        # The source handle is a 2x2x10 prism rotated around the hinge at
+        # (8,1,8) by +/-45 degrees. Apply that actual model transform instead
+        # of faking the lean with a horizontal offset; the latter made the
+        # lever read as a flat plank and flipped its on/off silhouette.
+        angle = math.radians(-45 if powered else 45)
+
+        def transform(point):
+            x, model_y, model_z = point
+            dy, dz = model_y - 1.0, model_z - 8.0
+            tilted_y = 1.0 + math.cos(angle) * dy - math.sin(angle) * dz
+            tilted_z = 8.0 + math.sin(angle) * dy + math.cos(angle) * dz
+            # Blockstate y rotation is around the center of the block. Source
+            # x/z become the renderer's x/y axes after this transform.
+            for _ in range(facing.value % 4):
+                x, tilted_z = 16.0 - tilted_z, x
+            return x, tilted_z, tilted_y
+
+        points = [
+            transform((7, 1, 7)), transform((9, 1, 7)),
+            transform((9, 11, 7)), transform((7, 11, 7)),
+        ]
+        projected = [self._project(x, y, z) for x, y, z in points]
+        # The vanilla lever texture is intentionally narrow; at the editor's
+        # native tile size it needs a restrained bronze underlay so the
+        # control remains legible without becoming a full block.
+        handle_color = (177, 113, 49) if powered else (109, 76, 43)
+        edge_color = (238, 177, 82) if powered else (154, 109, 52)
+        pygame.draw.polygon(surface, handle_color, projected)
+        pygame.draw.line(surface, edge_color, projected[0], projected[3], 1)
+        center_start = self._project(*transform((8, 1, 8)))
+        center_end = self._project(*transform((8, 11, 8)))
+        pygame.draw.line(surface, (62, 39, 25), center_start, center_end, 2)
+        pygame.draw.line(surface, edge_color, center_start, center_end, 1)
+        self._draw_face(surface, projected, handle_texture, 1.0,
+                        (0, 0), (1, 0), (0, 1))
+        return surface
+
+    def render_piston_head(self, platform, side, unsticky, facing: Facing) -> pygame.Surface:
+        """Render a piston head with the source platform/unsticky face roles."""
         surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
         plate, stem = self.detail_boxes("piston_head", facing)
-        y_face = cap if facing == Facing.SOUTH else inner if facing == Facing.NORTH else side
-        x_face = cap if facing == Facing.EAST else inner if facing == Facing.WEST else side
+        # The north face is the piston platform, while the opposite face is
+        # the unsticky wooden face. Which one is visible depends on the block's
+        # facing after the camera-space transform.
+        y_face = platform if facing == Facing.SOUTH else unsticky if facing == Facing.NORTH else side
+        x_face = platform if facing == Facing.EAST else unsticky if facing == Facing.WEST else side
         self._draw_box(surface, plate, side, y_face, x_face)
         self._draw_box(surface, stem, side, side, side)
         return surface

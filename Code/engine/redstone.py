@@ -73,6 +73,10 @@ class RedstoneSimulator:
         self._torch_cooldown: Dict[Position, int] = {}
         self._game_tick = 0
         self.active_motions: list[PistonMotion] = []
+        # None means a full topology pass is required; an empty/set value means
+        # edits can be restricted to dust components touching those cells.
+        self._dirty_positions: Optional[set[Position]] = None
+        self._pistons_dirty = True
 
     @property
     def powered_dust(self) -> Iterable[Position]:
@@ -87,14 +91,21 @@ class RedstoneSimulator:
         """Powered circuitry eligible for restrained visual sparks."""
         bt = self.block_type
         for block in (bt.REDSTONE_DUST, bt.REDSTONE_TORCH,
-                      bt.REDSTONE_WALL_TORCH, bt.REPEATER, bt.STONE_BUTTON):
+                      bt.REDSTONE_WALL_TORCH, bt.REPEATER, bt.LEVER,
+                      bt.STONE_BUTTON):
             for pos in self.world.blockTypePositions.get(block, ()):
                 props = self.world.getBlockProperties(*pos)
                 if props and props.powered:
                     yield pos
 
-    def mark_dirty(self) -> None:
+    def mark_dirty(self, *positions: Position) -> None:
+        """Mark a full network or only components affected by edited cells."""
         self._seen_revision = -1
+        self._pistons_dirty = True
+        if not positions:
+            self._dirty_positions = None
+        elif self._dirty_positions is not None:
+            self._dirty_positions.update(positions)
 
     def update(self, dt_ms: int) -> bool:
         """Advance scheduled component ticks and return whether state changed."""
@@ -103,6 +114,8 @@ class RedstoneSimulator:
         self._advance_motions(elapsed)
         self._accumulator += elapsed
         if self.world.revision != self._seen_revision:
+            if self._dirty_positions == set():
+                self._dirty_positions = None
             changed |= self.recalculate()
         while self._accumulator >= self.TICK_MS:
             self._accumulator -= self.TICK_MS
@@ -136,12 +149,19 @@ class RedstoneSimulator:
 
     def recalculate(self) -> bool:
         """Resolve torches, wires, repeaters, lamps and piston inputs."""
+        # A revision not accompanied by positions may have come from loading,
+        # undo, or a bulk mutation; fall back to a complete safe pass.
+        dirty = self._dirty_positions
         changed = False
-        changed |= self._update_torches()
-        changed |= self._update_dust()
-        self._schedule_repeaters()
+        torch_changes: set[Position] = set()
+        changed |= self._update_torches(torch_changes)
+        if dirty is not None:
+            dirty = set(dirty) | torch_changes
+        changed |= self._update_dust(dirty)
+        changed |= self._schedule_repeaters()
         changed |= self._update_lamps()
         self._seen_revision = self.world.revision
+        self._dirty_positions = set()
         return changed
 
     def _props(self, pos: Position) -> BlockProperties:
@@ -159,6 +179,18 @@ class RedstoneSimulator:
         bt = self.block_type
         if block == bt.AIR or block in (bt.WATER, bt.LAVA):
             return False
+        # Piston bases are full solid blocks even though they use a custom
+        # modelKind for rendering. Treating every modelKind as non-solid made
+        # dust fail to climb beside a piston and prevented strong power from
+        # crossing a piston body.
+        if block in (bt.PISTON, bt.STICKY_PISTON, bt.PISTON_HEAD):
+            return True
+        # Slime and honey use a translucent-looking texture in the editor,
+        # but they are still full solid blocks to redstone.  Vanilla allows
+        # dust to sit on them and wires to climb beside them; visual
+        # transparency must not change that support/collision rule.
+        if block in (bt.SLIME_BLOCK, bt.HONEY_BLOCK):
+            return True
         definition = self.definitions.get(block)
         return bool(
             definition
@@ -169,39 +201,140 @@ class RedstoneSimulator:
             and not definition.modelKind
         )
 
-    def _output_toward(self, source: Position, target: Position, *, dust: bool = True) -> int:
+    def _output_toward(
+        self,
+        source: Position,
+        target: Position,
+        *,
+        dust: bool = True,
+        strong: bool = False,
+    ) -> int:
+        """Return one block's weak or strong power toward a neighbor.
+
+        ``World.getEmittedRedstonePower`` first asks the source for weak power
+        in the direction from the receiving cell back to that source.  Solid
+        blocks then add their received *strong* power.  Keeping that distinction
+        here prevents a floor lever or torch from incorrectly powering every
+        side of a solid block when Java only powers its mounted face.
+        """
         bt = self.block_type
         block = self.world.getBlock(*source)
         if block == bt.REDSTONE_BLOCK:
             return 15
         props = self.world.getBlockProperties(*source) or BlockProperties()
-        if block in (
-            bt.LEVER, bt.STONE_BUTTON, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH
-        ):
+        if block in (bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH):
+            if strong:
+                # RedstoneTorchBlock.getStrongRedstonePower only responds to
+                # Direction.DOWN (the receiving block is above the torch).
+                return 15 if props.powered and target == (
+                    source[0], source[1], source[2] + 1
+                ) else 0
+            # A redstone torch never powers the block it is mounted on. The
+            # old all-directions shortcut counted its own support as input,
+            # making an unpowered torch toggle every time topology was dirtied.
+            if target == self._torch_support(source, props):
+                return 0
+            return 15 if props.powered else 0
+        if block == bt.LEVER:
+            if strong:
+                # The Lab places floor levers.  WallMountedBlock.getDirection
+                # is UP for that state, so only the supporting cell below gets
+                # strong power; weak power remains omnidirectional.
+                return 15 if props.powered and target == (
+                    source[0], source[1], source[2] - 1
+                ) else 0
+            return 15 if props.powered else 0
+        if block == bt.STONE_BUTTON:
+            if strong:
+                # The editor's button model is the wall-mounted state.  Its
+                # support is opposite FACING, matching WallMountedBlock.
+                dx, dy, _ = _facing_offset(props.facing)
+                return 15 if props.powered and target == (
+                    source[0] - dx, source[1] - dy, source[2]
+                ) else 0
             return 15 if props.powered else 0
         if block == bt.REPEATER and props.powered:
-            return 15 if _add(source, _facing_offset(props.facing)) == target else 0
+            # Java's RepeaterBlock.FACING is the input side. A powered
+            # repeater emits through the opposite face; World passes the
+            # direction from the receiving cell back toward this source.
+            dx, dy, dz = _facing_offset(props.facing)
+            return 15 if target == (
+                source[0] - dx, source[1] - dy, source[2] - dz
+            ) else 0
         if dust and block == bt.REDSTONE_DUST:
-            return max(0, min(15, int(props.redstonePower)))
+            return self._dust_output_toward(source, target, props)
         return 0
 
-    def _strong_powered_solid(self, solid: Position, target: Position) -> int:
+    def _dust_output_toward(
+        self, source: Position, target: Position, props: BlockProperties
+    ) -> int:
+        """Return Java wire power for one receiving face.
+
+        RedstoneWireBlock only emits horizontally through a connected arm,
+        emits down into the block beneath it, and does not emit upward. The
+        previous shortcut returned the wire level to every adjacent block,
+        which made an isolated dust mote power lamps and pistons that vanilla
+        would leave dark.
+        """
+        level = max(0, min(15, int(props.redstonePower)))
+        if level <= 0:
+            return 0
+        dx = target[0] - source[0]
+        dy = target[1] - source[1]
+        dz = target[2] - source[2]
+        if dz == -1 and dx == 0 and dy == 0:
+            return level
+        if dz != 0 or (abs(dx) + abs(dy) != 1):
+            return 0
+        for bit, (offset_x, offset_y, _offset_z) in enumerate(HORIZONTAL):
+            if (dx, dy) == (offset_x, offset_y):
+                return level if self.wire_connection_mask(source) & (1 << bit) else 0
+        return 0
+
+    def _strong_powered_solid(
+        self, solid: Position, target: Position, *, dust: bool = True
+    ) -> int:
         """Power emitted by a solid block receiving a strong input."""
         level = 0
         for delta in NEIGHBORS:
             source = _add(solid, delta)
             if source == target:
                 continue
-            level = max(level, self._output_toward(source, solid, dust=False))
+            level = max(
+                level,
+                # Wires implement both weak and strong redstone power in
+                # Java. A wire above a solid block must therefore be able to
+                # strongly energize that block, which then relays power to
+                # components on its other faces.
+                self._output_toward(source, solid, dust=dust, strong=True),
+            )
         return level
 
     def _direct_power(self, pos: Position, *, dust: bool = True) -> int:
         level = 0
         for delta in NEIGHBORS:
             source = _add(pos, delta)
-            level = max(level, self._output_toward(source, pos, dust=dust))
-            if self._is_solid(source):
-                level = max(level, self._strong_powered_solid(source, pos))
+            level = max(level, self._emitted_power_toward(source, pos, dust=dust))
+        return level
+
+    def _emitted_power_toward(
+        self, source: Position, target: Position, *, dust: bool = True
+    ) -> int:
+        """Return the power a neighboring block emits into one target face.
+
+        ``World.getEmittedRedstonePower`` combines the source's directional
+        weak output with the strong power a solid source has received from its
+        other neighbors.  Keeping this directional wrapper separate from
+        ``_direct_power`` matters for mounted torches: a torch asks whether
+        *its support's downward face* is powered, not whether any face of that
+        support has a weak signal.
+        """
+        level = self._output_toward(source, target, dust=dust)
+        if self._is_solid(source):
+            level = max(
+                level,
+                self._strong_powered_solid(source, target, dust=dust),
+            )
         return level
 
     def _wire_neighbors(self, pos: Position) -> Iterable[Position]:
@@ -225,14 +358,45 @@ class RedstoneSimulator:
         """Return N/E/S/W visual connectivity as a four-bit mask."""
         if self.world.getBlock(*pos) != self.block_type.REDSTONE_DUST:
             return 0
-        bt = self.block_type
         x, y, z = pos
+        mask = 0
+        above_open = not self._is_solid((x, y, z + 1))
+        for bit, (dx, dy, _) in enumerate(HORIZONTAL):
+            side = (x + dx, y + dy, z)
+            direction = Facing(bit)
+            # Mirror RedstoneWireBlock's getRenderConnectionType.  A wire can
+            # climb to a component on a solid neighbor only when the current
+            # cell's upper space is open; a component one block above an air
+            # side (or above a blocked current cell) is not connected.  On an
+            # open side, the only stepped connection is the wire/component
+            # directly below that neighbor.
+            if (
+                above_open
+                and self._is_solid(side)
+                and self._wire_connects_to((side[0], side[1], z + 1), direction)
+            ):
+                mask |= 1 << bit
+            elif self._wire_connects_to(side, direction):
+                mask |= 1 << bit
+            elif (
+                not self._is_solid(side)
+                and self._wire_connects_to((side[0], side[1], z - 1), direction)
+            ):
+                mask |= 1 << bit
+        return mask
+
+    def wire_up_connection_mask(self, pos: Position) -> int:
+        """Return directions whose wire climbs onto a neighboring solid block."""
+        if self.world.getBlock(*pos) != self.block_type.REDSTONE_DUST:
+            return 0
+        x, y, z = pos
+        if self._is_solid((x, y, z + 1)):
+            return 0
         mask = 0
         for bit, (dx, dy, _) in enumerate(HORIZONTAL):
             side = (x + dx, y + dy, z)
-            candidates = (side, (side[0], side[1], z + 1), (side[0], side[1], z - 1))
-            direction = Facing(bit)
-            if any(self._wire_connects_to(candidate, direction) for candidate in candidates):
+            upper = (side[0], side[1], z + 1)
+            if self._is_solid(side) and self.world.getBlock(*upper) == self.block_type.REDSTONE_DUST:
                 mask |= 1 << bit
         return mask
 
@@ -259,12 +423,42 @@ class RedstoneSimulator:
         props.redstonePower = 15
         self._set_props(pos, props)
         self._button_updates[pos] = 20
-        self.mark_dirty()
+        self.mark_dirty(pos)
         return True
 
-    def _update_dust(self) -> bool:
+    def _dust_components_touching(self, positions: Iterable[Position]) -> set[Position]:
+        """Return complete wire components adjacent to a localized edit."""
         bt = self.block_type
-        positions = list(self.world.blockTypePositions.get(bt.REDSTONE_DUST, ()))
+        seeds: set[Position] = set()
+        for x, y, z in positions:
+            candidates = {(x, y, z)}
+            for dx, dy, dz in NEIGHBORS:
+                candidates.add((x + dx, y + dy, z + dz))
+                if dz == 0:
+                    candidates.add((x + dx, y + dy, z + 1))
+                    candidates.add((x + dx, y + dy, z - 1))
+            seeds.update(
+                candidate for candidate in candidates
+                if self.world.getBlock(*candidate) == bt.REDSTONE_DUST
+            )
+        connected: set[Position] = set()
+        queue = deque(seeds)
+        while queue:
+            pos = queue.popleft()
+            if pos in connected:
+                continue
+            connected.add(pos)
+            for neighbor in self._wire_neighbors(pos):
+                if neighbor not in connected:
+                    queue.append(neighbor)
+        return connected
+
+    def _update_dust(self, dirty: Optional[Iterable[Position]] = None) -> bool:
+        bt = self.block_type
+        if dirty is None:
+            positions = list(self.world.blockTypePositions.get(bt.REDSTONE_DUST, ()))
+        else:
+            positions = list(self._dust_components_touching(dirty))
         if not positions:
             return False
         levels = {pos: 0 for pos in positions}
@@ -299,51 +493,89 @@ class RedstoneSimulator:
             return pos[0] - dx, pos[1] - dy, pos[2]
         return pos[0], pos[1], pos[2] - 1
 
-    def _update_torches(self) -> bool:
+    def _update_torches(self, changed_positions: Optional[set[Position]] = None) -> bool:
         bt = self.block_type
         changed = False
         positions = set(self.world.blockTypePositions.get(bt.REDSTONE_TORCH, ()))
         positions.update(self.world.blockTypePositions.get(bt.REDSTONE_WALL_TORCH, ()))
-        for pos in positions:
-            props = self._props(pos)
-            support = self._torch_support(pos, props)
-            desired = self._direct_power(support) == 0
-            cooldown = self._torch_cooldown.get(pos, 0)
-            if cooldown > self._game_tick:
-                desired = False
-            if props.powered != desired:
-                history = self._torch_history.setdefault(pos, deque())
-                history.append(self._game_tick)
-                while history and self._game_tick - history[0] > 60:
-                    history.popleft()
-                if len(history) >= 8:
-                    self._torch_cooldown[pos] = self._game_tick + 160
+        if not positions:
+            return False
+
+        # Torch output is an inverter, so a single arbitrary set iteration can
+        # leave a downstream torch one state behind when its support is visited
+        # before the upstream torch changes. Revisit the finite torch set until
+        # it reaches a fixed point. The bound is deliberately proportional to
+        # the network size: acyclic chains settle in at most one pass per link,
+        # while a feedback loop still terminates and uses the normal burnout
+        # history/cooldown above instead of spinning forever.
+        max_passes = max(1, len(positions) * 2)
+        for _ in range(max_passes):
+            pass_changed = False
+            for pos in positions:
+                props = self._props(pos)
+                support = self._torch_support(pos, props)
+                # Java's RedstoneTorchBlock.shouldUnpower checks the support's
+                # emitted power in the torch-facing direction.  Asking for a
+                # full ``_direct_power(support)`` scan would incorrectly turn
+                # off a torch when a weak-only side lever powers a different
+                # face of the support block.
+                desired = self._emitted_power_toward(support, pos) == 0
+                cooldown = self._torch_cooldown.get(pos, 0)
+                if cooldown > self._game_tick:
                     desired = False
-                    history.clear()
-                props.powered = desired
-                props.redstonePower = 15 if desired else 0
-                self._set_props(pos, props)
-                changed = True
+                if props.powered != desired:
+                    history = self._torch_history.setdefault(pos, deque())
+                    history.append(self._game_tick)
+                    while history and self._game_tick - history[0] > 60:
+                        history.popleft()
+                    if len(history) >= 8:
+                        self._torch_cooldown[pos] = self._game_tick + 160
+                        desired = False
+                        history.clear()
+                    props.powered = desired
+                    props.redstonePower = 15 if desired else 0
+                    self._set_props(pos, props)
+                    if changed_positions is not None:
+                        changed_positions.add(pos)
+                    changed = True
+                    pass_changed = True
+            if not pass_changed:
+                break
         return changed
 
     def _repeater_input(self, pos: Position, props: BlockProperties) -> int:
-        dx, dy, _ = _facing_offset(props.facing)
-        back = (pos[0] - dx, pos[1] - dy, pos[2])
-        return max(
-            self._output_toward(back, pos),
-            self._strong_powered_solid(back, pos) if self._is_solid(back) else 0,
-        )
+        dx, dy, dz = _facing_offset(props.facing)
+        # RepeaterBlock.getPower reads the cell on its FACING side. The
+        # output is on the opposite side (see _output_toward above).
+        front = (pos[0] + dx, pos[1] + dy, pos[2] + dz)
+        emitted = self._output_toward(front, pos)
+        if self._is_solid(front):
+            emitted = max(emitted, self._strong_powered_solid(front, pos))
+        # AbstractRedstoneGateBlock.getPower has a deliberate wire fallback:
+        # after getEmittedRedstonePower it reads RedstoneWireBlock.POWER
+        # directly. Keep that source behavior for stepped/loaded reference
+        # states whose directional arm is not currently connected.
+        if self.world.getBlock(*front) == self.block_type.REDSTONE_DUST:
+            front_props = self.world.getBlockProperties(*front)
+            if front_props:
+                emitted = max(emitted, max(0, min(15, int(front_props.redstonePower))))
+        return emitted
 
     def _repeater_locked(self, pos: Position, props: BlockProperties) -> bool:
         for side_facing in (props.facing.clockwise(), props.facing.counterclockwise()):
+            # getMaxInputLevelSides samples pos.offset(sideFacing), then
+            # asks that repeater for strong power in sideFacing. A side
+            # repeater therefore locks the main gate when its FACING points
+            # back to the side cell, i.e. equals sideFacing.
             side = _add(pos, _facing_offset(side_facing))
             side_props = self.world.getBlockProperties(*side) or BlockProperties()
             if self.world.getBlock(*side) == self.block_type.REPEATER:
-                if side_props.powered and _add(side, _facing_offset(side_props.facing)) == pos:
+                if side_props.powered and side_props.facing == side_facing:
                     return True
         return False
 
-    def _schedule_repeaters(self) -> None:
+    def _schedule_repeaters(self) -> bool:
+        changed = False
         bt = self.block_type
         for pos in self.world.blockTypePositions.get(bt.REPEATER, ()):
             props = self._props(pos)
@@ -351,16 +583,18 @@ class RedstoneSimulator:
             if props.repeaterLocked != locked:
                 props.repeaterLocked = locked
                 self._set_props(pos, props)
+                changed = True
             if locked:
-                self._repeater_updates.pop(pos, None)
                 continue
             desired = self._repeater_input(pos, props) > 0
-            if desired == props.powered:
-                self._repeater_updates.pop(pos, None)
-            else:
-                current = self._repeater_updates.get(pos)
-                if current is None or current[0] != desired:
-                    self._repeater_updates[pos] = (desired, max(1, props.repeaterDelay) * 2)
+            # Java keeps an already scheduled gate tick even if the input
+            # changes before it fires. That is what extends a pulse shorter
+            # than the selected delay instead of swallowing it.
+            if desired != props.powered and pos not in self._repeater_updates:
+                self._repeater_updates[pos] = (
+                    desired, max(1, props.repeaterDelay) * 2
+                )
+        return changed
 
     def _update_lamps(self) -> bool:
         bt = self.block_type
@@ -406,6 +640,13 @@ class RedstoneSimulator:
 
     def _tick_components(self) -> bool:
         changed = False
+        # A previous piston event may have edited the world during the last
+        # tick. Re-resolve that topology before applying another scheduled
+        # repeater/button tick, especially when update() catches up multiple
+        # 50 ms ticks in one frame.
+        if self.world.revision != self._seen_revision:
+            changed |= self.recalculate()
+        power_changes: set[Position] = set()
         changed |= self._tick_lamp_off_updates()
         for pos, ticks in list(self._button_updates.items()):
             ticks -= 1
@@ -420,33 +661,88 @@ class RedstoneSimulator:
                 props.powered = False
                 props.redstonePower = 0
                 self._set_props(pos, props)
+                power_changes.add(pos)
                 changed = True
-        for pos, (desired, ticks) in list(self._repeater_updates.items()):
+        for pos, (scheduled_state, ticks) in list(self._repeater_updates.items()):
             ticks -= 1
             if ticks > 0:
-                self._repeater_updates[pos] = (desired, ticks)
+                self._repeater_updates[pos] = (scheduled_state, ticks)
                 continue
             self._repeater_updates.pop(pos, None)
             if self.world.getBlock(*pos) != self.block_type.REPEATER:
                 continue
             props = self._props(pos)
-            if not props.repeaterLocked and props.powered != desired:
-                props.powered = desired
-                props.redstonePower = 15 if desired else 0
+            if props.repeaterLocked:
+                continue
+            has_power = self._repeater_input(pos, props) > 0
+            if props.powered and not has_power:
+                props.powered = False
+                props.redstonePower = 0
                 self._set_props(pos, props)
+                power_changes.add(pos)
                 changed = True
+            elif not props.powered:
+                props.powered = True
+                props.redstonePower = 15
+                self._set_props(pos, props)
+                power_changes.add(pos)
+                changed = True
+                if not has_power:
+                    self._repeater_updates[pos] = (
+                        False, max(1, props.repeaterDelay) * 2
+                    )
+        changed |= self._update_torches(power_changes)
+        if power_changes:
+            changed |= self._update_dust(power_changes)
+            changed |= self._schedule_repeaters()
+            # Lamp state is part of the component tick result.  Dropping this
+            # return value left callers with a false ``changed`` result even
+            # though the lamp had just switched on.
+            changed |= self._update_lamps()
         if changed:
-            self._update_dust()
-            self._schedule_repeaters()
-            self._update_lamps()
-        changed |= self._update_torches()
-        changed |= self._update_pistons()
-        self._seen_revision = self.world.revision
+            self._pistons_dirty = True
+        if self._pistons_dirty:
+            piston_changed = self._update_pistons()
+            changed |= piston_changed
+            if piston_changed:
+                # Piston movement can break dust, move a repeater/lamp, or
+                # expose a newly powered face. Those world writes happen
+                # during this tick; leave a full topology pass queued instead
+                # of advancing _seen_revision past the edits and freezing a
+                # stale network until the next unrelated user action.
+                self._dirty_positions = None
+                self._seen_revision = -1
+            else:
+                self._pistons_dirty = False
+                self._seen_revision = self.world.revision
+        else:
+            self._seen_revision = self.world.revision
         return changed
 
     def _piston_powered(self, pos: Position) -> bool:
-        # Intentional project rule: direct/strong power only, never quasi-connectivity.
-        return self._direct_power(pos) > 0
+        """Match Java 1.16.1 PistonBlock.shouldExtend, including QC."""
+        props = self.world.getBlockProperties(*pos) or BlockProperties()
+        face = _facing_offset(props.facing)
+        for delta in NEIGHBORS:
+            if delta == face:
+                continue
+            source = _add(pos, delta)
+            if self._output_toward(source, pos) > 0:
+                return True
+            if self._is_solid(source) and self._strong_powered_solid(source, pos) > 0:
+                return True
+        # Vanilla's second pass checks all power around the block above the
+        # piston except the piston beneath it: quasi-connectivity.
+        above = (pos[0], pos[1], pos[2] + 1)
+        for delta in NEIGHBORS:
+            if delta == (0, 0, -1):
+                continue
+            source = _add(above, delta)
+            if self._output_toward(source, above) > 0:
+                return True
+            if self._is_solid(source) and self._strong_powered_solid(source, above) > 0:
+                return True
+        return False
 
     def _piston_behavior(self, block, props: Optional[BlockProperties]) -> str:
         bt = self.block_type
@@ -479,6 +775,100 @@ class RedstoneSimulator:
 
     def _movable(self, block, props: Optional[BlockProperties]) -> bool:
         return self._piston_behavior(block, props) == "move"
+
+    def _blocks_stick(self, first, second) -> bool:
+        """Return Java's slime/honey adjacency rule for a block pair."""
+        bt = self.block_type
+        if first == bt.AIR or second == bt.AIR:
+            return False
+        if {first, second} == {bt.SLIME_BLOCK, bt.HONEY_BLOCK}:
+            return False
+        return first in (bt.SLIME_BLOCK, bt.HONEY_BLOCK) or second in (
+            bt.SLIME_BLOCK, bt.HONEY_BLOCK
+        )
+
+    def _plan_piston_move(
+        self, start: Position, direction: tuple[int, int, int], piston: Position,
+        *, initial_can_break: bool = True,
+    ) -> Optional[tuple[list[Position], set[Position]]]:
+        """Plan one bounded Java-style push with sticky side branches."""
+        moving: set[Position] = set()
+        breaking: set[Position] = set()
+        backward = (-direction[0], -direction[1], -direction[2])
+        movement_axis = 0 if direction[0] else 1 if direction[1] else 2
+
+        def add_cell(
+            cell: Position, *, can_break: bool, initial: bool = False,
+        ) -> bool:
+            if cell == piston:
+                return True
+            if not self.world.isInBounds(*cell):
+                return False
+            block = self.world.getBlock(*cell)
+            if block == self.block_type.AIR:
+                return True
+            behavior = self._piston_behavior(
+                block, self.world.getBlockProperties(*cell)
+            )
+            # PistonHandler.tryMove returns success for an immovable branch
+            # block: it is not added to the moving list, but it also does not
+            # prevent the sticky line from moving.  Only the forward chain
+            # (where ``can_break`` is true) treats a BLOCK-behavior cell as a
+            # hard obstruction.
+            if behavior == "block":
+                return False if initial else not can_break
+            if behavior == "break":
+                if initial and not can_break:
+                    return False
+                if can_break:
+                    breaking.add(cell)
+                return True
+            if behavior != "move":
+                return False
+            if cell in moving:
+                return True
+            if len(moving) >= 12:
+                return False
+            moving.add(cell)
+
+            # A slime/honey line can pull blocks behind the first encountered
+            # block into the moving group. The piston base terminates it.
+            behind = _add(cell, backward)
+            if behind != piston and self.world.isInBounds(*behind):
+                behind_block = self.world.getBlock(*behind)
+                if self._blocks_stick(block, behind_block):
+                    if not add_cell(behind, can_break=False):
+                        return False
+
+            if not add_cell(_add(cell, direction), can_break=True):
+                return False
+
+            # PistonHandler checks sticky neighbors perpendicular to motion.
+            if block in (self.block_type.SLIME_BLOCK, self.block_type.HONEY_BLOCK):
+                for side in NEIGHBORS:
+                    if side[movement_axis] != 0:
+                        continue
+                    neighbor = _add(cell, side)
+                    if not self.world.isInBounds(*neighbor):
+                        continue
+                    neighbor_block = self.world.getBlock(*neighbor)
+                    if self._blocks_stick(block, neighbor_block):
+                        if not add_cell(neighbor, can_break=False):
+                            return False
+            return True
+
+        if not add_cell(start, can_break=initial_can_break, initial=True):
+            return None
+        ordered = sorted(
+            moving,
+            key=lambda cell: (
+                cell[0] * direction[0]
+                + cell[1] * direction[1]
+                + cell[2] * direction[2]
+            ),
+            reverse=True,
+        )
+        return ordered, breaking
 
     def _capture_cell(self, source: Position, target: Position) -> MovingCell:
         props = self.world.getBlockProperties(*source)
@@ -535,21 +925,10 @@ class RedstoneSimulator:
         front = _add(pos, direction)
         if not self.world.isInBounds(*front):
             return False
-        chain = []
-        cursor = front
-        while self.world.getBlock(*cursor) != self.block_type.AIR:
-            block = self.world.getBlock(*cursor)
-            cell_props = self.world.getBlockProperties(*cursor)
-            behavior = self._piston_behavior(block, cell_props)
-            if behavior == "break":
-                self._break_cell(cursor)
-                break
-            if len(chain) >= 12 or behavior != "move":
-                return False
-            chain.append(cursor)
-            cursor = _add(cursor, direction)
-            if not self.world.isInBounds(*cursor):
-                return False
+        plan = self._plan_piston_move(front, direction, pos)
+        if plan is None:
+            return False
+        chain, breaking = plan
         moving = [self._capture_cell(source, _add(source, direction)) for source in chain]
         head_props = BlockProperties(
             facing=props.facing, pistonExtended=True,
@@ -559,7 +938,9 @@ class RedstoneSimulator:
         final_targets = [_add(source, direction) for source in chain]
         final_targets.append(front)
         with self.world.bulkUpdate():
-            for source in reversed(chain):
+            for fragile in breaking:
+                self._break_cell(fragile)
+            for source in chain:
                 self._move_cell(source, _add(source, direction))
             self.world.setBlock(*front, self.block_type.PISTON_HEAD)
             self.world.setBlockProperties(*front, head_props)
@@ -587,12 +968,19 @@ class RedstoneSimulator:
                 self.world.getBlock(*pos) == self.block_type.STICKY_PISTON
                 and self.world.isInBounds(*pull)
             ):
-                block = self.world.getBlock(*pull)
-                cell_props = self.world.getBlockProperties(*pull)
-                if block != self.block_type.AIR and self._movable(block, cell_props):
-                    moving.append(self._capture_cell(pull, front))
-                    final_targets.append(front)
-                    self._move_cell(pull, front)
+                pull_direction = (-direction[0], -direction[1], -direction[2])
+                plan = self._plan_piston_move(
+                    pull, pull_direction, pos, initial_can_break=False,
+                )
+                if plan is not None:
+                    chain, breaking = plan
+                    for fragile in breaking:
+                        self._break_cell(fragile)
+                    for source in chain:
+                        target = _add(source, pull_direction)
+                        moving.append(self._capture_cell(source, target))
+                        final_targets.append(target)
+                        self._move_cell(source, target)
             props.pistonExtended = False
             self.world.setBlockProperties(*pos, props)
         self._start_motion(pos, False, moving, final_targets)
