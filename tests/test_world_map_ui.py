@@ -115,6 +115,61 @@ def test_dimension_tabs_are_real_hit_targets():
     assert action == "dimension:end"
 
 
+def test_region_controls_and_original_route_indices_remain_distinct():
+    from types import SimpleNamespace
+    view=_view()
+    view.region_rects={'fortress':pygame.Rect(20,110,200,30)}
+    assert view.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=(40,120)))=='region:fortress'
+    view.scene=SimpleNamespace(route_indices=(1,))
+    view.node_hit_rects=[pygame.Rect(400,300,40,40)]
+    assert view.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=(410,310)))=='start:1'
+
+
+def test_close_zoom_pan_translates_cached_source_geometry():
+    from types import SimpleNamespace
+    from ui.source_map import SourceMap
+    source = SourceMap('overworld','plains')
+    renderer = SimpleNamespace(zoomLevel=1.0,offsetX=20,offsetY=20)
+    screen = pygame.Surface((960,640))
+    source.render(screen,renderer)
+    cached = source.surface
+    renderer.offsetX += 12
+    renderer.offsetY += 6
+    source.render(screen,renderer)
+    assert source.surface is cached
+
+
+def test_dimension_ambience_moves_with_time_without_covering_large_areas(monkeypatch):
+    view=_view()
+    for dimension in ('overworld','nether','end'):
+        view.dimension=dimension
+        surface=pygame.Surface((960,640),pygame.SRCALPHA)
+        monkeypatch.setattr(pygame.time,'get_ticks',lambda:100)
+        view._render_dimension_ambience(surface)
+        first=pygame.image.tobytes(surface,'RGBA')
+        assert 0<pygame.mask.from_surface(surface).count()<200
+        surface.fill((0,0,0,0))
+        monkeypatch.setattr(pygame.time,'get_ticks',lambda:1100)
+        view._render_dimension_ambience(surface)
+        assert first!=pygame.image.tobytes(surface,'RGBA')
+
+
+def test_map_markers_cannot_paint_or_click_through_navigation():
+    from types import SimpleNamespace
+    from engine.world_map import MapScene
+    view=_view()
+    surface=pygame.Surface((960,640))
+    scene=MapScene('overworld','Survey','',((400,600,0),),(),('Route',),((0,0,0),(10,10,10)),())
+    view.set_hub('overworld',scene)
+    renderer=SimpleNamespace(worldToScreen=lambda x,y,z:(x,y))
+    view.render_hub(surface,renderer,{})
+    assert not view.node_hit_rects[0]
+    scene=MapScene('overworld','Survey','',((400,350,0),),(),('Route',),((0,0,0),(10,10,10)),())
+    view.set_hub('overworld',scene)
+    view.render_hub(surface,renderer,{})
+    assert view.node_hit_rects[0]
+
+
 def test_ocean_locked_map_has_no_clickable_level_node():
     view = _view()
     view.node_rects = []

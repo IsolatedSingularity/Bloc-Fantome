@@ -347,6 +347,7 @@ class BlockType(Enum):
     STICKY_PISTON = 545
     PISTON_HEAD = 546
     STONE_BUTTON = 547
+    COMPARATOR = 548
 
 
 class Facing(Enum):
@@ -354,19 +355,30 @@ class Facing(Enum):
     EAST = 1
     SOUTH = 2
     WEST = 3
+    UP = 4
+    DOWN = 5
 
     def opposite(self):
+        if self.value >= 4:
+            return Facing.DOWN if self == Facing.UP else Facing.UP
         return Facing((self.value + 2) % 4)
 
     def clockwise(self):
+        if self.value >= 4:
+            return self
         return Facing((self.value + 1) % 4)
 
     def counterclockwise(self):
+        if self.value >= 4:
+            return self
         return Facing((self.value - 1) % 4)
+
+    def in_view(self, rotation):
+        return self if self.value >= 4 else Facing((self.value - rotation) % 4)
 
     @property
     def offset(self):
-        return ((0, -1), (1, 0), (0, 1), (-1, 0))[self.value]
+        return ((0, -1), (1, 0), (0, 1), (-1, 0), (0, 0), (0, 0))[self.value]
 
 
 class SlabPosition(Enum):
@@ -407,6 +419,7 @@ class BlockProperties:
     repeaterLocked: bool = False
     pistonExtended: bool = False
     sticky: bool = False
+    comparatorSubtract: bool = False
 
     def copy(self):
         return BlockProperties(
@@ -423,4 +436,5 @@ class BlockProperties:
             repeaterLocked=self.repeaterLocked,
             pistonExtended=self.pistonExtended,
             sticky=self.sticky,
+            comparatorSubtract=self.comparatorSubtract,
         )

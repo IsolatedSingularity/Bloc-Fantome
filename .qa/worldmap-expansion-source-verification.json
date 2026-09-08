@@ -1,0 +1,100 @@
+[
+  {
+    "file": "end_central.json.gz",
+    "verified_cells": 82586,
+    "sha256": "f253a8c68427c70840e11cfcbd175a9aa7b726ea4c9499c6de0af2cbbc6ac7cc",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "unaltered terrain and structures"
+  },
+  {
+    "file": "end_city.json.gz",
+    "verified_cells": 423054,
+    "sha256": "64c73867b1351342699adf40fbcccce3bbdc2edc55b195f9633d96247e9e239e",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "complete source islands; whole distant boundary-crossing islands omitted"
+  },
+  {
+    "file": "nether_bastion.json.gz",
+    "verified_cells": 403796,
+    "sha256": "c76832ba039fbc8ada63d5b658f030750c9495aa5451790762420abd39c991db",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "roof cutaway above first air below Y110; bottom cut at Y16"
+  },
+  {
+    "file": "nether_crimson.json.gz",
+    "verified_cells": 529162,
+    "sha256": "cb8d7804746563dafa5bdd9a7d9f413336dccc30248d65d6e33af9fac04ac4eb",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "roof cutaway above first air below Y110; bottom cut at Y16"
+  },
+  {
+    "file": "nether_fortress.json.gz",
+    "verified_cells": 410852,
+    "sha256": "c93f14190a5711f2cd0956dafe0c9f12caa081dfdac639793063cd01adc82c41",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "roof cutaway above first air below Y80; bottom cut at Y16"
+  },
+  {
+    "file": "nether_valley.json.gz",
+    "verified_cells": 328245,
+    "sha256": "fc1c604521402dc6140155a3270bec9a87ece37787fe85a18db8138e2df97102",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "roof cutaway above first air below Y110; bottom cut at Y16"
+  },
+  {
+    "file": "nether_warped.json.gz",
+    "verified_cells": 411561,
+    "sha256": "1c608d64d2312dd0019b2659f33d4c501af56a277614fd8b1471c676872fee2d",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "roof cutaway above first air below Y110; bottom cut at Y16"
+  },
+  {
+    "file": "ocean_monument.json.gz",
+    "verified_cells": 210478,
+    "sha256": "f2452a35db1f2e2a7acad703466ace7bb5171af8a22303532d2b2c2da98e8812",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "water cutaway; source seabed section with 12-block geology"
+  },
+  {
+    "file": "ocean_shipwreck.json.gz",
+    "verified_cells": 179385,
+    "sha256": "139b3222c5fff820746f9fc25cabb66a16b765472aa7f84250673866334aa7b8",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "water cutaway; source seabed section with 12-block geology"
+  },
+  {
+    "file": "overworld_desert.json.gz",
+    "verified_cells": 214173,
+    "sha256": "439b9bd415e071aba9940103a685b99628031c449aa54c38b4a26991e9d8b129",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology"
+  },
+  {
+    "file": "overworld_flowers.json.gz",
+    "verified_cells": 192159,
+    "sha256": "85ed721e2b0a3b056cf05bfe16ea95d766215c6a3f726d3000a38a6ce49ac8b2",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology"
+  },
+  {
+    "file": "overworld_mushroom.json.gz",
+    "verified_cells": 640463,
+    "sha256": "c47b5f636f231add24aa7dbb77b83f72fda4315ab00a7a3251dc55ff390a5fea",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology"
+  },
+  {
+    "file": "overworld_plains.json.gz",
+    "verified_cells": 222262,
+    "sha256": "0d3ff8018a3b721391d710e6d8a8ec0f32c5e74bb6fa7cad844bfe576f12b849",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology"
+  },
+  {
+    "file": "overworld_taiga.json.gz",
+    "verified_cells": 250775,
+    "sha256": "945aa9c9f6457e6bbc934a7027ebfb28d0d9d49f38f15f1b08fc52f2fc8b1509",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology"
+  }
+]

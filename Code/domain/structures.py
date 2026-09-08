@@ -86,6 +86,7 @@ def properties_from_structure_state(
     properties.pistonExtended = extended_value is True or str(extended_value).casefold() == "true"
     sticky_value = state_data.get("sticky", False)
     properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
+    properties.comparatorSubtract = str(state_data.get("mode", "")).lower() == "subtract" or state_data.get("comparatorSubtract", False) is True
     return properties
 
 

@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "2.7.1"
+APP_VERSION = "2.7.3"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -56,7 +56,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.7.1'
+        myappid = 'blocfantome.builder.2.7.3'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -938,6 +938,7 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.REDSTONE_TORCH: BlockDefinition("Redstone Torch", "redstone_torch.png", "redstone_torch.png", "redstone_torch.png", transparent=True, modelKind="redstone_torch"),
     BlockType.LEVER: BlockDefinition("Lever", "lever.png", "lever.png", "lever.png", transparent=True, modelKind="lever"),
     BlockType.REPEATER: BlockDefinition("Redstone Repeater", "repeater.png", "repeater.png", "repeater.png", transparent=True, modelKind="repeater"),
+    BlockType.COMPARATOR: BlockDefinition("Comparator", "comparator.png", "comparator.png", "comparator.png", transparent=True, modelKind="comparator"),
     BlockType.PISTON: BlockDefinition("Piston", "piston_top.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
     BlockType.STICKY_PISTON: BlockDefinition("Sticky Piston", "piston_top_sticky.png", "piston_side.png", "piston_bottom.png", modelKind="piston"),
     BlockType.PISTON_HEAD: BlockDefinition("Piston Head", "piston_top.png", "piston_side.png", "piston_inner.png", transparent=True, modelKind="piston_head"),
@@ -1420,6 +1421,7 @@ BLOCK_SOUNDS[BlockType.REDSTONE_DUST] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.REDSTONE_TORCH] = SoundDefinition("wood", "wood")
 BLOCK_SOUNDS[BlockType.LEVER] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.REPEATER] = SoundDefinition("stone", "stone")
+BLOCK_SOUNDS[BlockType.COMPARATOR] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.PISTON] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.STICKY_PISTON] = SoundDefinition("stone", "stone")
 BLOCK_SOUNDS[BlockType.PISTON_HEAD] = SoundDefinition("stone", "stone")
@@ -1544,7 +1546,7 @@ BLOCK_CATEGORIES = {
     "Redstone": [
         BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH, BlockType.LEVER,
         BlockType.STONE_BUTTON,
-        BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
+        BlockType.REPEATER, BlockType.COMPARATOR, BlockType.PISTON, BlockType.STICKY_PISTON,
         BlockType.REDSTONE_LAMP, BlockType.REDSTONE_BLOCK,
     ],
     "Slabs": [
@@ -4117,6 +4119,7 @@ class AssetManager:
             "redstone_lamp_on.png",
             "redstone_torch_off.png",
             "repeater_on.png",
+            "comparator_on.png",
             "redstone_dust_line0.png",
             "redstone_dust_line1.png",
             "redstone_dust_overlay.png",
@@ -8008,7 +8011,7 @@ class AssetManager:
         if not definition or not definition.modelKind:
             return self.blockSprites.get(blockType)
         stateful = definition.modelKind in {
-            "redstone_dust", "redstone_torch", "lever", "repeater",
+            "redstone_dust", "redstone_torch", "lever", "repeater", "comparator",
             "button", "piston", "piston_head",
         }
         key = (
@@ -8039,18 +8042,29 @@ class AssetManager:
             elif definition.modelKind == "redstone_dust":
                 texture = self._redstoneDustTexture(connections, power, powered)
                 textures = (texture, texture, texture)
-            if definition.modelKind == "redstone_dust":
+            if blockType == BlockType.REDSTONE_WALL_TORCH:
+                sprite = self.blockModelRenderer._render_piston_elements(
+                    "wall_torch", {"#torch": textures[0]}, Facing((facing.value - 1) % 4)
+                )
+            elif definition.modelKind == "redstone_dust":
                 wallTexture = self._tintTexture(
                     self.textures.get("redstone_dust_line0.png", texture),
-                    (255, 16 + max(0, min(15, int(power))) * 3, 12)
-                    if powered else (90, 12, 10),
+                    self._redstoneColor(power),
                 )
                 sprite = self.blockModelRenderer.render_redstone_dust(
                     texture, wallTexture, up_connections
                 )
+            elif definition.modelKind == "comparator":
+                variant = "comparator" + ("_on" if powered else "") + ("_subtract" if isOpen else "")
+                sprite = self.blockModelRenderer._render_piston_elements(variant, {
+                    "#slab": self.textures["smooth_stone.png"],
+                    "#top": self.textures["comparator_on.png" if powered else "comparator.png"],
+                    "#lit": self.textures["redstone_torch.png"],
+                    "#unlit": self.textures["redstone_torch_off.png"],
+                }, facing.opposite())
             elif definition.modelKind == "repeater":
                 topTexture = self.textures.get(
-                    "repeater_on.png" if powered else "repeater.png", textures[0]
+                    ("comparator_on.png" if powered else "comparator.png") if definition.modelKind == "comparator" else ("repeater_on.png" if powered else "repeater.png"), textures[0]
                 )
                 torchTexture = self.textures.get(
                     "redstone_torch.png" if powered else "redstone_torch_off.png",
@@ -8118,6 +8132,12 @@ class AssetManager:
             self.detailSprites[key] = sprite
         return self.detailSprites[key]
 
+    @staticmethod
+    def _redstoneColor(power):
+        f = max(0, min(15, int(power))) / 15.0
+        return (int((f * 0.6 + (0.4 if f else 0.3))*255),
+                int(max(0, f*f*0.7-0.5)*255), 0)
+
     def _redstoneDustTexture(self, mask: int, power: int,
                              powered: bool) -> pygame.Surface:
         """Compose a directional N/E/S/W dust texture from vanilla segments."""
@@ -8145,7 +8165,7 @@ class AssetManager:
         if mask & 0b1000:  # west
             texture.blit(horizontal, (0, 0), pygame.Rect(0, 0, mid_x + 1, height))
         level = max(0, min(15, int(power)))
-        tint = (255, 16 + level * 3, 12) if powered else (90, 12, 10)
+        tint = self._redstoneColor(level)
         return self._tintTexture(texture, tint)
 
     @staticmethod
@@ -9284,7 +9304,13 @@ class BlocFantome:
         self.redstoneLabComponentRects: Dict[BlockType, pygame.Rect] = {}
         self.redstoneLabModeRects: Dict[str, pygame.Rect] = {}
         self.redstoneLabCircuitRects: Dict[str, pygame.Rect] = {}
-        self.redstoneLabCircuitKey = "redstone_signal_line"
+        self.redstoneLabCircuitKey = "piston_door"
+        self.redstoneLabPaused = False
+        self.redstoneLabPulseStart = None
+        self.redstoneLabCutaway = False
+        self.redstoneLabPreviews = {}
+        self.redstoneLabActionRects = {}
+        self.redstoneLabControlRects = {}
         self.labSmallFont = load_ui_font(13)
         
         # Experimental lighting system
@@ -9916,7 +9942,8 @@ class BlocFantome:
     def _saveAppConfig(self) -> None:
         """Save app preferences to config file"""
         try:
-            mapState = self._worldMapSessionSnapshot if self.worldMapActive else None
+            mapState = (self._worldMapSessionSnapshot if self.worldMapActive
+                        else self._tutorialSessionSnapshot)
             mapToggles = mapState.get("toggles", {}) if mapState else {}
             lastMusicTrack = (
                 mapState.get("lastMusicTrack") if mapState
@@ -10208,7 +10235,8 @@ class BlocFantome:
         self._canvasResizePreviewSurface = None
         self._terrainNoisePreviewSurface = None
         self._invalidateViewCaches()
-        if self.worldMapActive and self.worldMapMode == "hub" and self.worldMapScene is not None:
+        if (self.worldMapActive and self.worldMapMode == "hub" and self.worldMapScene is not None
+                and self.worldMapScene.region_key is None):
             self._frameWorldMapHub()
 
     def _toggleFullscreen(self) -> None:
@@ -10590,6 +10618,7 @@ class BlocFantome:
             "world": snapshot,
             "sceneTerrainMode": self.sceneTerrainMode,
             "hotbar": list(self.hotbar),
+            "hotbar2": list(self.hotbar2),
             "hotbarSelectedSlot": self.hotbarSelectedSlot,
             "selectedBlock": self.selectedBlock,
             "interactionMode": self.interactionMode,
@@ -10637,7 +10666,7 @@ class BlocFantome:
         except (pygame.error, AttributeError):
             pass
         self.tooltipText = (
-            "TEST mode: right-click controls; editing locked"
+            "INTERACT: left-click a control; I switches to Build"
             if enabled else
             "BUILD mode: left-click places; right-click removes"
         )
@@ -10649,6 +10678,10 @@ class BlocFantome:
             self.redstoneLabActive = False
             self._setInteractionMode(False)
             self._restoreTutorialSession()
+            self.redstone.__dict__.update(self._labRedstoneState)
+            for name, value in self._labEditorState.items():
+                setattr(self, name, value)
+            self.redstone.mark_dirty()
             self.tooltipText = "Returned to your build"
             self.tooltipTimer = 1800
             return
@@ -10657,10 +10690,28 @@ class BlocFantome:
             self.tutorialScreen.hide()
             self._restoreTutorialSession()
         self._captureTutorialSession()
+        import copy
+        self._labRedstoneState = copy.deepcopy({
+            k:v for k,v in self.redstone.__dict__.items()
+            if k not in ("world", "definitions", "block_type", "sound")
+        })
+        # Keep compound editor tools and their selections outside the workbench.
+        tool_defaults = dict(brushSize=1, radialSymmetry=0, previewFacing=Facing.SOUTH,
+            fillToolActive=False, mirrorModeX=False, mirrorModeY=False,
+            magicWandMode=False, stampMode=False, replaceMode=False,
+            blueprintMode=False, selectionActive=False, measurementMode=False,
+            layerViewEnabled=False, searchActive=False, eyedropperMode=False,
+            fillStart=None, selectionStart=None, selectionEnd=None,
+            magicWandSelection=set(), stampData={}, stampOrigin=None,
+            blueprintBlocks={}, measurePoint1=None, measurePoint2=None,
+            replaceSourceBlock=None, searchQuery='', searchResults=[])
+        self._labEditorState = copy.deepcopy({name: getattr(self, name) for name in tool_defaults})
+        for name, value in tool_defaults.items():
+            setattr(self, name, value)
         self.redstoneLabActive = True
-        # The lab is a real editor.  The optional hand remains available with I,
-        # but placement, removal, undo and component interaction all work here.
-        self._setInteractionMode(False)
+        self._setInteractionMode(True)
+        self.redstoneLabPaused = False
+        self.redstoneLabCutaway = False
         self.currentDimension = DIMENSION_OVERWORLD
         # The lab owns its visual stage so the redstone tessellation cannot be
         # hidden by a saved skybox, weather, clouds or day/night state.
@@ -10673,6 +10724,7 @@ class BlocFantome:
         self.skyboxesEnabled = False
         self.celestialEnabled = False
         self.cloudsEnabled = False
+        self.lightingEnabled = False
         self.world.resize(24, 20, 12, min_y=0, preserve=False)
         self.world.setDimension(DIMENSION_OVERWORLD)
         self.assetManager._createBackground(DIMENSION_OVERWORLD)
@@ -10700,52 +10752,69 @@ class BlocFantome:
             bt.REDSTONE_BLOCK, bt.SLIME_BLOCK, bt.HONEY_BLOCK,
         ]
         self.selectedBlock = bt.REDSTONE_DUST
-        self.redstoneLabCircuitKey = "redstone_signal_line"
+        self.redstoneLabCircuitKey = "piston_door"
         self._loadRedstoneLabCircuit(self.redstoneLabCircuitKey)
-        self.tooltipText = "Redstone Lab: choose BUILD or TEST; I toggles mode"
+        self.tooltipText = "Redstone Lab: click a control to use it; I switches to Build"
         self.tooltipTimer = 2600
 
     def _loadRedstoneLabCircuit(self, circuitKey: str) -> bool:
-        """Reset the isolated stage and load one exact verified reference build."""
-        structure = PREMADE_STRUCTURES.get(circuitKey)
-        if not structure or circuitKey not in {
-            "redstone_signal_line", "redstone_ring_riser",
-        }:
+        from engine.redstone_lab import LAB_CIRCUITS, load_circuit
+        circuit = LAB_CIRCUITS.get(circuitKey)
+        if circuit is None:
             return False
         self.redstoneLabCircuitKey = circuitKey
-        bt = BlockType
-        with self.world.bulkUpdate():
-            self.world.clear()
-            for x in range(self.world.width):
-                for y in range(self.world.depth):
-                    floor = bt.POLISHED_DEEPSLATE if (x + y) % 2 else bt.DEEPSLATE_TILES
-                    self.world.setBlock(x, y, 0, floor)
-            for x in range(1, self.world.width - 1):
-                self.world.setBlock(x, 1, 1, bt.QUARTZ_BLOCK)
-                self.world.setBlock(x, self.world.depth - 2, 1, bt.QUARTZ_BLOCK)
-            for y in range(1, self.world.depth - 1):
-                self.world.setBlock(1, y, 1, bt.QUARTZ_BLOCK)
-                self.world.setBlock(self.world.width - 2, y, 1, bt.QUARTZ_BLOCK)
-
-            origin = (self.world.width // 2, self.world.depth // 2, 1)
-            for block in structure["blocks"]:
-                dx, dy, dz, blockType, properties = structure_block_parts(block)
-                target = origin[0] + dx, origin[1] + dy, origin[2] + dz
-                if not self.world.isInBounds(*target):
-                    continue
-                self.world.setBlock(*target, blockType)
-                if properties is not None:
-                    self.world.setBlockProperties(*target, properties.copy())
-
+        load_circuit(self.world, self.redstone, circuit)
+        self.redstoneParticles.clear()
+        self.redstoneLabPulseStart = None
         self.undoManager.clear()
-        self.redstone.active_motions.clear()
-        self.redstone.mark_dirty()
-        self.redstone.update(0)
+        self.hoveredCell = self.hoveredSourceBlock = self.hoveredFace = None
         self._normalizeSpecialBlockTopology()
         self._fitWorldToViewport(notify=False)
+        # Leave clear space above and below the exhibit for its instructions.
         self.lightingDirty = True
         self._invalidateViewCaches()
         return True
+
+    def _advanceLabRedstone(self, dt):
+        from engine.redstone_lab import LAB_CIRCUITS
+        changed = False
+        remaining = max(0, int(dt))
+        while remaining:
+            step = min(remaining, 50 - self.redstone._accumulator)
+            changed |= self.redstone.update(step)
+            remaining -= step
+            start = self.redstoneLabPulseStart
+            if start is not None:
+                age = self.redstone._game_tick - start
+                pos = LAB_CIRCUITS["counter"].controls[0][1]
+                props = self.world.getBlockProperties(*pos)
+                if age >= 30 and props and props.powered and self.world.getBlock(*pos) == BlockType.LEVER:
+                    self._interactBlock(*pos)
+                if age >= 140:
+                    self.redstoneLabPulseStart = None
+        return changed
+
+    def _redstoneLabAction(self, action):
+        if action == "pause":
+            self.redstoneLabPaused = not self.redstoneLabPaused
+        elif action == "step":
+            self.redstoneLabPaused = True
+            self._advanceLabRedstone(50)
+            self.lightingDirty = True
+        elif action == "reset":
+            self._loadRedstoneLabCircuit(self.redstoneLabCircuitKey)
+        elif action == "pulse":
+            from engine.redstone_lab import LAB_CIRCUITS
+            if self.redstoneLabPulseStart is None:
+                pos = LAB_CIRCUITS["counter"].controls[0][1]
+                if self.world.getBlock(*pos) == BlockType.LEVER:
+                    if not self.world.getBlockProperties(*pos).powered:
+                        self._interactBlock(*pos)
+                    self.redstoneLabPulseStart = self.redstone._game_tick
+        elif action == "cutaway":
+            self.redstoneLabCutaway = not self.redstoneLabCutaway
+        self._invalidateViewCaches()
+
 
     def _restoreTutorialSession(self) -> bool:
         state = self._tutorialSessionSnapshot
@@ -10772,6 +10841,7 @@ class BlocFantome:
         self.sceneStructureBounds = self.world.sceneStructureBounds
         self.sceneTerrainMode = state["sceneTerrainMode"]
         self.hotbar = list(state["hotbar"])
+        self.hotbar2 = list(state.get("hotbar2", self.hotbar2))
         self.hotbarSelectedSlot = state["hotbarSelectedSlot"]
         self.selectedBlock = state["selectedBlock"]
         self.currentBuildPath = state["currentBuildPath"]
@@ -10843,6 +10913,7 @@ class BlocFantome:
             "world": snapshot,
             "sceneTerrainMode": self.sceneTerrainMode,
             "hotbar": list(self.hotbar),
+            "hotbar2": list(self.hotbar2),
             "hotbarSelectedSlot": self.hotbarSelectedSlot,
             "selectedBlock": self.selectedBlock,
             "interactionMode": self.interactionMode,
@@ -10951,6 +11022,7 @@ class BlocFantome:
         self._switchWorldMapHub(self.currentDimension, include_intro=True)
 
     def _switchWorldMapHub(self, dimension: str, *, include_intro: bool = False) -> None:
+        self.panning = False
         self.tooltipTimer = 0
         self.worldMapMode = "hub"
         self.worldMapObjective = None
@@ -10983,7 +11055,7 @@ class BlocFantome:
         self._frameWorldMapHub()
 
     def _frameWorldMapHub(self) -> None:
-        """Apply the authored, non-interactive selector camera for this map."""
+        """Restore the selector's authored starting view."""
         if self.worldMapScene is None:
             return
         self.renderer.setViewRotation(0)
@@ -11005,6 +11077,10 @@ class BlocFantome:
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
         self.cameraFocusZ = round(center[2])
+        if self.worldMapScene.region_key == "central":
+            self.worldMapView.source_map.frame_overview(self.renderer, self.screen.get_size())
+            self.zoomLevel = self.renderer.zoomLevel
+            self.targetOffsetX, self.targetOffsetY = self.renderer.offsetX, self.renderer.offsetY
         self._invalidateViewCaches()
 
     def _cycleWorldMap(self, delta: int) -> None:
@@ -11040,6 +11116,7 @@ class BlocFantome:
         self._switchWorldMapHub(self.worldMapDimension)
 
     def _exitWorldMap(self) -> bool:
+        self.panning = False
         state = self._worldMapSessionSnapshot
         if state is None:
             self.worldMapActive = False
@@ -11062,6 +11139,7 @@ class BlocFantome:
         self.sceneStructureBounds = self.world.sceneStructureBounds
         self.sceneTerrainMode = state["sceneTerrainMode"]
         self.hotbar = list(state["hotbar"])
+        self.hotbar2 = list(state.get("hotbar2", self.hotbar2))
         self.hotbarSelectedSlot = state["hotbarSelectedSlot"]
         self.selectedBlock = state["selectedBlock"]
         self.currentBuildPath = state["currentBuildPath"]
@@ -11102,6 +11180,12 @@ class BlocFantome:
         return True
 
     def _handleWorldMapAction(self, action) -> None:
+        if action == "overview" and self.worldMapView.source_map is not None:
+            self.worldMapView.source_map.frame_overview(self.renderer, self.screen.get_size())
+            self.zoomLevel = self.renderer.zoomLevel
+            self.targetOffsetX, self.targetOffsetY = self.renderer.offsetX, self.renderer.offsetY
+            self._invalidateViewCaches()
+            return
         if action == "exit":
             self._exitWorldMap()
         elif action == "hub":
@@ -11118,6 +11202,14 @@ class BlocFantome:
             dimension = action.split(":", 1)[1]
             if dimension in WORLD_MAP_DIMENSIONS and dimension != self.worldMapDimension:
                 self._switchWorldMapHub(dimension)
+        elif isinstance(action, str) and action.startswith("region:"):
+            from engine.world_map_regions import build_region_hub
+            key = action.split(":", 1)[1]
+            if key != self.worldMapScene.region_key:
+                self.panning = False
+                self.worldMapScene = build_region_hub(self.world, self.worldMapDimension, key)
+                self.worldMapView.set_hub(self.worldMapDimension, self.worldMapScene)
+                self._frameWorldMapHub()
 
     def _buildAdvancedTutorialScene(self, stepIndex: int, dimension: str) -> None:
         """Build one deterministic, focused 32x32 interactive lesson scene."""
@@ -11793,8 +11885,26 @@ class BlocFantome:
                     self._handleWorldMapAction(action)
                     continue
                 if self.worldMapMode == "hub":
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    if event.type == pygame.WINDOWFOCUSLOST:
+                        self.panning = False
+                    elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         self._exitWorldMap()
+                    elif event.type == pygame.KEYDOWN and event.key == pygame.K_HOME:
+                        self._frameWorldMapHub()
+                    elif event.type == pygame.MOUSEWHEEL:
+                        self._handleZoom(event.y * self.zoomStep, *pygame.mouse.get_pos())
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
+                        self.panning = True
+                        self.panStartX, self.panStartY = event.pos
+                    elif event.type == pygame.MOUSEBUTTONUP and event.button == 2:
+                        self.panning = False
+                    elif event.type == pygame.MOUSEMOTION and self.panning:
+                        self.renderer.offsetX += event.pos[0] - self.panStartX
+                        self.renderer.offsetY += event.pos[1] - self.panStartY
+                        self.panStartX, self.panStartY = event.pos
+                        self.targetOffsetX = self.renderer.offsetX
+                        self.targetOffsetY = self.renderer.offsetY
+                        self._invalidateViewCaches()
                     elif event.type == pygame.USEREVENT + 1:
                         self.musicController.handle_end_event()
                     continue
@@ -11941,6 +12051,9 @@ class BlocFantome:
             self.targetOffsetY = self.renderer.offsetY
             return
 
+        if self.redstoneLabActive and (mouseY < 105 or mouseY > WINDOW_HEIGHT - 48):
+            return
+
         # A click can arrive without a preceding motion event (touchpads,
         # automated input, and the first frame after opening the lab all do
         # this). Resolve the actual rendered block before routing the action so
@@ -11954,7 +12067,7 @@ class BlocFantome:
         # valid normal-editor placement target.
         if (
             self.redstoneLabActive
-            and self.hoveredSourceBlock is None
+            and (self.interactionMode or self.hoveredSourceBlock is None)
             and mouseX <= self._worldViewportRight()
             and not (self.worldMapActive and self.worldMapMode == "hub")
         ):
@@ -11965,7 +12078,7 @@ class BlocFantome:
         # This belongs on mouse-down; MOUSEMOTION events expose ``buttons`` and
         # do not have the click-only ``button`` field.
         if self.interactionMode:
-            if event.button == 3:
+            if event.button == 3 or (self.redstoneLabActive and event.button == 1):
                 if self.hoveredSourceBlock:
                     self._interactBlock(*self.hoveredSourceBlock)
                 return
@@ -12082,6 +12195,17 @@ class BlocFantome:
 
         if event.key == pygame.K_i and not self.searchActive:
             self._setInteractionMode(not self.interactionMode)
+            return
+
+        if self.redstoneLabActive and self.interactionMode:
+            if event.key == pygame.K_ESCAPE:
+                self._toggleRedstoneLab()
+            elif event.key in (pygame.K_q, pygame.K_e):
+                self._rotateViewAndRecenter(-1 if event.key == pygame.K_q else 1)
+            elif event.key == pygame.K_HOME:
+                self._fitWorldToViewport()
+            # Camera movement and fullscreen are handled by the event/update
+            # loop. All editing shortcuts require explicit Build mode.
             return
         
         # If search is active, handle text input
@@ -12351,11 +12475,11 @@ class BlocFantome:
                 elif blockDef and (
                     blockDef.isStair or blockDef.isDoor or
                     blockDef.modelKind in {
-                        "lever", "button", "repeater", "piston", "piston_head",
+                        "lever", "button", "repeater", "comparator", "piston", "piston_head",
                         "torch", "redstone_torch",
                     }
                 ):
-                    self.previewFacing = Facing((self.previewFacing.value + 1) % 4)
+                    self.previewFacing = Facing((self.previewFacing.value + 1) % (6 if blockDef.modelKind == "piston" else 4))
                     if self.redstoneLabActive:
                         self.tooltipText = f"Placement facing: {self.previewFacing.name}"
                         self.tooltipTimer = 1300
@@ -12657,6 +12781,15 @@ class BlocFantome:
             self._toggleRedstoneLab()
             return
         if self.redstoneLabActive:
+            for action, rect in self.redstoneLabActionRects.items():
+                if rect.collidepoint(mouseX, mouseY):
+                    self._redstoneLabAction(action)
+                    return
+            for position, rect in self.redstoneLabControlRects.items():
+                if rect.collidepoint(mouseX, mouseY):
+                    if self.world.getBlock(*position) in (BlockType.LEVER, BlockType.STONE_BUTTON):
+                        self._interactBlock(*position)
+                    return
             for mode, rect in self.redstoneLabModeRects.items():
                 if rect.collidepoint(mouseX, mouseY):
                     self._setInteractionMode(mode == "test")
@@ -12664,12 +12797,14 @@ class BlocFantome:
             for circuitKey, rect in self.redstoneLabCircuitRects.items():
                 if rect.collidepoint(mouseX, mouseY):
                     self._loadRedstoneLabCircuit(circuitKey)
-                    self.tooltipText = f"Loaded {PREMADE_STRUCTURES[circuitKey]['name']}"
+                    self.tooltipText = "Circuit loaded"
                     self.tooltipTimer = 1600
                     return
             for blockType, rect in self.redstoneLabComponentRects.items():
                 if rect.collidepoint(mouseX, mouseY):
                     self._selectBlockForPlacement(blockType)
+                    if self.previewFacing.value >= 4 and blockType not in (BlockType.PISTON, BlockType.STICKY_PISTON):
+                        self.previewFacing = Facing.SOUTH
                     self.tooltipText = f"{BLOCK_DEFINITIONS[blockType].name}: selected"
                     self.tooltipTimer = 1300
                     return
@@ -13181,11 +13316,11 @@ class BlocFantome:
         if blockDef and blockDef.modelKind:
             props = props or BlockProperties()
             facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-            relativeFacing = Facing((facing.value - viewRot) % 4)
+            relativeFacing = facing.in_view(viewRot)
             extended = (
                 props.pistonExtended
                 if blockType in (BlockType.PISTON, BlockType.STICKY_PISTON)
-                else props.isOpen
+                else props.comparatorSubtract if blockType == BlockType.COMPARATOR else props.isOpen
             )
             sprite = self.assetManager.getDetailSprite(
                 blockType, relativeFacing, extended, props.slabPosition,
@@ -13207,7 +13342,7 @@ class BlocFantome:
             alreadyViewOriented = True
         elif blockDef and blockDef.isDoor and props:
             facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-            relativeFacing = Facing((facing.value - viewRot) % 4)
+            relativeFacing = facing.in_view(viewRot)
             sprite = self.assetManager.getDoorSprite(
                 blockType, relativeFacing, props.isOpen, props.doorHinge, props.doorHalf
             )
@@ -13215,7 +13350,7 @@ class BlocFantome:
             alreadyViewOriented = True
         elif blockDef and blockDef.isStair and props:
             facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-            relativeFacing = Facing((facing.value - viewRot) % 4)
+            relativeFacing = facing.in_view(viewRot)
             sprite = self.assetManager.getStairSprite(
                 blockType, relativeFacing, props.stairShape, props.slabPosition
             )
@@ -13249,7 +13384,7 @@ class BlocFantome:
         localX = int((mouseX - drawX) / self.zoomLevel)
         localY = int((mouseY - screenY) / self.zoomLevel)
         tolerantModel = bool(blockDef and blockDef.modelKind in {
-            "redstone_dust", "redstone_torch", "lever", "repeater", "button",
+            "redstone_dust", "redstone_torch", "lever", "repeater", "comparator", "button",
             "piston", "piston_head",
         })
         # Wires, levers, and piston heads occupy only a few opaque pixels in
@@ -13295,6 +13430,13 @@ class BlocFantome:
 
     def _updateHoveredCell(self, mouseX: int, mouseY: int):
         """Pick the topmost visible model pixel using the render draw order."""
+        if self.redstoneLabActive and self.interactionMode:
+            from ui.redstone_lab import pick_control
+            target = pick_control(self, mouseX, mouseY)
+            self.hoveredSourceBlock = target
+            self.hoveredCell = None
+            self.hoveredFace = None
+            return
         for _sortKey, x, y, z, blockType in reversed(self._visibleBlocksInDrawOrder()):
             face = self._pickRenderedBlockFace(mouseX, mouseY, x, y, z, blockType)
             if face is None:
@@ -13489,13 +13631,13 @@ class BlocFantome:
                 if blockDef and (
                     blockDef.isStair or blockDef.isDoor or
                     blockDef.modelKind in {
-                        "lever", "button", "repeater", "piston", "piston_head",
+                        "lever", "button", "repeater", "comparator", "piston", "piston_head",
                         "torch", "redstone_torch",
                     }
                 ):
                     props = self.world.getBlockProperties(x, y, checkZ)
                     if props:
-                        newFacing = Facing((props.facing.value + 1) % 4)
+                        newFacing = Facing((props.facing.value + 1) % (6 if blockDef.modelKind == "piston" else 4))
                         props.facing = newFacing
                         self.world.setBlockProperties(x, y, checkZ, props)
                         if blockDef.isStair:
@@ -13546,6 +13688,12 @@ class BlocFantome:
             self.redstone.update(0)
             self._playRedstoneSound("redstone_click", (x, y, z))
             self.lightingDirty = True
+            return True
+        if blockType == BlockType.COMPARATOR:
+            props = self.world.getBlockProperties(x,y,z) or BlockProperties()
+            props.comparatorSubtract = not props.comparatorSubtract
+            self.world.setBlockProperties(x,y,z,props)
+            self.redstone.mark_dirty((x,y,z))
             return True
         if blockType == BlockType.REPEATER:
             props = self.world.getBlockProperties(x, y, z) or BlockProperties()
@@ -13875,7 +14023,7 @@ class BlocFantome:
             definition = BLOCK_DEFINITIONS.get(block_type)
             if definition and definition.modelKind:
                 facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-                relative = Facing((facing.value - view_rotation) % 4)
+                relative = facing.in_view(view_rotation)
                 sprite = self.assetManager.getDetailSprite(
                     block_type, relative, props.pistonExtended, props.slabPosition,
                     powered=props.powered, power=props.redstonePower,
@@ -13924,7 +14072,7 @@ class BlocFantome:
                 zoom=self.zoomLevel,
             )
         self._updateSpecialBlocks(dt)
-        if self.redstone.update(dt):
+        if not (self.redstoneLabActive and self.redstoneLabPaused) and (self._advanceLabRedstone(dt) if self.redstoneLabActive else self.redstone.update(dt)):
             self.lightingDirty = True
         if self.worldMapActive and self.worldMapMode == "level" and self.worldMapObjective:
             progress = world_map_objective_progress(self.world, self.worldMapObjective)
@@ -15404,6 +15552,8 @@ class BlocFantome:
         self.screen.blit(gridSurface, (0, 0))
     
     def _renderBlockHighlight(self) -> None:
+        if self.redstoneLabActive and self.interactionMode:
+            return
         """Render outline around the brush area (all blocks that would be placed)"""
         if self.panelHovered:
             return
@@ -15507,7 +15657,7 @@ class BlocFantome:
         selectedDefinition = BLOCK_DEFINITIONS.get(self.selectedBlock)
         pygame.draw.polygon(self.screen, highlightColor, topPoints, 2)
         if not (selectedDefinition and selectedDefinition.modelKind in {
-            "redstone_dust", "redstone_torch", "lever", "repeater", "button"
+            "redstone_dust", "redstone_torch", "lever", "repeater", "comparator", "button"
         }):
             pygame.draw.polygon(self.screen, highlightColor, leftPoints, 2)
             pygame.draw.polygon(self.screen, highlightColor, rightPoints, 2)
@@ -17466,7 +17616,7 @@ class BlocFantome:
 
     def _autoSave(self):
         """Perform auto-save if enabled and interval has passed"""
-        if not self.autoSaveEnabled or self.worldMapActive:
+        if not self.autoSaveEnabled or self.worldMapActive or self.redstoneLabActive:
             return
         
         currentTime = pygame.time.get_ticks()
@@ -19239,7 +19389,7 @@ class BlocFantome:
                     canvasRight = tutorialLeft - 18
                 availableWidth = max(120, canvasRight - canvasLeft - 38)
                 targetX = (canvasLeft + canvasRight) / 2.0
-        availableHeight = WINDOW_HEIGHT - 92
+        availableHeight = WINDOW_HEIGHT - (200 if self.redstoneLabActive else 92)
         self.zoomLevel = round(max(self.zoomMin, min(self.zoomMax, min(
             availableWidth / max(1, width),
             availableHeight / max(1, height),
@@ -19253,7 +19403,7 @@ class BlocFantome:
             (minZ + maxZ) / 2.0,
         )
         screenX, screenY = self.renderer.worldToScreen(*centerWorld)
-        targetY = WINDOW_HEIGHT / 2.0
+        targetY = WINDOW_HEIGHT / 2.0 + (12 if self.redstoneLabActive else 0)
         self.renderer.offsetX += targetX - screenX
         self.renderer.offsetY += targetY - screenY
         self.targetOffsetX = self.renderer.offsetX
@@ -20572,6 +20722,14 @@ class BlocFantome:
 
     def _render(self) -> None:
         """Render the game"""
+        if (self.worldMapActive and self.worldMapMode == "hub"
+                and self.worldMapView.source_map is not None):
+            self.screen.fill({"nether": (27,17,20), "end": (13,11,22),
+                              "overworld": (24,35,34), "ocean": (9,34,48)}[self.worldMapDimension])
+            self.worldMapView.source_map.render(self.screen, self.renderer)
+            self.worldMapView.render_hub(self.screen, self.renderer, self.worldMapCompleted)
+            pygame.display.flip()
+            return
         # Skyboxes are cached cubemap views linked to camera quarter-turns.
         # Missing local assets fall back to the normal dimension texture.
         skyboxDrawn = False
@@ -20581,7 +20739,7 @@ class BlocFantome:
             )
         if not skyboxDrawn:
             if self.redstoneLabActive:
-                self.assetManager.drawRedstoneLabBackground(self.screen)
+                self.screen.fill((31, 35, 42))
             else:
                 self.assetManager.drawBackground(self.screen)
         
@@ -21408,6 +21566,24 @@ class BlocFantome:
         )
 
     def _visibleBlocksInDrawOrder(self):
+        if self.redstoneLabActive:
+            # Small exhibits do not need the editor's 512-pixel terrain margin.
+            self._worldSurfaceMargin = 64
+            from engine.redstone_lab import LAB_CIRCUITS
+            c = LAB_CIRCUITS.get(self.redstoneLabCircuitKey)
+            hidden = c.shell if c and self.redstoneLabCutaway else set()
+            key = ("lab", self.world.revision, self.renderer.viewRotation, self.redstoneLabCutaway)
+            if self._visibleOrderCacheKey != key:
+                self._visibleOrderCache = tuple(sorted(
+                    (self.renderer.depthKey(x,y,z),x,y,z,block)
+                    for (x,y,z),block in self.world.blocks.items() if (x,y,z) not in hidden
+                ))
+                self._visibleOrderCacheKey = key
+                self._visibleOrderOccluded = 0
+            return self._visibleOrderCache
+        return self._editorVisibleBlocksInDrawOrder()
+
+    def _editorVisibleBlocksInDrawOrder(self):
         """Return a cached view-facing painter order around the camera."""
         self._worldSurfaceMargin = 512
         centerX, centerY = self._cameraWorldCenter()
@@ -21567,6 +21743,8 @@ class BlocFantome:
         )
 
     def _isFullyOccluded(self, x: int, y: int, z: int, blockType: BlockType) -> bool:
+        if self.redstoneLabActive and self.redstoneLabCutaway:
+            return False
         """Cull cubes hidden by the top and both camera-facing neighbors."""
         if not self._isOpaqueCubeDefinition(BLOCK_DEFINITIONS.get(blockType)):
             return False
@@ -21866,9 +22044,16 @@ class BlocFantome:
         )
         drawnCount = startIndex
         blits = []
+        from engine.lab_render_cache import frame_key, reuse, remember
+        labKey = frame_key(self, canCacheSurface, visibleAnimated)
+        reusedBlits = reuse(self, labKey)
+        labIndices = {}
+        if reusedBlits is not None:
+            blits = reusedBlits
+            drawnCount = len(blits)
 
         # Draw blocks
-        for _, x, y, z, blockType in blocksToDraw[startIndex:endIndex]:
+        for _, x, y, z, blockType in (() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]):
             if (x, y, z) in movingTargets:
                 continue
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
@@ -21933,11 +22118,11 @@ class BlocFantome:
                 elif blockDef and blockDef.modelKind:
                     props = props or BlockProperties()
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    relativeFacing = facing.in_view(viewRot)
                     extended = (
                         props.pistonExtended
                         if displayBlockType in (BlockType.PISTON, BlockType.STICKY_PISTON)
-                        else props.isOpen
+                        else props.comparatorSubtract if blockType == BlockType.COMPARATOR else props.isOpen
                     )
                     sprite = self.assetManager.getDetailSprite(
                         displayBlockType, relativeFacing, extended, props.slabPosition,
@@ -21954,7 +22139,7 @@ class BlocFantome:
                     )
                 elif blockDef and blockDef.isDoor and props:
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    relativeFacing = facing.in_view(viewRot)
                     sprite = self.assetManager.getDoorSprite(
                         displayBlockType,
                         relativeFacing,
@@ -21964,7 +22149,7 @@ class BlocFantome:
                     )
                 elif blockDef and blockDef.isStair and props:
                     facing = props.facing if isinstance(props.facing, Facing) else Facing.SOUTH
-                    relativeFacing = Facing((facing.value - viewRot) % 4)
+                    relativeFacing = facing.in_view(viewRot)
                     sprite = self.assetManager.getStairSprite(
                         displayBlockType,
                         relativeFacing,
@@ -22013,6 +22198,8 @@ class BlocFantome:
                 if alpha is not None:
                     sprite = self.assetManager.getAlphaSprite(sprite, alpha)
                 
+                if labKey is not None:
+                    labIndices[(x,y,z)] = len(blits)
                 blits.append((
                     sprite,
                     (
@@ -22022,6 +22209,8 @@ class BlocFantome:
                 ))
                 drawnCount += 1
 
+        if reusedBlits is None:
+            remember(self, labKey, labIndices, blits)
         if blits:
             targetSurface.blits(blits)
 
@@ -22111,7 +22300,7 @@ class BlocFantome:
         
         blockDef = BLOCK_DEFINITIONS.get(self.selectedBlock)
         viewRot = self.renderer.viewRotation
-        relativeFacing = Facing((self.previewFacing.value - viewRot) % 4)
+        relativeFacing = self.previewFacing.in_view(viewRot)
         if blockDef and blockDef.isDoor:
             sprite = self.assetManager.getDoorSprite(
                 self.selectedBlock, relativeFacing, False, DoorHinge.LEFT, DoorHalf.LOWER
@@ -23107,283 +23296,21 @@ class BlocFantome:
             pygame.draw.rect(self.screen, (164, 51, 43), box, 1, border_radius=3)
             self.screen.blit(label, label.get_rect(center=box.center))
 
-    def _renderRedstoneLabPanel(self) -> None:
-        """Render a compact redstone workbench palette and state inspector."""
-        panelX = WINDOW_WIDTH - PANEL_WIDTH
-        panelRect = pygame.Rect(panelX, 0, PANEL_WIDTH, WINDOW_HEIGHT)
-        pygame.draw.rect(self.screen, (17, 14, 18), panelRect)
-        for y in range(0, WINDOW_HEIGHT, 32):
-            pygame.draw.line(self.screen, (32, 24, 29), (panelX, y), (WINDOW_WIDTH, y))
-        pygame.draw.rect(self.screen, (112, 36, 37), panelRect, 2)
+    def _renderRedstoneLabPanel(self):
+        from ui.redstone_lab import panel
+        panel(self)
 
-        title = self.font.render("REDSTONE LAB", True, (245, 224, 215))
-        self.screen.blit(title, (panelX + 14, 14))
-        modeText = "TEST • RIGHT-CLICK CONTROLS" if self.interactionMode else "BUILD • EDIT CIRCUIT"
-        mode = self.labSmallFont.render(modeText, True, (238, 91, 69))
-        self.screen.blit(mode, (panelX + 14, 45))
-        pygame.draw.line(self.screen, (108, 42, 43), (panelX + 12, 68), (WINDOW_WIDTH - 12, 68), 1)
+    def _renderRedstoneLabHeader(self):
+        from ui.redstone_lab import header
+        header(self)
 
-        mouse = pygame.mouse.get_pos()
-        modeTop = 78
-        modeGap = 8
-        modeWidth = (PANEL_WIDTH - 28 - modeGap) // 2
-        self.redstoneLabModeRects = {
-            "build": pygame.Rect(panelX + 14, modeTop, modeWidth, 29),
-            "test": pygame.Rect(panelX + 14 + modeWidth + modeGap, modeTop, modeWidth, 29),
-        }
-        for key, rect in self.redstoneLabModeRects.items():
-            selectedMode = (key == "test") == self.interactionMode
-            self.assetManager.drawButton(
-                self.screen, rect, key.upper(), self.labSmallFont,
-                hovered=rect.collidepoint(mouse), selected=selectedMode,
-            )
+    def _renderRedstoneLabCursor(self):
+        from ui.redstone_lab import cursor
+        cursor(self)
 
-        circuitsTitle = self.labSmallFont.render("REFERENCE CIRCUITS", True, (226, 179, 163))
-        self.screen.blit(circuitsTitle, (panelX + 14, 117))
-        circuitLabels = (
-            ("redstone_signal_line", "SIGNAL LINE"),
-            ("redstone_ring_riser", "RING RISER"),
-        )
-        self.redstoneLabCircuitRects = {}
-        circuitWidth = (PANEL_WIDTH - 28 - modeGap) // 2
-        for index, (key, label) in enumerate(circuitLabels):
-            rect = pygame.Rect(
-                panelX + 14 + index * (circuitWidth + modeGap), 138,
-                circuitWidth, 30,
-            )
-            self.redstoneLabCircuitRects[key] = rect
-            self.assetManager.drawButton(
-                self.screen, rect, label, self.labSmallFont,
-                hovered=rect.collidepoint(mouse),
-                selected=key == self.redstoneLabCircuitKey,
-            )
-        pygame.draw.line(self.screen, (108, 42, 43), (panelX + 12, 178), (WINDOW_WIDTH - 12, 178), 1)
+    def _renderRedstoneLabAnnotations(self):
+        pass
 
-        components = (
-            (BlockType.REDSTONE_DUST, "Carries 15 → 0; climbs one supported step."),
-            (BlockType.REDSTONE_TORCH, "Inverts its support; burnout is simulated."),
-            (BlockType.LEVER, "Latching source. Click to toggle power."),
-            (BlockType.STONE_BUTTON, "Pulse source. Releases after 20 game ticks."),
-            (BlockType.REPEATER, "Directional delay 1–4; click to adjust."),
-            (BlockType.PISTON, "Pushes up to 12 blocks; includes Java QC."),
-            (BlockType.STICKY_PISTON, "Pushes/pulls slime and honey groups."),
-            (BlockType.REDSTONE_LAMP, "Lights on power; four-tick off delay."),
-            (BlockType.REDSTONE_BLOCK, "Constant strength-15 power source."),
-            (BlockType.SLIME_BLOCK, "Sticks to moved neighbors, except honey."),
-            (BlockType.HONEY_BLOCK, "Sticks to moved neighbors, except slime."),
-        )
-        shortNames = {
-            BlockType.REDSTONE_DUST: "DUST",
-            BlockType.REDSTONE_TORCH: "TORCH",
-            BlockType.LEVER: "LEVER",
-            BlockType.STONE_BUTTON: "BUTTON",
-            BlockType.REPEATER: "REPEATER",
-            BlockType.PISTON: "PISTON",
-            BlockType.STICKY_PISTON: "STICKY",
-            BlockType.REDSTONE_LAMP: "LAMP",
-            BlockType.REDSTONE_BLOCK: "BLOCK",
-            BlockType.SLIME_BLOCK: "SLIME",
-            BlockType.HONEY_BLOCK: "HONEY",
-        }
-        self.redstoneLabComponentRects = {}
-        # The lab is also usable at the app's 960x640 minimum window.  The
-        # full-size cards leave the controls legend underneath the footer at
-        # that height, so compact the vertical rhythm only when necessary.
-        compact = WINDOW_HEIGHT < 760
-        gridTop = 188
-        gap = 5 if compact else 7
-        cellWidth = (PANEL_WIDTH - 28 - gap * 2) // 3
-        cellHeight = 44 if compact else 53
-        descriptions = dict(components)
-        for index, (blockType, _description) in enumerate(components):
-            column = index % 3
-            row = index // 3
-            rect = pygame.Rect(
-                panelX + 14 + column * (cellWidth + gap),
-                gridTop + row * (cellHeight + gap),
-                cellWidth, cellHeight,
-            )
-            self.redstoneLabComponentRects[blockType] = rect
-            selected = self.selectedBlock == blockType
-            hovered = rect.collidepoint(mouse)
-            fill = (64, 29, 31) if selected else (36, 28, 31) if hovered else (26, 22, 24)
-            pygame.draw.rect(self.screen, fill, rect, border_radius=4)
-            pygame.draw.rect(
-                self.screen, (222, 66, 51) if selected else (73, 49, 51),
-                rect, 2 if selected else 1, border_radius=4,
-            )
-            icon = self.assetManager.getPanelPreviewIcon(blockType)
-            if icon:
-                # These are already native pixel-art previews. A nearest-
-                # neighbour scale keeps the redstone silhouettes crisp in the
-                # compact workbench cards.
-                icon = pygame.transform.scale(icon, (31, 31))
-                self.screen.blit(icon, icon.get_rect(center=(rect.centerx, rect.y + 19)))
-            shortName = shortNames[blockType]
-            name = self.labSmallFont.render(shortName, True, (246, 236, 230))
-            self.screen.blit(name, name.get_rect(center=(rect.centerx, rect.bottom - 10)))
-
-        detailTop = gridTop + 4 * (cellHeight + gap) + 2
-        selectedName = BLOCK_DEFINITIONS[self.selectedBlock].name
-        selected = self.smallFont.render(selectedName.upper(), True, (255, 211, 194))
-        self.screen.blit(selected, (panelX + 14, detailTop))
-        description = descriptions.get(self.selectedBlock, "Select a redstone component to inspect it.")
-        words = description.split()
-        lines = [""]
-        for word in words:
-            candidate = f"{lines[-1]} {word}".strip()
-            if self.labSmallFont.size(candidate)[0] <= PANEL_WIDTH - 28:
-                lines[-1] = candidate
-            elif len(lines) < 2:
-                lines.append(word)
-        for index, line in enumerate(lines[:2]):
-            detail = self.labSmallFont.render(line, True, (190, 171, 168))
-            detailOffset = 24 if compact else 27
-            self.screen.blit(detail, (panelX + 14, detailTop + detailOffset + index * 15))
-
-        validation = self.labSmallFont.render(
-            "Java 1.16.1 • verified reference data", True, (153, 126, 126)
-        )
-        validationOffset = 55 if compact else 61
-        self.screen.blit(validation, (panelX + 14, detailTop + validationOffset))
-
-        # Use the lower panel as a small workbench legend instead of leaving a
-        # large empty inspector column. The same actions remain available from
-        # the normal editor, but these labels make the Lab self-contained.
-        rulesTop = detailTop + (80 if compact else 86)
-        rulesHeight = 100 if compact else 148
-        rulesRect = pygame.Rect(panelX + 12, rulesTop, PANEL_WIDTH - 24, rulesHeight)
-        self.redstoneLabRulesRect = rulesRect
-        pygame.draw.rect(self.screen, (23, 18, 21), rulesRect, border_radius=4)
-        pygame.draw.rect(self.screen, (72, 42, 44), rulesRect, 1, border_radius=4)
-        rulesTitle = self.labSmallFont.render("WORKBENCH CONTROLS", True, (226, 179, 163))
-        self.screen.blit(rulesTitle, (rulesRect.x + 10, rulesRect.y + (7 if compact else 9)))
-        rules = (
-            (("RMB", "use lever/button/repeater"),
-             ("LMB", "editing is locked"),
-             ("I", "switch to BUILD mode"),
-             ("MMB", "drag the camera"))
-            if self.interactionMode else
-            (("LMB", "place selected component"),
-             ("RMB", "remove hovered block"),
-             ("R", "rotate preview N/E/S/W"),
-             ("I", "switch to TEST mode"))
-        )
-        rowY = rulesRect.y + (27 if compact else 34)
-        rowStep = 19 if compact else 27
-        for keyText, actionText in rules:
-            keySurface = self.labSmallFont.render(keyText, True, (255, 230, 215))
-            keyRect = keySurface.get_rect(topleft=(rulesRect.x + 10, rowY))
-            keyBack = keyRect.inflate(8, 4)
-            pygame.draw.rect(self.screen, (87, 39, 38), keyBack, border_radius=2)
-            pygame.draw.rect(self.screen, (170, 74, 58), keyBack, 1, border_radius=2)
-            self.screen.blit(keySurface, keyRect)
-            action = self.labSmallFont.render(actionText, True, (184, 162, 158))
-            self.screen.blit(action, (rulesRect.x + 70, rowY))
-            rowY += rowStep
-
-        footer = self.labSmallFont.render(
-            "ESC closes the lab  •  build is isolated",
-            True, (180, 158, 157),
-        )
-        self.screen.blit(footer, (panelX + 12, WINDOW_HEIGHT - 66))
-        # This is deliberately a full-width, labelled action rather than the
-        # tiny redstone icon used to enter the lab from the normal inventory.
-        exitRect = pygame.Rect(panelX + 12, WINDOW_HEIGHT - 42, PANEL_WIDTH - 24, 32)
-        self.redstoneLabButtonRect = exitRect
-        exitHovered = exitRect.collidepoint(pygame.mouse.get_pos())
-        self.assetManager.drawButton(
-            self.screen, exitRect, "RETURN TO BUILD", self.labSmallFont,
-            hovered=exitHovered, selected=exitHovered,
-        )
-
-    def _renderRedstoneLabHeader(self) -> None:
-        """Draw the focused, non-editor chrome for the circuit workbench."""
-        viewportRight = self._worldViewportRight()
-        header = pygame.Rect(18, 16, min(470, viewportRight - 36), 76)
-        backdrop = pygame.Surface(header.size, pygame.SRCALPHA)
-        backdrop.fill((13, 12, 16, 232))
-        self.screen.blit(backdrop, header.topleft)
-        pygame.draw.rect(self.screen, (157, 49, 43), header, 2, border_radius=5)
-        pygame.draw.line(
-            self.screen, (242, 95, 58),
-            (header.left + 14, header.top + 51),
-            (header.right - 14, header.top + 51), 1,
-        )
-        title = self.font.render("REDSTONE LAB", True, (255, 232, 218))
-        self.screen.blit(title, (header.left + 14, header.top + 9))
-        hint = self.labSmallFont.render(
-            "VERIFIED CIRCUIT  •  BUILD / TEST  •  R ROTATES BEFORE PLACEMENT",
-            True, (208, 158, 148),
-        )
-        self.screen.blit(hint, (header.left + 14, header.top + 58))
-
-    def _renderRedstoneLabCursor(self) -> None:
-        """Draw the Lab's explicit little red PC-mouse cursor in Test mode."""
-        if not self.interactionMode:
-            return
-        mouseX, mouseY = pygame.mouse.get_pos()
-        # Dummy/headless captures and the first frame after entering the Lab
-        # often report (0, 0) even though the renderer has a valid hover hit.
-        # Anchor the badge to that rendered model in that case; once a real
-        # pointer is inside the viewport, follow it as usual.
-        if (
-            self.hoveredSourceBlock is not None
-            and (mouseX <= 1 and mouseY <= 1 or mouseX < 0 or mouseY < 0)
-        ):
-            mouseX, mouseY = self.renderer.worldToScreen(*self.hoveredSourceBlock)
-        # A headless renderer (and the first frame after opening the Lab) can
-        # report the sentinel pointer position (0, 0).  Do not leave a
-        # half-drawn TEST badge in the window corner when there is no rendered
-        # block to anchor it to; that artifact was visible in reference-circuit
-        # captures and looked like a broken cursor.
-        if (
-            (mouseX <= 1 and mouseY <= 1 and self.hoveredSourceBlock is None)
-            or mouseX < 0
-            or mouseY < 0
-            or mouseX >= self._worldViewportRight()
-            or mouseY >= WINDOW_HEIGHT
-        ):
-            return
-        color = (245, 61, 48)
-        outline = (48, 8, 9)
-        mouseRect = pygame.Rect(mouseX - 7, mouseY - 10, 14, 20)
-        pygame.draw.rect(self.screen, outline, mouseRect.inflate(4, 4), border_radius=8)
-        pygame.draw.rect(self.screen, (119, 24, 25), mouseRect, border_radius=7)
-        pygame.draw.rect(self.screen, color, mouseRect, 2, border_radius=7)
-        pygame.draw.line(self.screen, color, (mouseX, mouseRect.top + 2), (mouseX, mouseY - 2), 2)
-        pygame.draw.circle(self.screen, (255, 178, 113), (mouseX - 3, mouseY - 5), 1)
-        label = self.labSmallFont.render("TEST", True, color)
-        badge = label.get_rect(midleft=(mouseX + 12, mouseY)).inflate(8, 5)
-        pygame.draw.rect(self.screen, (31, 10, 12), badge, border_radius=3)
-        pygame.draw.rect(self.screen, color, badge, 1, border_radius=3)
-        self.screen.blit(label, label.get_rect(center=badge.center))
-
-    def _renderRedstoneLabAnnotations(self) -> None:
-        """Label the currently loaded reference build."""
-        structure = PREMADE_STRUCTURES.get(self.redstoneLabCircuitKey, {})
-        annotations = ((structure.get("name", "REFERENCE CIRCUIT").upper(),
-                        (self.world.width // 2, self.world.depth // 2, 1),
-                        (239, 92, 52)),)
-        viewportRight = self._worldViewportRight()
-        for labelText, position, accent in annotations:
-            screenX, screenY = self.renderer.worldToScreen(*position)
-            text = self.labSmallFont.render(labelText, True, (241, 229, 221))
-            rect = text.get_rect(
-                midbottom=(int(screenX), int(screenY - 17))
-            ).inflate(12, 7)
-            rect.x = max(8, min(viewportRight - rect.width - 8, rect.x))
-            rect.y = max(104, min(WINDOW_HEIGHT - rect.height - 8, rect.y))
-            pygame.draw.line(
-                self.screen, (*accent, 150),
-                (rect.centerx, rect.bottom), (int(screenX), int(screenY - 4)), 1,
-            )
-            badge = pygame.Surface(rect.size, pygame.SRCALPHA)
-            badge.fill((13, 12, 16, 205))
-            self.screen.blit(badge, rect.topleft)
-            pygame.draw.rect(self.screen, accent, rect, 1, border_radius=3)
-            self.screen.blit(text, text.get_rect(center=rect.center))
-    
     def _renderStatus(self) -> None:
         """Render status information"""
         # Mode indicator

@@ -111,6 +111,7 @@ def _properties(block_type, state_data, definitions):
     properties.pistonExtended = extended_value is True or str(extended_value).casefold() == "true"
     sticky_value = state_data.get("sticky", False)
     properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
+    properties.comparatorSubtract = str(state_data.get("mode", "")).lower() == "subtract" or state_data.get("comparatorSubtract", False) is True
     return properties
 
 
@@ -429,7 +430,7 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
             for key in (
                 "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge",
                 "oxidationStage", "powered", "redstonePower", "repeaterDelay",
-                "repeaterLocked", "pistonExtended", "sticky",
+                "repeaterLocked", "pistonExtended", "sticky", "comparatorSubtract",
             ):
                 if key in block_data:
                     state_data[key] = block_data[key]
@@ -537,11 +538,13 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
             if definition and definition.modelKind == "lantern":
                 block_data["isOpen"] = properties.isOpen
             if definition and definition.modelKind in {
-                "redstone_dust", "redstone_torch", "lever", "repeater",
+                "redstone_dust", "redstone_torch", "lever", "repeater", "comparator",
                 "piston", "piston_head",
             }:
                 block_data["powered"] = properties.powered
                 block_data["redstonePower"] = max(0, min(15, int(properties.redstonePower)))
+            if definition and definition.modelKind == "comparator":
+                block_data["comparatorSubtract"] = properties.comparatorSubtract
             if definition and definition.modelKind == "repeater":
                 block_data["repeaterDelay"] = max(1, min(4, int(properties.repeaterDelay)))
                 block_data["repeaterLocked"] = properties.repeaterLocked

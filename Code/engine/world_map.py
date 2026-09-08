@@ -19,7 +19,7 @@ from domain.blocks import (
     SlabPosition,
     StairShape,
 )
-from runtime_paths import BUNDLED_DATA_DIR, WORLDS_DIR
+from runtime_paths import BUNDLED_DATA_DIR
 
 
 DIMENSION_ORDER = ("overworld", "nether", "end", "ocean")
@@ -38,6 +38,8 @@ class MapScene:
     source_templates: tuple[str, ...]
     ambient_routes: tuple[tuple[tuple[float, float, float], ...], ...] = ()
     landmarks: tuple[tuple[str, tuple[float, float, float]], ...] = ()
+    region_key: str | None = None
+    route_indices: tuple[int, ...] = ()
 
     @property
     def runtime_dimension(self) -> str:
@@ -73,36 +75,6 @@ def source_template_metadata(name: str) -> Mapping[str, object]:
     if not isinstance(template, dict):
         raise KeyError(name)
     return template
-
-
-@lru_cache(maxsize=1)
-def _end_city_showcase_records() -> tuple[tuple[int, int, int, str, Mapping[str, str]], ...]:
-    """Load the already-bundled full End City structure without its terrain."""
-    path = os.path.join(WORLDS_DIR, "end_city_1161.json.gz")
-    with gzip.open(path, "rt", encoding="utf-8") as handle:
-        payload = json.load(handle)
-    structure = [
-        record for record in payload.get("blocks", ())
-        if record.get("role") == "structure"
-    ]
-    if not structure:
-        raise ValueError("Bundled End City world contains no structure records")
-    min_x = min(int(record["x"]) for record in structure)
-    min_y = min(int(record["y"]) for record in structure)
-    min_z = min(int(record["z"]) for record in structure)
-    return tuple(
-        (
-            int(record["x"]) - min_x,
-            int(record["y"]) - min_y,
-            int(record["z"]) - min_z,
-            str(record["type"]),
-            {
-                str(key): str(value)
-                for key, value in (record.get("state") or {}).items()
-            },
-        )
-        for record in structure
-    )
 
 
 def _put(world, x: int, y: int, z: int, block: BlockType, **state) -> None:
@@ -216,34 +188,6 @@ def _tree(world, x: int, y: int, base: int) -> None:
             for dy in range(-radius, radius + 1):
                 if abs(dx) + abs(dy) <= radius + 1:
                     _put(world, x + dx, y + dy, z, BlockType.OAK_LEAVES)
-
-
-def _nether_fungus(world, x: int, y: int, *, warped: bool) -> None:
-    top = world.heightIndex.get((x, y), world.min_y - 1)
-    if top < world.min_y:
-        return
-    stem = BlockType.WARPED_STEM if warped else BlockType.CRIMSON_STEM
-    cap = BlockType.WARPED_WART_BLOCK if warped else BlockType.NETHER_WART_BLOCK
-    height = 5 + (x * 3 + y * 5) % 4
-    for z in range(top + 1, top + height + 1):
-        _put(world, x, y, z, stem)
-    crown = top + height
-    for dz, radius in ((0, 2), (1, 3), (2, 2)):
-        for dx in range(-radius, radius + 1):
-            for dy in range(-radius, radius + 1):
-                if abs(dx) + abs(dy) <= radius + 1:
-                    _put(world, x + dx, y + dy, crown + dz, cap)
-    _put(world, x + 1, y, crown, BlockType.SHROOMLIGHT)
-
-
-def _nether_fossil(world, origin: tuple[int, int, int]) -> None:
-    ox, oy, oz = origin
-    for x in range(ox, ox + 13):
-        _put(world, x, oy, oz, BlockType.BONE_BLOCK)
-    for rib_x in range(ox + 2, ox + 12, 3):
-        for offset in range(5):
-            _put(world, rib_x, oy + offset, oz + offset, BlockType.BONE_BLOCK)
-            _put(world, rib_x, oy - offset, oz + offset, BlockType.BONE_BLOCK)
 
 
 def _path_cell(world, x: int, y: int) -> None:
@@ -655,149 +599,6 @@ def _overworld_hub(world) -> MapScene:
     )
 
 
-def _nether_hub(world) -> MapScene:
-    # Keep every source-scale structure readable in the locked map camera. The
-    # 84x78 field is large enough for the native bastion pieces and the exact
-    # fortress-piece assembly without the excessive dead border of the older
-    # 92x92 presentation.
-    world.resize(84, 78, 64, min_y=-16, preserve=False)
-    world.setDimension("nether")
-    with world.bulkUpdate():
-        footprint = set()
-        for x in range(84):
-            for y in range(78):
-                nx = (x - 41.5) / 40.0
-                ny = (y - 38.5) / 36.5
-                edge = nx * nx + ny * ny
-                edge += 0.07 * math.sin(x * 0.41 + y * 0.23)
-                edge += 0.045 * math.cos(x * 0.19 - y * 0.37)
-                if edge > 1.0:
-                    continue
-                footprint.add((x, y))
-                lava_rift = abs((y - 39) - (x - 40) * 0.27) < 2.2
-                if lava_rift and 10 < x < 74:
-                    for z in range(-5, -1):
-                        _put(world, x, y, z, BlockType.BASALT)
-                    _put(world, x, y, -1, BlockType.MAGMA_BLOCK)
-                    _put(world, x, y, 0, BlockType.LAVA)
-                    continue
-                height = 2 + round(
-                    1.8 * math.sin(x * 0.15)
-                    + 1.5 * math.cos(y * 0.17)
-                    + 0.9 * math.sin((x + y) * 0.11)
-                )
-                height = max(0, min(7, height))
-                warped = x < 35 and y < 43
-                crimson = 31 <= x < 61 and y < 31
-                soul_valley = y >= 44 and x < 56
-                basalt_delta = x >= 57 and y >= 42
-                surface = (
-                    BlockType.WARPED_NYLIUM if warped
-                    else BlockType.CRIMSON_NYLIUM if crimson
-                     else (BlockType.SOUL_SAND if (x + y) % 5 < 2 else BlockType.SOUL_SOIL) if soul_valley
-                    else BlockType.BASALT if basalt_delta
-                    else BlockType.NETHERRACK
-                )
-                lower = -4 if edge < 0.82 else -9
-                for z in range(lower, height + 1):
-                    block = surface if z == height else (
-                        BlockType.BLACKSTONE if basalt_delta and z >= height - 2
-                        else BlockType.NETHERRACK
-                    )
-                    _put(world, x, y, z, block)
-
-        for x, y in ((9, 13), (18, 29), (29, 12), (31, 37), (12, 40)):
-            _nether_fungus(world, x, y, warped=True)
-        for x, y in ((37, 8), (47, 17), (55, 27)):
-            _nether_fungus(world, x, y, warped=False)
-        for x, y, height in ((64, 52, 12), (75, 61, 17), (63, 70, 10), (79, 48, 14)):
-            top = world.heightIndex.get((x, y), 0)
-            for z in range(top + 1, top + height):
-                _put(world, x, y, z, BlockType.BASALT)
-            if (x + y) % 2:
-                _put(world, x, y, top + height, BlockType.GLOWSTONE)
-        _nether_fossil(world, (13, 63, 5))
-
-        # The bastion uses complete canonical NBT pieces at native block scale.
-        _place_template(world, "bastion_bridge", (48, 5, 8))
-        _place_template(world, "bastion_gate", (65, 27, 7))
-        _source_fortress(world, (3, 21, 9))
-
-    return MapScene(
-        "nether",
-        "Nether War Table",
-        "A bastion watches a warped forest while a fortress crosses the soul valley.",
-        ((65, 20, 29), (30, 47, 17)),
-        ((17, 20, 13), (72, 61, 17)),
-        ("Bastion Gate", "Fortress", "Soul Valley", "Warped Route"),
-        ((2, 2, -9), (81, 75, 42)),
-        ("bastion_bridge", "bastion_gate", "nether_fortress_generator"),
-        (
-            ((8, 18, 8), (25, 28, 8), (39, 34, 8)),
-            ((15, 67, 8), (31, 51, 16), (45, 43, 8)),
-            ((68, 69, 13), (77, 57, 15), (67, 42, 8)),
-        ),
-    )
-
-
-def _end_hub(world) -> MapScene:
-    # Reuse the complete source-backed Worlds assembly instead of presenting a
-    # single tower as an End City. The extra headroom retains its vertical
-    # sprawl and the complete ship at native block scale.
-    world.resize(94, 82, 84, min_y=-16, preserve=False)
-    world.setDimension("end")
-    city_origin = (8, 28, 5)
-    city_records = _end_city_showcase_records()
-    city_columns = {(city_origin[0] + x, city_origin[1] + y) for x, y, _z, _block, _state in city_records}
-    city_island = set()
-    for x, y in city_columns:
-        for dx in range(-7, 8):
-            for dy in range(-7, 8):
-                if dx * dx + dy * dy <= 49:
-                    px, py = x + dx, y + dy
-                    if 1 <= px < world.width - 1 and 1 <= py < world.depth - 1:
-                        city_island.add((px, py))
-    with world.bulkUpdate():
-        for x, y in city_island:
-            top = 4 if (x, y) in city_columns else 3 + ((x * 7 + y * 11) % 3)
-            edge = not all(
-                (x + dx, y + dy) in city_island
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-            )
-            thickness = 4 if edge else 8 + ((x * 13 + y * 5) % 5)
-            for z in range(top - thickness, top + 1):
-                _put(world, x, y, z, BlockType.END_STONE)
-
-        for cx, cy, radius, base in ((76, 55, 9, 3), (16, 12, 7, 5)):
-            for x in range(cx - radius, cx + radius + 1):
-                for y in range(cy - radius, cy + radius + 1):
-                    distance = math.hypot(x - cx, y - cy)
-                    if distance <= radius + 0.35 * math.sin(x * 0.8 + y * 0.4):
-                        thickness = max(2, round((radius - distance) * 0.55) + 2)
-                        for z in range(base - thickness, base + 1):
-                            _put(world, x, y, z, BlockType.END_STONE)
-
-        _place_records(world, city_records, city_origin)
-        _place_template(world, "end_ship", (57, 6, 18), rotation=1)
-
-    return MapScene(
-        "end",
-        "The Broken Atlas",
-        "A complete End City climbs above the islands while its ship waits offshore.",
-        ((15, 62, 52), (72, 12, 44)),
-        ((76, 55, 14), (16, 12, 15)),
-        ("End City", "End Ship", "Outer Isle", "Void Route"),
-        ((2, 2, -10), (92, 78, 56)),
-        ("end_city_1161_world", "end_ship"),
-        (
-            ((9, 34, 12), (27, 44, 16), (49, 58, 20)),
-            ((61, 12, 31), (72, 12, 34), (83, 12, 29)),
-            ((18, 69, 18), (38, 64, 24), (58, 49, 16)),
-        ),
-        (("dragon_head", (85, 12, 26)),),
-    )
-
-
 def _ocean_hub(world) -> MapScene:
     world.resize(96, 96, 56, min_y=-16, preserve=False)
     world.setDimension("overworld")
@@ -883,10 +684,11 @@ def _ocean_hub(world) -> MapScene:
 
 
 def build_hub(world, dimension: str) -> MapScene:
+    if dimension in DIMENSION_ORDER:
+        from engine.world_map_regions import build_region_hub, REGIONS
+        return build_region_hub(world, dimension, REGIONS[dimension][0][0])
     builders = {
         "overworld": _overworld_hub,
-        "nether": _nether_hub,
-        "end": _end_hub,
         "ocean": _ocean_hub,
     }
     return builders[dimension](world)

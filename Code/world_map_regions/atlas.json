@@ -1,0 +1,29 @@
+{
+  "format": 1,
+  "minecraft_version": "Java 1.16.1",
+  "cell": [
+    128,
+    208
+  ],
+  "anchor": [
+    64,
+    96
+  ],
+  "client_sha1": "c9abbe8ee4fa490751ca70635340b7cf00db83ff",
+  "palettes": {
+    "end_central.json.gz": "068e0ae41395635c3b0eab3b0b243b7d16584abafcc2cadb7245a0144a6350df",
+    "end_city.json.gz": "e1ae5a18382fc42bb6a27fd146e9c848ee3d90c41e9210d27855d022b9180f95",
+    "nether_bastion.json.gz": "e9111e281241d7c2cac10b83d8a19a752b2b1de405e2617f8a000e2f19fc16ed",
+    "nether_crimson.json.gz": "f26a58099620f6debd90167cdf316033af064e6ab3f76776e9823d85790988ba",
+    "nether_fortress.json.gz": "7c5ea3b0c5c5c9c7628f9aaec8148a7b7c6d39bd8fb32b0a4b9eda94701769ab",
+    "nether_valley.json.gz": "3a9c8e04dd541c56af0981480f2e1c70d7c750d76869668396a4991ac7bb8a69",
+    "nether_warped.json.gz": "751f4560b514d2713d4a73bc7e5d5dc822490f31a32dddee75251780260af63c",
+    "ocean_monument.json.gz": "cd231acb1978b96b9b8d2d4b296c20accbc325fcc37d5e0f3181d4f140b10af3",
+    "ocean_shipwreck.json.gz": "65f1e5c448034f3ff896c50e69df83bd4f3a3727e9d3f358951d8795042ba729",
+    "overworld_desert.json.gz": "e9855c41f144d92803ba3de35b69e4017cbbfca44e6614e432e5177425b3223d",
+    "overworld_flowers.json.gz": "b8ca7a1d93b1f9469d8cf0257e3e997c264499881364a1a29e3c14286ca74542",
+    "overworld_mushroom.json.gz": "9f69b2c15719d3b5814544a20f6dcb55d3d22b8f6a1143910702d815041eeb7a",
+    "overworld_plains.json.gz": "5a29958687e8604cbaf80779c1bce57e3735820480a675c4169741bdd26a2576",
+    "overworld_taiga.json.gz": "0d3d6751c87fab1c1e1d7ba402ec0a6be358a7e1e826473277fa45c5bb3fa6bc"
+  }
+}

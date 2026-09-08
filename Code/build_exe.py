@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.7.1"
+VERSION = "2.7.3"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -133,6 +133,17 @@ def build(debug: bool = False, diagnostic: bool = False):
             "Required source-derived World Map template bundle is missing: "
             + WORLD_MAP_TEMPLATE_BUNDLE
         )
+    map_region_root = os.path.join(SCRIPT_DIR, 'world_map_regions')
+    from engine.world_map_regions import REGIONS
+    required_regions = tuple(f'{dimension}_{key}' for dimension,regions in REGIONS.items() for key,_ in regions)
+    required_files = [f'{name}{suffix}' for name in required_regions for suffix in ('.json.gz','.png')]
+    required_files.extend(('end_crystals.png','atlas.json'))
+    missing_regions = [name for name in required_files if not os.path.isfile(os.path.join(map_region_root,name))]
+    if missing_regions:
+        raise FileNotFoundError('Missing vanilla World Map capture/atlas: ' + ', '.join(missing_regions))
+    forest_splash = os.path.join(PROJECT_ROOT, 'Assets', 'Icons', 'Splash_Background_Warped_Forest.png')
+    if not os.path.isfile(forest_splash):
+        raise FileNotFoundError('Missing source-rendered warped forest splash: ' + forest_splash)
     if not os.path.isfile(DRAGON_HEAD_TEXTURE):
         raise FileNotFoundError(
             "Required End ship dragon-head texture is missing: "
@@ -217,6 +228,8 @@ def build(debug: bool = False, diagnostic: bool = False):
     else:
         cmd.append("--console")  # Keep console for debugging
 
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'data', 'redstone')}{os.pathsep}data/redstone")
+
     # Curated JSON builds are read-only application data used by the tutorial
     # and the cursor-placeable Structures tab.
     for structure_name in (
@@ -254,6 +267,7 @@ def build(debug: bool = False, diagnostic: bool = False):
         source_path = os.path.join(WORLDS_DIR, f"{world_name}.json.gz")
         cmd.append(f"--add-data={source_path}{os.pathsep}worlds")
     cmd.append(f"--add-data={WORLD_MAP_TEMPLATE_BUNDLE}{os.pathsep}.")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'world_map_regions')}{os.pathsep}world_map_regions")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)

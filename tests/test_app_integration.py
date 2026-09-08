@@ -38,6 +38,8 @@ class AppIntegrationTests(unittest.TestCase):
         pygame.display.quit()
 
     def setUp(self):
+        if self.app.redstoneLabActive:
+            self.app._toggleRedstoneLab()
         if self.app.worldMapActive:
             self.app._exitWorldMap()
         self.app.world.resize(
@@ -62,7 +64,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._openWorldMap()
         self.assertTrue(self.app.worldMapActive)
         self.assertEqual(self.app.worldMapMode, "hub")
-        self.assertEqual((self.app.world.width, self.app.world.depth), (48, 48))
+        self.assertEqual((self.app.world.width, self.app.world.depth), (240, 240))
         self.app._startWorldMapLevel()
         self.assertEqual(self.app.worldMapMode, "level")
         self.assertEqual(len(self.app.hotbar), 9)
@@ -139,18 +141,19 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.worldMapDimension, "ocean")
         self.assertEqual(self.app.currentDimension, app_module.DIMENSION_OVERWORLD)
         self.assertFalse(self.app.worldMapScene.playable_anchors)
-        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 2)
+        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 1)
         self.app._startWorldMapLevel(0)
         self.assertEqual(self.app.worldMapMode, "hub")
         self.assertIsNone(self.app.worldMapObjective)
         self.app._exitWorldMap()
 
-    def test_overworld_map_has_deep_skirt_but_frames_the_play_surface(self):
+    def test_overworld_map_uses_source_surface_without_synthetic_skirt(self):
         self.app._openWorldMap()
-        self.assertEqual(self.app.world.min_y, -40)
-        self.assertLessEqual(self.app.world.occupiedBounds[0][2], -40)
-        self.assertEqual(self.app.worldMapScene.framing_bounds, ((4, 5, 0), (43, 42, 12)))
-        self.assertGreater(self.app.zoomLevel, 0.35)
+        self.assertEqual(self.app.world.min_y, 0)
+        self.assertFalse(self.app.world.blocks)
+        self.assertEqual(self.app.worldMapScene.region_key, 'plains')
+        self.assertIsNotNone(self.app.worldMapView.source_map)
+        self.assertGreater(self.app.zoomLevel, 0)
         self.app._exitWorldMap()
 
     def test_middle_drag_is_direct_at_close_zoom_even_over_hotbar(self):
@@ -201,6 +204,24 @@ class AppIntegrationTests(unittest.TestCase):
             self.app.worldMapCompleted = original_progress
             self.app._exitWorldMap()
 
+    def test_lab_preferences_and_map_return_preserve_both_builder_hotbars(self):
+        primary = [app_module.BlockType.OBSIDIAN] + list(self.app.hotbar[1:])
+        secondary = [app_module.BlockType.DIAMOND_BLOCK] + list(self.app.hotbar2[1:])
+        self.app.hotbar, self.app.hotbar2 = list(primary), list(secondary)
+        self.app._toggleRedstoneLab()
+        writer = mock_open()
+        with patch('builtins.open', writer):
+            self.app._saveAppConfig()
+        saved = json.loads(''.join(call.args[0] for call in writer().write.call_args_list))
+        self.assertEqual(saved['hotbar'], [block.name for block in primary])
+        self.app._openWorldMap()
+        self.app._startWorldMapLevel()
+        self.app.hotbar2[0] = app_module.BlockType.REDSTONE_DUST
+        self.app._exitWorldMap()
+        self.assertEqual(self.app.hotbar, primary)
+        self.assertEqual(self.app.hotbar2, secondary)
+        self.assertFalse(self.app.redstoneLabActive)
+
     def test_responsive_minimum_reflows_controls_and_preserves_camera_center(self):
         old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
         old_zoom = self.app.zoomLevel
@@ -239,18 +260,30 @@ class AppIntegrationTests(unittest.TestCase):
         finally:
             self.app._applyWindowSize(*old_size, recreate=False)
 
-    def test_world_map_hub_camera_is_fixed_and_resets_to_authored_rotation(self):
+    def test_world_map_hub_camera_pans_zooms_and_resets_without_editing(self):
         self.app.renderer.setViewRotation(2)
         self.app._openWorldMap()
         self.app._switchWorldMapHub(app_module.DIMENSION_END)
         zoom = self.app.zoomLevel
         offset = (self.app.renderer.offsetX, self.app.renderer.offsetY)
         self.assertEqual(self.app.renderer.viewRotation, 0)
-        self.app._handleMouseWheel(SimpleNamespace(y=1, precise_y=1.0))
-        self.app._handleMouseDown(SimpleNamespace(button=2, pos=(400, 300)))
-        self.assertEqual(self.app.zoomLevel, zoom)
-        self.assertEqual((self.app.renderer.offsetX, self.app.renderer.offsetY), offset)
+        pygame.event.clear()
+        for event in (
+            pygame.event.Event(pygame.MOUSEWHEEL,y=1,x=0),
+            pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=2,pos=(400,300)),
+            pygame.event.Event(pygame.MOUSEMOTION,pos=(437,281),rel=(37,-19),buttons=(0,1,0)),
+            pygame.event.Event(pygame.MOUSEBUTTONUP,button=2,pos=(437,281)),
+        ):
+            pygame.event.post(event)
+        self.app._handleEvents()
+        self.assertGreater(self.app.zoomLevel, zoom)
+        self.assertNotEqual((self.app.renderer.offsetX, self.app.renderer.offsetY), offset)
         self.assertFalse(self.app.panning)
+        self.assertFalse(self.app.world.blocks)
+        pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_HOME))
+        self.app._handleEvents()
+        self.assertAlmostEqual(self.app.zoomLevel,zoom)
+        self.assertEqual((self.app.renderer.offsetX,self.app.renderer.offsetY),offset)
         self.app._exitWorldMap()
 
     def test_json_structures_are_cursor_placeable(self):
@@ -2073,69 +2106,29 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertTrue(structure["source_file"].endswith(f"{key}.json"))
 
     def test_redstone_lab_is_editable_and_restores_the_live_build(self):
-        marker = (2, 2, 2)
-        self.app.world.setBlock(*marker, app_module.BlockType.DIAMOND_BLOCK)
-        self.app.showGrid = False
-        original_bounds = (
-            self.app.world.width, self.app.world.depth, self.app.world.height
-        )
-        original_camera = (
-            self.app.renderer.offsetX, self.app.renderer.offsetY,
-            self.app.renderer.viewRotation,
-            self.app.targetOffsetX, self.app.targetOffsetY,
-        )
-
+        from engine.redstone_lab import LAB_CIRCUITS
+        marker = (2,2,2)
+        self.app.world.setBlock(*marker,app_module.BlockType.DIAMOND_BLOCK)
+        original = dict(self.app.world.blocks)
+        camera = (self.app.renderer.offsetX,self.app.renderer.offsetY,self.app.renderer.viewRotation)
         self.app._toggleRedstoneLab()
-        self.assertTrue(self.app.redstoneLabActive)
-        self.assertFalse(self.app.interactionMode)
-        self.assertFalse(self.app.showGrid)
-        self.assertEqual((self.app.world.width, self.app.world.depth, self.app.world.height), (24, 20, 12))
-        self.assertEqual(self.app.sceneMetadata["mode"], "redstone_lab")
-        self.assertIn(app_module.BlockType.STONE_BUTTON, self.app.hotbar)
-        self.assertIn(app_module.BlockType.SLIME_BLOCK, self.app.hotbar)
-        self.assertIn(app_module.BlockType.HONEY_BLOCK, self.app.hotbar)
-        self.assertEqual(
-            self.app.world.getBlock(9, 10, 2), app_module.BlockType.LEVER
-        )
-        self.assertTrue(self.app._loadRedstoneLabCircuit("redstone_ring_riser"))
-        self.assertEqual(self.app.redstoneLabCircuitKey, "redstone_ring_riser")
-        self.assertEqual(self.app.world.getBlock(11, 8, 10), app_module.BlockType.LEVER)
-
-        # Test mode remains use-only and mouse motion must never read
-        # the click-only ``button`` field from a MOUSEMOTION event.
-        self.app._setInteractionMode(True)
-        self.app._handleMouseMotion(SimpleNamespace(pos=(300, 300)))
-        lever = (11, 8, 10)
-        before = self.app.world.getBlockProperties(*lever).powered
-        self.app.hoveredSourceBlock = lever
-        self.app._handleMouseDown(SimpleNamespace(button=3, pos=(300, 300)))
-        self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered, before)
-
-        # Returning to build mode makes the component palette genuinely useful.
+        self.assertTrue(self.app.interactionMode)
+        self.assertFalse(self.app.redstone.quasi_connectivity)
+        self.assertEqual(self.app.redstoneLabCircuitKey,'piston_door')
+        self.app._render()
+        lever=LAB_CIRCUITS['piston_door'].controls[0][1]
+        before=self.app.world.getBlockProperties(*lever).powered
+        rect=self.app.redstoneLabControlRects[lever]
+        self.app._handleMouseDown(SimpleNamespace(button=1,pos=rect.center))
+        self.assertNotEqual(before,self.app.world.getBlockProperties(*lever).powered)
         self.app._setInteractionMode(False)
-        self.app.selectedBlock = app_module.BlockType.REDSTONE_DUST
-        target = (8, 8, 1)
-        self.app.hoveredCell = target
-        self.app._placeBlockAtMouse(0, 0)
-        self.assertEqual(self.app.world.getBlock(*target), app_module.BlockType.REDSTONE_DUST)
-
+        self.app.selectedBlock=app_module.BlockType.REDSTONE_DUST
+        self.app.hoveredCell=(6,6,1)
+        self.app._placeBlockAtMouse(0,0)
+        self.assertEqual(self.app.world.getBlock(6,6,1),app_module.BlockType.REDSTONE_DUST)
         self.app._toggleRedstoneLab()
-        self.assertFalse(self.app.redstoneLabActive)
-        self.assertFalse(self.app.interactionMode)
-        self.assertFalse(self.app.showGrid)
-        self.assertEqual(
-            (self.app.world.width, self.app.world.depth, self.app.world.height),
-            original_bounds,
-        )
-        self.assertEqual(self.app.world.getBlock(*marker), app_module.BlockType.DIAMOND_BLOCK)
-        self.assertEqual(
-            (
-                self.app.renderer.offsetX, self.app.renderer.offsetY,
-                self.app.renderer.viewRotation,
-                self.app.targetOffsetX, self.app.targetOffsetY,
-            ),
-            original_camera,
-        )
+        self.assertEqual(dict(self.app.world.blocks),original)
+        self.assertEqual((self.app.renderer.offsetX,self.app.renderer.offsetY,self.app.renderer.viewRotation),camera)
 
     def test_redstone_lab_panel_fits_the_minimum_window_without_footer_overlap(self):
         old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
@@ -2144,6 +2137,7 @@ class AppIntegrationTests(unittest.TestCase):
             app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT = 960, 640
             self.app.screen = pygame.Surface((960, 640))
             self.app.redstoneLabActive = True
+            self.app._setInteractionMode(False)
             self.app._renderRedstoneLabPanel()
 
             component_bottom = max(
@@ -2159,6 +2153,100 @@ class AppIntegrationTests(unittest.TestCase):
             self.app.redstoneLabActive = False
             self.app.screen = old_screen
             app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT = old_size
+
+    def test_lab_pause_step_reset_and_cutaway_use_real_simulation(self):
+        self.app._toggleRedstoneLab()
+        self.app._loadRedstoneLabCircuit('clock')
+        self.app._redstoneLabAction('pause')
+        tick = self.app.redstone._game_tick
+        self.app._update()
+        self.assertEqual(self.app.redstone._game_tick, tick)
+        self.app._redstoneLabAction('step')
+        self.assertEqual(self.app.redstone._game_tick, tick + 1)
+        self.assertTrue(self.app.redstoneLabPaused)
+        blocks = dict(self.app.world.blocks)
+        self.app._redstoneLabAction('cutaway')
+        self.app._render()
+        self.assertEqual(self.app.world.blocks, blocks)
+        self.app._redstoneLabAction('reset')
+        self.assertEqual(self.app.redstone._game_tick, 0)
+        self.assertIsNone(self.app.redstoneLabPulseStart)
+        self.app.lastAutoSaveTime = -self.app.autoSaveInterval
+        with patch.object(self.app, '_saveBuilding') as save:
+            self.app._autoSave()
+            save.assert_not_called()
+        self.app.lastAutoSaveTime = pygame.time.get_ticks()
+
+    def test_lab_counter_pulse_drives_source_clock_and_ignores_double_clicks(self):
+        from engine.redstone_lab import LAB_CIRCUITS
+        self.app._toggleRedstoneLab()
+        self.app._loadRedstoneLabCircuit('counter')
+        self.app._advanceLabRedstone(2000)
+        self.app._redstoneLabAction('pulse')
+        start = self.app.redstoneLabPulseStart
+        self.app._advanceLabRedstone(700)
+        self.app._redstoneLabAction('pulse')
+        self.assertEqual(self.app.redstoneLabPulseStart, start)
+        self.app._advanceLabRedstone(800)
+        circuit = LAB_CIRCUITS['counter']
+        self.assertFalse(self.app.world.getBlockProperties(*circuit.controls[0][1]).powered)
+        self.app._advanceLabRedstone(5500)
+        self.assertIsNone(self.app.redstoneLabPulseStart)
+        bits = [int(bool(self.app.world.getBlockProperties(*pos).redstonePower)) for pos in circuit.outputs]
+        self.assertEqual(sum(bit << i for i, bit in enumerate(bits)), 1)
+
+    def test_lab_cached_signal_frames_match_the_full_painter_pixel_for_pixel(self):
+        self.app._toggleRedstoneLab()
+        self.app._loadRedstoneLabCircuit('counter')
+        self.app._advanceLabRedstone(2000)
+        self.app._redstoneLabAction('pulse')
+        for tick in range(12):
+            self.app._advanceLabRedstone(150)
+            if tick == 7:
+                self.app.renderer.viewRotation = 1
+                self.app._fitWorldToViewport(False)
+            if tick == 9:
+                self.app.world.setBlock(10, 10, 4, app_module.BlockType.QUARTZ_BLOCK)
+            self.app.screen.fill((31,35,42))
+            self.app._renderWorld()
+            cached = pygame.image.tobytes(self.app.screen, 'RGB')
+            self.app._labDrawList = None
+            self.app._worldSurfaceCacheKey = None
+            self.app.screen.fill((31,35,42))
+            self.app._renderWorld()
+            self.assertEqual(cached, pygame.image.tobytes(self.app.screen, 'RGB'))
+
+    def test_lab_interact_isolates_editor_tools_and_blocks_editing_shortcuts(self):
+        self.app.brushSize = 3
+        self.app.mirrorModeX = True
+        self.app._toggleRedstoneLab()
+        self.assertEqual(self.app.brushSize, 1)
+        self.assertFalse(self.app.mirrorModeX)
+        before = dict(self.app.world.blocks)
+        with patch('pygame.key.get_mods', return_value=pygame.KMOD_CTRL):
+            for key in (pygame.K_z, pygame.K_y, pygame.K_f, pygame.K_r):
+                self.app._handleKeyDown(SimpleNamespace(key=key, unicode=''))
+        self.assertEqual(self.app.world.blocks, before)
+        self.assertFalse(self.app.fillToolActive)
+        self.app._toggleRedstoneLab()
+        self.assertEqual(self.app.brushSize, 3)
+        self.assertTrue(self.app.mirrorModeX)
+        self.app.brushSize = 1
+        self.app.mirrorModeX = False
+
+    def test_comparator_mode_and_vertical_piston_survive_save_load(self):
+        b = app_module.BlockType
+        self.app.world.setBlock(2, 2, 2, b.COMPARATOR)
+        self.app.world.setBlockProperties(2, 2, 2, app_module.BlockProperties(
+            facing=app_module.Facing.WEST, comparatorSubtract=True))
+        self.app.world.setBlock(4, 4, 2, b.STICKY_PISTON)
+        self.app.world.setBlockProperties(4, 4, 2, app_module.BlockProperties(facing=app_module.Facing.UP))
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, 'redstone.json.gz')
+            self.assertTrue(self.app._saveBuilding(filepath=path, silent=True))
+            self.assertTrue(self.app._loadBuildingFromPath(path, silent=True))
+        self.assertTrue(self.app.world.getBlockProperties(2, 2, 2).comparatorSubtract)
+        self.assertEqual(self.app.world.getBlockProperties(4, 4, 2).facing, app_module.Facing.UP)
 
     def test_mouse_redstone_edits_recalculate_network_without_navigation(self):
         """Ordinary editor placement/removal must invalidate redstone immediately."""
@@ -2222,16 +2310,22 @@ class AppIntegrationTests(unittest.TestCase):
         )
 
     def test_redstone_lab_click_without_motion_hits_the_rendered_control(self):
+        from engine.redstone_lab import LAB_CIRCUITS
         self.app._toggleRedstoneLab()
-        self.app._setInteractionMode(True)
-        lever = (9, 10, 2)
-        sx, sy = self.app.renderer.worldToScreen(*lever)
-        # The click handler resolves the rendered source block itself; no
-        # synthetic MOUSEMOTION or pre-seeded hoveredSourceBlock is required.
-        before = self.app.world.getBlockProperties(*lever).powered
-        self.app._handleMouseDown(SimpleNamespace(button=3, pos=(int(sx), int(sy + 4))))
-        self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered, before)
-        self.app._setInteractionMode(False)
+        lever=LAB_CIRCUITS['piston_door'].controls[0][1]
+        sx,sy=self.app.renderer.worldToScreen(*lever)
+        props=self.app.world.getBlockProperties(*lever)
+        sprite=self.app.assetManager.getDetailSprite(app_module.BlockType.LEVER,
+            props.facing.in_view(self.app.renderer.viewRotation),False,app_module.SlabPosition.BOTTOM,
+            powered=props.powered)
+        bounds=sprite.get_bounding_rect()
+        point=(int(sx+(bounds.centerx-sprite.get_width()/2)*self.app.zoomLevel),
+               int(sy+bounds.centery*self.app.zoomLevel))
+        before=self.app.world.getBlockProperties(*lever).powered
+        # Real pixel coordinate, no seeded target; left-click operates it.
+        self.app.hoveredSourceBlock=(99,99,99)
+        self.app._handleMouseDown(SimpleNamespace(button=1,pos=point))
+        self.assertNotEqual(self.app.world.getBlockProperties(*lever).powered,before)
         self.app._toggleRedstoneLab()
 
     def test_redstone_lab_test_cursor_ignores_unanchored_zero_pointer(self):
@@ -2258,6 +2352,7 @@ class AppIntegrationTests(unittest.TestCase):
 
     def test_redstone_lab_uses_fixed_preview_facing_until_r_rotates_it(self):
         self.app._toggleRedstoneLab()
+        self.app._setInteractionMode(False)
         self.app.selectedBlock = app_module.BlockType.PISTON
         self.app.previewFacing = app_module.Facing.SOUTH
         self.app.hoveredFace = "left"

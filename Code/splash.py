@@ -2,7 +2,7 @@
 Bloc Fantôme - Splash Screen Module
 
 A self-contained splash screen that presents the supplied horror wordmark over
-an Ancient City block mosaic without depending on the main AssetManager.
+a source-generated warped forest without depending on the main AssetManager.
 
 Author: Jeffrey Morais
 """
@@ -256,7 +256,15 @@ class SplashScreen:
         return surface
     
     def _create_background_tile(self) -> pygame.Surface:
-        """Load the pre-rendered Ancient City mosaic without startup raster work."""
+        """Aspect-fill the source forest render; retain the source-checkout fallback."""
+        forest_path = os.path.join(self.icons_dir, "Splash_Background_Warped_Forest.png")
+        if os.path.isfile(forest_path):
+            forest = pygame.image.load(forest_path).convert()
+            scale = max(self.window_width/forest.get_width(), self.window_height/forest.get_height())
+            forest = pygame.transform.smoothscale(forest, (round(forest.get_width()*scale), round(forest.get_height()*scale)))
+            return forest.subsurface(pygame.Rect((forest.get_width()-self.window_width)//2,
+                                                (forest.get_height()-self.window_height)//2,
+                                                self.window_width,self.window_height)).copy()
         backgroundPath = os.path.join(
             self.icons_dir, "Splash_Background_Ancient_City.png"
         )

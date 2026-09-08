@@ -16,7 +16,7 @@ def _definitions():
     for block in (
         BlockType.REDSTONE_DUST, BlockType.REDSTONE_TORCH,
         BlockType.REDSTONE_WALL_TORCH, BlockType.LEVER,
-        BlockType.REPEATER, BlockType.PISTON, BlockType.STICKY_PISTON,
+        BlockType.REPEATER, BlockType.COMPARATOR, BlockType.PISTON, BlockType.STICKY_PISTON,
         BlockType.PISTON_HEAD, BlockType.REDSTONE_LAMP,
         BlockType.STONE_BUTTON,
     ):
@@ -197,12 +197,12 @@ def test_redstone_torch_inverts_power_on_supporting_block():
     # floor-mounted lever on the support's side would only provide weak power
     # in vanilla and must not be used as a shortcut here.
     _place(world, (1, 2, 1), BlockType.REDSTONE_BLOCK)
-    redstone.update(0)
+    redstone.update(200)
     assert not world.getBlockProperties(2, 2, 2).powered
 
     world.setBlock(1, 2, 1, BlockType.AIR)
     redstone.mark_dirty()
-    redstone.update(0)
+    redstone.update(200)
     assert world.getBlockProperties(2, 2, 2).powered
 
 
@@ -211,11 +211,11 @@ def test_redstone_torch_does_not_count_its_own_support_as_input():
     _place(world, (2, 2, 1), BlockType.STONE)
     _place(world, (2, 2, 2), BlockType.REDSTONE_TORCH,
            powered=True, redstonePower=15)
-    redstone.update(0)
+    redstone.update(200)
     assert world.getBlockProperties(2, 2, 2).powered
     for _ in range(3):
         redstone.mark_dirty()
-        redstone.update(0)
+        redstone.update(200)
         assert world.getBlockProperties(2, 2, 2).powered
 
 
@@ -231,7 +231,7 @@ def test_redstone_torch_only_checks_power_emitted_by_its_support_face():
     _place(world, (1, 2, 0), BlockType.LEVER,
            powered=True, redstonePower=15)
 
-    redstone.update(0)
+    redstone.update(200)
 
     assert world.getBlockProperties(2, 2, 1).powered
 
@@ -251,13 +251,13 @@ def test_torch_inverter_chain_converges_when_downstream_is_visited_first():
     _place(world, (2, 2, 4), BlockType.REDSTONE_TORCH,
            powered=True, redstonePower=15)
     _place(world, (1, 2, 1), BlockType.REDSTONE_BLOCK)
-    redstone.update(0)
+    redstone.update(200)
     assert not world.getBlockProperties(2, 2, 2).powered
     assert world.getBlockProperties(2, 2, 4).powered
 
     world.setBlock(1, 2, 1, BlockType.AIR)
     redstone.mark_dirty()
-    redstone.update(0)
+    redstone.update(200)
     assert world.getBlockProperties(2, 2, 2).powered
     assert not world.getBlockProperties(2, 2, 4).powered
 
@@ -469,7 +469,7 @@ def test_wire_connection_mask_requires_vanilla_step_geometry():
     # The same upper wire becomes valid once the side is a solid support and
     # the current cell's upper space is open, matching WireConnection.UP.
     world.setBlock(4, 3, 1, BlockType.STONE)
-    assert redstone.wire_connection_mask(center) == 0b0010
+    assert redstone.wire_connection_mask(center) == 0b1010
 
     # Filling the current cell's upper space suppresses all stepped arms.
     _place(world, (3, 3, 2), BlockType.STONE)

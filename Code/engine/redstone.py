@@ -24,6 +24,8 @@ def _add(a: Position, b: tuple[int, int, int]) -> Position:
 
 
 def _facing_offset(facing: Facing) -> tuple[int, int, int]:
+    if facing in (Facing.UP, Facing.DOWN):
+        return 0, 0, 1 if facing == Facing.UP else -1
     dx, dy = facing.offset
     return dx, dy, 0
 
@@ -71,6 +73,9 @@ class RedstoneSimulator:
         self._button_updates: Dict[Position, int] = {}
         self._torch_history: Dict[Position, deque[int]] = {}
         self._torch_cooldown: Dict[Position, int] = {}
+        self._torch_updates: Dict[Position, int] = {}
+        self._comparator_updates: Dict[Position, int] = {}
+        self.quasi_connectivity = True
         self._game_tick = 0
         self.active_motions: list[PistonMotion] = []
         # None means a full topology pass is required; an empty/set value means
@@ -106,6 +111,12 @@ class RedstoneSimulator:
             self._dirty_positions = None
         elif self._dirty_positions is not None:
             self._dirty_positions.update(positions)
+
+    def reset(self) -> None:
+        """Discard scheduled work when replacing an isolated lab scene."""
+        qc = self.quasi_connectivity
+        self.__init__(self.world, self.definitions, sound=self.sound)
+        self.quasi_connectivity = qc
 
     def update(self, dt_ms: int) -> bool:
         """Advance scheduled component ticks and return whether state changed."""
@@ -158,7 +169,9 @@ class RedstoneSimulator:
         if dirty is not None:
             dirty = set(dirty) | torch_changes
         changed |= self._update_dust(dirty)
+        self._update_torches()
         changed |= self._schedule_repeaters()
+        self._schedule_comparators()
         changed |= self._update_lamps()
         self._seen_revision = self.world.revision
         self._dirty_positions = set()
@@ -253,12 +266,12 @@ class RedstoneSimulator:
                     source[0] - dx, source[1] - dy, source[2]
                 ) else 0
             return 15 if props.powered else 0
-        if block == bt.REPEATER and props.powered:
+        if block in (bt.REPEATER, bt.COMPARATOR) and props.powered:
             # Java's RepeaterBlock.FACING is the input side. A powered
             # repeater emits through the opposite face; World passes the
             # direction from the receiving cell back toward this source.
             dx, dy, dz = _facing_offset(props.facing)
-            return 15 if target == (
+            return (props.redstonePower if block == bt.COMPARATOR else 15) if target == (
                 source[0] - dx, source[1] - dy, source[2] - dz
             ) else 0
         if dust and block == bt.REDSTONE_DUST:
@@ -383,6 +396,13 @@ class RedstoneSimulator:
                 and self._wire_connects_to((side[0], side[1], z - 1), direction)
             ):
                 mask |= 1 << bit
+        # RedstoneWireBlock.method_27840 completes the opposite arm of a
+        # straight endpoint. Without it, a wire ending at a lamp points only
+        # back at its input and cannot power the lamp in front of it.
+        if mask and not mask & 0b0101:
+            mask |= 0b1010
+        if mask and not mask & 0b1010:
+            mask |= 0b0101
         return mask
 
     def wire_up_connection_mask(self, pos: Position) -> int:
@@ -406,7 +426,7 @@ class RedstoneSimulator:
         block = self.world.getBlock(*pos)
         if block == bt.REDSTONE_DUST:
             return True
-        if block == bt.REPEATER:
+        if block in (bt.REPEATER, bt.COMPARATOR):
             props = self.world.getBlockProperties(*pos) or BlockProperties()
             return props.facing in (direction, direction.opposite())
         return block in {
@@ -493,54 +513,48 @@ class RedstoneSimulator:
             return pos[0] - dx, pos[1] - dy, pos[2]
         return pos[0], pos[1], pos[2] - 1
 
-    def _update_torches(self, changed_positions: Optional[set[Position]] = None) -> bool:
+    def _update_torches(self, changed_positions=None) -> bool:
+        """Schedule Java's two-game-tick inverter update, never settle feedback."""
         bt = self.block_type
-        changed = False
         positions = set(self.world.blockTypePositions.get(bt.REDSTONE_TORCH, ()))
         positions.update(self.world.blockTypePositions.get(bt.REDSTONE_WALL_TORCH, ()))
-        if not positions:
-            return False
+        for pos in positions:
+            props = self._props(pos)
+            desired = self._emitted_power_toward(self._torch_support(pos, props), pos) == 0
+            if props.powered != desired:
+                self._torch_updates.setdefault(pos, self._game_tick + 2)
+        return False
 
-        # Torch output is an inverter, so a single arbitrary set iteration can
-        # leave a downstream torch one state behind when its support is visited
-        # before the upstream torch changes. Revisit the finite torch set until
-        # it reaches a fixed point. The bound is deliberately proportional to
-        # the network size: acyclic chains settle in at most one pass per link,
-        # while a feedback loop still terminates and uses the normal burnout
-        # history/cooldown above instead of spinning forever.
-        max_passes = max(1, len(positions) * 2)
-        for _ in range(max_passes):
-            pass_changed = False
-            for pos in positions:
-                props = self._props(pos)
-                support = self._torch_support(pos, props)
-                # Java's RedstoneTorchBlock.shouldUnpower checks the support's
-                # emitted power in the torch-facing direction.  Asking for a
-                # full ``_direct_power(support)`` scan would incorrectly turn
-                # off a torch when a weak-only side lever powers a different
-                # face of the support block.
-                desired = self._emitted_power_toward(support, pos) == 0
-                cooldown = self._torch_cooldown.get(pos, 0)
-                if cooldown > self._game_tick:
-                    desired = False
-                if props.powered != desired:
-                    history = self._torch_history.setdefault(pos, deque())
-                    history.append(self._game_tick)
-                    while history and self._game_tick - history[0] > 60:
-                        history.popleft()
-                    if len(history) >= 8:
-                        self._torch_cooldown[pos] = self._game_tick + 160
-                        desired = False
-                        history.clear()
-                    props.powered = desired
-                    props.redstonePower = 15 if desired else 0
-                    self._set_props(pos, props)
-                    if changed_positions is not None:
-                        changed_positions.add(pos)
-                    changed = True
-                    pass_changed = True
-            if not pass_changed:
-                break
+    def _tick_torches(self, changed_positions) -> bool:
+        changed = False
+        bt = self.block_type
+        for pos, due in list(self._torch_updates.items()):
+            if due > self._game_tick:
+                continue
+            del self._torch_updates[pos]
+            if self.world.getBlock(*pos) not in (bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH):
+                continue
+            props = self._props(pos)
+            desired = self._emitted_power_toward(self._torch_support(pos, props), pos) == 0
+            history = self._torch_history.setdefault(pos, deque())
+            while history and self._game_tick - history[0] > 60:
+                history.popleft()
+            if self._torch_cooldown.get(pos, 0) > self._game_tick:
+                desired = False
+            if desired and len(history) >= 8:
+                desired = False
+            if props.powered == desired:
+                continue
+            if not desired:
+                history.append(self._game_tick)
+                if len(history) >= 8:
+                    self._torch_cooldown[pos] = self._game_tick + 160
+                    self._torch_updates[pos] = self._game_tick + 160
+            props.powered = desired
+            props.redstonePower = 15 if desired else 0
+            self._set_props(pos, props)
+            changed_positions.add(pos)
+            changed = True
         return changed
 
     def _repeater_input(self, pos: Position, props: BlockProperties) -> int:
@@ -569,7 +583,7 @@ class RedstoneSimulator:
             # back to the side cell, i.e. equals sideFacing.
             side = _add(pos, _facing_offset(side_facing))
             side_props = self.world.getBlockProperties(*side) or BlockProperties()
-            if self.world.getBlock(*side) == self.block_type.REPEATER:
+            if self.world.getBlock(*side) in (self.block_type.REPEATER, self.block_type.COMPARATOR):
                 if side_props.powered and side_props.facing == side_facing:
                     return True
         return False
@@ -594,6 +608,38 @@ class RedstoneSimulator:
                 self._repeater_updates[pos] = (
                     desired, max(1, props.repeaterDelay) * 2
                 )
+        return changed
+
+    def _comparator_output(self, pos):
+        props = self._props(pos)
+        main = self._repeater_input(pos, props)
+        side = 0
+        for facing in (props.facing.clockwise(), props.facing.counterclockwise()):
+            source = _add(pos, _facing_offset(facing))
+            if self.world.getBlock(*source) == self.block_type.REDSTONE_DUST:
+                power = self._props(source).redstonePower
+            else:
+                power = self._output_toward(source, pos, strong=True)
+            side = max(side, power)
+        return max(0, main-side) if props.comparatorSubtract else main if main >= side else 0
+
+    def _schedule_comparators(self):
+        for pos in self.world.blockTypePositions.get(self.block_type.COMPARATOR, ()):
+            if self._props(pos).redstonePower != self._comparator_output(pos):
+                self._comparator_updates.setdefault(pos, self._game_tick+2)
+
+    def _tick_comparators(self, changed_positions):
+        changed = False
+        # Evaluate due gates from the same snapshot, then commit their outputs.
+        due = [(pos,self._comparator_output(pos)) for pos,tick in self._comparator_updates.items()
+               if tick <= self._game_tick and self.world.getBlock(*pos)==self.block_type.COMPARATOR]
+        for pos,tick in list(self._comparator_updates.items()):
+            if tick <= self._game_tick:del self._comparator_updates[pos]
+        for pos,power in due:
+            props=self._props(pos)
+            if props.redstonePower != power:
+                props.redstonePower=power;props.powered=power>0
+                self._set_props(pos,props);changed_positions.add(pos);changed=True
         return changed
 
     def _update_lamps(self) -> bool:
@@ -647,6 +693,8 @@ class RedstoneSimulator:
         if self.world.revision != self._seen_revision:
             changed |= self.recalculate()
         power_changes: set[Position] = set()
+        changed |= self._tick_torches(power_changes)
+        changed |= self._tick_comparators(power_changes)
         changed |= self._tick_lamp_off_updates()
         for pos, ticks in list(self._button_updates.items()):
             ticks -= 1
@@ -694,7 +742,9 @@ class RedstoneSimulator:
         changed |= self._update_torches(power_changes)
         if power_changes:
             changed |= self._update_dust(power_changes)
+            self._update_torches()
             changed |= self._schedule_repeaters()
+            self._schedule_comparators()
             # Lamp state is part of the component tick result.  Dropping this
             # return value left callers with a false ``changed`` result even
             # though the lamp had just switched on.
@@ -734,6 +784,8 @@ class RedstoneSimulator:
         # Vanilla's second pass checks all power around the block above the
         # piston except the piston beneath it: quasi-connectivity.
         above = (pos[0], pos[1], pos[2] + 1)
+        if not self.quasi_connectivity:
+            return False
         for delta in NEIGHBORS:
             if delta == (0, 0, -1):
                 continue
@@ -751,7 +803,7 @@ class RedstoneSimulator:
         definition = self.definitions.get(block)
         if block in {
             bt.REDSTONE_DUST, bt.REDSTONE_TORCH, bt.REDSTONE_WALL_TORCH,
-            bt.LEVER, bt.STONE_BUTTON, bt.REPEATER,
+            bt.LEVER, bt.STONE_BUTTON, bt.REPEATER, bt.COMPARATOR,
             bt.WATER, bt.LAVA, bt.FIRE, bt.SOUL_FIRE,
         } or (definition and (
             definition.isDoor

@@ -1,0 +1,63 @@
+{
+  "expandedCategories": {
+    "Natural": false,
+    "Wood": false,
+    "Stone & Brick": false,
+    "Ores & Minerals": false,
+    "Colored Blocks": false,
+    "Decorative": false,
+    "Light Sources": false,
+    "Redstone": false,
+    "Nether": false,
+    "End": false,
+    "Functional": false,
+    "Slabs": false
+  },
+  "blocksExpanded": false,
+  "problemsExpanded": false,
+  "experimentalExpanded": false,
+  "structuresExpanded": false,
+  "showGrid": false,
+  "lightingEnabled": false,
+  "showBlockTooltip": true,
+  "worldCenteredRotation": false,
+  "skyboxesEnabled": false,
+  "skyboxSelections": {
+    "overworld": 1,
+    "nether": 0,
+    "end": 1
+  },
+  "skyboxDefaultsVersion": 1,
+  "favoriteBlocks": [],
+  "hotbar": [
+    "REDSTONE_DUST",
+    "REDSTONE_TORCH",
+    "LEVER",
+    "STONE_BUTTON",
+    "REPEATER",
+    "PISTON",
+    "STICKY_PISTON",
+    "REDSTONE_LAMP",
+    "REDSTONE_BLOCK"
+  ],
+  "searchHistory": [],
+  "lastMusicTrack": "Left to Bloom - Lena Raine.ogg",
+  "worldMapCompleted": {
+    "overworld": [
+      false,
+      false
+    ],
+    "nether": [
+      false,
+      false
+    ],
+    "end": [
+      false,
+      false
+    ],
+    "ocean": [
+      true,
+      false
+    ]
+  }
+}

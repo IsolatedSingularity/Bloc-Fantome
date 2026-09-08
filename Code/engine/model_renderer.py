@@ -412,6 +412,12 @@ class BlockModelRenderer:
             return ((7, 7, 0, 9, 9, 10),)
         if kind == "redstone_dust":
             return ((0, 0, 0, 16, 16, 1),)
+        if kind == "comparator":
+            canonical = ((0, 0, 0, 16, 16, 2),
+                         (4, 11, 2, 6, 13, 7), (10, 11, 2, 12, 13, 7),
+                         (7, 2, 2, 9, 4, 7 if is_open else 4))
+            turns = (facing.value - Facing.SOUTH.value) % 4
+            return tuple(self._rotate_box(box, turns) for box in canonical)
         if kind == "repeater":
             delay = max(1, min(4, int(delay)))
             # Source Java model coordinates map x -> x, model z -> our y,
@@ -438,12 +444,16 @@ class BlockModelRenderer:
             return ({
                 Facing.NORTH: (5, 16 - depth, 6, 11, 16, 10),
                 Facing.SOUTH: (5, 0, 6, 11, depth, 10),
-                Facing.EAST: (16 - depth, 5, 6, 16, 11, 10),
-                Facing.WEST: (0, 5, 6, depth, 11, 10),
+                Facing.EAST: (0, 5, 6, depth, 11, 10),
+                Facing.WEST: (16 - depth, 5, 6, 16, 11, 10),
             }[facing],)
         if kind == "piston":
             if not is_open:
                 return self.cube_boxes()
+            if facing == Facing.UP:
+                return ((0, 0, 0, 16, 16, 12),)
+            if facing == Facing.DOWN:
+                return ((0, 0, 4, 16, 16, 16),)
             # ``piston_extended`` is the source Java 1.16.1 base model: the
             # casing stops four model pixels short of the front. The piston
             # head owns the separate four-pixel rod in its neighbouring cell;
@@ -454,12 +464,16 @@ class BlockModelRenderer:
             return tuple(self._rotate_box(box, turns) for box in canonical)
         if kind == "piston_head":
             head = {
+                Facing.UP: (0, 0, 12, 16, 16, 16),
+                Facing.DOWN: (0, 0, 0, 16, 16, 4),
                 Facing.NORTH: (0, 0, 0, 16, 4, 16),
                 Facing.SOUTH: (0, 12, 0, 16, 16, 16),
                 Facing.EAST: (12, 0, 0, 16, 16, 16),
                 Facing.WEST: (0, 0, 0, 4, 16, 16),
             }[facing]
             stem = {
+                Facing.UP: (6, 6, -4, 10, 10, 12),
+                Facing.DOWN: (6, 6, 4, 10, 10, 20),
                 # The template piston-head rod extends four model pixels
                 # into the adjacent piston cell. Keeping it inside 0..16
                 # clipped the rod at every facing and left a broken-looking
@@ -613,32 +627,68 @@ class BlockModelRenderer:
             ))
         return surface
 
+    def _render_piston_elements(self, kind, textures, facing):
+        """Project the canonical Java element faces, including their UV rotations."""
+        from engine.piston_models import PISTON_ELEMENTS
+        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
+        def transform(point):
+            x, up, depth = point
+            if facing == Facing.UP:
+                return x, up, 16 - depth
+            if facing == Facing.DOWN:
+                return x, 16 - up, depth
+            for _ in range(facing.value):
+                x, depth = 16 - depth, x
+            return x, depth, up
+        faces = []
+        for element in PISTON_ELEMENTS[kind]:
+            x, y, z = element['from']; X, Y, Z = element['to']
+            vertices = {
+                'north': [(X,Y,z),(x,Y,z),(x,y,z),(X,y,z)],
+                'south': [(x,Y,Z),(X,Y,Z),(X,y,Z),(x,y,Z)],
+                'east': [(X,Y,Z),(X,Y,z),(X,y,z),(X,y,Z)],
+                'west': [(x,Y,z),(x,Y,Z),(x,y,Z),(x,y,z)],
+                'up': [(x,Y,z),(X,Y,z),(X,Y,Z),(x,Y,Z)],
+                'down': [(x,y,Z),(X,y,Z),(X,y,z),(x,y,z)],
+            }
+            normals = {'north':(0,0,-1),'south':(0,0,1),'east':(1,0,0),
+                       'west':(-1,0,0),'up':(0,1,0),'down':(0,-1,0)}
+            def element_transform(point):
+                rotation = element.get('rotation')
+                if rotation:
+                    # The wall-torch template tilts around Java's depth axis.
+                    ox, oy, oz = rotation['origin']
+                    px, py, pz = point
+                    angle = math.radians(rotation['angle'])
+                    cosine, sine = math.cos(angle), math.sin(angle)
+                    point = (ox + (px-ox)*cosine - (py-oy)*sine,
+                             oy + (px-ox)*sine + (py-oy)*cosine, pz)
+                return transform(point)
+            origin = element_transform((0,0,0))
+            for name, face in element['faces'].items():
+                normal = tuple(a-b for a,b in zip(element_transform(normals[name]),origin))
+                if sum(normal) <= 0.00001:
+                    continue
+                points = [element_transform(v) for v in vertices[name]]
+                projected = [self._project(*v) for v in points]
+                u,v,U,V = [c/16 for c in face['uv']]
+                uv = [(u,v),(U,v),(U,V),(u,V)]
+                turns = face.get('rotation',0)//90
+                uv = uv[turns:]+uv[:turns]
+                uv_u = tuple(a-b for a,b in zip(uv[1],uv[0]))
+                uv_v = tuple(a-b for a,b in zip(uv[3],uv[0]))
+                shade = 1.0 if not element.get('shade', True) or normal[2] else 0.85 if normal[0] else 0.70
+                depth = sum(v[0]+v[1]+v[2] for v in points)/4
+                faces.append((depth, projected, textures[face['texture']], shade, uv[0],uv_u,uv_v))
+        for _,points,texture,shade,origin,u,v in sorted(faces,key=lambda f:f[0]):
+            self._draw_face(surface,points,texture,shade,origin,u,v)
+        return surface
+
     def render_piston(self, cap, side, back, facing: Facing,
                       extended: bool, inner=None) -> pygame.Surface:
-        """Render an oriented piston body with source face roles.
-
-        ``cap`` is the piston platform, ``side`` is the casing texture,
-        ``back`` is the bottom texture used on the retracted opposite face,
-        and ``inner`` is the recessed texture exposed by an extended piston.
-        Keeping those roles distinct prevents the bottom texture from being
-        smeared across the visible casing whenever the piston cycles.
-        """
-        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
-        boxes = self.detail_boxes("piston", facing, extended)
-        if not extended:
-            y_face = cap if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
-            x_face = cap if facing == Facing.EAST else back if facing == Facing.WEST else side
-            self._draw_box(surface, boxes[0], side, y_face, x_face)
-            return surface
-
-        # In the extended model the face toward the head exposes
-        # ``piston_inner``; the opposite face retains ``piston_bottom``. The
-        # head itself supplies the wooden/green platform texture.
-        inner = inner or back
-        y_face = inner if facing == Facing.SOUTH else back if facing == Facing.NORTH else side
-        x_face = inner if facing == Facing.EAST else back if facing == Facing.WEST else side
-        self._draw_box(surface, boxes[0], side, y_face, x_face)
-        return surface
+        return self._render_piston_elements('extended' if extended else 'body', {
+            '#platform':cap, '#side':side, '#bottom':back, '#inside':inner or back,
+        }, facing)
 
     def render_lever(self, base_texture, handle_texture, facing: Facing,
                      powered: bool) -> pygame.Surface:
@@ -704,17 +754,9 @@ class BlockModelRenderer:
         return surface
 
     def render_piston_head(self, platform, side, unsticky, facing: Facing) -> pygame.Surface:
-        """Render a piston head with the source platform/unsticky face roles."""
-        surface = pygame.Surface((self.tile_width, self.surface_height), pygame.SRCALPHA)
-        plate, stem = self.detail_boxes("piston_head", facing)
-        # The north face is the piston platform, while the opposite face is
-        # the unsticky wooden face. Which one is visible depends on the block's
-        # facing after the camera-space transform.
-        y_face = platform if facing == Facing.SOUTH else unsticky if facing == Facing.NORTH else side
-        x_face = platform if facing == Facing.EAST else unsticky if facing == Facing.WEST else side
-        self._draw_box(surface, plate, side, y_face, x_face)
-        self._draw_box(surface, stem, side, side, side)
-        return surface
+        return self._render_piston_elements('head', {
+            '#platform':platform, '#side':side, '#unsticky':unsticky,
+        }, facing)
 
     def render_crossed_planes(self, texture, z1: float = 0,
                               z2: float = 16) -> pygame.Surface:

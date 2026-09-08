@@ -1,0 +1,20 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\BlocFantome.exe",
+    "Version": "2.7.3",
+    "ProcessCount": 2,
+    "WindowCount": 4,
+    "ResponsiveWindows": 4,
+    "Remaining": 0,
+    "SHA256": "9EA82F47DD57DB2BF2AD6D9030128ADF100FB1672A0742E42275A9728F23C8E1"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+    "Version": "2.7.3",
+    "ProcessCount": 2,
+    "WindowCount": 4,
+    "ResponsiveWindows": 2,
+    "Remaining": 0,
+    "SHA256": "9EA82F47DD57DB2BF2AD6D9030128ADF100FB1672A0742E42275A9728F23C8E1"
+  }
+]

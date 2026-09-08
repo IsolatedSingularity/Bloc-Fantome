@@ -1,0 +1,20 @@
+{
+  "piston_door": {
+    "median_ms": 2.95,
+    "p95_ms": 5.57,
+    "max_ms": 25.08,
+    "frames": 300
+  },
+  "clock": {
+    "median_ms": 2.97,
+    "p95_ms": 7.27,
+    "max_ms": 9.34,
+    "frames": 300
+  },
+  "counter": {
+    "median_ms": 4.49,
+    "p95_ms": 17.06,
+    "max_ms": 50.17,
+    "frames": 300
+  }
+}

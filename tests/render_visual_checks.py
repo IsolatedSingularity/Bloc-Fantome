@@ -639,11 +639,11 @@ def render(output_dir: Path) -> None:
     app._toggleRedstoneLab()
     app._setInteractionMode(False)
     app._render()
-    save_capture(screen, output_dir / "redstone_lab_signal_build.png")
-    app._loadRedstoneLabCircuit("redstone_ring_riser")
+    save_capture(screen, output_dir / "redstone_lab_door_build.png")
+    app._loadRedstoneLabCircuit("clock")
     app._setInteractionMode(True)
     app._render()
-    save_capture(screen, output_dir / "redstone_lab_ring_test.png")
+    save_capture(screen, output_dir / "redstone_lab_clock_interact.png")
     app._setInteractionMode(False)
     app._toggleRedstoneLab()
 
@@ -760,6 +760,117 @@ def render(output_dir: Path) -> None:
     save_capture(screen, output_dir / "terrain_slice.png")
 
 
+def render_redstone(output_dir: Path):
+    """Focused Lab QA, using the live renderer at final display resolutions."""
+    from engine.redstone_lab import LAB_CIRCUITS
+    output_dir.mkdir(parents=True, exist_ok=True)
+    app = app_module.BlocFantome()
+    assert app.assetManager.loadAllAssets()
+    app._toggleRedstoneLab()
+    for size in ((1200,800),(960,640),(1920,1080)):
+        app_module.WINDOW_WIDTH,app_module.WINDOW_HEIGHT=size
+        app.screen=pygame.display.set_mode(size)
+        for key in LAB_CIRCUITS:
+            app._loadRedstoneLabCircuit(key)
+            app._setInteractionMode(True)
+            for _ in range(40):app.redstone.update(50)
+            app._render()
+            save_capture(app.screen,output_dir/f'{key}_{size[0]}.png')
+        app._setInteractionMode(False)
+        app._render()
+        save_capture(app.screen,output_dir/f'build_{size[0]}.png')
+        for rect in app.redstoneLabComponentRects.values():
+            assert rect.bottom < app.redstoneLabActionRects['cutaway'].top
+    app_module.WINDOW_WIDTH,app_module.WINDOW_HEIGHT=1200,800
+    app.screen=pygame.display.set_mode((1200,800))
+    app._loadRedstoneLabCircuit('piston_door')
+    app._setInteractionMode(True)
+    for rotation in range(4):
+        app.renderer.viewRotation=rotation
+        app._fitWorldToViewport(False)
+        for on in (True,False):
+            pos=LAB_CIRCUITS['piston_door'].controls[0][1]
+            if app.world.getBlockProperties(*pos).powered != on:app._interactBlock(*pos)
+            for _ in range(20):app.redstone.update(50)
+            app._invalidateViewCaches();app._render()
+            save_capture(app.screen,output_dir/f'door_r{rotation}_{on}.png')
+    for key in ('staircase','hidden_entrance','clock','slow_clock'):
+        app.renderer.viewRotation = 0
+        app._loadRedstoneLabCircuit(key)
+        app._interactBlock(*LAB_CIRCUITS[key].controls[0][1])
+        for _ in range(40):app.redstone.update(50)
+        app._invalidateViewCaches();app._render()
+        save_capture(app.screen,output_dir/f'{key}_active.png')
+        app._redstoneLabAction('cutaway');app._render()
+        save_capture(app.screen,output_dir/f'{key}_cutaway.png')
+        app.redstoneLabCutaway=False
+    # Native model textures at an enlarged integer zoom, with native-size labels.
+    sheet=pygame.Surface((1200,650));sheet.fill((31,35,42))
+    for column,facing in enumerate(app_module.Facing):
+        sheet.blit(app.smallFont.render(facing.name,True,(236,232,222)),(column*200+45,12))
+        for row,(block,extended) in enumerate(((app_module.BlockType.STICKY_PISTON,False),
+                (app_module.BlockType.STICKY_PISTON,True),(app_module.BlockType.PISTON_HEAD,False))):
+            sprite=app.assetManager.getDetailSprite(block,facing,extended,
+                app_module.SlabPosition.BOTTOM,sticky=True)
+            sheet.blit(pygame.transform.scale(sprite,(sprite.get_width()*2,sprite.get_height()*2)),
+                       (column*200+35,45+row*190))
+    save_capture(sheet,output_dir/'piston_six_facings.png')
+    pygame.quit()
+
+
+def render_world_map_regions(output_dir: Path) -> None:
+    """Exercise every source region, camera controls, UI size, and cached pan."""
+    import json
+    from engine.world_map_regions import REGIONS
+    output_dir.mkdir(parents=True,exist_ok=True)
+    app=app_module.BlocFantome()
+    if not app.assetManager.loadAllAssets():
+        raise RuntimeError('Assets failed to load')
+    app._openWorldMap()
+    measurements=[]
+    for width,height in ((960,640),(1200,800),(1920,1080)):
+        app._applyWindowSize(width,height)
+        splash = SplashScreen(app.screen, app.clock, app_module.TEXTURES_DIR,
+                              app_module.FONTS_DIR, app_module.ICONS_DIR)
+        splash.present()
+        save_capture(app.screen,output_dir/f'splash_{width}.png')
+        for dimension,regions in REGIONS.items():
+            app._switchWorldMapHub(dimension)
+            for key,_label in regions:
+                app._handleWorldMapAction('region:'+key)
+                app._render()
+                save_capture(app.screen,output_dir/f'{dimension}_{key}_{width}.png')
+                # Every source region button stays inside its native viewport.
+                assert all(app.screen.get_rect().contains(rect) for rect in app.worldMapView.region_rects.values())
+                times=[]
+                for frame in range(24):
+                    app.renderer.offsetX+=3
+                    app.renderer.offsetY-=1
+                    start=time.perf_counter()
+                    app._render()
+                    times.append((time.perf_counter()-start)*1000)
+                measurements.append({'dimension':dimension,'region':key,'size':[width,height],
+                                     'pan_p95_ms':sorted(times)[22],'max_ms':max(times)})
+                # Hover each genuine mission marker and retain a visual sample.
+                if app.worldMapView.node_hit_rects:
+                    point=app.worldMapView.node_hit_rects[0].center
+                    app.worldMapView.handle_event(pygame.event.Event(pygame.MOUSEMOTION,pos=point))
+                    app._render()
+                    save_capture(app.screen,output_dir/f'{dimension}_{key}_hover_{width}.png')
+                app._handleWorldMapAction('overview')
+                app._render()
+                save_capture(app.screen,output_dir/f'{dimension}_{key}_overview_{width}.png')
+        for dimension in ('overworld','ocean'):
+            app._switchWorldMapHub(dimension)
+            app._render()
+            save_capture(app.screen,output_dir/f'{dimension}_{width}.png')
+    (output_dir/'performance.json').write_text(json.dumps(measurements,indent=2)+'\n')
+    app._exitWorldMap()
+    app._render()
+    save_capture(app.screen,output_dir/'builder_after_map.png')
+    pygame.quit()
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
-    render(destination)
+    (render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)

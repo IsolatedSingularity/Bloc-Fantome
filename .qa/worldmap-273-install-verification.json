@@ -1,0 +1,19 @@
+{
+  "Version": "2.7.3",
+  "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+  "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme",
+  "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+  "TargetExists": true,
+  "SHA256": "9EA82F47DD57DB2BF2AD6D9030128ADF100FB1672A0742E42275A9728F23C8E1",
+  "Hotbar": [
+    "GRASS",
+    "DIRT",
+    "STONE",
+    "OAK_PLANKS",
+    "COBBLESTONE",
+    "BRICKS",
+    "GLASS",
+    "OAK_LOG",
+    "WATER"
+  ]
+}

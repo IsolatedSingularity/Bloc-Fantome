@@ -1,0 +1,212 @@
+[
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.929799983277917,
+    "max_ms": 6.190399988554418
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.500699975527823,
+    "max_ms": 5.852699978277087
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.578499985858798,
+    "max_ms": 5.620399955660105
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.804299958981574,
+    "max_ms": 6.166800041683018
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 7.058599963784218,
+    "max_ms": 7.376900059171021
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 4.245099960826337,
+    "max_ms": 4.445699974894524
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 6.020999979227781,
+    "max_ms": 6.062199943698943
+  },
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 7.904500002041459,
+    "max_ms": 8.005799958482385
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 6.416099960915744,
+    "max_ms": 6.780600058846176
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 5.955199943855405,
+    "max_ms": 6.657499936409295
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 6.296199979260564,
+    "max_ms": 6.326799979433417
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 6.514400010928512,
+    "max_ms": 6.8518000189214945
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 4.9322000704705715,
+    "max_ms": 4.958499921485782
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 5.059299990534782,
+    "max_ms": 6.72649999614805
+  },
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.779200026765466,
+    "max_ms": 9.152599959634244
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 7.55930005107075,
+    "max_ms": 7.663500029593706
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 10.286100092343986,
+    "max_ms": 11.441399925388396
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.881699992343783,
+    "max_ms": 9.28530003875494
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.5991999367252,
+    "max_ms": 8.655900019221008
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 6.855099927634001,
+    "max_ms": 7.829699898138642
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 7.666299934498966,
+    "max_ms": 7.880200049839914
+  }
+]

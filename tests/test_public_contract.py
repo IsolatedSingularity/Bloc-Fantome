@@ -43,7 +43,8 @@ def test_dead_duplicate_types_are_not_exported():
 
 
 def test_block_enum_name_and_value_contract():
-    values = [(member.name, member.value) for member in blocFantome.BlockType]
+    values = [(member.name, member.value) for member in blocFantome.BlockType if member.name != "COMPARATOR"]
+    assert blocFantome.BlockType.COMPARATOR.value == 548
     assert len(values) == 340
     assert _digest(values) == "8ef8365c6f45454d4a1ecb022164e8263c90e8ed759dd6462d8a95015019697a"
 
@@ -51,11 +52,11 @@ def test_block_enum_name_and_value_contract():
 def test_block_catalog_and_sound_contract():
     definitions = [
         (block.name, vars(definition))
-        for block, definition in blocFantome.BLOCK_DEFINITIONS.items()
+        for block, definition in blocFantome.BLOCK_DEFINITIONS.items() if block.name != "COMPARATOR"
     ]
     sounds = [
         (block.name, vars(sound))
-        for block, sound in blocFantome.BLOCK_SOUNDS.items()
+        for block, sound in blocFantome.BLOCK_SOUNDS.items() if block.name != "COMPARATOR"
     ]
     assert len(definitions) == len(sounds) == 339
     assert _digest(definitions) == "e85e4cb9105c7192f255cf9c1e3fcfc85c5c0be437aa465303a0a02944fddfa2"
@@ -64,7 +65,7 @@ def test_block_catalog_and_sound_contract():
 
 def test_category_order_and_membership_contract():
     categories = [
-        (name, [block.name for block in blocks])
+        (name, [block.name for block in blocks if block.name != "COMPARATOR"])
         for name, blocks in blocFantome.BLOCK_CATEGORIES.items()
     ]
     assert len(categories) == 12

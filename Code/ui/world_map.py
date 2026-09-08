@@ -124,6 +124,9 @@ class WorldMapView:
         self.next_rect = pygame.Rect(0, 0, 0, 0)
         self.continue_rect = pygame.Rect(0, 0, 0, 0)
         self.dimension_rects: dict[str, pygame.Rect] = {}
+        self.region_rects: dict[str, pygame.Rect] = {}
+        self.region_panel_rect=pygame.Rect(0,0,0,0)
+        self.source_map = None
         self._hovered_node: int | None = None
         self._surfaces: dict[str, pygame.Surface] = {}
         self._scaled_cache: dict[tuple, pygame.Surface] = {}
@@ -293,8 +296,15 @@ class WorldMapView:
         self.objective = None
         self.completed_now = False
         self._hovered_node = None
+        self.region_rects.clear()
+        self.region_panel_rect=pygame.Rect(0,0,0,0)
+        self.source_map = None
+        if scene.region_key is not None:
+            from ui.source_map import SourceMap
+            self.source_map = SourceMap(dimension, scene.region_key)
 
     def set_level(self, dimension: str, objective) -> None:
+        self.source_map = None
         self.mode = "level"
         self.dimension = dimension
         self.objective = objective
@@ -341,12 +351,17 @@ class WorldMapView:
                 if rect.collidepoint(event.pos):
                     self.play("click")
                     return f"dimension:{dimension}"
+            for region, rect in self.region_rects.items():
+                if rect.collidepoint(event.pos):
+                    self.play("click")
+                    return "overview" if region == "overview" else f"region:{region}"
             for index, rect in enumerate(self.node_hit_rects):
                 if rect.collidepoint(event.pos):
                     if self.dimension == "ocean":
                         return None
                     self.play("plan")
-                    return f"start:{index}"
+                    route = self.scene.route_indices[index] if self.scene and self.scene.route_indices else index
+                    return f"start:{route}"
         elif self.completed_now and self.continue_rect.collidepoint(event.pos):
             self.play("click")
             return "hub"
@@ -578,7 +593,7 @@ class WorldMapView:
             progress = (progress, False)
         for index, label in enumerate(self.scene.route_labels):
             row = pygame.Rect(panel.x + 13, panel.y + 38 + index * 27, panel.width - 25, 23)
-            active = index < len(self.scene.playable_anchors)
+            active = self.dimension != 'ocean' and (index in self.scene.route_indices if self.scene.region_key else index < len(self.scene.playable_anchors))
             fill = (70, 73, 68) if active else (42, 43, 47)
             pygame.draw.rect(screen, fill, row)
             pygame.draw.rect(screen, accent if active else (78, 79, 84), row, 1)
@@ -628,6 +643,27 @@ class WorldMapView:
             y = int((size[1] - ((pygame.time.get_ticks() * 0.018 + index * 83) % size[1])))
             radius = 1 + index % 3
             pygame.draw.circle(screen, (151, 226, 235), (x, y), radius, 1)
+
+    def _render_dimension_ambience(self, screen: pygame.Surface) -> None:
+        """Sparse, time-based foreground motes, below every map control."""
+        if self.dimension == "ocean":
+            self._render_ocean_ambience(screen)
+            return
+        colors = {
+            "overworld": ((149, 166, 112), (193, 184, 116)),
+            "nether": ((181, 99, 55), (125, 116, 112), (70, 140, 132)),
+            "end": ((112, 83, 139), (153, 117, 165)),
+        }[self.dimension]
+        if self.dimension == "nether":
+            colors = ((61,134,130),(111,153,150)) if self.scene and self.scene.region_key == "warped" else ((181,99,55),(125,116,112))
+        width, height = screen.get_size()
+        seconds = pygame.time.get_ticks() / 1000.0
+        for index in range(24):
+            speed = 4.0 + index % 5
+            x = (index * 137.7 + 61 + 12 * math.sin(seconds * 0.23 + index)) % width
+            y = (index * 83.3 - seconds * speed) % height
+            color = colors[index % len(colors)]
+            pygame.draw.circle(screen, color, (round(x), round(y)), 1)
 
     def _traveler_sprite(self, index: int) -> pygame.Surface:
         specs = TRAVELER_TEXTURES[self.dimension]
@@ -759,8 +795,7 @@ class WorldMapView:
 
     def render_hub(self, screen: pygame.Surface, renderer, completed: Mapping[str, object]) -> None:
         width, _height = screen.get_size()
-        if self.dimension == "ocean":
-            self._render_ocean_ambience(screen)
+        self._render_dimension_ambience(screen)
         self._render_landmarks(screen, renderer)
         self._render_travelers(screen, renderer)
         title_rect = pygame.Rect(16, 14, min(520, width - 302), 82)
@@ -784,6 +819,7 @@ class WorldMapView:
         screen.blit(back_text, back_text.get_rect(center=(self.back_rect.centerx + 14, self.back_rect.centery)))
         self._route_ledger(screen, completed)
         self._navigation(screen)
+        self._region_navigation(screen)
 
         # World Builder parks unavailable mission sprites off-screen rather
         # than presenting disabled question marks. The route ledger carries
@@ -805,14 +841,22 @@ class WorldMapView:
         if self.dimension == "ocean":
             anchors = self.scene.locked_anchors
         for index, world_anchor in enumerate(anchors):
+            route_index = self.scene.route_indices[index] if self.scene.route_indices else index
             anchor = renderer.worldToScreen(*world_anchor)
+            marker_area=pygame.Rect(round(anchor[0])-40,round(anchor[1])-55,80,85)
+            controls=(title_rect,self.back_rect,pygame.Rect(width-260,66,242,184),
+                      self.region_panel_rect,pygame.Rect(0,screen.get_height()-111,width,111))
+            if not screen.get_rect().contains(marker_area) or marker_area.collidelist(controls)>=0:
+                self.node_rects.append(pygame.Rect(0,0,0,0))
+                self.node_hit_rects.append(pygame.Rect(0,0,0,0))
+                continue
             hovered = index == self._hovered_node
             active = self.dimension != "ocean"
             node_rect = self._draw_marker(
                 screen,
                 anchor,
                 completed=(
-                    active and index < len(progress) and bool(progress[index])
+                    active and route_index < len(progress) and bool(progress[route_index])
                 ),
                 active=active,
                 hovered=hovered,
@@ -822,11 +866,43 @@ class WorldMapView:
             self.node_rects.append(node_rect)
             self.node_hit_rects.append(node_rect.inflate(30, 26))
             if hovered:
-                self._render_mission_copy(screen, node_rect, index)
+                self._render_mission_copy(screen, node_rect, route_index)
         self.node_rect = self.node_rects[0] if self.node_rects else pygame.Rect(0, 0, 0, 0)
         self.node_hit_rect = self.node_hit_rects[0] if self.node_hit_rects else pygame.Rect(0, 0, 0, 0)
 
         self._render_badge(screen)
+
+    def _region_navigation(self, screen: pygame.Surface) -> None:
+        from engine.world_map_regions import REGIONS
+        self.region_rects.clear()
+        if self.source_map is None:
+            return
+        panel = pygame.Rect(16, 110, 226, 82 + len(REGIONS[self.dimension]) * 32)
+        self.region_panel_rect=panel
+        self._panel(screen, panel)
+        heading = self._text("EXPLORE", (244, 226, 157), scale=2)
+        screen.blit(heading, (panel.x + 12, panel.y + 12))
+        for index, (key, label) in enumerate(REGIONS[self.dimension]):
+            rect = pygame.Rect(panel.x+10,panel.y+34+32*index,panel.width-20,27)
+            self.region_rects[key] = rect
+            selected = key == self.scene.region_key
+            pygame.draw.rect(screen, (58,54,65) if selected else (34,35,39), rect)
+            pygame.draw.rect(screen, DIMENSION_COLORS[self.dimension] if selected else (80,80,86), rect, 1)
+            text = self._text(label,(238,228,205) if selected else (190,190,195),scale=2)
+            screen.blit(text,text.get_rect(center=rect.center))
+        rect=pygame.Rect(panel.x+10,panel.bottom-37,panel.width-20,27)
+        self.region_rects['overview']=rect
+        self._button(screen,rect,'OVERVIEW')
+        hint = self._text("MIDDLE DRAG: PAN   WHEEL: ZOOM   HOME: RESET", (190,190,199), scale=2)
+        self._panel(screen, pygame.Rect(16,screen.get_height()-111,min(screen.get_width()-32,580),42), fill=(20,20,26,235))
+        screen.blit(hint, (20, screen.get_height()-82))
+        caption = "JAVA 1.16.1  /  SEED 1"
+        if self.dimension == "nether":
+            caption += "  /  ROOF CUTAWAY"
+        elif self.dimension == "ocean":
+            caption += "  /  WATER CUTAWAY"
+        text = self._text(caption, (157,157,171), scale=2)
+        screen.blit(text, (20, screen.get_height()-103))
 
     def render_level(self, screen: pygame.Surface, progress: tuple[int, int, bool]) -> None:
         width, height = screen.get_size()
