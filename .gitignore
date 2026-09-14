@@ -100,7 +100,6 @@ desktop.ini
 
 # Distribution
 *.exe
-!BlocFantome.exe
 !Assets/Icons/*.ico
 
 Jenova/
