@@ -1,0 +1,686 @@
+[
+  {
+    "location": [
+      -16704,
+      -11920
+    ],
+    "bounds": [
+      -16786,
+      48,
+      -11990,
+      -16606,
+      79,
+      -11803
+    ],
+    "wastes": [
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:35:43] [Server thread/INFO]: The nearest fortress is at [-16704, ~, -11920] (640 blocks away)"
+  },
+  {
+    "location": [
+      -16416,
+      -8432
+    ],
+    "bounds": [
+      -16490,
+      48,
+      -8543,
+      -16294,
+      80,
+      -8304
+    ],
+    "wastes": [
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:35:50] [Server thread/INFO]: The nearest fortress is at [-16416, ~, -8432] (554 blocks away)"
+  },
+  {
+    "location": [
+      -16144,
+      -3568
+    ],
+    "bounds": [
+      -16256,
+      48,
+      -3682,
+      -16045,
+      70,
+      -3440
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:35:58] [Server thread/INFO]: The nearest fortress is at [-16144, ~, -3568] (455 blocks away)"
+  },
+  {
+    "location": [
+      -15744,
+      7456
+    ],
+    "bounds": [
+      -15820,
+      48,
+      7331,
+      -15628,
+      84,
+      7535
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:08] [Server thread/INFO]: The nearest fortress is at [-15744, ~, 7456] (516 blocks away)"
+  },
+  {
+    "location": [
+      -16096,
+      16032
+    ],
+    "bounds": [
+      -16202,
+      48,
+      16034,
+      -15979,
+      70,
+      16150
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:16] [Server thread/INFO]: The nearest fortress is at [-16096, ~, 16032] (275 blocks away)"
+  },
+  {
+    "location": [
+      -11984,
+      -15760
+    ],
+    "bounds": [
+      -12109,
+      49,
+      -15771,
+      -11888,
+      69,
+      -15661
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:21] [Server thread/INFO]: The nearest fortress is at [-11984, ~, -15760] (240 blocks away)"
+  },
+  {
+    "location": [
+      -11952,
+      -4256
+    ],
+    "bounds": [
+      -12066,
+      48,
+      -4381,
+      -11830,
+      77,
+      -4138
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:31] [Server thread/INFO]: The nearest fortress is at [-11952, ~, -4256] (157 blocks away)"
+  },
+  {
+    "location": [
+      -11872,
+      -352
+    ],
+    "bounds": [
+      -11997,
+      48,
+      -464,
+      -11744,
+      78,
+      -235
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:36] [Server thread/INFO]: The nearest fortress is at [-11872, ~, -352] (204 blocks away)"
+  },
+  {
+    "location": [
+      -12400,
+      7488
+    ],
+    "bounds": [
+      -12448,
+      48,
+      7393,
+      -12271,
+      77,
+      7611
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:36:43] [Server thread/INFO]: The nearest fortress is at [-12400, ~, 7488] (560 blocks away)"
+  },
+  {
+    "location": [
+      -12288,
+      12368
+    ],
+    "bounds": [
+      -12396,
+      48,
+      12318,
+      -12183,
+      72,
+      12462
+    ],
+    "wastes": [
+      1.0,
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:36:48] [Server thread/INFO]: The nearest fortress is at [-12288, ~, 12368] (467 blocks away)"
+  },
+  {
+    "location": [
+      -12352,
+      15552
+    ],
+    "bounds": [
+      -12465,
+      48,
+      15439,
+      -12287,
+      77,
+      15668
+    ],
+    "wastes": [
+      0.3125
+    ],
+    "evidence": "[13:36:59] [Server thread/INFO]: The nearest fortress is at [-12352, ~, 15552] (569 blocks away)"
+  },
+  {
+    "location": [
+      -8016,
+      -11376
+    ],
+    "bounds": [
+      -8040,
+      48,
+      -11484,
+      -7888,
+      85,
+      -11248
+    ],
+    "wastes": [
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:37:06] [Server thread/INFO]: The nearest fortress is at [-8016, ~, -11376] (689 blocks away)"
+  },
+  {
+    "location": [
+      -8464,
+      -8528
+    ],
+    "bounds": [
+      -8506,
+      48,
+      -8610,
+      -8344,
+      79,
+      -8413
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:37:13] [Server thread/INFO]: The nearest fortress is at [-8464, ~, -8528] (522 blocks away)"
+  },
+  {
+    "location": [
+      -8368,
+      -4080
+    ],
+    "bounds": [
+      -8419,
+      48,
+      -4193,
+      -8246,
+      76,
+      -3987
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:37:18] [Server thread/INFO]: The nearest fortress is at [-8368, ~, -4080] (376 blocks away)"
+  },
+  {
+    "location": [
+      -8576,
+      4144
+    ],
+    "bounds": [
+      -8688,
+      48,
+      4133,
+      -8447,
+      86,
+      4266
+    ],
+    "wastes": [
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:37:26] [Server thread/INFO]: The nearest fortress is at [-8576, ~, 4144] (618 blocks away)"
+  },
+  {
+    "location": [
+      -7920,
+      7440
+    ],
+    "bounds": [
+      -8015,
+      48,
+      7397,
+      -7833,
+      83,
+      7537
+    ],
+    "wastes": [
+      1.0,
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:37:34] [Server thread/INFO]: The nearest fortress is at [-7920, ~, 7440] (516 blocks away)"
+  },
+  {
+    "location": [
+      -7936,
+      15984
+    ],
+    "bounds": [
+      -8050,
+      48,
+      15939,
+      -7825,
+      71,
+      16101
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:37:46] [Server thread/INFO]: The nearest fortress is at [-7936, ~, 15984] (150 blocks away)"
+  },
+  {
+    "location": [
+      -4320,
+      -16272
+    ],
+    "bounds": [
+      -4427,
+      48,
+      -16391,
+      -4192,
+      84,
+      -16161
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:37:51] [Server thread/INFO]: The nearest fortress is at [-4320, ~, -16272] (444 blocks away)"
+  },
+  {
+    "location": [
+      -4080,
+      -12416
+    ],
+    "bounds": [
+      -4194,
+      48,
+      -12496,
+      -3982,
+      84,
+      -12312
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:37:56] [Server thread/INFO]: The nearest fortress is at [-4080, ~, -12416] (423 blocks away)"
+  },
+  {
+    "location": [
+      -4096,
+      -4272
+    ],
+    "bounds": [
+      -4159,
+      48,
+      -4354,
+      -3991,
+      85,
+      -4150
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:04] [Server thread/INFO]: The nearest fortress is at [-4096, ~, -4272] (288 blocks away)"
+  },
+  {
+    "location": [
+      -4720,
+      7424
+    ],
+    "bounds": [
+      -4828,
+      48,
+      7386,
+      -4616,
+      81,
+      7538
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:14] [Server thread/INFO]: The nearest fortress is at [-4720, ~, 7424] (742 blocks away)"
+  },
+  {
+    "location": [
+      -4192,
+      16032
+    ],
+    "bounds": [
+      -4268,
+      48,
+      15924,
+      -4101,
+      79,
+      16149
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:21] [Server thread/INFO]: The nearest fortress is at [-4192, ~, 16032] (194 blocks away)"
+  },
+  {
+    "location": [
+      144,
+      -16400
+    ],
+    "bounds": [
+      81,
+      48,
+      -16515,
+      224,
+      77,
+      -16283
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:26] [Server thread/INFO]: The nearest fortress is at [144, ~, -16400] (384 blocks away)"
+  },
+  {
+    "location": [
+      -288,
+      -11840
+    ],
+    "bounds": [
+      -390,
+      49,
+      -11948,
+      -190,
+      66,
+      -11725
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:31] [Server thread/INFO]: The nearest fortress is at [-288, ~, -11840] (295 blocks away)"
+  },
+  {
+    "location": [
+      -192,
+      -4720
+    ],
+    "bounds": [
+      -223,
+      48,
+      -4832,
+      -70,
+      82,
+      -4591
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:39] [Server thread/INFO]: The nearest fortress is at [-192, ~, -4720] (745 blocks away)"
+  },
+  {
+    "location": [
+      192,
+      0
+    ],
+    "bounds": [
+      109,
+      48,
+      -83,
+      233,
+      73,
+      113
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:44] [Server thread/INFO]: The nearest fortress is at [192, ~, 0] (192 blocks away)"
+  },
+  {
+    "location": [
+      -752,
+      3792
+    ],
+    "bounds": [
+      -835,
+      48,
+      3673,
+      -636,
+      77,
+      3908
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:48] [Server thread/INFO]: The nearest fortress is at [-752, ~, 3792] (665 blocks away)"
+  },
+  {
+    "location": [
+      304,
+      7952
+    ],
+    "bounds": [
+      283,
+      48,
+      7841,
+      421,
+      73,
+      8032
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:53] [Server thread/INFO]: The nearest fortress is at [304, ~, 7952] (304 blocks away)"
+  },
+  {
+    "location": [
+      -368,
+      12320
+    ],
+    "bounds": [
+      -457,
+      50,
+      12219,
+      -251,
+      69,
+      12443
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:38:58] [Server thread/INFO]: The nearest fortress is at [-368, ~, 12320] (532 blocks away)"
+  },
+  {
+    "location": [
+      208,
+      16064
+    ],
+    "bounds": [
+      132,
+      50,
+      15963,
+      312,
+      69,
+      16149
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:39:03] [Server thread/INFO]: The nearest fortress is at [208, ~, 16064] (217 blocks away)"
+  },
+  {
+    "location": [
+      3808,
+      -11472
+    ],
+    "bounds": [
+      3776,
+      48,
+      -11585,
+      3919,
+      78,
+      -11361
+    ],
+    "wastes": [
+      0.0
+    ],
+    "evidence": "[13:39:10] [Server thread/INFO]: The nearest fortress is at [3808, ~, -11472] (603 blocks away)"
+  },
+  {
+    "location": [
+      4048,
+      -4304
+    ],
+    "bounds": [
+      3969,
+      48,
+      -4387,
+      4176,
+      76,
+      -4199
+    ],
+    "wastes": [
+      1.0,
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:39:18] [Server thread/INFO]: The nearest fortress is at [4048, ~, -4304] (240 blocks away)"
+  },
+  {
+    "location": [
+      3520,
+      -224
+    ],
+    "bounds": [
+      3395,
+      48,
+      -338,
+      3643,
+      85,
+      -108
+    ],
+    "wastes": [
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:39:28] [Server thread/INFO]: The nearest fortress is at [3520, ~, -224] (601 blocks away)"
+  },
+  {
+    "location": [
+      3760,
+      3536
+    ],
+    "bounds": [
+      3646,
+      48,
+      3421,
+      3833,
+      75,
+      3651
+    ],
+    "wastes": [
+      1.0,
+      1.0,
+      0.0
+    ],
+    "evidence": "[13:39:35] [Server thread/INFO]: The nearest fortress is at [3760, ~, 3536] (395 blocks away)"
+  },
+  {
+    "location": [
+      4160,
+      8336
+    ],
+    "bounds": [
+      4078,
+      48,
+      8311,
+      4275,
+      74,
+      8403
+    ],
+    "wastes": [
+      0.4375
+    ],
+    "evidence": "[13:39:46] [Server thread/INFO]: The nearest fortress is at [4160, ~, 8336] (343 blocks away)"
+  },
+  {
+    "location": [
+      3568,
+      11920
+    ],
+    "bounds": [
+      3490,
+      48,
+      11808,
+      3696,
+      85,
+      12042
+    ],
+    "wastes": [
+      1.0,
+      0.125
+    ],
+    "evidence": "[13:39:51] [Server thread/INFO]: The nearest fortress is at [3568, ~, 11920] (528 blocks away)"
+  },
+  {
+    "location": [
+      4064,
+      16256
+    ],
+    "bounds": [
+      3939,
+      48,
+      16142,
+      4186,
+      78,
+      16379
+    ],
+    "wastes": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "evidence": "[13:39:58] [Server thread/INFO]: The nearest fortress is at [4064, ~, 16256] (226 blocks away)"
+  }
+]

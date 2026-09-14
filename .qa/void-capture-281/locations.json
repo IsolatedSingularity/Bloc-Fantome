@@ -1,0 +1,16 @@
+[
+  {
+    "id": "the_void",
+    "dimension": "overworld",
+    "raw_id": 127,
+    "location": [
+      0,
+      0
+    ],
+    "response": "[12:19:29] [Server thread/INFO]: Gamerule randomTickSpeed is now set to: 0\n[12:19:29] [Server thread/INFO]: Gamerule doMobSpawning is now set to: false\n[12:19:29] [Server thread/INFO]: The nearest minecraft:the_void is at [0, ~, 0] (0 blocks away)",
+    "origin": [
+      -16,
+      -16
+    ]
+  }
+]

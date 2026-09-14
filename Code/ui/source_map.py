@@ -5,7 +5,21 @@ import json
 from collections import defaultdict
 import pygame
 
-from engine.world_map_regions import REGION_ROOT, load_region
+from engine.world_map_regions import REGION_ROOT, NETHER_HEIGHT_SCALE, load_region
+
+
+def scale_sprite(sprite, offset, scale, seal=False):
+    """Conservative pixel coverage for opaque cubes at fractional zooms."""
+    scaled = pygame.transform.scale(sprite, (max(1, round(sprite.get_width()*scale)),
+                                               max(1, round(sprite.get_height()*scale))))
+    position = (round(offset[0]*scale), round(offset[1]*scale))
+    if seal:
+        # Extend opaque edge colors by one assembly pixel. This closes rounding
+        # cracks without expanding translucent plants, fences, or entity models.
+        padded = pygame.Surface((scaled.get_width()+2, scaled.get_height()+2), pygame.SRCALPHA)
+        padded.blits([(scaled, p) for p in ((0,1),(2,1),(1,0),(1,2),(1,1))], doreturn=False)
+        return padded, (position[0]-1, position[1]-1)
+    return scaled, position
 
 
 class SourceMap:
@@ -14,8 +28,8 @@ class SourceMap:
         self.origin = tuple(data["origin"])
         self.dimension = dimension
         self.presentation = data["presentation"]
-        records = sorted(data["blocks"], key=lambda r: r[0]+r[1]+r[2])
-        self.height_scale = 0.6 if dimension == 'nether' else 1.0
+        records = sorted(data["blocks"] + data.get('decoration_blocks', []), key=lambda r: r[0]+r[1]+r[2])
+        self.height_scale = NETHER_HEIGHT_SCALE if dimension == 'nether' else 1.0
         self.records = tuple(((x-z)*32, (x+z)*16-y*38*self.height_scale, pid) for x,z,y,pid in records)
         self.bins=defaultdict(list)
         for index,(x,y,_pid) in enumerate(self.records):
@@ -35,6 +49,12 @@ class SourceMap:
             bounds = cell.get_bounding_rect()
             self.sprites.append((cell.subsurface(bounds).copy(), (bounds.x-64,bounds.y-96)))
         self.scaled = {}
+        solid_names = {'obsidian','netherrack','end_stone','stone','dirt','grass_block',
+                       'sand','sandstone','mycelium','soul_sand','soul_soil','basalt',
+                       'blackstone','nether_bricks','warped_nylium','crimson_nylium',
+                       'prismarine','prismarine_bricks','dark_prismarine','sea_lantern',
+                       'polished_blackstone_bricks','cracked_polished_blackstone_bricks'}
+        self.sealed = [p['Name'].split(':')[1] in solid_names for p in self.palette]
         self.cache_key = None
         self.surface = None
         self.crystals = tuple(tuple(e["Pos"]) for e in data["entities"] if e["id"] == "minecraft:end_crystal")
@@ -52,6 +72,12 @@ class SourceMap:
         self.glow=pygame.Surface((48,48),pygame.SRCALPHA)
         for radius in range(23,0,-1):
             pygame.draw.circle(self.glow,(218,91,23,round((24-radius)*.35)),(24,24),radius)
+        portal_ids = {i for i,p in enumerate(self.palette) if p['Name']=='minecraft:nether_portal'}
+        portal = [(x,y) for x,y,pid in self.records if pid in portal_ids]
+        self.portal_center = (sum(x for x,y in portal)/len(portal), sum(y for x,y in portal)/len(portal)) if portal else None
+        self.portal_glow = pygame.Surface((64,64),pygame.SRCALPHA)
+        for radius in range(31,0,-1):
+            pygame.draw.circle(self.portal_glow,(166,64,240,round((32-radius)*1.2)),(32,32),radius)
         self.backdrop=None
         self.water_atmosphere=None
 
@@ -96,9 +122,8 @@ class SourceMap:
             if scale_key not in self.scaled:
                 self.scaled.clear()
                 self.scaled[scale_key] = [
-                    (pygame.transform.scale(sprite,(max(1,round(sprite.get_width()*zoom*factor)),max(1,round(sprite.get_height()*zoom*factor)))),
-                     (round(offset[0]*zoom*factor),round(offset[1]*zoom*factor)))
-                    for sprite,offset in self.sprites
+                    scale_sprite(sprite, offset, zoom*factor, self.sealed[index])
+                    for index,(sprite,offset) in enumerate(self.sprites)
                 ]
             sprites = self.scaled[scale_key]
             clip_left,clip_right = -offset_x/zoom-128,(width-offset_x)/zoom+128
@@ -134,6 +159,15 @@ class SourceMap:
             self.glow.set_alpha(round(150+25*math.sin(pygame.time.get_ticks()*.001)))
             for x,y,_pid in self.glows:
                 screen.blit(self.glow,(round(x*zoom+renderer.offsetX)-24,round(y*zoom+renderer.offsetY)-24))
+        if self.portal_center:
+            x,y = self.portal_center
+            px,py = round(x*zoom+renderer.offsetX),round(y*zoom+renderer.offsetY)
+            seconds = pygame.time.get_ticks()/1000
+            self.portal_glow.set_alpha(round(175+45*math.sin(seconds*2)))
+            screen.blit(self.portal_glow,(px-32,py-32))
+            for index in range(4):
+                phase = seconds*.6+index*1.57
+                pygame.draw.circle(screen,(190,116,239),(round(px+12*math.sin(phase)),round(py-12+12*math.cos(phase))),1)
         # Source-defined entity cuboids, atlas UVs, rotation, and bobbing.
         # EndCrystalEntityRenderer.getYOffset: (g*g+g)*.4-1.4.
         ticks = pygame.time.get_ticks()/50

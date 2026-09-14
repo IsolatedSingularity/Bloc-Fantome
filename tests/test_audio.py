@@ -72,6 +72,17 @@ class FakeSound:
         self.volume = volume
 
 
+def test_group_mute_updates_active_loop_and_restores_pan():
+    mixer = FakeMixer()
+    router = AUDIO.AudioRouter(mixer)
+    channel = router.play(object(), group='ambient', volume=0.5, pan=0.5, loops=-1)
+    original = channel.volume
+    router.set_group_volume('ambient', 0)
+    assert channel.volume == (0, 0)
+    router.set_group_volume('ambient', 1)
+    assert channel.volume == original
+
+
 class FakeMixer:
     def __init__(self):
         self.channels = {}

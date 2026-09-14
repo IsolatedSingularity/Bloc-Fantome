@@ -1,0 +1,38 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\.app_config.json",
+    "SHA256": "E4F30E2546AF47986C40CFFEB4D4025A85D425B42EB13B1C39E4692EBD6EA785"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\.tutorial_config.json",
+    "SHA256": "BD68B1B89B1419EF8AFD4437BE965E2D13C2151CCED0CA37CE93ABAD32EFB069"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\config.json",
+    "SHA256": "6E1EA9153CE088CDF120156266B8034B7059CB2097115CA9DFB95ACEDBE823A2"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_autosave.json.gz",
+    "SHA256": "D3930AD37B0B8457CE49D33FEE077655A4C844161AF5F2E0CC27D6BF123869C8"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_200133.json.gz",
+    "SHA256": "3FB30F2E00BDE052F0443A9A1879D0FFDA4867F64477C11E4D889544FDD2C9F1"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_200633.json.gz",
+    "SHA256": "D4A56CB684F893D7208E65C8B40020CEE626A7C9FE57C4D5B3CD63955282CD27"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_201133.json.gz",
+    "SHA256": "30B369526DDFD341985E87B38A76A922B3107A34C71B066477BEDA6C733374F1"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_201633.json.gz",
+    "SHA256": "C6BBA44E0639345EC7E0FB8EA76F98F31C1AB453226E210A9A8576F42AC6B3FB"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_202133.json.gz",
+    "SHA256": "5A7938FC0B56E647D9B05F90B4E59F3DD9A7A548043FC783732B27D1B7E61968"
+  }
+]

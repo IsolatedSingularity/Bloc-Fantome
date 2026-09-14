@@ -1,0 +1,16 @@
+{
+  "Version": "2.8.1",
+  "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+  "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme",
+  "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+  "TargetExists": true,
+  "SHA256": "AFF85A9C21CE60075E1F30175BB7C0F2D78CF7590E4C64DF71F281B1DC3E7112",
+  "RootHashMatches": true,
+  "HotbarPreserved": true,
+  "Hotbar2Preserved": true,
+  "RequiredAssets": [
+    "Assets\\Fonts\\Zekton\\Zekton-Regular.otf",
+    "Assets\\Icons\\Splash_Midnight_Workshop.png",
+    "References\\Titles\\horror.png"
+  ]
+}

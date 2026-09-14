@@ -1,0 +1,1112 @@
+[
+  {
+    "biome": "plains",
+    "load_ms": 335.95,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 119.81,
+        "settled_max_ms": 11.02,
+        "drawn": 5092
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 97.04,
+        "settled_max_ms": 9.04,
+        "drawn": 5575
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 76.04,
+        "settled_max_ms": 10.61,
+        "drawn": 5612
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 57.26,
+        "settled_max_ms": 8.64,
+        "drawn": 5115
+      }
+    ]
+  },
+  {
+    "biome": "sunflower_plains",
+    "load_ms": 478.89,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 93.65,
+        "settled_max_ms": 12.4,
+        "drawn": 3936
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 76.82,
+        "settled_max_ms": 11.23,
+        "drawn": 3967
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 86.35,
+        "settled_max_ms": 7.71,
+        "drawn": 4029
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 70.27,
+        "settled_max_ms": 7.56,
+        "drawn": 4022
+      }
+    ]
+  },
+  {
+    "biome": "forest",
+    "load_ms": 477.39,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 112.47,
+        "settled_max_ms": 12.5,
+        "drawn": 6482
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 155.88,
+        "settled_max_ms": 16.77,
+        "drawn": 6131
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 93.2,
+        "settled_max_ms": 12.88,
+        "drawn": 5914
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 87.27,
+        "settled_max_ms": 10.72,
+        "drawn": 6303
+      }
+    ]
+  },
+  {
+    "biome": "flower_forest",
+    "load_ms": 453.95,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 109.75,
+        "settled_max_ms": 7.42,
+        "drawn": 6711
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 94.93,
+        "settled_max_ms": 7.9,
+        "drawn": 6758
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 91.66,
+        "settled_max_ms": 7.41,
+        "drawn": 6633
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 91.02,
+        "settled_max_ms": 8.16,
+        "drawn": 6455
+      }
+    ]
+  },
+  {
+    "biome": "birch_forest",
+    "load_ms": 445.18,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 106.38,
+        "settled_max_ms": 12.0,
+        "drawn": 6764
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 86.48,
+        "settled_max_ms": 7.57,
+        "drawn": 6823
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 84.9,
+        "settled_max_ms": 7.65,
+        "drawn": 6806
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 146.78,
+        "settled_max_ms": 7.45,
+        "drawn": 6764
+      }
+    ]
+  },
+  {
+    "biome": "dark_forest",
+    "load_ms": 399.75,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 130.23,
+        "settled_max_ms": 13.06,
+        "drawn": 7626
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 164.45,
+        "settled_max_ms": 13.02,
+        "drawn": 7960
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 104.0,
+        "settled_max_ms": 10.96,
+        "drawn": 7525
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 97.73,
+        "settled_max_ms": 9.69,
+        "drawn": 7531
+      }
+    ]
+  },
+  {
+    "biome": "desert",
+    "load_ms": 502.82,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 83.64,
+        "settled_max_ms": 8.58,
+        "drawn": 5374
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 78.84,
+        "settled_max_ms": 8.87,
+        "drawn": 5679
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 68.14,
+        "settled_max_ms": 8.08,
+        "drawn": 5849
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 68.66,
+        "settled_max_ms": 8.72,
+        "drawn": 5828
+      }
+    ]
+  },
+  {
+    "biome": "taiga",
+    "load_ms": 512.85,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 100.9,
+        "settled_max_ms": 14.42,
+        "drawn": 6958
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 85.57,
+        "settled_max_ms": 9.65,
+        "drawn": 7043
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 151.84,
+        "settled_max_ms": 9.03,
+        "drawn": 6363
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 94.11,
+        "settled_max_ms": 10.44,
+        "drawn": 6167
+      }
+    ]
+  },
+  {
+    "biome": "giant_tree_taiga",
+    "load_ms": 473.76,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 104.02,
+        "settled_max_ms": 7.98,
+        "drawn": 7253
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 81.69,
+        "settled_max_ms": 12.71,
+        "drawn": 7264
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 85.64,
+        "settled_max_ms": 7.62,
+        "drawn": 7281
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 71.72,
+        "settled_max_ms": 7.55,
+        "drawn": 7293
+      }
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "load_ms": 466.66,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 88.73,
+        "settled_max_ms": 7.45,
+        "drawn": 5088
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 77.21,
+        "settled_max_ms": 7.6,
+        "drawn": 4993
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 75.03,
+        "settled_max_ms": 7.36,
+        "drawn": 4989
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 72.29,
+        "settled_max_ms": 7.26,
+        "drawn": 4868
+      }
+    ]
+  },
+  {
+    "biome": "ice_spikes",
+    "load_ms": 433.13,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 91.97,
+        "settled_max_ms": 11.77,
+        "drawn": 6297
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 76.26,
+        "settled_max_ms": 7.33,
+        "drawn": 6137
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 74.42,
+        "settled_max_ms": 7.3,
+        "drawn": 6031
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 76.66,
+        "settled_max_ms": 8.13,
+        "drawn": 6175
+      }
+    ]
+  },
+  {
+    "biome": "snowy_taiga",
+    "load_ms": 457.88,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 95.61,
+        "settled_max_ms": 10.2,
+        "drawn": 5250
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 82.58,
+        "settled_max_ms": 11.34,
+        "drawn": 5200
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 85.6,
+        "settled_max_ms": 12.01,
+        "drawn": 5072
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 88.57,
+        "settled_max_ms": 7.83,
+        "drawn": 5270
+      }
+    ]
+  },
+  {
+    "biome": "mountains",
+    "load_ms": 463.66,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 97.07,
+        "settled_max_ms": 8.7,
+        "drawn": 5456
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 89.16,
+        "settled_max_ms": 8.31,
+        "drawn": 5332
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 85.52,
+        "settled_max_ms": 8.39,
+        "drawn": 4768
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 81.05,
+        "settled_max_ms": 8.92,
+        "drawn": 5620
+      }
+    ]
+  },
+  {
+    "biome": "wooded_mountains",
+    "load_ms": 435.7,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 97.22,
+        "settled_max_ms": 11.77,
+        "drawn": 6004
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 77.49,
+        "settled_max_ms": 7.97,
+        "drawn": 5807
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 76.46,
+        "settled_max_ms": 7.66,
+        "drawn": 6174
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 80.27,
+        "settled_max_ms": 8.0,
+        "drawn": 5553
+      }
+    ]
+  },
+  {
+    "biome": "swamp",
+    "load_ms": 485.08,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 144.02,
+        "settled_max_ms": 12.29,
+        "drawn": 6112
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 128.49,
+        "settled_max_ms": 14.02,
+        "drawn": 5920
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 108.63,
+        "settled_max_ms": 10.38,
+        "drawn": 5905
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 108.94,
+        "settled_max_ms": 8.08,
+        "drawn": 6215
+      }
+    ]
+  },
+  {
+    "biome": "jungle",
+    "load_ms": 536.78,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 143.72,
+        "settled_max_ms": 6.17,
+        "drawn": 9285
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 200.85,
+        "settled_max_ms": 7.9,
+        "drawn": 8955
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 118.51,
+        "settled_max_ms": 6.14,
+        "drawn": 9007
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 109.81,
+        "settled_max_ms": 6.26,
+        "drawn": 9185
+      }
+    ]
+  },
+  {
+    "biome": "bamboo_jungle",
+    "load_ms": 559.11,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 206.9,
+        "settled_max_ms": 10.84,
+        "drawn": 11359
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 138.1,
+        "settled_max_ms": 5.96,
+        "drawn": 11273
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 214.44,
+        "settled_max_ms": 7.5,
+        "drawn": 11266
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 124.22,
+        "settled_max_ms": 6.01,
+        "drawn": 11296
+      }
+    ]
+  },
+  {
+    "biome": "savanna",
+    "load_ms": 541.47,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 105.41,
+        "settled_max_ms": 15.18,
+        "drawn": 4892
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 94.97,
+        "settled_max_ms": 13.73,
+        "drawn": 4813
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 92.37,
+        "settled_max_ms": 13.27,
+        "drawn": 5124
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 82.6,
+        "settled_max_ms": 7.6,
+        "drawn": 5216
+      }
+    ]
+  },
+  {
+    "biome": "shattered_savanna",
+    "load_ms": 498.75,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 101.26,
+        "settled_max_ms": 9.77,
+        "drawn": 5628
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 95.52,
+        "settled_max_ms": 10.46,
+        "drawn": 5945
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 89.44,
+        "settled_max_ms": 8.85,
+        "drawn": 5701
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 81.41,
+        "settled_max_ms": 8.1,
+        "drawn": 5336
+      }
+    ]
+  },
+  {
+    "biome": "ocean",
+    "load_ms": 447.14,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 97.55,
+        "settled_max_ms": 12.8,
+        "drawn": 6154
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 72.71,
+        "settled_max_ms": 7.55,
+        "drawn": 6144
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 71.15,
+        "settled_max_ms": 9.66,
+        "drawn": 5946
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 73.3,
+        "settled_max_ms": 7.8,
+        "drawn": 5991
+      }
+    ]
+  },
+  {
+    "biome": "warm_ocean",
+    "load_ms": 443.74,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 114.3,
+        "settled_max_ms": 11.46,
+        "drawn": 6543
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 94.3,
+        "settled_max_ms": 12.74,
+        "drawn": 6702
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 87.02,
+        "settled_max_ms": 10.06,
+        "drawn": 6570
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 87.67,
+        "settled_max_ms": 7.73,
+        "drawn": 6330
+      }
+    ]
+  },
+  {
+    "biome": "frozen_ocean",
+    "load_ms": 479.36,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 84.53,
+        "settled_max_ms": 7.19,
+        "drawn": 6416
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 69.32,
+        "settled_max_ms": 7.72,
+        "drawn": 6821
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 70.71,
+        "settled_max_ms": 7.7,
+        "drawn": 6661
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 147.66,
+        "settled_max_ms": 7.99,
+        "drawn": 6261
+      }
+    ]
+  },
+  {
+    "biome": "river",
+    "load_ms": 400.58,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 91.33,
+        "settled_max_ms": 12.65,
+        "drawn": 4742
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 75.04,
+        "settled_max_ms": 7.89,
+        "drawn": 4749
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 151.13,
+        "settled_max_ms": 7.82,
+        "drawn": 4599
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 71.15,
+        "settled_max_ms": 7.95,
+        "drawn": 4859
+      }
+    ]
+  },
+  {
+    "biome": "frozen_river",
+    "load_ms": 375.28,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 87.74,
+        "settled_max_ms": 11.05,
+        "drawn": 4792
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 150.22,
+        "settled_max_ms": 12.15,
+        "drawn": 5019
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 81.96,
+        "settled_max_ms": 10.73,
+        "drawn": 4676
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 75.64,
+        "settled_max_ms": 7.1,
+        "drawn": 4735
+      }
+    ]
+  },
+  {
+    "biome": "beach",
+    "load_ms": 623.23,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 114.32,
+        "settled_max_ms": 10.09,
+        "drawn": 7562
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 92.49,
+        "settled_max_ms": 10.82,
+        "drawn": 7059
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 82.64,
+        "settled_max_ms": 10.48,
+        "drawn": 6575
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 170.38,
+        "settled_max_ms": 9.9,
+        "drawn": 7465
+      }
+    ]
+  },
+  {
+    "biome": "stone_shore",
+    "load_ms": 630.7,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 119.58,
+        "settled_max_ms": 17.56,
+        "drawn": 6591
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 99.5,
+        "settled_max_ms": 11.01,
+        "drawn": 6125
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 98.87,
+        "settled_max_ms": 12.82,
+        "drawn": 6662
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 104.03,
+        "settled_max_ms": 11.72,
+        "drawn": 6999
+      }
+    ]
+  },
+  {
+    "biome": "badlands",
+    "load_ms": 918.99,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 108.67,
+        "settled_max_ms": 12.01,
+        "drawn": 7472
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 86.05,
+        "settled_max_ms": 10.0,
+        "drawn": 8528
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 86.35,
+        "settled_max_ms": 8.84,
+        "drawn": 8757
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 81.92,
+        "settled_max_ms": 11.68,
+        "drawn": 7957
+      }
+    ]
+  },
+  {
+    "biome": "eroded_badlands",
+    "load_ms": 532.24,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 97.2,
+        "settled_max_ms": 7.81,
+        "drawn": 5928
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 81.7,
+        "settled_max_ms": 9.01,
+        "drawn": 5878
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 79.5,
+        "settled_max_ms": 7.31,
+        "drawn": 5725
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 79.07,
+        "settled_max_ms": 7.48,
+        "drawn": 5999
+      }
+    ]
+  },
+  {
+    "biome": "mushroom_fields",
+    "load_ms": 529.11,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 95.14,
+        "settled_max_ms": 14.22,
+        "drawn": 5969
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 158.49,
+        "settled_max_ms": 9.59,
+        "drawn": 6571
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 84.69,
+        "settled_max_ms": 9.53,
+        "drawn": 6582
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 80.23,
+        "settled_max_ms": 8.78,
+        "drawn": 5875
+      }
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "load_ms": 1375.76,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 220.69,
+        "settled_max_ms": 10.68,
+        "drawn": 7003
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 97.56,
+        "settled_max_ms": 11.87,
+        "drawn": 7056
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 195.69,
+        "settled_max_ms": 12.19,
+        "drawn": 7162
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 80.9,
+        "settled_max_ms": 11.83,
+        "drawn": 7122
+      }
+    ]
+  },
+  {
+    "biome": "crimson_forest",
+    "load_ms": 842.35,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 252.23,
+        "settled_max_ms": 8.3,
+        "drawn": 15794
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 96.02,
+        "settled_max_ms": 15.25,
+        "drawn": 15819
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 89.94,
+        "settled_max_ms": 8.89,
+        "drawn": 14831
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 92.08,
+        "settled_max_ms": 8.73,
+        "drawn": 15114
+      }
+    ]
+  },
+  {
+    "biome": "warped_forest",
+    "load_ms": 746.82,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 139.53,
+        "settled_max_ms": 8.51,
+        "drawn": 12498
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 91.56,
+        "settled_max_ms": 11.17,
+        "drawn": 12011
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 215.61,
+        "settled_max_ms": 19.67,
+        "drawn": 11919
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 95.67,
+        "settled_max_ms": 10.73,
+        "drawn": 12250
+      }
+    ]
+  },
+  {
+    "biome": "soul_sand_valley",
+    "load_ms": 609.88,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 111.96,
+        "settled_max_ms": 13.96,
+        "drawn": 6605
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 70.24,
+        "settled_max_ms": 11.92,
+        "drawn": 7056
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 71.46,
+        "settled_max_ms": 12.22,
+        "drawn": 6918
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 71.76,
+        "settled_max_ms": 12.43,
+        "drawn": 6847
+      }
+    ]
+  },
+  {
+    "biome": "basalt_deltas",
+    "load_ms": 669.6,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 107.86,
+        "settled_max_ms": 8.76,
+        "drawn": 9366
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 77.24,
+        "settled_max_ms": 13.32,
+        "drawn": 9284
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 169.66,
+        "settled_max_ms": 9.15,
+        "drawn": 9319
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 70.73,
+        "settled_max_ms": 8.24,
+        "drawn": 9320
+      }
+    ]
+  },
+  {
+    "biome": "the_end",
+    "load_ms": 495.69,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 71.79,
+        "settled_max_ms": 9.57,
+        "drawn": 3942
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 59.0,
+        "settled_max_ms": 13.12,
+        "drawn": 3847
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 50.04,
+        "settled_max_ms": 13.21,
+        "drawn": 3841
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 47.66,
+        "settled_max_ms": 9.73,
+        "drawn": 3937
+      }
+    ]
+  },
+  {
+    "biome": "end_highlands",
+    "load_ms": 459.47,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 61.34,
+        "settled_max_ms": 9.26,
+        "drawn": 3698
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 55.28,
+        "settled_max_ms": 9.12,
+        "drawn": 3995
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 57.21,
+        "settled_max_ms": 9.78,
+        "drawn": 3947
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 49.41,
+        "settled_max_ms": 9.82,
+        "drawn": 3649
+      }
+    ]
+  },
+  {
+    "biome": "small_end_islands",
+    "load_ms": 25.19,
+    "views": [
+      {
+        "rotation": 1,
+        "cold_ms": 21.45,
+        "settled_max_ms": 9.88,
+        "drawn": 184
+      },
+      {
+        "rotation": 2,
+        "cold_ms": 24.56,
+        "settled_max_ms": 13.36,
+        "drawn": 180
+      },
+      {
+        "rotation": 3,
+        "cold_ms": 26.66,
+        "settled_max_ms": 11.65,
+        "drawn": 180
+      },
+      {
+        "rotation": 0,
+        "cold_ms": 22.86,
+        "settled_max_ms": 9.48,
+        "drawn": 184
+      }
+    ]
+  }
+]

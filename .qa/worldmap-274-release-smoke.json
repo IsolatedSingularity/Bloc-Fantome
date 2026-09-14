@@ -1,0 +1,58 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\BlocFantome.exe",
+    "Version": "2.7.4",
+    "ProcessCount": 2,
+    "WindowCount": 4,
+    "ResponsiveWindows": 4,
+    "Windows": [
+      {
+        "Class": "pygame",
+        "Responsive": true
+      },
+      {
+        "Class": "PyInstallerOnefileHiddenWindow",
+        "Responsive": true
+      },
+      {
+        "Class": "IME",
+        "Responsive": true
+      },
+      {
+        "Class": "IME",
+        "Responsive": true
+      }
+    ],
+    "AppResponded": true,
+    "Remaining": 0,
+    "SHA256": "C229DDFD9B20EE04E271349F38198C19C99E00A16E1347855A07EC8F41C69716"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+    "Version": "2.7.4",
+    "ProcessCount": 2,
+    "WindowCount": 4,
+    "ResponsiveWindows": 4,
+    "Windows": [
+      {
+        "Class": "pygame",
+        "Responsive": true
+      },
+      {
+        "Class": "PyInstallerOnefileHiddenWindow",
+        "Responsive": true
+      },
+      {
+        "Class": "IME",
+        "Responsive": true
+      },
+      {
+        "Class": "IME",
+        "Responsive": true
+      }
+    ],
+    "AppResponded": true,
+    "Remaining": 0,
+    "SHA256": "C229DDFD9B20EE04E271349F38198C19C99E00A16E1347855A07EC8F41C69716"
+  }
+]

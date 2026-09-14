@@ -139,6 +139,32 @@ def test_close_zoom_pan_translates_cached_source_geometry():
     assert source.surface is cached
 
 
+def test_source_preview_markers_never_launch_objectives():
+    from types import SimpleNamespace
+    view=_view()
+    view.scene=SimpleNamespace(region_key='crimson',route_indices=(0,1))
+    view.node_hit_rects=[pygame.Rect(400,300,40,40),pygame.Rect(500,300,40,40)]
+    for rect in view.node_hit_rects:
+        assert view.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=rect.center)) is None
+
+
+def test_obsidian_pillar_has_no_internal_alpha_gaps_at_fractional_zooms():
+    from ui.source_map import SourceMap, scale_sprite
+    source=SourceMap('end','central')
+    pid=next(i for i,p in enumerate(source.palette) if p['Name']=='minecraft:obsidian')
+    sprite,offset=source.sprites[pid]
+    for zoom in (.071,.113,.175,.3,.53,.83):
+        scale=zoom*2
+        block,position=scale_sprite(sprite,offset,scale,True)
+        surface=pygame.Surface((256,1600),pygame.SRCALPHA)
+        for y in range(24):
+            surface.blit(block,(128+position[0],round(1500-y*38*scale)+position[1]))
+        # The central vertical line stays inside the pillar from its upper
+        # side faces to its bottom block, regardless of accumulated rounding.
+        assert all(surface.get_at((128,y)).a==255
+                   for y in range(math.ceil(1500-22*38*scale+20*scale),1499))
+
+
 def test_dimension_ambience_moves_with_time_without_covering_large_areas(monkeypatch):
     view=_view()
     for dimension in ('overworld','nether','end'):

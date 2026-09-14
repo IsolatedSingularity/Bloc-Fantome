@@ -48,6 +48,25 @@ def make_world():
     return World(8, 8, 8, catalog=CATALOG)
 
 
+def test_worker_prepared_replacement_keeps_source_and_revisit_independent():
+    from engine.world_snapshot import prepare_snapshot
+    original = WorldSnapshot(8, 8, 8, blocks={(1, 2, 3): Block.STONE})
+    staged = prepare_snapshot(original, CATALOG)
+    world = make_world()
+    world.replace(staged)
+    world.setBlock(1, 2, 3, Block.AIR)
+    world.setBlock(4, 4, 4, Block.STONE)
+    assert original.blocks == {(1, 2, 3): Block.STONE}
+    world.replace(prepare_snapshot(staged, CATALOG))
+    assert world.blocks == original.blocks
+    assert world.heightIndex == {(1, 2): 3}
+    assert world.occupiedBounds == ((1, 2, 3), (1, 2, 3))
+    assert world.blockTypeCounts == {Block.STONE: 1}
+    reference = make_world()
+    reference.replace(original)
+    assert world.viewSurfacePositionsByView == reference.viewSurfacePositionsByView
+
+
 def test_single_edits_keep_type_bounds_height_chunk_and_surface_indexes_current():
     world = World(32, 32, 8, catalog=CATALOG)
     world.setBlock(1, 2, 3, Block.STONE)
@@ -63,6 +82,24 @@ def test_single_edits_keep_type_bounds_height_chunk_and_surface_indexes_current(
     world.setBlock(20, 20, 5, Block.AIR)
     assert world.blockTypeCounts == {Block.STONE: 1}
     assert world.occupiedBounds == ((1, 2, 3), (1, 2, 3))
+
+
+def test_water_cutaway_exposes_submerged_cells_without_deleting_water():
+    from engine.world_snapshot import prepare_snapshot
+    blocks = {(x, y, z): Block.WATER for x in range(5) for y in range(5) for z in range(5)}
+    blocks[2, 2, 2] = Block.STONE
+    snapshot = WorldSnapshot(8, 8, 8, blocks=blocks, scene_metadata={'water_cutaway': True})
+    world = make_world()
+    world.replace(prepare_snapshot(snapshot, CATALOG))
+    assert world.blocks == blocks
+    for view in range(4):
+        assert (2, 2, 2) in world.viewSurfacePositionsByView[view]
+        assert [item[4] for item in world.drawOrdersByMode['all'][view]] == [Block.STONE]
+    world.setBlock(2, 2, 3, Block.STONE)
+    assert (2, 2, 2) in world.surfaceBlocks
+    assert (2, 2, 3) in world.surfaceBlocks
+    world.replace(WorldSnapshot(8, 8, 8, blocks=blocks))
+    assert not world._surfaceTransparentTypes
 
 
 def test_bulk_replace_matches_reference_interactive_indexes():

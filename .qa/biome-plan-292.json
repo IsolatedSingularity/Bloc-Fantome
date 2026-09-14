@@ -1,0 +1,372 @@
+[
+  {
+    "id": "plains",
+    "dimension": "overworld",
+    "origin": [
+      -176,
+      48
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "sunflower_plains",
+    "dimension": "overworld",
+    "origin": [
+      -208,
+      208
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "forest",
+    "dimension": "overworld",
+    "origin": [
+      16,
+      -144
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "flower_forest",
+    "dimension": "overworld",
+    "origin": [
+      -464,
+      496
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "birch_forest",
+    "dimension": "overworld",
+    "origin": [
+      80,
+      368
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "dark_forest",
+    "dimension": "overworld",
+    "origin": [
+      -496,
+      -688
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "desert",
+    "dimension": "overworld",
+    "origin": [
+      1552,
+      1936
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "taiga",
+    "dimension": "overworld",
+    "origin": [
+      -272,
+      -272
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "giant_tree_taiga",
+    "dimension": "overworld",
+    "origin": [
+      3184,
+      1744
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "snowy_tundra",
+    "dimension": "overworld",
+    "origin": [
+      -1392,
+      48
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "ice_spikes",
+    "dimension": "overworld",
+    "origin": [
+      4144,
+      912
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "snowy_taiga",
+    "dimension": "overworld",
+    "origin": [
+      -1904,
+      176
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "mountains",
+    "dimension": "overworld",
+    "origin": [
+      176,
+      -304
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "wooded_mountains",
+    "dimension": "overworld",
+    "origin": [
+      -624,
+      336
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "swamp",
+    "dimension": "overworld",
+    "origin": [
+      -240,
+      -336
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "jungle",
+    "dimension": "overworld",
+    "origin": [
+      112,
+      -144
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "bamboo_jungle",
+    "dimension": "overworld",
+    "origin": [
+      272,
+      -304
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "savanna",
+    "dimension": "overworld",
+    "origin": [
+      720,
+      2064
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "shattered_savanna",
+    "dimension": "overworld",
+    "origin": [
+      3024,
+      3344
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "ocean",
+    "dimension": "overworld",
+    "origin": [
+      -48,
+      -48
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "warm_ocean",
+    "dimension": "overworld",
+    "origin": [
+      -848,
+      -1392
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "frozen_ocean",
+    "dimension": "overworld",
+    "origin": [
+      176,
+      -2448
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "river",
+    "dimension": "overworld",
+    "origin": [
+      -208,
+      144
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "frozen_river",
+    "dimension": "overworld",
+    "origin": [
+      -1520,
+      272
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "beach",
+    "dimension": "overworld",
+    "origin": [
+      16,
+      -112
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "stone_shore",
+    "dimension": "overworld",
+    "origin": [
+      -624,
+      144
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "badlands",
+    "dimension": "overworld",
+    "origin": [
+      -2928,
+      2192
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "eroded_badlands",
+    "dimension": "overworld",
+    "origin": [
+      -4912,
+      1776
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "mushroom_fields",
+    "dimension": "overworld",
+    "origin": [
+      -2928,
+      1520
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "nether_wastes",
+    "dimension": "nether",
+    "origin": [
+      288,
+      -272
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\worldmap-vanilla\\reference-world"
+  },
+  {
+    "id": "crimson_forest",
+    "dimension": "nether",
+    "origin": [
+      -416,
+      448
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\worldmap-vanilla\\reference-world"
+  },
+  {
+    "id": "warped_forest",
+    "dimension": "nether",
+    "origin": [
+      -352,
+      48
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\worldmap-vanilla\\reference-world"
+  },
+  {
+    "id": "soul_sand_valley",
+    "dimension": "nether",
+    "origin": [
+      -144,
+      320
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\worldmap-vanilla\\reference-world"
+  },
+  {
+    "id": "basalt_deltas",
+    "dimension": "nether",
+    "origin": [
+      -944,
+      -304
+    ],
+    "size": 96,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\worldmap-vanilla\\reference-world"
+  },
+  {
+    "id": "the_end",
+    "dimension": "end",
+    "origin": [
+      -128,
+      -128
+    ],
+    "size": 256,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "end_highlands",
+    "dimension": "end",
+    "origin": [
+      672,
+      -800
+    ],
+    "size": 128,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  },
+  {
+    "id": "small_end_islands",
+    "dimension": "end",
+    "origin": [
+      -800,
+      672
+    ],
+    "size": 128,
+    "world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\biome-capture-281\\world"
+  }
+]

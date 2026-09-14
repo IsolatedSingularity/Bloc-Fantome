@@ -1,0 +1,512 @@
+[
+  {
+    "scene": "nether_fortress_biomes_1161",
+    "cells": 659181,
+    "bounds": [
+      288,
+      288,
+      256
+    ],
+    "dispatch_ms": 0.54,
+    "ready_ms": 8940.88,
+    "loading_frame_max_ms": 755.14,
+    "views": [
+      {
+        "rotation": 0,
+        "drawn": 202295,
+        "frame_p95_ms": 3.78
+      },
+      {
+        "rotation": 1,
+        "drawn": 202759,
+        "frame_p95_ms": 3.81
+      },
+      {
+        "rotation": 2,
+        "drawn": 203746,
+        "frame_p95_ms": 5.22
+      },
+      {
+        "rotation": 3,
+        "drawn": 203967,
+        "frame_p95_ms": 3.81
+      }
+    ]
+  },
+  {
+    "scene": "bastion_treasure_1161",
+    "cells": 930622,
+    "bounds": [
+      192,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.05,
+    "ready_ms": 8001.02,
+    "loading_frame_max_ms": 645.01,
+    "views": [
+      {
+        "rotation": 3,
+        "drawn": 132673,
+        "frame_p95_ms": 3.53
+      },
+      {
+        "rotation": 0,
+        "drawn": 135415,
+        "frame_p95_ms": 3.86
+      },
+      {
+        "rotation": 1,
+        "drawn": 135814,
+        "frame_p95_ms": 4.14
+      },
+      {
+        "rotation": 2,
+        "drawn": 134585,
+        "frame_p95_ms": 3.95
+      }
+    ]
+  },
+  {
+    "scene": "bastion_bridge_1161",
+    "cells": 996689,
+    "bounds": [
+      192,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 7490.33,
+    "loading_frame_max_ms": 616.98,
+    "views": [
+      {
+        "rotation": 2,
+        "drawn": 111659,
+        "frame_p95_ms": 3.55
+      },
+      {
+        "rotation": 3,
+        "drawn": 113430,
+        "frame_p95_ms": 3.8
+      },
+      {
+        "rotation": 0,
+        "drawn": 110857,
+        "frame_p95_ms": 3.6
+      },
+      {
+        "rotation": 1,
+        "drawn": 110424,
+        "frame_p95_ms": 3.59
+      }
+    ]
+  },
+  {
+    "scene": "bastion_hoglin_stable_1161",
+    "cells": 1019734,
+    "bounds": [
+      192,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 9485.96,
+    "loading_frame_max_ms": 873.2,
+    "views": [
+      {
+        "rotation": 1,
+        "drawn": 193659,
+        "frame_p95_ms": 4.1
+      },
+      {
+        "rotation": 2,
+        "drawn": 192931,
+        "frame_p95_ms": 3.87
+      },
+      {
+        "rotation": 3,
+        "drawn": 193217,
+        "frame_p95_ms": 4.01
+      },
+      {
+        "rotation": 0,
+        "drawn": 191778,
+        "frame_p95_ms": 4.19
+      }
+    ]
+  },
+  {
+    "scene": "bastion_housing_units_1161",
+    "cells": 1154694,
+    "bounds": [
+      192,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 8853.4,
+    "loading_frame_max_ms": 715.84,
+    "views": [
+      {
+        "rotation": 0,
+        "drawn": 135951,
+        "frame_p95_ms": 3.86
+      },
+      {
+        "rotation": 1,
+        "drawn": 135281,
+        "frame_p95_ms": 4.81
+      },
+      {
+        "rotation": 2,
+        "drawn": 134821,
+        "frame_p95_ms": 5.01
+      },
+      {
+        "rotation": 3,
+        "drawn": 132993,
+        "frame_p95_ms": 4.1
+      }
+    ]
+  },
+  {
+    "scene": "basalt_deltas_1161",
+    "cells": 214032,
+    "bounds": [
+      96,
+      96,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 1838.84,
+    "loading_frame_max_ms": 418.62,
+    "views": [
+      {
+        "rotation": 3,
+        "drawn": 34952,
+        "frame_p95_ms": 3.99
+      },
+      {
+        "rotation": 0,
+        "drawn": 35058,
+        "frame_p95_ms": 3.84
+      },
+      {
+        "rotation": 1,
+        "drawn": 35896,
+        "frame_p95_ms": 4.38
+      },
+      {
+        "rotation": 2,
+        "drawn": 35650,
+        "frame_p95_ms": 3.9
+      }
+    ]
+  },
+  {
+    "scene": "end_city_1161",
+    "cells": 99237,
+    "bounds": [
+      77,
+      169,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 1787.25,
+    "loading_frame_max_ms": 920.08,
+    "views": [
+      {
+        "rotation": 2,
+        "drawn": 23071,
+        "frame_p95_ms": 4.03
+      },
+      {
+        "rotation": 3,
+        "drawn": 22878,
+        "frame_p95_ms": 4.32
+      },
+      {
+        "rotation": 0,
+        "drawn": 23262,
+        "frame_p95_ms": 3.72
+      },
+      {
+        "rotation": 1,
+        "drawn": 23419,
+        "frame_p95_ms": 3.8
+      }
+    ]
+  },
+  {
+    "scene": "ocean_monument_1161",
+    "cells": 989663,
+    "bounds": [
+      192,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 6484.14,
+    "loading_frame_max_ms": 718.2,
+    "views": [
+      {
+        "rotation": 1,
+        "drawn": 76806,
+        "frame_p95_ms": 8.47
+      },
+      {
+        "rotation": 2,
+        "drawn": 75080,
+        "frame_p95_ms": 9.41
+      },
+      {
+        "rotation": 3,
+        "drawn": 75525,
+        "frame_p95_ms": 8.71
+      },
+      {
+        "rotation": 0,
+        "drawn": 76780,
+        "frame_p95_ms": 8.25
+      }
+    ]
+  },
+  {
+    "scene": "ancient_city_121",
+    "cells": 153520,
+    "bounds": [
+      256,
+      256,
+      384
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 2660.36,
+    "loading_frame_max_ms": 665.87,
+    "views": [
+      {
+        "rotation": 0,
+        "drawn": 41930,
+        "frame_p95_ms": 3.68
+      },
+      {
+        "rotation": 1,
+        "drawn": 41930,
+        "frame_p95_ms": 3.52
+      },
+      {
+        "rotation": 2,
+        "drawn": 41801,
+        "frame_p95_ms": 4.13
+      },
+      {
+        "rotation": 3,
+        "drawn": 41794,
+        "frame_p95_ms": 3.8
+      }
+    ]
+  },
+  {
+    "scene": "trial_chamber_121",
+    "cells": 181697,
+    "bounds": [
+      256,
+      256,
+      384
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 2522.68,
+    "loading_frame_max_ms": 492.98,
+    "views": [
+      {
+        "rotation": 3,
+        "drawn": 66253,
+        "frame_p95_ms": 3.76
+      },
+      {
+        "rotation": 0,
+        "drawn": 66253,
+        "frame_p95_ms": 3.92
+      },
+      {
+        "rotation": 1,
+        "drawn": 66253,
+        "frame_p95_ms": 3.76
+      },
+      {
+        "rotation": 2,
+        "drawn": 66253,
+        "frame_p95_ms": 3.84
+      }
+    ]
+  },
+  {
+    "scene": "village_plains_1161",
+    "cells": 779588,
+    "bounds": [
+      304,
+      240,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 7710.03,
+    "loading_frame_max_ms": 585.87,
+    "views": [
+      {
+        "rotation": 2,
+        "drawn": 103746,
+        "frame_p95_ms": 3.64
+      },
+      {
+        "rotation": 3,
+        "drawn": 100144,
+        "frame_p95_ms": 3.66
+      },
+      {
+        "rotation": 0,
+        "drawn": 100020,
+        "frame_p95_ms": 3.71
+      },
+      {
+        "rotation": 1,
+        "drawn": 102616,
+        "frame_p95_ms": 3.75
+      }
+    ]
+  },
+  {
+    "scene": "village_desert_1161",
+    "cells": 387041,
+    "bounds": [
+      208,
+      192,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 3962.52,
+    "loading_frame_max_ms": 477.98,
+    "views": [
+      {
+        "rotation": 1,
+        "drawn": 59852,
+        "frame_p95_ms": 3.89
+      },
+      {
+        "rotation": 2,
+        "drawn": 57761,
+        "frame_p95_ms": 3.67
+      },
+      {
+        "rotation": 3,
+        "drawn": 57471,
+        "frame_p95_ms": 4.04
+      },
+      {
+        "rotation": 0,
+        "drawn": 59221,
+        "frame_p95_ms": 3.91
+      }
+    ]
+  },
+  {
+    "scene": "village_savanna_1161",
+    "cells": 1145993,
+    "bounds": [
+      272,
+      432,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 11964.44,
+    "loading_frame_max_ms": 812.43,
+    "views": [
+      {
+        "rotation": 0,
+        "drawn": 173365,
+        "frame_p95_ms": 3.7
+      },
+      {
+        "rotation": 1,
+        "drawn": 175277,
+        "frame_p95_ms": 4.12
+      },
+      {
+        "rotation": 2,
+        "drawn": 174016,
+        "frame_p95_ms": 4.66
+      },
+      {
+        "rotation": 3,
+        "drawn": 174080,
+        "frame_p95_ms": 4.31
+      }
+    ]
+  },
+  {
+    "scene": "village_taiga_1161",
+    "cells": 1102650,
+    "bounds": [
+      400,
+      256,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 12516.07,
+    "loading_frame_max_ms": 1112.18,
+    "views": [
+      {
+        "rotation": 3,
+        "drawn": 221043,
+        "frame_p95_ms": 3.82
+      },
+      {
+        "rotation": 0,
+        "drawn": 220691,
+        "frame_p95_ms": 3.71
+      },
+      {
+        "rotation": 1,
+        "drawn": 220492,
+        "frame_p95_ms": 3.81
+      },
+      {
+        "rotation": 2,
+        "drawn": 219658,
+        "frame_p95_ms": 4.03
+      }
+    ]
+  },
+  {
+    "scene": "village_snowy_1161",
+    "cells": 637196,
+    "bounds": [
+      272,
+      224,
+      256
+    ],
+    "dispatch_ms": 0.04,
+    "ready_ms": 6879.5,
+    "loading_frame_max_ms": 768.55,
+    "views": [
+      {
+        "rotation": 2,
+        "drawn": 108904,
+        "frame_p95_ms": 3.6
+      },
+      {
+        "rotation": 3,
+        "drawn": 108720,
+        "frame_p95_ms": 3.81
+      },
+      {
+        "rotation": 0,
+        "drawn": 107168,
+        "frame_p95_ms": 3.77
+      },
+      {
+        "rotation": 1,
+        "drawn": 108818,
+        "frame_p95_ms": 3.7
+      }
+    ]
+  }
+]

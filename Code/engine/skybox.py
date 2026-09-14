@@ -1,14 +1,16 @@
-"""Camera-linked cubemap skies rendered from the licensed OptiFine atlases."""
+"""Independently turning cubemap skies from the licensed OptiFine atlases."""
 
 from __future__ import annotations
 
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import math
 import os
 from typing import Optional
 
 import pygame
+
 
 
 @dataclass(frozen=True)
@@ -40,12 +42,13 @@ class SkyboxRenderer:
 
     Each cached viewport pixel is cast through a perspective camera into the
     dominant cube face, including the atlas ceiling and floor. The sky is
-    world-locked: panning and zooming the build never scroll a background
-    plane, while Q/E rotates the enclosing view with the world.
+    infinitely distant. Its slow rotation follows elapsed time independently
+    of canvas rotation, panning and zooming.
     """
 
     CROSSFADE_MS = 420
     ROTATION_MS = 360
+    DRIFT_DEGREES_PER_SECOND = 0.8
     YAW_QUANTUM = 15.0
     PITCH_QUANTUM = 1.5
     CACHE_LIMIT = 12
@@ -63,7 +66,7 @@ class SkyboxRenderer:
         self.current_index = 0
         self.view_rotation = 0
         self.current_yaw = 0.0
-        self.current_pitch = 0.0
+        self.current_pitch = 18.0
         self._yaw_from = 0.0
         self._yaw_to = 0.0
         self._rotation_elapsed = self.ROTATION_MS
@@ -71,6 +74,10 @@ class SkyboxRenderer:
         self.crossfade_elapsed = self.CROSSFADE_MS
         self.selected_indices = {"overworld": 2, "nether": 0, "end": 1}
         self._atlases: OrderedDict[tuple[str, int], pygame.Surface] = OrderedDict()
+        self._native_atlases = OrderedDict()
+        self._prefetch = {}
+        self._prefetch_identity = None
+        self._prefetch_worker = None
         self._views: OrderedDict[tuple[str, int, float, float], pygame.Surface] = OrderedDict()
 
     def variants(self, dimension: str) -> tuple[SkyboxVariant, ...]:
@@ -83,6 +90,49 @@ class SkyboxRenderer:
             return
         self.viewport_size = viewport_size
         self._views.clear()
+        self._cancel_prefetch()
+
+    def _cancel_prefetch(self):
+        for future in self._prefetch.values():
+            future.cancel()
+        self._prefetch.clear()
+        self._prefetch_identity = None
+
+    def _prefetch_rotation(self, dimension, pitch, needed):
+        """Prepare upcoming orientations off-thread; only RGB bytes cross threads."""
+        from engine.native_acceleration import cubemap_rgb
+        identity = (dimension, self.current_index, self.viewport_size, pitch)
+        if identity != self._prefetch_identity:
+            self._cancel_prefetch()
+            self._prefetch_identity = identity
+        for key, future in list(self._prefetch.items()):
+            if not future.done():
+                continue
+            self._prefetch.pop(key)
+            pixels = future.result()
+            if pixels is not None and key not in self._views:
+                self._views[key] = pygame.image.frombuffer(pixels,self.viewport_size,'RGB').convert()
+                while len(self._views) > self.CACHE_LIMIT:
+                    self._views.popitem(last=False)
+        atlas_data = self._native_atlases.get((dimension,self.current_index))
+        if atlas_data is None:
+            return
+        atlas, pixels = atlas_data
+        if self._prefetch_worker is None:
+            self._prefetch_worker = ThreadPoolExecutor(max_workers=1,thread_name_prefix='sky-view')
+        start = math.floor(self.current_yaw / self.YAW_QUANTUM) * self.YAW_QUANTUM
+        for offset in range(1,4):
+            raw_yaw = start + offset * self.YAW_QUANTUM
+            yaw = raw_yaw % 360
+            key = (dimension,self.current_index,yaw,pitch)
+            if yaw in needed or key in self._views or key in self._prefetch:
+                continue
+            self._prefetch[key] = self._prefetch_worker.submit(
+                cubemap_rgb,pixels,atlas.get_size(),self.viewport_size,yaw,pitch,
+                self.variants(dimension)[self.current_index].vertical_center,
+            )
+            if len(self._prefetch) >= 7:
+                break
 
     def _source_path(self, variant: SkyboxVariant) -> str:
         return os.path.join(self.root, variant.relative_path)
@@ -107,7 +157,7 @@ class SkyboxRenderer:
     def _quantized_orientation(self) -> tuple[float, float]:
         yaw = round(self.current_yaw / self.YAW_QUANTUM) * self.YAW_QUANTUM
         pitch = round(self.current_pitch / self.PITCH_QUANTUM) * self.PITCH_QUANTUM
-        return yaw % 360.0, max(-6.0, min(6.0, pitch))
+        return yaw % 360.0, max(-30.0, min(30.0, pitch))
 
     def _active_key(self) -> Optional[tuple[str, int, float, float]]:
         if self.current_dimension is None:
@@ -150,58 +200,16 @@ class SkyboxRenderer:
         camera_offset: Optional[tuple[float, float]] = None,
         zoom: Optional[float] = None,
     ) -> None:
-        del celestial_enabled, celestial_angle
+        del celestial_enabled, celestial_angle, view_rotation, camera_offset, zoom
         dt_ms = max(0, int(dt_ms))
         desired_index = self.selected_indices.get(dimension, 0)
-        desired_rotation = int(view_rotation) % 4
-        before = self._active_key()
-        desired = (dimension, desired_index, desired_rotation)
-        identity_before = (
-            self.current_dimension, self.current_index, self.view_rotation
-        )
-        if identity_before != desired:
-            self.previous_view = (
-                before
-                if before is not None
-                and before[0] == dimension
-                and self.current_index != desired_index
-                else None
-            )
-            dimension_changed = self.current_dimension != dimension
-            rotation_changed = self.view_rotation != desired_rotation
+        if (self.current_dimension, self.current_index) != (dimension, desired_index):
+            before = self._active_key()
+            self.previous_view = before if before and before[0] == dimension else None
             self.current_dimension = dimension
             self.current_index = desired_index
-            self.view_rotation = desired_rotation
-            if dimension_changed:
-                self.current_yaw = desired_rotation * 90.0
-                self._yaw_from = self.current_yaw
-                self._yaw_to = self.current_yaw
-                self._rotation_elapsed = self.ROTATION_MS
-            elif rotation_changed:
-                self._yaw_from = self.current_yaw
-                self._yaw_to = self._shortest_turn(
-                    self.current_yaw, desired_rotation * 90.0
-                )
-                self._rotation_elapsed = 0
-            self.crossfade_elapsed = (
-                0 if self.previous_view is not None else self.CROSSFADE_MS
-            )
-
-        if self._rotation_elapsed < self.ROTATION_MS:
-            self._rotation_elapsed = min(
-                self.ROTATION_MS, self._rotation_elapsed + dt_ms
-            )
-            progress = self._rotation_elapsed / self.ROTATION_MS
-            eased = progress * progress * (3.0 - 2.0 * progress)
-            self.current_yaw = self._yaw_from + (
-                self._yaw_to - self._yaw_from
-            ) * eased
-            if progress >= 1.0:
-                self.current_yaw = self._yaw_to % 360.0
-
-        # The enclosure is infinitely distant. Canvas pan and zoom must not
-        # translate it like a background sheet.
-        del camera_offset, zoom
+            self.crossfade_elapsed = 0 if self.previous_view else self.CROSSFADE_MS
+        self.current_yaw = (self.current_yaw + dt_ms * self.DRIFT_DEGREES_PER_SECOND / 1000.0) % 360.0
         self.crossfade_elapsed = min(self.CROSSFADE_MS, self.crossfade_elapsed + dt_ms)
         if self.crossfade_elapsed >= self.CROSSFADE_MS:
             self.previous_view = None
@@ -257,6 +265,19 @@ class SkyboxRenderer:
             return None
 
         width, height = self.viewport_size
+        from engine.native_acceleration import cubemap_rgb
+        atlas_key = (dimension, index)
+        if atlas_key not in self._native_atlases or self._native_atlases[atlas_key][0] is not atlas:
+            self._native_atlases[atlas_key] = (atlas, pygame.image.tostring(atlas, 'RGB'))
+            while len(self._native_atlases) > self.ATLAS_CACHE_LIMIT:
+                self._native_atlases.popitem(last=False)
+        pixels = cubemap_rgb(self._native_atlases[atlas_key][1], atlas.get_size(),
+                             (width,height),yaw,pitch,variants[index].vertical_center)
+        if pixels is not None:
+            cached = pygame.image.frombuffer(pixels,(width,height),'RGB').convert()
+            self._views[key] = cached
+            while len(self._views) > self.CACHE_LIMIT: self._views.popitem(last=False)
+            return cached
         try:
             import numpy as np
 
@@ -313,15 +334,6 @@ class SkyboxRenderer:
                     0.0, face_width - 1.0,
                 )
                 normalized_y = 0.5 + 0.5 * local_z[mask] / axis
-                if face_name in self.VIEW_ORDER:
-                    # These OptiFine side faces contain a deliberately
-                    # stretched nadir below their horizon. Minecraft terrain
-                    # normally hides it; an isometric viewport does not.
-                    # Distribute the detailed hemisphere monotonically over
-                    # the editor viewport and stop before the synthetic tail.
-                    # A monotonic map avoids both a mirrored horizon and a
-                    # horizontal join while retaining perspective in X/Y.
-                    normalized_y *= 0.47
                 sample_y = np.clip(
                     normalized_y * (face_height - 1), 0.0, face_height - 1.0
                 )
@@ -382,7 +394,9 @@ class SkyboxRenderer:
     def render(self, target: pygame.Surface, dimension: str) -> bool:
         if self.current_dimension != dimension:
             self.update(0, dimension, view_rotation=self.view_rotation)
-        yaw, pitch = self._quantized_orientation()
+        _, pitch = self._quantized_orientation()
+        yaw = math.floor(self.current_yaw / self.YAW_QUANTUM) * self.YAW_QUANTUM % 360
+        self._prefetch_rotation(dimension,pitch,{yaw,(yaw+self.YAW_QUANTUM)%360})
         current = self._view(dimension, self.current_index, yaw, pitch)
         if current is None:
             return False
@@ -396,4 +410,11 @@ class SkyboxRenderer:
                 target.blit(current, (0, 0))
         else:
             target.blit(current, (0, 0))
+        # Blend adjacent perspective samples: native-resolution, bounded cache,
+        # and continuous visual rotation without 60 expensive raycasts/second.
+        fraction = (self.current_yaw % self.YAW_QUANTUM) / self.YAW_QUANTUM
+        if fraction > 0.001 and self.previous_view is None:
+            following = self._view(dimension, self.current_index, yaw + self.YAW_QUANTUM, pitch)
+            if following is not None:
+                self._blit_alpha(target, following, round(255 * fraction))
         return True

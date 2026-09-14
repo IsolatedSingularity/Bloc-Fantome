@@ -1,8 +1,8 @@
 """Export read-only selector surfaces from official Java 1.16.1 chunks.
 
 Run after generating the documented seed/regions with the local vanilla server.
-No terrain generator, template assembly, or material substitution lives here.
-Only the Nether roof cutaway and invisible solid interiors are removed.
+Terrain and structures retain their source states through documented cutaways.
+The approved active portal is stored separately as authored decoration.
 """
 from __future__ import annotations
 
@@ -23,18 +23,21 @@ from engine.anvil import _read_region_chunk, _palette_indices
 REGIONS = (
     ("nether", "bastion", "Hoglin Stable", -912, -256, 240, 240),
     ("nether", "fortress", "Nether Fortress", 224, -240, 240, 240),
-    ("nether", "warped", "Warped Forest", -384, 0, 240, 240),
-    ("nether", "crimson", "Crimson Forest", -464, 288, 240, 240),
-    ("nether", "valley", "Soul Valley and Deltas", -240, 128, 240, 240),
+    ("nether", "warped", "Warped Forest", -416, 0, 160, 160),
+    ("nether", "crimson", "Crimson Forest", -416, 400, 160, 160),
+    ("nether", "valley", "Soul Sand Valley", -160, 240, 160, 160),
+    ("nether", "deltas", "Basalt Deltas", -944, -288, 128, 128),
     ("end", "central", "Central Island", -128, -128, 256, 256),
     ("end", "city", "Outer Islands", -1664, -512, 768, 768),
-    ("overworld", "plains", "Plains and River", -304, -32, 240, 240),
-    ("overworld", "taiga", "Taiga Village", -288, -400, 256, 256),
-    ("overworld", "flowers", "Flower Forest", -544, 416, 240, 240),
-    ("overworld", "mushroom", "Mushroom Fields", -3072, 1376, 384, 384),
-    ("overworld", "desert", "Desert", 1488, 1872, 240, 240),
+    ("overworld", "plains", "Plains and River", -208, 160, 240, 240),
+    ("overworld", "taiga", "Snowy Taiga", -2080, 128, 160, 160),
+    ("overworld", "swamp", "Swamp", -256, -592, 192, 192),
+    ("overworld", "flowers", "Flower Forest", -416, 560, 128, 128),
+    ("overworld", "mushroom", "Mushroom Fields", -3328, 1376, 512, 512),
+    ("overworld", "desert", "Desert", 1456, 2032, 160, 160),
     ("ocean", "monument", "Ocean Monument", -1008, -976, 240, 240),
     ("ocean", "shipwreck", "Sunken Shipwreck", -416, 64, 240, 240),
+    ("ocean", "reef", "Coral Reef", -832, -1408, 96, 96),
 )
 
 
@@ -63,7 +66,8 @@ def complete_end_islands(records, palette, width, depth, origin, starts):
     return [r for r in records if (r[0],r[1]) not in excluded]
 
 
-def export(world: Path, output: Path, spec: tuple) -> dict:
+def export(world: Path, output: Path, spec: tuple, *, editable=False,
+           landmark_ids=(), retain_water=False, geology_depth=12, fortress_cutaway=False) -> dict:
     dimension, key, title, ox, oz, width, depth = spec
     region_dir = world / {"nether": "DIM-1", "end": "DIM1"}.get(dimension, "") / "region"
     volume = np.zeros((width, depth, 256), dtype=np.uint16)
@@ -108,6 +112,12 @@ def export(world: Path, output: Path, spec: tuple) -> dict:
                 volume[x:x+16, z:z+16, sy*16:sy*16+16] = values
 
     source_count = int(np.count_nonzero(volume))
+    source_volume = volume.copy() if landmark_ids or retain_water else None
+    landmarks = [s for s in starts.values() if s.get('id') in landmark_ids]
+    for start in landmarks:
+        x0, y0, z0, x1, y1, z1 = start['BB']
+        if not (ox <= x0 <= x1 < ox+width and oz <= z0 <= z1 < oz+depth):
+            raise ValueError(f"Incomplete {start['id']} at capture edge: {start['BB']}")
     presentation = "unaltered terrain and structures"
     if dimension in ("overworld", "ocean"):
         # A source terrain section: omit deep caves and solid geology, never
@@ -118,38 +128,130 @@ def export(world: Path, output: Path, spec: tuple) -> dict:
         ground = ground_ids[volume]
         floor = 255 - np.argmax(ground[:, :, ::-1], axis=2)
         floor[~ground.any(axis=2)] = 0
-        volume[np.arange(256)[None,None,:] < np.maximum(0,floor-12)[:,:,None]] = 0
+        volume[np.arange(256)[None,None,:] < np.maximum(0,floor-geology_depth)[:,:,None]] = 0
         water_ids = np.asarray([p["Name"] == "minecraft:water" for p in palette])
         water = water_ids[volume]
-        if dimension == "ocean":
+        if dimension == "ocean" or (editable and 'ocean' in key):
             volume[water] = 0
             presentation = "water cutaway; source seabed section with 12-block geology"
         else:
             # Keep the water surface, removing invisible stacked fluid cells.
             covered = np.roll(water, -1, axis=2)
             covered[:, :, -1] = False
-            volume[water & covered] = 0
+            if not editable:
+                volume[water & covered] = 0
             presentation = "source surface section with 12-block geology"
     if dimension == "nether":
-        # Remove the roof down to the highest air opening below the survey
-        # ceiling. Protect structure materials, not all rock inside their BB.
-        survey_ceiling = 80 if key == "fortress" else 110
-        air = volume[:, :, 32:survey_ceiling+1] == 0
-        ceiling = survey_ceiling - np.argmax(air[:, :, ::-1], axis=2)
-        ceiling[~air.any(axis=2)] = 31
-        remove = np.arange(256)[None, None, :] > ceiling[:, :, None]
-        natural = {"air", "netherrack", "gravel", "soul_sand", "soul_soil", "basalt", "lava", "bedrock", "nether_quartz_ore", "nether_gold_ore", "ancient_debris"}
-        structure_material = np.asarray([p["Name"].split(":")[1] not in natural for p in palette])
+        original_volume = volume.copy() if editable else None
+        # Expose the first substantial cavern above the lava sea. The previous
+        # highest-air rule retained entire higher cave floors as foreground walls.
+        air = volume[:, :, 32:104] == 0
+        openings = np.ones((width, depth, 65), dtype=bool)
+        for offset in range(8):
+            openings &= air[:, :, offset:offset+65]
+        ceiling = 32 + np.argmax(openings, axis=2)
+        ceiling[~openings.any(axis=2)] = 64
+        natural = {"air", "netherrack", "gravel", "soul_sand", "soul_soil", "basalt", "blackstone", "lava", "bedrock", "nether_quartz_ore", "nether_gold_ore", "ancient_debris"}
+        natural_ids = np.asarray([p["Name"].split(":")[1] in natural for p in palette])
+        ys = np.arange(256)[None, None, :]
+        remove = (natural_ids[volume] & ((ys >= ceiling[:, :, None]) | (ys < ceiling[:, :, None]-13))) | (ys > ceiling[:, :, None]+24)
+        structure_material = np.asarray([p["Name"].split(":")[1] not in natural or 'blackstone' in p["Name"] for p in palette])
         for start in starts.values():
             if start.get('id') not in ('minecraft:bastion_remnant','minecraft:fortress'):
                 continue
             x0, y0, z0, x1, y1, z1 = start["BB"]
             area=(slice(max(0,x0-ox),min(width,x1-ox+1)),slice(max(0,z0-oz),min(depth,z1-oz+1)),slice(y0,y1+1))
+            remove[area] |= natural_ids[volume[area]] & ~structure_material[volume[area]]
             remove[area] &= ~structure_material[volume[area]]
+            if start['id'] == 'minecraft:fortress':
+                # Vanilla CorridorNetherWartsRoom places soul sand at local
+                # Y4; CorridorExit places its lava well at local (6,5,6).
+                for piece in start['Children']:
+                    px0,py0,pz0,px1,py1,pz1 = piece['BB']
+                    if piece['id'] == 'minecraft:necsr':
+                        bed = (slice(max(0,px0-ox),min(width,px1-ox+1)),
+                               slice(max(0,pz0-oz),min(depth,pz1-oz+1)),py0+4)
+                        soul = np.asarray([p['Name']=='minecraft:soul_sand' for p in palette])
+                        remove[bed] &= ~soul[volume[bed]]
+                    elif piece['id'] == 'minecraft:nece':
+                        wx,wz = (px0+px1)//2-ox,(pz0+pz1)//2-oz
+                        if 0<=wx<width and 0<=wz<depth:
+                            remove[wx,wz,py0:py0+6] = False
         volume[remove] = 0
         # The bottom is a documented horizontal section through actual blocks.
         volume[:, :, :16] = 0
-        presentation = f"roof cutaway above first air below Y{survey_ceiling}; bottom cut at Y16"
+        # Lava is an opaque surface, not a stack of shortened fluid cubes.
+        lava = np.asarray([p['Name']=='minecraft:lava' for p in palette])[volume]
+        covered = np.roll(lava, -1, axis=2)
+        covered[:, :, -1] = False
+        volume[lava & covered] = 0
+        presentation = "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained"
+
+        if editable and not fortress_cutaway:
+            # Small biome slices must expose the biome's actual surface layer,
+            # rather than an unrelated lava sea beneath an elevated forest.
+            volume=original_volume
+            targets={'warped_forest':{'warped_nylium'},'crimson_forest':{'crimson_nylium'},
+                     'soul_sand_valley':{'soul_sand','soul_soil'},
+                     'basalt_deltas':{'basalt','blackstone'}}.get(key,{'netherrack','gravel'})
+            target_ids=np.asarray([p['Name'].split(':')[1] in targets for p in palette])
+            ground=target_ids[volume]
+            ground[:,:,:30]=False;ground[:,:,108:]=False
+            # Only exposed floors, never a solid cave roof.
+            air_above=np.roll(volume==0,-1,axis=2)
+            if 'forest' in key:
+                air_above|=np.asarray([p['Name'].split(':')[1] in {'warped_roots','crimson_roots','nether_sprouts'} for p in palette])[np.roll(volume,-1,axis=2)]
+            ground &= air_above
+            floors=255-np.argmax(ground[:,:,::-1],axis=2)
+            valid=ground.any(axis=2)
+            median=int(np.median(floors[valid])) if valid.any() else 50
+            floors[~valid]=median
+            heights=np.arange(256)[None,None,:]
+            bottom=max(16,int(np.percentile(floors[valid],10))-12) if valid.any() else 20
+            volume[heights.repeat(width,axis=0).repeat(depth,axis=1)<bottom]=0
+            natural_ids=np.asarray([p['Name'].split(':')[1] in natural for p in palette])
+            volume[natural_ids[volume] & (heights>floors[:,:,None])]=0
+            volume[heights>np.minimum(120,floors+30)[:,:,None]]=0
+            presentation='source biome-floor cutaway; 12-block geology; original vegetation and block states'
+
+    if editable and dimension=='end':
+        end_stone=np.asarray([p['Name']=='minecraft:end_stone' for p in palette])[volume]
+        floors=255-np.argmax(end_stone[:,:,::-1],axis=2)
+        if end_stone.any():
+            bottom=max(0,int(np.percentile(floors[end_stone.any(axis=2)],10))-12)
+            volume[:,:,:bottom]=0
+            presentation='horizontal source terrain section; upper geology and original End features'
+
+    # An editable landmark keeps every source cell throughout its bounding box,
+    # including buried foundations and interior states. Never clip a building
+    # to the terrain cutaway chosen for its surrounding geology.
+    for start in landmarks:
+        x0,y0,z0,x1,y1,z1=start['BB']
+        area=(slice(x0-ox,x1-ox+1),slice(z0-oz,z1-oz+1),slice(y0,y1+1))
+        if fortress_cutaway:
+            # Source-checked NetherFortressGenerator materials, including the
+            # chest placed through StructurePiece. Expose the actual cavern
+            # while retaining every fortress cell, including supports below BB.
+            fortress_names={'nether_bricks','nether_brick_fence','nether_brick_stairs',
+                            'nether_wart','spawner','chest'}
+            structure_ids=np.asarray([p['Name'].split(':')[1] in fortress_names for p in palette])
+            keep=structure_ids[source_volume]
+            volume[keep]=source_volume[keep]
+            interior_ids=np.asarray([p['Name'].split(':')[1] in {'lava','soul_sand'} for p in palette])
+            interior=interior_ids[source_volume[area]]
+            volume[area][interior]=source_volume[area][interior]
+        else:
+            volume[area]=source_volume[area]
+    if retain_water:
+        water_ids=np.asarray([p['Name']=='minecraft:water' for p in palette])
+        water=water_ids[source_volume]
+        volume[water]=source_volume[water]
+    if landmarks:
+        presentation += ('; complete fortress materials and supports retained from source'
+                         if fortress_cutaway else '; complete landmark bounding boxes retained')
+    if retain_water:
+        presentation = presentation.replace('water cutaway; ', '') + '; original water retained'
+    presentation = presentation.replace('12-block', f'{geology_depth}-block') if dimension in ('overworld','ocean') else presentation
 
     # Keep all faces next to air or a non-solid model. This is a static selector,
     # so buried solid interiors need no runtime storage. Preserve original state.
@@ -172,7 +274,8 @@ def export(world: Path, output: Path, spec: tuple) -> dict:
             edge[axis] = 0 if shift == 1 else -1
             neighbor[tuple(edge)] = False
             buried &= neighbor
-    volume[buried] = 0
+    if not editable:
+        volume[buried] = 0
     coords = np.argwhere(volume != 0)
     records = np.column_stack((coords, volume[tuple(coords.T)])).tolist()
     if dimension == 'end' and key == 'city':
@@ -195,18 +298,50 @@ def export(world: Path, output: Path, spec: tuple) -> dict:
                     palette.append(palette[pid])
                     palette_biomes.append(biome)
                 record[3] = variants[pid,biome]
+    decoration_blocks = []
+    decoration_anchor = None
+    if dimension == 'nether' and key == 'warped':
+        # Explicitly separate the approved decorative active portal from the
+        # source cells. The reference world itself is never edited to place it.
+        ground = [(x,z,y) for x,z,y,pid in records if palette[pid]['Name']=='minecraft:warped_nylium']
+        heights = {(x,z):y for x,z,y in ground}
+        flat = [(x,z,y) for x,z,y in ground if x+3<width
+                and all(heights.get((x+dx,z))==y for dx in range(4))
+                and not volume[x:x+4,z,y+1:y+6].any()]
+        candidates = sorted(flat or ground, key=lambda p:(p[0]-width*.5)**2+(p[1]-depth*.5)**2)[:200]
+        cells = np.asarray(records)
+        us,vs,ds = cells[:,0]-cells[:,1], cells[:,0]+cells[:,1]-2*cells[:,2], cells[:,:3].sum(axis=1)
+        def portal_visibility(point):
+            x,z,y = point
+            u,v,d = x+1.5-z, x+1.5+z-2*(y+3), x+1.5+z+y+3
+            occluders = np.count_nonzero((abs(us-u)<3)&(abs(vs-v)<6)&(ds>d+3))
+            return occluders, (x-width*.5)**2+(z-depth*.5)**2
+        x,z,y = min(candidates, key=portal_visibility)
+        base = y+1
+        for state in ({'Name':'minecraft:obsidian'}, {'Name':'minecraft:nether_portal','Properties':{'axis':'x'}}):
+            palette.append(state)
+            palette_biomes.append(None)
+        for dx in range(4):
+            for dy in range(5):
+                frame = dx in (0,3) or dy in (0,4)
+                decoration_blocks.append([x+dx,z,base+dy,len(palette)-(2 if frame else 1)])
+        decoration_anchor = [x+7,z-3,base+7]
     payload = {
         "format": 1, "minecraft_version": "Java 1.16.1", "data_version": 2567,
         "seed": 1, "dimension": dimension, "key": key, "title": title,
         "origin": [ox, oz], "size": [width, depth, 256],
         "presentation": presentation,
         "source_block_count": source_count, "biomes": dict(biome_counts),
+        "surface_biomes": dict(Counter(map(int, biome_columns.flat))),
         "structures": starts, "entities": entities, "chunks": chunk_evidence,
         "palette": palette, "palette_biomes": palette_biomes, "blocks": records,
+        "decoration_blocks": decoration_blocks, "decoration_anchor": decoration_anchor,
     }
     output.mkdir(parents=True, exist_ok=True)
     target = output / f"{dimension}_{key}.json.gz"
-    target.write_bytes(gzip.compress(json.dumps(payload, separators=(",", ":")).encode(), mtime=0))
+    temporary = target.with_suffix('.pending')
+    temporary.write_bytes(gzip.compress(json.dumps(payload, separators=(",", ":")).encode(), mtime=0))
+    temporary.replace(target)
     print(key, len(records), "surface blocks;", len(palette), "states;", target.stat().st_size, "bytes", flush=True)
     return payload
 

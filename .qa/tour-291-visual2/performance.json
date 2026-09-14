@@ -1,0 +1,386 @@
+[
+  {
+    "page": "welcome",
+    "width": 1200,
+    "dispatch_ms": 48.41,
+    "ready_ms": 110.54,
+    "max_loading_frame_ms": 54.25,
+    "p95_ms": 2.52
+  },
+  {
+    "page": "blocks",
+    "width": 1200,
+    "dispatch_ms": 59.41,
+    "ready_ms": 135.2,
+    "max_loading_frame_ms": 65.74,
+    "p95_ms": 3.01
+  },
+  {
+    "page": "camera",
+    "width": 1200,
+    "dispatch_ms": 69.94,
+    "ready_ms": 108.79,
+    "max_loading_frame_ms": 29.5,
+    "p95_ms": 4.05
+  },
+  {
+    "page": "fill",
+    "width": 1200,
+    "dispatch_ms": 58.33,
+    "ready_ms": 116.11,
+    "max_loading_frame_ms": 47.53,
+    "p95_ms": 2.72
+  },
+  {
+    "page": "history",
+    "width": 1200,
+    "dispatch_ms": 51.85,
+    "ready_ms": 87.91,
+    "max_loading_frame_ms": 27.95,
+    "p95_ms": 2.48
+  },
+  {
+    "page": "mirror",
+    "width": 1200,
+    "dispatch_ms": 86.56,
+    "ready_ms": 128.29,
+    "max_loading_frame_ms": 31.32,
+    "p95_ms": 4.14
+  },
+  {
+    "page": "selection",
+    "width": 1200,
+    "dispatch_ms": 56.77,
+    "ready_ms": 95.49,
+    "max_loading_frame_ms": 29.97,
+    "p95_ms": 3.49
+  },
+  {
+    "page": "structures",
+    "width": 1200,
+    "dispatch_ms": 66.62,
+    "ready_ms": 110.78,
+    "max_loading_frame_ms": 33.64,
+    "p95_ms": 4.3
+  },
+  {
+    "page": "terrain",
+    "width": 1200,
+    "dispatch_ms": 0.65,
+    "ready_ms": 558.88,
+    "max_loading_frame_ms": 173.3,
+    "p95_ms": 3.31
+  },
+  {
+    "page": "biomes",
+    "width": 1200,
+    "dispatch_ms": 0.19,
+    "ready_ms": 875.75,
+    "max_loading_frame_ms": 469.23,
+    "p95_ms": 2.81
+  },
+  {
+    "page": "dimensions",
+    "width": 1200,
+    "dispatch_ms": 0.54,
+    "ready_ms": 878.56,
+    "max_loading_frame_ms": 331.49,
+    "p95_ms": 2.94
+  },
+  {
+    "page": "skies",
+    "width": 1200,
+    "dispatch_ms": 69.21,
+    "ready_ms": 216.37,
+    "max_loading_frame_ms": 133.51,
+    "p95_ms": 6.33
+  },
+  {
+    "page": "liquids",
+    "width": 1200,
+    "dispatch_ms": 56.3,
+    "ready_ms": 95.11,
+    "max_loading_frame_ms": 30.23,
+    "p95_ms": 2.31
+  },
+  {
+    "page": "lighting",
+    "width": 1200,
+    "dispatch_ms": 53.12,
+    "ready_ms": 239.54,
+    "max_loading_frame_ms": 175.33,
+    "p95_ms": 4.54
+  },
+  {
+    "page": "worldmap",
+    "width": 1200,
+    "dispatch_ms": 58.83,
+    "ready_ms": 101.84,
+    "max_loading_frame_ms": 33.23,
+    "p95_ms": 2.86
+  },
+  {
+    "page": "saving",
+    "width": 1200,
+    "dispatch_ms": 68.35,
+    "ready_ms": 110.49,
+    "max_loading_frame_ms": 33.01,
+    "p95_ms": 4.13
+  },
+  {
+    "page": "welcome",
+    "width": 960,
+    "dispatch_ms": 48.26,
+    "ready_ms": 82.46,
+    "max_loading_frame_ms": 28.58,
+    "p95_ms": 1.69
+  },
+  {
+    "page": "blocks",
+    "width": 960,
+    "dispatch_ms": 53.9,
+    "ready_ms": 88.86,
+    "max_loading_frame_ms": 29.32,
+    "p95_ms": 2.13
+  },
+  {
+    "page": "camera",
+    "width": 960,
+    "dispatch_ms": 49.26,
+    "ready_ms": 84.31,
+    "max_loading_frame_ms": 29.02,
+    "p95_ms": 2.16
+  },
+  {
+    "page": "fill",
+    "width": 960,
+    "dispatch_ms": 50.57,
+    "ready_ms": 79.97,
+    "max_loading_frame_ms": 24.27,
+    "p95_ms": 2.1
+  },
+  {
+    "page": "history",
+    "width": 960,
+    "dispatch_ms": 50.42,
+    "ready_ms": 132.02,
+    "max_loading_frame_ms": 76.35,
+    "p95_ms": 2.2
+  },
+  {
+    "page": "mirror",
+    "width": 960,
+    "dispatch_ms": 66.44,
+    "ready_ms": 105.98,
+    "max_loading_frame_ms": 34.09,
+    "p95_ms": 1.77
+  },
+  {
+    "page": "selection",
+    "width": 960,
+    "dispatch_ms": 60.58,
+    "ready_ms": 96.87,
+    "max_loading_frame_ms": 29.98,
+    "p95_ms": 2.29
+  },
+  {
+    "page": "structures",
+    "width": 960,
+    "dispatch_ms": 62.36,
+    "ready_ms": 99.09,
+    "max_loading_frame_ms": 30.78,
+    "p95_ms": 2.39
+  },
+  {
+    "page": "terrain",
+    "width": 960,
+    "dispatch_ms": 66.98,
+    "ready_ms": 207.02,
+    "max_loading_frame_ms": 78.84,
+    "p95_ms": 2.35
+  },
+  {
+    "page": "biomes",
+    "width": 960,
+    "dispatch_ms": 180.85,
+    "ready_ms": 347.92,
+    "max_loading_frame_ms": 45.27,
+    "p95_ms": 2.77
+  },
+  {
+    "page": "dimensions",
+    "width": 960,
+    "dispatch_ms": 142.81,
+    "ready_ms": 422.32,
+    "max_loading_frame_ms": 93.49,
+    "p95_ms": 1.95
+  },
+  {
+    "page": "skies",
+    "width": 960,
+    "dispatch_ms": 54.52,
+    "ready_ms": 100.69,
+    "max_loading_frame_ms": 37.21,
+    "p95_ms": 4.32
+  },
+  {
+    "page": "liquids",
+    "width": 960,
+    "dispatch_ms": 49.9,
+    "ready_ms": 82.45,
+    "max_loading_frame_ms": 27.03,
+    "p95_ms": 2.63
+  },
+  {
+    "page": "lighting",
+    "width": 960,
+    "dispatch_ms": 54.08,
+    "ready_ms": 263.31,
+    "max_loading_frame_ms": 202.4,
+    "p95_ms": 2.8
+  },
+  {
+    "page": "worldmap",
+    "width": 960,
+    "dispatch_ms": 62.12,
+    "ready_ms": 97.02,
+    "max_loading_frame_ms": 29.47,
+    "p95_ms": 2.35
+  },
+  {
+    "page": "saving",
+    "width": 960,
+    "dispatch_ms": 58.48,
+    "ready_ms": 93.44,
+    "max_loading_frame_ms": 29.91,
+    "p95_ms": 2.07
+  },
+  {
+    "page": "welcome",
+    "width": 1920,
+    "dispatch_ms": 62.79,
+    "ready_ms": 175.85,
+    "max_loading_frame_ms": 99.68,
+    "p95_ms": 5.07
+  },
+  {
+    "page": "blocks",
+    "width": 1920,
+    "dispatch_ms": 57.38,
+    "ready_ms": 111.33,
+    "max_loading_frame_ms": 38.44,
+    "p95_ms": 5.2
+  },
+  {
+    "page": "camera",
+    "width": 1920,
+    "dispatch_ms": 55.87,
+    "ready_ms": 108.83,
+    "max_loading_frame_ms": 38.36,
+    "p95_ms": 5.01
+  },
+  {
+    "page": "fill",
+    "width": 1920,
+    "dispatch_ms": 59.19,
+    "ready_ms": 114.71,
+    "max_loading_frame_ms": 40.56,
+    "p95_ms": 5.75
+  },
+  {
+    "page": "history",
+    "width": 1920,
+    "dispatch_ms": 54.01,
+    "ready_ms": 107.48,
+    "max_loading_frame_ms": 39.36,
+    "p95_ms": 5.39
+  },
+  {
+    "page": "mirror",
+    "width": 1920,
+    "dispatch_ms": 51.44,
+    "ready_ms": 103.85,
+    "max_loading_frame_ms": 38.23,
+    "p95_ms": 5.05
+  },
+  {
+    "page": "selection",
+    "width": 1920,
+    "dispatch_ms": 53.17,
+    "ready_ms": 104.8,
+    "max_loading_frame_ms": 37.02,
+    "p95_ms": 5.98
+  },
+  {
+    "page": "structures",
+    "width": 1920,
+    "dispatch_ms": 77.06,
+    "ready_ms": 135.49,
+    "max_loading_frame_ms": 42.36,
+    "p95_ms": 5.83
+  },
+  {
+    "page": "terrain",
+    "width": 1920,
+    "dispatch_ms": 125.77,
+    "ready_ms": 269.06,
+    "max_loading_frame_ms": 38.1,
+    "p95_ms": 6.35
+  },
+  {
+    "page": "biomes",
+    "width": 1920,
+    "dispatch_ms": 193.35,
+    "ready_ms": 425.22,
+    "max_loading_frame_ms": 55.68,
+    "p95_ms": 5.27
+  },
+  {
+    "page": "dimensions",
+    "width": 1920,
+    "dispatch_ms": 84.47,
+    "ready_ms": 459.7,
+    "max_loading_frame_ms": 100.04,
+    "p95_ms": 4.82
+  },
+  {
+    "page": "skies",
+    "width": 1920,
+    "dispatch_ms": 102.86,
+    "ready_ms": 173.18,
+    "max_loading_frame_ms": 52.05,
+    "p95_ms": 7.57
+  },
+  {
+    "page": "liquids",
+    "width": 1920,
+    "dispatch_ms": 48.95,
+    "ready_ms": 97.97,
+    "max_loading_frame_ms": 35.86,
+    "p95_ms": 4.84
+  },
+  {
+    "page": "lighting",
+    "width": 1920,
+    "dispatch_ms": 49.67,
+    "ready_ms": 252.88,
+    "max_loading_frame_ms": 184.23,
+    "p95_ms": 8.49
+  },
+  {
+    "page": "worldmap",
+    "width": 1920,
+    "dispatch_ms": 61.86,
+    "ready_ms": 115.42,
+    "max_loading_frame_ms": 36.78,
+    "p95_ms": 6.09
+  },
+  {
+    "page": "saving",
+    "width": 1920,
+    "dispatch_ms": 66.03,
+    "ready_ms": 123.0,
+    "max_loading_frame_ms": 41.93,
+    "p95_ms": 5.7
+  }
+]

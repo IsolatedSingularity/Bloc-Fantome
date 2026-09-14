@@ -357,7 +357,7 @@ class WorldMapView:
                     return "overview" if region == "overview" else f"region:{region}"
             for index, rect in enumerate(self.node_hit_rects):
                 if rect.collidepoint(event.pos):
-                    if self.dimension == "ocean":
+                    if self.dimension == "ocean" or getattr(self.scene, 'region_key', None):
                         return None
                     self.play("plan")
                     route = self.scene.route_indices[index] if self.scene and self.scene.route_indices else index
@@ -544,11 +544,13 @@ class WorldMapView:
     def _render_mission_copy(
         self, screen: pygame.Surface, marker: pygame.Rect, index: int
     ) -> None:
-        lines = self._mission_copy(self.dimension, index)
+        preview = self.scene and self.scene.region_key
+        lines = ((self.scene.route_labels[index].upper(),)
+                 if self.scene and self.scene.region_key else self._mission_copy(self.dimension, index))
         top = marker.bottom + 3
         for line_index, line in enumerate(lines):
-            shadow = self._text(line, (0, 0, 0), scale=1)
-            text = self._text(line, (250, 250, 250), scale=1)
+            shadow = self._text(line, (0, 0, 0), scale=2 if preview else 1)
+            text = self._text(line, (250, 250, 250), scale=2 if preview else 1)
             center_x = marker.centerx
             y = top + line_index * 7
             screen.blit(shadow, shadow.get_rect(midtop=(center_x + 1, y + 1)))
@@ -587,17 +589,17 @@ class WorldMapView:
         self._panel(screen, panel)
         accent = DIMENSION_COLORS[self.dimension]
         pygame.draw.rect(screen, accent, (panel.x + 3, panel.y + 3, 5, panel.height - 6))
-        screen.blit(self._text("BUILD ROUTES", (244, 226, 157), scale=2), (panel.x + 17, panel.y + 13))
+        screen.blit(self._text("LANDMARKS" if self.scene.region_key else "BUILD ROUTES", (244, 226, 157), scale=2), (panel.x + 17, panel.y + 13))
         progress = completed.get(self.dimension, (False, False))
         if isinstance(progress, bool):
             progress = (progress, False)
         for index, label in enumerate(self.scene.route_labels):
             row = pygame.Rect(panel.x + 13, panel.y + 38 + index * 27, panel.width - 25, 23)
-            active = self.dimension != 'ocean' and (index in self.scene.route_indices if self.scene.region_key else index < len(self.scene.playable_anchors))
+            active = bool(self.scene.region_key) or (self.dimension != 'ocean' and index < len(self.scene.playable_anchors))
             fill = (70, 73, 68) if active else (42, 43, 47)
             pygame.draw.rect(screen, fill, row)
             pygame.draw.rect(screen, accent if active else (78, 79, 84), row, 1)
-            finished = active and index < len(progress) and bool(progress[index])
+            finished = not self.scene.region_key and active and index < len(progress) and bool(progress[index])
             glyph = "FLAG" if finished else ("?" if active else "LOCK")
             glyph_color = (235, 91, 72) if glyph == "FLAG" else ((250, 250, 250) if active else (150, 151, 157))
             glyph_text = self._text(glyph, glyph_color, scale=2)
@@ -838,7 +840,7 @@ class WorldMapView:
         self.node_rects = []
         self.node_hit_rects = []
         anchors = self.scene.playable_anchors
-        if self.dimension == "ocean":
+        if self.dimension == "ocean" or self.scene.region_key:
             anchors = self.scene.locked_anchors
         for index, world_anchor in enumerate(anchors):
             route_index = self.scene.route_indices[index] if self.scene.route_indices else index
@@ -846,26 +848,38 @@ class WorldMapView:
             marker_area=pygame.Rect(round(anchor[0])-40,round(anchor[1])-55,80,85)
             controls=(title_rect,self.back_rect,pygame.Rect(width-260,66,242,184),
                       self.region_panel_rect,pygame.Rect(0,screen.get_height()-111,width,111))
+            if self.scene.region_key and (not screen.get_rect().contains(marker_area) or marker_area.collidelist(controls)>=0):
+                original = anchor
+                ax = max(80,min(width-100,anchor[0]))
+                ay = max(title_rect.bottom+65,min(screen.get_height()-165,anchor[1]))
+                if ax < self.region_panel_rect.right+45 and ay < self.region_panel_rect.bottom+60:
+                    ax = self.region_panel_rect.right+65
+                if ax > width-305 and ay < 310:
+                    ax = width-320
+                anchor = (round(ax),round(ay))
+                if screen.get_rect().collidepoint(original):
+                    pygame.draw.line(screen, (132,126,115), original, anchor, 1)
+                marker_area=pygame.Rect(anchor[0]-40,anchor[1]-55,80,85)
             if not screen.get_rect().contains(marker_area) or marker_area.collidelist(controls)>=0:
                 self.node_rects.append(pygame.Rect(0,0,0,0))
                 self.node_hit_rects.append(pygame.Rect(0,0,0,0))
                 continue
             hovered = index == self._hovered_node
-            active = self.dimension != "ocean"
+            active = bool(self.scene.region_key) or self.dimension != "ocean"
             node_rect = self._draw_marker(
                 screen,
                 anchor,
                 completed=(
-                    active and route_index < len(progress) and bool(progress[route_index])
+                    not self.scene.region_key and active and route_index < len(progress) and bool(progress[route_index])
                 ),
                 active=active,
                 hovered=hovered,
-                bonus=all_complete,
+                bonus=all_complete and not self.scene.region_key,
                 phase=index,
             )
             self.node_rects.append(node_rect)
             self.node_hit_rects.append(node_rect.inflate(30, 26))
-            if hovered:
+            if hovered or self.scene.region_key:
                 self._render_mission_copy(screen, node_rect, route_index)
         self.node_rect = self.node_rects[0] if self.node_rects else pygame.Rect(0, 0, 0, 0)
         self.node_hit_rect = self.node_hit_rects[0] if self.node_hit_rects else pygame.Rect(0, 0, 0, 0)

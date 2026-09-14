@@ -1,0 +1,170 @@
+[
+  {
+    "page": "history",
+    "width": 1200,
+    "dispatch_ms": 0.65,
+    "ready_ms": 12495.76,
+    "max_loading_frame_ms": 391.41,
+    "p95_ms": 2.92
+  },
+  {
+    "page": "structures",
+    "width": 1200,
+    "dispatch_ms": 5.54,
+    "ready_ms": 9653.83,
+    "max_loading_frame_ms": 349.1,
+    "p95_ms": 3.09
+  },
+  {
+    "page": "rain",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 1585.59,
+    "max_loading_frame_ms": 298.88,
+    "p95_ms": 4.31
+  },
+  {
+    "page": "snow",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 1400.72,
+    "max_loading_frame_ms": 105.26,
+    "p95_ms": 2.97
+  },
+  {
+    "page": "liquids",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 8697.94,
+    "max_loading_frame_ms": 534.13,
+    "p95_ms": 5.68
+  },
+  {
+    "page": "lighting",
+    "width": 1200,
+    "dispatch_ms": 0.09,
+    "ready_ms": 11210.39,
+    "max_loading_frame_ms": 1279.97,
+    "p95_ms": 3.04
+  },
+  {
+    "page": "redstone",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 361.57,
+    "max_loading_frame_ms": 304.57,
+    "p95_ms": 2.83
+  },
+  {
+    "page": "history",
+    "width": 960,
+    "dispatch_ms": 0.09,
+    "ready_ms": 17300.9,
+    "max_loading_frame_ms": 563.94,
+    "p95_ms": 2.28
+  },
+  {
+    "page": "structures",
+    "width": 960,
+    "dispatch_ms": 4.52,
+    "ready_ms": 8898.72,
+    "max_loading_frame_ms": 784.69,
+    "p95_ms": 1.91
+  },
+  {
+    "page": "rain",
+    "width": 960,
+    "dispatch_ms": 0.09,
+    "ready_ms": 1397.69,
+    "max_loading_frame_ms": 262.33,
+    "p95_ms": 3.84
+  },
+  {
+    "page": "snow",
+    "width": 960,
+    "dispatch_ms": 0.07,
+    "ready_ms": 1738.95,
+    "max_loading_frame_ms": 252.3,
+    "p95_ms": 2.17
+  },
+  {
+    "page": "liquids",
+    "width": 960,
+    "dispatch_ms": 0.07,
+    "ready_ms": 8866.36,
+    "max_loading_frame_ms": 482.59,
+    "p95_ms": 3.49
+  },
+  {
+    "page": "lighting",
+    "width": 960,
+    "dispatch_ms": 0.07,
+    "ready_ms": 11146.25,
+    "max_loading_frame_ms": 1180.29,
+    "p95_ms": 2.06
+  },
+  {
+    "page": "redstone",
+    "width": 960,
+    "dispatch_ms": 0.07,
+    "ready_ms": 225.02,
+    "max_loading_frame_ms": 183.09,
+    "p95_ms": 1.82
+  },
+  {
+    "page": "history",
+    "width": 1920,
+    "dispatch_ms": 0.08,
+    "ready_ms": 14718.35,
+    "max_loading_frame_ms": 722.33,
+    "p95_ms": 4.61
+  },
+  {
+    "page": "structures",
+    "width": 1920,
+    "dispatch_ms": 5.29,
+    "ready_ms": 11178.85,
+    "max_loading_frame_ms": 706.71,
+    "p95_ms": 5.12
+  },
+  {
+    "page": "rain",
+    "width": 1920,
+    "dispatch_ms": 0.08,
+    "ready_ms": 1936.28,
+    "max_loading_frame_ms": 310.78,
+    "p95_ms": 8.39
+  },
+  {
+    "page": "snow",
+    "width": 1920,
+    "dispatch_ms": 0.09,
+    "ready_ms": 2243.11,
+    "max_loading_frame_ms": 298.75,
+    "p95_ms": 7.34
+  },
+  {
+    "page": "liquids",
+    "width": 1920,
+    "dispatch_ms": 0.08,
+    "ready_ms": 10028.04,
+    "max_loading_frame_ms": 397.96,
+    "p95_ms": 12.09
+  },
+  {
+    "page": "lighting",
+    "width": 1920,
+    "dispatch_ms": 0.08,
+    "ready_ms": 12565.81,
+    "max_loading_frame_ms": 1268.38,
+    "p95_ms": 5.58
+  },
+  {
+    "page": "redstone",
+    "width": 1920,
+    "dispatch_ms": 0.07,
+    "ready_ms": 255.8,
+    "max_loading_frame_ms": 197.06,
+    "p95_ms": 4.41
+  }
+]

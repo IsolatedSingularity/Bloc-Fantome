@@ -22,9 +22,18 @@ import pygame
 CODE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CODE))
 from engine.model_renderer import BlockModelRenderer
+from engine.world_map_regions import NETHER_HEIGHT_SCALE
 
 CELL = (128, 208)
 ANCHOR = (64, 96)
+
+
+def save_atlas(surface, target):
+    # OneDrive can briefly hold an existing image open while syncing it.
+    # Publish a completed file instead of truncating an atlas in place.
+    temporary = target.with_suffix('.pending.png')
+    pygame.image.save(surface, temporary)
+    temporary.replace(target)
 
 
 class Baker:
@@ -236,6 +245,8 @@ class Baker:
         }
 
     def bake(self, state):
+        if state['Name'] == 'minecraft:bubble_column':
+            state = {'Name':'minecraft:water','Properties':{'level':'0'}}
         surface = pygame.Surface(CELL, pygame.SRCALPHA)
         name = state["Name"].split(":")[1]
         if name == "air":
@@ -274,7 +285,7 @@ class Baker:
                             point = self.rotate(point, rotation["axis"], rotation["angle"], (0,0,0) if vector else rotation["origin"])
                         for axis in ("x", "y"):
                             point = self.rotate(point, axis, -variant.get(axis,0), (0,0,0) if vector else (8,8,8))
-                        return point
+                        return self.rotate(point,'y',-90*getattr(self,'view_rotation',0),(0,0,0) if vector else (8,8,8))
                     points = [transform(p) for p in points]
                     nx, ny, nz = transform(normal, True)
                     if nx + ny + nz <= 0.001:
@@ -302,19 +313,19 @@ if __name__ == "__main__":
     for index,tick in enumerate(range(0,120,5)):
         crystals.blit(baker.crystal(tick),((index%16)*CELL[0],(index//16)*CELL[1]))
     crystals.blit(baker.crystal(0,base=True),(8*CELL[0],CELL[1]))
-    pygame.image.save(crystals,CODE/'world_map_regions/end_crystals.png')
+    save_atlas(crystals,CODE/'world_map_regions/end_crystals.png')
     for path in sorted((CODE / "world_map_regions").glob("*.json.gz")):
         data = json.loads(gzip.decompress(path.read_bytes()))
         if "palette" not in data:
             continue
         palette = data["palette"]
-        baker.height_scale = 0.6 if data['dimension']=='nether' else 1.0
+        baker.height_scale = NETHER_HEIGHT_SCALE if data['dimension']=='nether' else 1.0
         manifest['palettes'][path.name]=hashlib.sha256(json.dumps(palette,sort_keys=True).encode()).hexdigest()
         atlas = pygame.Surface((CELL[0]*16,CELL[1]*math.ceil(len(palette)/16)),pygame.SRCALPHA)
         for index,state in enumerate(palette):
             baker.biome_id = data.get('palette_biomes',[None]*len(palette))[index]
             atlas.blit(baker.bake(state),((index%16)*CELL[0],(index//16)*CELL[1]))
         target = path.with_name(path.name.replace(".json.gz", ".png"))
-        pygame.image.save(atlas,target)
+        save_atlas(atlas,target)
         print(target.name,len(palette),flush=True)
     (CODE/'world_map_regions/atlas.json').write_text(json.dumps(manifest,indent=2)+'\n')

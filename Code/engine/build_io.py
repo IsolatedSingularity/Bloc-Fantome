@@ -71,6 +71,7 @@ def _properties(block_type, state_data, definitions):
         or definition.isSlab
         or definition.modelKind
         or block_type.name == "OXIDIZING_COPPER"
+        or state_data.get('sourceCapture')
     ):
         return None
     properties = BlockProperties()
@@ -112,6 +113,9 @@ def _properties(block_type, state_data, definitions):
     sticky_value = state_data.get("sticky", False)
     properties.sticky = sticky_value is True or str(sticky_value).casefold() == "true"
     properties.comparatorSubtract = str(state_data.get("mode", "")).lower() == "subtract" or state_data.get("comparatorSubtract", False) is True
+    capture=str(state_data.get('sourceCapture',''))
+    properties.sourceCapture=capture if capture.replace('_','').isalnum() else ''
+    properties.sourcePalette=max(-1,int(state_data.get('sourcePalette',-1)))
     return properties
 
 
@@ -399,8 +403,8 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
             int(bounds_data.get("min_y", 0)),
         )
         width, depth, height, min_y = bounds
-        if not (1 <= width <= 256 and 1 <= depth <= 256 and 1 <= height <= 512):
-            raise ValueError("Build bounds exceed the supported 256 x 256 x 512 canvas")
+        if not (1 <= width <= 512 and 1 <= depth <= 512 and 1 <= height <= 512):
+            raise ValueError("Build bounds exceed the supported 512 x 512 x 512 canvas")
         if min_y < -128 or min_y + height > 512:
             raise ValueError("Build vertical bounds are unsupported")
 
@@ -431,6 +435,7 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
                 "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge",
                 "oxidationStage", "powered", "redstonePower", "repeaterDelay",
                 "repeaterLocked", "pistonExtended", "sticky", "comparatorSubtract",
+                "sourceCapture", "sourcePalette",
             ):
                 if key in block_data:
                     state_data[key] = block_data[key]
@@ -528,6 +533,9 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
             block_data["role"] = "structure"
         properties = snapshot.properties.get(position)
         if properties is not None:
+            if properties.sourceCapture:
+                block_data['sourceCapture']=properties.sourceCapture
+                block_data['sourcePalette']=properties.sourcePalette
             definition = definitions.get(block_type)
             if properties.facing:
                 block_data["facing"] = properties.facing.name

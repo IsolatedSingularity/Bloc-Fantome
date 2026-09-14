@@ -1,0 +1,1187 @@
+{
+  "ocean": {
+    "file": "overworld_ocean.json.gz",
+    "preview": "ocean.png",
+    "kind": "natural",
+    "origin": [
+      -48,
+      -48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 64
+  },
+  "plains": {
+    "file": "overworld_plains.json.gz",
+    "preview": "plains.png",
+    "kind": "natural",
+    "origin": [
+      -176,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 65
+  },
+  "desert": {
+    "file": "overworld_desert.json.gz",
+    "preview": "desert.png",
+    "kind": "natural",
+    "origin": [
+      1552,
+      1936
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 56
+  },
+  "mountains": {
+    "file": "overworld_mountains.json.gz",
+    "preview": "mountains.png",
+    "kind": "natural",
+    "origin": [
+      176,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 120
+  },
+  "forest": {
+    "file": "overworld_forest.json.gz",
+    "preview": "forest.png",
+    "kind": "natural",
+    "origin": [
+      16,
+      -144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 103
+  },
+  "taiga": {
+    "file": "overworld_taiga.json.gz",
+    "preview": "taiga.png",
+    "kind": "natural",
+    "origin": [
+      -272,
+      -272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 126
+  },
+  "swamp": {
+    "file": "overworld_swamp.json.gz",
+    "preview": "swamp.png",
+    "kind": "natural",
+    "origin": [
+      -240,
+      -336
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 209
+  },
+  "river": {
+    "file": "overworld_river.json.gz",
+    "preview": "river.png",
+    "kind": "natural",
+    "origin": [
+      -208,
+      144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 87
+  },
+  "nether_wastes": {
+    "file": "nether_nether_wastes.json.gz",
+    "preview": "nether_wastes.png",
+    "kind": "natural",
+    "origin": [
+      288,
+      -272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 28
+  },
+  "the_end": {
+    "file": "end_the_end.json.gz",
+    "preview": "the_end.png",
+    "kind": "natural",
+    "origin": [
+      -128,
+      -128
+    ],
+    "size": [
+      256,
+      256,
+      256
+    ],
+    "palette_count": 17
+  },
+  "frozen_ocean": {
+    "file": "overworld_frozen_ocean.json.gz",
+    "preview": "frozen_ocean.png",
+    "kind": "natural",
+    "origin": [
+      176,
+      -2448
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 65
+  },
+  "frozen_river": {
+    "file": "overworld_frozen_river.json.gz",
+    "preview": "frozen_river.png",
+    "kind": "natural",
+    "origin": [
+      -1520,
+      272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 95
+  },
+  "snowy_tundra": {
+    "file": "overworld_snowy_tundra.json.gz",
+    "preview": "snowy_tundra.png",
+    "kind": "natural",
+    "origin": [
+      -1392,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 84
+  },
+  "snowy_mountains": {
+    "file": "overworld_snowy_mountains.json.gz",
+    "preview": "snowy_mountains.png",
+    "kind": "natural",
+    "origin": [
+      -1456,
+      48
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 51
+  },
+  "mushroom_fields": {
+    "file": "overworld_mushroom_fields.json.gz",
+    "preview": "mushroom_fields.png",
+    "kind": "natural",
+    "origin": [
+      -2928,
+      1520
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 87
+  },
+  "mushroom_field_shore": {
+    "file": "overworld_mushroom_field_shore.json.gz",
+    "preview": "mushroom_field_shore.png",
+    "kind": "natural",
+    "origin": [
+      -2896,
+      1488
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 54
+  },
+  "beach": {
+    "file": "overworld_beach.json.gz",
+    "preview": "beach.png",
+    "kind": "natural",
+    "origin": [
+      16,
+      -112
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 93
+  },
+  "desert_hills": {
+    "file": "overworld_desert_hills.json.gz",
+    "preview": "desert_hills.png",
+    "kind": "natural",
+    "origin": [
+      1616,
+      2032
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 51
+  },
+  "wooded_hills": {
+    "file": "overworld_wooded_hills.json.gz",
+    "preview": "wooded_hills.png",
+    "kind": "natural",
+    "origin": [
+      16,
+      -176
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 63
+  },
+  "taiga_hills": {
+    "file": "overworld_taiga_hills.json.gz",
+    "preview": "taiga_hills.png",
+    "kind": "natural",
+    "origin": [
+      176,
+      -752
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 40
+  },
+  "jungle": {
+    "file": "overworld_jungle.json.gz",
+    "preview": "jungle.png",
+    "kind": "natural",
+    "origin": [
+      112,
+      -144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 146
+  },
+  "jungle_hills": {
+    "file": "overworld_jungle_hills.json.gz",
+    "preview": "jungle_hills.png",
+    "kind": "natural",
+    "origin": [
+      208,
+      -80
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 93
+  },
+  "jungle_edge": {
+    "file": "overworld_jungle_edge.json.gz",
+    "preview": "jungle_edge.png",
+    "kind": "natural",
+    "origin": [
+      144,
+      112
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 131
+  },
+  "deep_ocean": {
+    "file": "overworld_deep_ocean.json.gz",
+    "preview": "deep_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -16,
+      -48
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 30
+  },
+  "stone_shore": {
+    "file": "overworld_stone_shore.json.gz",
+    "preview": "stone_shore.png",
+    "kind": "natural",
+    "origin": [
+      -624,
+      144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 111
+  },
+  "snowy_beach": {
+    "file": "overworld_snowy_beach.json.gz",
+    "preview": "snowy_beach.png",
+    "kind": "natural",
+    "origin": [
+      -1392,
+      80
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 58
+  },
+  "birch_forest": {
+    "file": "overworld_birch_forest.json.gz",
+    "preview": "birch_forest.png",
+    "kind": "natural",
+    "origin": [
+      80,
+      368
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 100
+  },
+  "birch_forest_hills": {
+    "file": "overworld_birch_forest_hills.json.gz",
+    "preview": "birch_forest_hills.png",
+    "kind": "natural",
+    "origin": [
+      48,
+      400
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 45
+  },
+  "dark_forest": {
+    "file": "overworld_dark_forest.json.gz",
+    "preview": "dark_forest.png",
+    "kind": "natural",
+    "origin": [
+      -496,
+      -688
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 166
+  },
+  "snowy_taiga": {
+    "file": "overworld_snowy_taiga.json.gz",
+    "preview": "snowy_taiga.png",
+    "kind": "natural",
+    "origin": [
+      -1904,
+      176
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 86
+  },
+  "snowy_taiga_hills": {
+    "file": "overworld_snowy_taiga_hills.json.gz",
+    "preview": "snowy_taiga_hills.png",
+    "kind": "natural",
+    "origin": [
+      -1968,
+      240
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 59
+  },
+  "giant_tree_taiga": {
+    "file": "overworld_giant_tree_taiga.json.gz",
+    "preview": "giant_tree_taiga.png",
+    "kind": "natural",
+    "origin": [
+      3184,
+      1744
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 83
+  },
+  "giant_tree_taiga_hills": {
+    "file": "overworld_giant_tree_taiga_hills.json.gz",
+    "preview": "giant_tree_taiga_hills.png",
+    "kind": "natural",
+    "origin": [
+      3248,
+      1712
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 52
+  },
+  "wooded_mountains": {
+    "file": "overworld_wooded_mountains.json.gz",
+    "preview": "wooded_mountains.png",
+    "kind": "natural",
+    "origin": [
+      -624,
+      336
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 92
+  },
+  "savanna": {
+    "file": "overworld_savanna.json.gz",
+    "preview": "savanna.png",
+    "kind": "natural",
+    "origin": [
+      720,
+      2064
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 96
+  },
+  "savanna_plateau": {
+    "file": "overworld_savanna_plateau.json.gz",
+    "preview": "savanna_plateau.png",
+    "kind": "natural",
+    "origin": [
+      -176,
+      -2224
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 61
+  },
+  "badlands": {
+    "file": "overworld_badlands.json.gz",
+    "preview": "badlands.png",
+    "kind": "natural",
+    "origin": [
+      -2928,
+      2192
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 60
+  },
+  "wooded_badlands_plateau": {
+    "file": "overworld_wooded_badlands_plateau.json.gz",
+    "preview": "wooded_badlands_plateau.png",
+    "kind": "natural",
+    "origin": [
+      -3440,
+      1904
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 58
+  },
+  "badlands_plateau": {
+    "file": "overworld_badlands_plateau.json.gz",
+    "preview": "badlands_plateau.png",
+    "kind": "natural",
+    "origin": [
+      -3056,
+      2224
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 31
+  },
+  "small_end_islands": {
+    "file": "end_small_end_islands.json.gz",
+    "preview": "small_end_islands.png",
+    "kind": "natural",
+    "origin": [
+      -800,
+      672
+    ],
+    "size": [
+      128,
+      128,
+      256
+    ],
+    "palette_count": 2
+  },
+  "end_midlands": {
+    "file": "end_end_midlands.json.gz",
+    "preview": "end_midlands.png",
+    "kind": "natural",
+    "origin": [
+      -752,
+      -752
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 14
+  },
+  "end_highlands": {
+    "file": "end_end_highlands.json.gz",
+    "preview": "end_highlands.png",
+    "kind": "natural",
+    "origin": [
+      672,
+      -800
+    ],
+    "size": [
+      128,
+      128,
+      256
+    ],
+    "palette_count": 26
+  },
+  "end_barrens": {
+    "file": "end_end_barrens.json.gz",
+    "preview": "end_barrens.png",
+    "kind": "natural",
+    "origin": [
+      -784,
+      -784
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 5
+  },
+  "warm_ocean": {
+    "file": "overworld_warm_ocean.json.gz",
+    "preview": "warm_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -848,
+      -1392
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 96
+  },
+  "lukewarm_ocean": {
+    "file": "overworld_lukewarm_ocean.json.gz",
+    "preview": "lukewarm_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -80,
+      16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 38
+  },
+  "cold_ocean": {
+    "file": "overworld_cold_ocean.json.gz",
+    "preview": "cold_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -1168,
+      16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 33
+  },
+  "deep_lukewarm_ocean": {
+    "file": "overworld_deep_lukewarm_ocean.json.gz",
+    "preview": "deep_lukewarm_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -112,
+      16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 42
+  },
+  "deep_cold_ocean": {
+    "file": "overworld_deep_cold_ocean.json.gz",
+    "preview": "deep_cold_ocean.png",
+    "kind": "natural",
+    "origin": [
+      -1072,
+      -48
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 38
+  },
+  "deep_frozen_ocean": {
+    "file": "overworld_deep_frozen_ocean.json.gz",
+    "preview": "deep_frozen_ocean.png",
+    "kind": "natural",
+    "origin": [
+      240,
+      -2352
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 31
+  },
+  "sunflower_plains": {
+    "file": "overworld_sunflower_plains.json.gz",
+    "preview": "sunflower_plains.png",
+    "kind": "natural",
+    "origin": [
+      -208,
+      208
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 95
+  },
+  "desert_lakes": {
+    "file": "overworld_desert_lakes.json.gz",
+    "preview": "desert_lakes.png",
+    "kind": "natural",
+    "origin": [
+      1264,
+      3632
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 64
+  },
+  "gravelly_mountains": {
+    "file": "overworld_gravelly_mountains.json.gz",
+    "preview": "gravelly_mountains.png",
+    "kind": "natural",
+    "origin": [
+      -464,
+      368
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 69
+  },
+  "flower_forest": {
+    "file": "overworld_flower_forest.json.gz",
+    "preview": "flower_forest.png",
+    "kind": "natural",
+    "origin": [
+      -464,
+      496
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 113
+  },
+  "taiga_mountains": {
+    "file": "overworld_taiga_mountains.json.gz",
+    "preview": "taiga_mountains.png",
+    "kind": "natural",
+    "origin": [
+      -2544,
+      -2544
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 55
+  },
+  "swamp_hills": {
+    "file": "overworld_swamp_hills.json.gz",
+    "preview": "swamp_hills.png",
+    "kind": "natural",
+    "origin": [
+      -4144,
+      -3600
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 96
+  },
+  "ice_spikes": {
+    "file": "overworld_ice_spikes.json.gz",
+    "preview": "ice_spikes.png",
+    "kind": "natural",
+    "origin": [
+      4144,
+      912
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 62
+  },
+  "modified_jungle": {
+    "file": "overworld_modified_jungle.json.gz",
+    "preview": "modified_jungle.png",
+    "kind": "natural",
+    "origin": [
+      1072,
+      -176
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 107
+  },
+  "tall_birch_forest": {
+    "file": "overworld_tall_birch_forest.json.gz",
+    "preview": "tall_birch_forest.png",
+    "kind": "natural",
+    "origin": [
+      -272,
+      528
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 61
+  },
+  "tall_birch_hills": {
+    "file": "overworld_tall_birch_hills.json.gz",
+    "preview": "tall_birch_hills.png",
+    "kind": "natural",
+    "origin": [
+      1872,
+      1040
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 63
+  },
+  "dark_forest_hills": {
+    "file": "overworld_dark_forest_hills.json.gz",
+    "preview": "dark_forest_hills.png",
+    "kind": "natural",
+    "origin": [
+      -1552,
+      2992
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 132
+  },
+  "snowy_taiga_mountains": {
+    "file": "overworld_snowy_taiga_mountains.json.gz",
+    "preview": "snowy_taiga_mountains.png",
+    "kind": "natural",
+    "origin": [
+      -10128,
+      -12688
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 56
+  },
+  "giant_spruce_taiga": {
+    "file": "overworld_giant_spruce_taiga.json.gz",
+    "preview": "giant_spruce_taiga.png",
+    "kind": "natural",
+    "origin": [
+      3504,
+      2416
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 61
+  },
+  "giant_spruce_taiga_hills": {
+    "file": "overworld_giant_spruce_taiga_hills.json.gz",
+    "preview": "giant_spruce_taiga_hills.png",
+    "kind": "natural",
+    "origin": [
+      -3728,
+      -3888
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 58
+  },
+  "modified_gravelly_mountains": {
+    "file": "overworld_modified_gravelly_mountains.json.gz",
+    "preview": "modified_gravelly_mountains.png",
+    "kind": "natural",
+    "origin": [
+      688,
+      -1200
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 61
+  },
+  "shattered_savanna": {
+    "file": "overworld_shattered_savanna.json.gz",
+    "preview": "shattered_savanna.png",
+    "kind": "natural",
+    "origin": [
+      3024,
+      3344
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 87
+  },
+  "shattered_savanna_plateau": {
+    "file": "overworld_shattered_savanna_plateau.json.gz",
+    "preview": "shattered_savanna_plateau.png",
+    "kind": "natural",
+    "origin": [
+      432,
+      -3440
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 81
+  },
+  "eroded_badlands": {
+    "file": "overworld_eroded_badlands.json.gz",
+    "preview": "eroded_badlands.png",
+    "kind": "natural",
+    "origin": [
+      -4912,
+      1776
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 100
+  },
+  "modified_wooded_badlands_plateau": {
+    "file": "overworld_modified_wooded_badlands_plateau.json.gz",
+    "preview": "modified_wooded_badlands_plateau.png",
+    "kind": "natural",
+    "origin": [
+      -4720,
+      2032
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 67
+  },
+  "bamboo_jungle": {
+    "file": "overworld_bamboo_jungle.json.gz",
+    "preview": "bamboo_jungle.png",
+    "kind": "natural",
+    "origin": [
+      272,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 203
+  },
+  "bamboo_jungle_hills": {
+    "file": "overworld_bamboo_jungle_hills.json.gz",
+    "preview": "bamboo_jungle_hills.png",
+    "kind": "natural",
+    "origin": [
+      432,
+      -304
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 93
+  },
+  "soul_sand_valley": {
+    "file": "nether_soul_sand_valley.json.gz",
+    "preview": "soul_sand_valley.png",
+    "kind": "natural",
+    "origin": [
+      -144,
+      320
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 19
+  },
+  "crimson_forest": {
+    "file": "nether_crimson_forest.json.gz",
+    "preview": "crimson_forest.png",
+    "kind": "natural",
+    "origin": [
+      -416,
+      448
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 38
+  },
+  "warped_forest": {
+    "file": "nether_warped_forest.json.gz",
+    "preview": "warped_forest.png",
+    "kind": "natural",
+    "origin": [
+      -352,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 39
+  },
+  "basalt_deltas": {
+    "file": "nether_basalt_deltas.json.gz",
+    "preview": "basalt_deltas.png",
+    "kind": "natural",
+    "origin": [
+      -944,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "palette_count": 15
+  },
+  "mountain_edge": {
+    "file": "overworld_mountain_edge.json.gz",
+    "preview": "mountain_edge.png",
+    "kind": "single_biome",
+    "origin": [
+      -16,
+      -16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 68
+  },
+  "deep_warm_ocean": {
+    "file": "overworld_deep_warm_ocean.json.gz",
+    "preview": "deep_warm_ocean.png",
+    "kind": "single_biome",
+    "origin": [
+      -16,
+      -16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 23
+  },
+  "the_void": {
+    "file": "overworld_the_void.json.gz",
+    "preview": "the_void.png",
+    "kind": "void_preset",
+    "origin": [
+      -16,
+      -16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 3
+  },
+  "modified_jungle_edge": {
+    "file": "overworld_modified_jungle_edge.json.gz",
+    "preview": "modified_jungle_edge.png",
+    "kind": "single_biome",
+    "origin": [
+      -16,
+      -16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 83
+  },
+  "modified_badlands_plateau": {
+    "file": "overworld_modified_badlands_plateau.json.gz",
+    "preview": "modified_badlands_plateau.png",
+    "kind": "single_biome",
+    "origin": [
+      -16,
+      -16
+    ],
+    "size": [
+      48,
+      48,
+      256
+    ],
+    "palette_count": 44
+  }
+}

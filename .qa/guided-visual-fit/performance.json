@@ -1,0 +1,173 @@
+[
+  {
+    "kind": "settled",
+    "dimension": "overworld",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 3.192499978467822
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "overworld",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 15.696199960075319,
+    "max_ms": 17.051600036211312
+  },
+  {
+    "kind": "settled",
+    "dimension": "nether",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 2.908300026319921
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "nether",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 15.98649995867163,
+    "max_ms": 18.043299904093146
+  },
+  {
+    "kind": "settled",
+    "dimension": "end",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 3.034299938008189
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "end",
+    "size": [
+      1200,
+      800
+    ],
+    "p95_ms": 17.260299995541573,
+    "max_ms": 17.280600033700466
+  },
+  {
+    "kind": "settled",
+    "dimension": "overworld",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 1.8201000057160854
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "overworld",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 11.360200005583465,
+    "max_ms": 11.398400063626468
+  },
+  {
+    "kind": "settled",
+    "dimension": "nether",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 2.713399939239025
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "nether",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 12.33289996162057,
+    "max_ms": 13.227799907326698
+  },
+  {
+    "kind": "settled",
+    "dimension": "end",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 2.4842999409884214
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "end",
+    "size": [
+      960,
+      640
+    ],
+    "p95_ms": 12.318399967625737,
+    "max_ms": 13.172100065276027
+  },
+  {
+    "kind": "settled",
+    "dimension": "overworld",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 5.429700016975403
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "overworld",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 34.03440001420677,
+    "max_ms": 34.067300031892955
+  },
+  {
+    "kind": "settled",
+    "dimension": "nether",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 4.980099969543517
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "nether",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 32.97870000824332,
+    "max_ms": 36.84610000345856
+  },
+  {
+    "kind": "settled",
+    "dimension": "end",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 5.12790004722774
+  },
+  {
+    "kind": "sky_rotation",
+    "dimension": "end",
+    "size": [
+      1920,
+      1080
+    ],
+    "p95_ms": 31.550399959087372,
+    "max_ms": 34.06099998392165
+  }
+]

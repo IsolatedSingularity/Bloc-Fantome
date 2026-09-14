@@ -1,0 +1,1123 @@
+[
+  {
+    "id": "ocean",
+    "dimension": "overworld",
+    "raw_id": 0,
+    "location": [
+      0,
+      0
+    ],
+    "response": "[19:18:32] [Server thread/INFO]: Gamerule randomTickSpeed is now set to: 0\n[19:18:32] [Server thread/INFO]: Gamerule doMobSpawning is now set to: false\n[19:18:32] [Server thread/INFO]: The nearest minecraft:ocean is at [0, ~, 0] (0 blocks away)",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "plains",
+    "dimension": "overworld",
+    "raw_id": 1,
+    "location": [
+      -128,
+      96
+    ],
+    "response": "[19:18:37] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:18:37] [Server thread/INFO]: The nearest minecraft:plains is at [-128, ~, 96] (160 blocks away)",
+    "origin": [
+      -144,
+      80
+    ]
+  },
+  {
+    "id": "desert",
+    "dimension": "overworld",
+    "raw_id": 2,
+    "location": [
+      1600,
+      1984
+    ],
+    "response": "[19:18:41] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:18:41] [Server thread/INFO]: The nearest minecraft:desert is at [1600, ~, 1984] (2548 blocks away)",
+    "origin": [
+      1584,
+      1968
+    ]
+  },
+  {
+    "id": "mountains",
+    "dimension": "overworld",
+    "raw_id": 3,
+    "location": [
+      224,
+      -256
+    ],
+    "response": "[19:18:46] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:18:46] [Server thread/INFO]: The nearest minecraft:mountains is at [224, ~, -256] (340 blocks away)",
+    "origin": [
+      208,
+      -272
+    ]
+  },
+  {
+    "id": "forest",
+    "dimension": "overworld",
+    "raw_id": 4,
+    "location": [
+      64,
+      -96
+    ],
+    "response": "[19:18:51] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:18:51] [Server thread/INFO]: The nearest minecraft:forest is at [64, ~, -96] (115 blocks away)",
+    "origin": [
+      48,
+      -112
+    ]
+  },
+  {
+    "id": "taiga",
+    "dimension": "overworld",
+    "raw_id": 5,
+    "location": [
+      -224,
+      -224
+    ],
+    "response": "[19:18:55] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:18:55] [Server thread/INFO]: The nearest minecraft:taiga is at [-224, ~, -224] (316 blocks away)",
+    "origin": [
+      -240,
+      -240
+    ]
+  },
+  {
+    "id": "swamp",
+    "dimension": "overworld",
+    "raw_id": 6,
+    "location": [
+      -192,
+      -288
+    ],
+    "response": "[19:19:01] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:01] [Server thread/INFO]: The nearest minecraft:swamp is at [-192, ~, -288] (346 blocks away)",
+    "origin": [
+      -208,
+      -304
+    ]
+  },
+  {
+    "id": "river",
+    "dimension": "overworld",
+    "raw_id": 7,
+    "location": [
+      -160,
+      192
+    ],
+    "response": "[19:19:06] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:06] [Server thread/INFO]: The nearest minecraft:river is at [-160, ~, 192] (249 blocks away)",
+    "origin": [
+      -176,
+      176
+    ]
+  },
+  {
+    "id": "nether_wastes",
+    "dimension": "nether",
+    "raw_id": 8,
+    "location": [
+      0,
+      0
+    ],
+    "response": "[19:19:10] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:10] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [0, ~, 0] (0 blocks away); visually selected a denser surface sample in the existing seed-1 source world.",
+    "origin": [
+      320,
+      -240
+    ],
+    "source_world": "../worldmap-vanilla/reference-world"
+  },
+  {
+    "id": "the_end",
+    "dimension": "end",
+    "raw_id": 9,
+    "location": [
+      0,
+      0
+    ],
+    "response": "[19:19:15] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_nether\n[19:19:15] [Server thread/INFO]: The nearest minecraft:the_end is at [0, ~, 0] (0 blocks away)",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "frozen_ocean",
+    "dimension": "overworld",
+    "raw_id": 10,
+    "location": [
+      224,
+      -2400
+    ],
+    "response": "[19:19:19] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_end\n[19:19:19] [Server thread/INFO]: The nearest minecraft:frozen_ocean is at [224, ~, -2400] (2410 blocks away)",
+    "origin": [
+      208,
+      -2416
+    ]
+  },
+  {
+    "id": "frozen_river",
+    "dimension": "overworld",
+    "raw_id": 11,
+    "location": [
+      -1472,
+      320
+    ],
+    "response": "[19:19:24] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:24] [Server thread/INFO]: The nearest minecraft:frozen_river is at [-1472, ~, 320] (1506 blocks away)",
+    "origin": [
+      -1488,
+      304
+    ]
+  },
+  {
+    "id": "snowy_tundra",
+    "dimension": "overworld",
+    "raw_id": 12,
+    "location": [
+      -1344,
+      96
+    ],
+    "response": "[19:19:29] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:29] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [-1344, ~, 96] (1347 blocks away)",
+    "origin": [
+      -1360,
+      80
+    ]
+  },
+  {
+    "id": "snowy_mountains",
+    "dimension": "overworld",
+    "raw_id": 13,
+    "location": [
+      -1440,
+      64
+    ],
+    "response": "[19:19:34] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:34] [Server thread/INFO]: The nearest minecraft:snowy_mountains is at [-1440, ~, 64] (1441 blocks away)",
+    "origin": [
+      -1456,
+      48
+    ]
+  },
+  {
+    "id": "mushroom_fields",
+    "dimension": "overworld",
+    "raw_id": 14,
+    "location": [
+      -2880,
+      1568
+    ],
+    "response": "[19:19:38] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:39] [Server thread/INFO]: The nearest minecraft:mushroom_fields is at [-2880, ~, 1568] (3279 blocks away)",
+    "origin": [
+      -2896,
+      1552
+    ]
+  },
+  {
+    "id": "mushroom_field_shore",
+    "dimension": "overworld",
+    "raw_id": 15,
+    "location": [
+      -2880,
+      1504
+    ],
+    "response": "[19:19:44] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:45] [Server thread/INFO]: The nearest minecraft:mushroom_field_shore is at [-2880, ~, 1504] (3249 blocks away)",
+    "origin": [
+      -2896,
+      1488
+    ]
+  },
+  {
+    "id": "beach",
+    "dimension": "overworld",
+    "raw_id": 16,
+    "location": [
+      64,
+      -64
+    ],
+    "response": "[19:19:49] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:49] [Server thread/INFO]: The nearest minecraft:beach is at [64, ~, -64] (90 blocks away)",
+    "origin": [
+      48,
+      -80
+    ]
+  },
+  {
+    "id": "desert_hills",
+    "dimension": "overworld",
+    "raw_id": 17,
+    "location": [
+      1632,
+      2048
+    ],
+    "response": "[19:19:53] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:53] [Server thread/INFO]: The nearest minecraft:desert_hills is at [1632, ~, 2048] (2618 blocks away)",
+    "origin": [
+      1616,
+      2032
+    ]
+  },
+  {
+    "id": "wooded_hills",
+    "dimension": "overworld",
+    "raw_id": 18,
+    "location": [
+      32,
+      -160
+    ],
+    "response": "[19:19:58] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:19:58] [Server thread/INFO]: The nearest minecraft:wooded_hills is at [32, ~, -160] (163 blocks away)",
+    "origin": [
+      16,
+      -176
+    ]
+  },
+  {
+    "id": "taiga_hills",
+    "dimension": "overworld",
+    "raw_id": 19,
+    "location": [
+      192,
+      -736
+    ],
+    "response": "[19:20:03] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:03] [Server thread/INFO]: The nearest minecraft:taiga_hills is at [192, ~, -736] (760 blocks away)",
+    "origin": [
+      176,
+      -752
+    ]
+  },
+  {
+    "id": "jungle",
+    "dimension": "overworld",
+    "raw_id": 21,
+    "location": [
+      160,
+      -96
+    ],
+    "response": "[19:20:11] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 3475ms or 69 ticks behind\n[19:20:11] [Server thread/INFO]: The nearest minecraft:jungle is at [160, ~, -96] (186 blocks away)",
+    "origin": [
+      144,
+      -112
+    ]
+  },
+  {
+    "id": "jungle_hills",
+    "dimension": "overworld",
+    "raw_id": 22,
+    "location": [
+      224,
+      -64
+    ],
+    "response": "[19:20:16] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:16] [Server thread/INFO]: The nearest minecraft:jungle_hills is at [224, ~, -64] (232 blocks away)",
+    "origin": [
+      208,
+      -80
+    ]
+  },
+  {
+    "id": "jungle_edge",
+    "dimension": "overworld",
+    "raw_id": 23,
+    "location": [
+      160,
+      128
+    ],
+    "response": "[19:20:20] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:20] [Server thread/INFO]: The nearest minecraft:jungle_edge is at [160, ~, 128] (204 blocks away)",
+    "origin": [
+      144,
+      112
+    ]
+  },
+  {
+    "id": "deep_ocean",
+    "dimension": "overworld",
+    "raw_id": 24,
+    "location": [
+      0,
+      -32
+    ],
+    "response": "[19:20:25] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:25] [Server thread/INFO]: The nearest minecraft:deep_ocean is at [0, ~, -32] (32 blocks away)",
+    "origin": [
+      -16,
+      -48
+    ]
+  },
+  {
+    "id": "stone_shore",
+    "dimension": "overworld",
+    "raw_id": 25,
+    "location": [
+      -576,
+      192
+    ],
+    "response": "[19:20:29] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:29] [Server thread/INFO]: The nearest minecraft:stone_shore is at [-576, ~, 192] (607 blocks away)",
+    "origin": [
+      -592,
+      176
+    ]
+  },
+  {
+    "id": "snowy_beach",
+    "dimension": "overworld",
+    "raw_id": 26,
+    "location": [
+      -1376,
+      96
+    ],
+    "response": "[19:20:34] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:34] [Server thread/INFO]: The nearest minecraft:snowy_beach is at [-1376, ~, 96] (1379 blocks away)",
+    "origin": [
+      -1392,
+      80
+    ]
+  },
+  {
+    "id": "birch_forest",
+    "dimension": "overworld",
+    "raw_id": 27,
+    "location": [
+      128,
+      416
+    ],
+    "response": "[19:20:38] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:38] [Server thread/INFO]: The nearest minecraft:birch_forest is at [128, ~, 416] (435 blocks away)",
+    "origin": [
+      112,
+      400
+    ]
+  },
+  {
+    "id": "birch_forest_hills",
+    "dimension": "overworld",
+    "raw_id": 28,
+    "location": [
+      64,
+      416
+    ],
+    "response": "[19:20:43] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:43] [Server thread/INFO]: The nearest minecraft:birch_forest_hills is at [64, ~, 416] (420 blocks away)",
+    "origin": [
+      48,
+      400
+    ]
+  },
+  {
+    "id": "dark_forest",
+    "dimension": "overworld",
+    "raw_id": 29,
+    "location": [
+      -448,
+      -640
+    ],
+    "response": "[19:20:47] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:47] [Server thread/INFO]: The nearest minecraft:dark_forest is at [-448, ~, -640] (781 blocks away)",
+    "origin": [
+      -464,
+      -656
+    ]
+  },
+  {
+    "id": "snowy_taiga",
+    "dimension": "overworld",
+    "raw_id": 30,
+    "location": [
+      -1856,
+      224
+    ],
+    "response": "[19:20:52] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:52] [Server thread/INFO]: The nearest minecraft:snowy_taiga is at [-1856, ~, 224] (1869 blocks away)",
+    "origin": [
+      -1872,
+      208
+    ]
+  },
+  {
+    "id": "snowy_taiga_hills",
+    "dimension": "overworld",
+    "raw_id": 31,
+    "location": [
+      -1952,
+      256
+    ],
+    "response": "[19:20:57] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:20:57] [Server thread/INFO]: The nearest minecraft:snowy_taiga_hills is at [-1952, ~, 256] (1968 blocks away)",
+    "origin": [
+      -1968,
+      240
+    ]
+  },
+  {
+    "id": "giant_tree_taiga",
+    "dimension": "overworld",
+    "raw_id": 32,
+    "location": [
+      3232,
+      1792
+    ],
+    "response": "[19:21:02] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:03] [Server thread/INFO]: The nearest minecraft:giant_tree_taiga is at [3232, ~, 1792] (3695 blocks away)",
+    "origin": [
+      3216,
+      1776
+    ]
+  },
+  {
+    "id": "giant_tree_taiga_hills",
+    "dimension": "overworld",
+    "raw_id": 33,
+    "location": [
+      3264,
+      1728
+    ],
+    "response": "[19:21:08] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:08] [Server thread/INFO]: The nearest minecraft:giant_tree_taiga_hills is at [3264, ~, 1728] (3693 blocks away)",
+    "origin": [
+      3248,
+      1712
+    ]
+  },
+  {
+    "id": "wooded_mountains",
+    "dimension": "overworld",
+    "raw_id": 34,
+    "location": [
+      -576,
+      384
+    ],
+    "response": "[19:21:13] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:13] [Server thread/INFO]: The nearest minecraft:wooded_mountains is at [-576, ~, 384] (692 blocks away)",
+    "origin": [
+      -592,
+      368
+    ]
+  },
+  {
+    "id": "savanna",
+    "dimension": "overworld",
+    "raw_id": 35,
+    "location": [
+      768,
+      2112
+    ],
+    "response": "[19:21:18] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:18] [Server thread/INFO]: The nearest minecraft:savanna is at [768, ~, 2112] (2247 blocks away)",
+    "origin": [
+      752,
+      2096
+    ]
+  },
+  {
+    "id": "savanna_plateau",
+    "dimension": "overworld",
+    "raw_id": 36,
+    "location": [
+      -160,
+      -2208
+    ],
+    "response": "[19:21:22] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:23] [Server thread/INFO]: The nearest minecraft:savanna_plateau is at [-160, ~, -2208] (2213 blocks away)",
+    "origin": [
+      -176,
+      -2224
+    ]
+  },
+  {
+    "id": "badlands",
+    "dimension": "overworld",
+    "raw_id": 37,
+    "location": [
+      -2880,
+      2240
+    ],
+    "response": "[19:21:27] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:28] [Server thread/INFO]: The nearest minecraft:badlands is at [-2880, ~, 2240] (3648 blocks away)",
+    "origin": [
+      -2896,
+      2224
+    ]
+  },
+  {
+    "id": "wooded_badlands_plateau",
+    "dimension": "overworld",
+    "raw_id": 38,
+    "location": [
+      -3424,
+      1920
+    ],
+    "response": "[19:21:33] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:33] [Server thread/INFO]: The nearest minecraft:wooded_badlands_plateau is at [-3424, ~, 1920] (3925 blocks away)",
+    "origin": [
+      -3440,
+      1904
+    ]
+  },
+  {
+    "id": "badlands_plateau",
+    "dimension": "overworld",
+    "raw_id": 39,
+    "location": [
+      -3040,
+      2240
+    ],
+    "response": "[19:21:38] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:39] [Server thread/INFO]: The nearest minecraft:badlands_plateau is at [-3040, ~, 2240] (3776 blocks away)",
+    "origin": [
+      -3056,
+      2224
+    ]
+  },
+  {
+    "id": "small_end_islands",
+    "dimension": "end",
+    "raw_id": 40,
+    "location": [
+      -736,
+      736
+    ],
+    "response": "[19:21:43] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:21:43] [Server thread/INFO]: The nearest minecraft:small_end_islands is at [-736, ~, 736] (1040 blocks away)",
+    "origin": [
+      -752,
+      720
+    ]
+  },
+  {
+    "id": "end_midlands",
+    "dimension": "end",
+    "raw_id": 41,
+    "location": [
+      -736,
+      -736
+    ],
+    "response": "[19:21:48] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_end\n[19:21:48] [Server thread/INFO]: The nearest minecraft:end_midlands is at [-736, ~, -736] (1040 blocks away)",
+    "origin": [
+      -752,
+      -752
+    ]
+  },
+  {
+    "id": "end_highlands",
+    "dimension": "end",
+    "raw_id": 42,
+    "location": [
+      736,
+      -736
+    ],
+    "response": "[19:21:53] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_end\n[19:21:53] [Server thread/INFO]: The nearest minecraft:end_highlands is at [736, ~, -736] (1040 blocks away)",
+    "origin": [
+      720,
+      -752
+    ]
+  },
+  {
+    "id": "end_barrens",
+    "dimension": "end",
+    "raw_id": 43,
+    "location": [
+      -768,
+      -768
+    ],
+    "response": "[19:21:57] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_end\n[19:21:57] [Server thread/INFO]: The nearest minecraft:end_barrens is at [-768, ~, -768] (1086 blocks away)",
+    "origin": [
+      -784,
+      -784
+    ]
+  },
+  {
+    "id": "warm_ocean",
+    "dimension": "overworld",
+    "raw_id": 44,
+    "location": [
+      -800,
+      -1344
+    ],
+    "response": "[19:22:04] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_end\n[19:22:04] [Server thread/INFO]: The nearest minecraft:warm_ocean is at [-800, ~, -1344] (1564 blocks away)",
+    "origin": [
+      -816,
+      -1360
+    ]
+  },
+  {
+    "id": "lukewarm_ocean",
+    "dimension": "overworld",
+    "raw_id": 45,
+    "location": [
+      -64,
+      32
+    ],
+    "response": "[19:22:08] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:08] [Server thread/INFO]: The nearest minecraft:lukewarm_ocean is at [-64, ~, 32] (71 blocks away)",
+    "origin": [
+      -80,
+      16
+    ]
+  },
+  {
+    "id": "cold_ocean",
+    "dimension": "overworld",
+    "raw_id": 46,
+    "location": [
+      -1152,
+      32
+    ],
+    "response": "[19:22:12] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:13] [Server thread/INFO]: The nearest minecraft:cold_ocean is at [-1152, ~, 32] (1152 blocks away)",
+    "origin": [
+      -1168,
+      16
+    ]
+  },
+  {
+    "id": "deep_lukewarm_ocean",
+    "dimension": "overworld",
+    "raw_id": 48,
+    "location": [
+      -96,
+      32
+    ],
+    "response": "[19:22:21] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 3575ms or 71 ticks behind\n[19:22:21] [Server thread/INFO]: The nearest minecraft:deep_lukewarm_ocean is at [-96, ~, 32] (101 blocks away)",
+    "origin": [
+      -112,
+      16
+    ]
+  },
+  {
+    "id": "deep_cold_ocean",
+    "dimension": "overworld",
+    "raw_id": 49,
+    "location": [
+      -1056,
+      -32
+    ],
+    "response": "[19:22:25] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:25] [Server thread/INFO]: The nearest minecraft:deep_cold_ocean is at [-1056, ~, -32] (1056 blocks away)",
+    "origin": [
+      -1072,
+      -48
+    ]
+  },
+  {
+    "id": "deep_frozen_ocean",
+    "dimension": "overworld",
+    "raw_id": 50,
+    "location": [
+      256,
+      -2336
+    ],
+    "response": "[19:22:30] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:30] [Server thread/INFO]: The nearest minecraft:deep_frozen_ocean is at [256, ~, -2336] (2349 blocks away)",
+    "origin": [
+      240,
+      -2352
+    ]
+  },
+  {
+    "id": "sunflower_plains",
+    "dimension": "overworld",
+    "raw_id": 129,
+    "location": [
+      -160,
+      256
+    ],
+    "response": "[19:22:38] [Server thread/INFO]: The nearest minecraft:sunflower_plains is at [-160, ~, 256] (301 blocks away)",
+    "origin": [
+      -176,
+      240
+    ]
+  },
+  {
+    "id": "desert_lakes",
+    "dimension": "overworld",
+    "raw_id": 130,
+    "location": [
+      1280,
+      3648
+    ],
+    "response": "[19:22:42] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:43] [Server thread/INFO]: The nearest minecraft:desert_lakes is at [1280, ~, 3648] (3866 blocks away)",
+    "origin": [
+      1264,
+      3632
+    ]
+  },
+  {
+    "id": "gravelly_mountains",
+    "dimension": "overworld",
+    "raw_id": 131,
+    "location": [
+      -448,
+      384
+    ],
+    "response": "[19:22:48] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:48] [Server thread/INFO]: The nearest minecraft:gravelly_mountains is at [-448, ~, 384] (590 blocks away)",
+    "origin": [
+      -464,
+      368
+    ]
+  },
+  {
+    "id": "flower_forest",
+    "dimension": "overworld",
+    "raw_id": 132,
+    "location": [
+      -416,
+      544
+    ],
+    "response": "[19:22:52] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:53] [Server thread/INFO]: The nearest minecraft:flower_forest is at [-416, ~, 544] (684 blocks away)",
+    "origin": [
+      -432,
+      528
+    ]
+  },
+  {
+    "id": "taiga_mountains",
+    "dimension": "overworld",
+    "raw_id": 133,
+    "location": [
+      -2528,
+      -2528
+    ],
+    "response": "[19:22:57] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:22:58] [Server thread/INFO]: The nearest minecraft:taiga_mountains is at [-2528, ~, -2528] (3575 blocks away)",
+    "origin": [
+      -2544,
+      -2544
+    ]
+  },
+  {
+    "id": "swamp_hills",
+    "dimension": "overworld",
+    "raw_id": 134,
+    "location": [
+      -4128,
+      -3584
+    ],
+    "response": "[19:23:02] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:23:04] [Server thread/INFO]: The nearest minecraft:swamp_hills is at [-4128, ~, -3584] (5466 blocks away)",
+    "origin": [
+      -4144,
+      -3600
+    ]
+  },
+  {
+    "id": "ice_spikes",
+    "dimension": "overworld",
+    "raw_id": 140,
+    "location": [
+      4192,
+      960
+    ],
+    "response": "[19:23:08] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:23:10] [Server thread/INFO]: The nearest minecraft:ice_spikes is at [4192, ~, 960] (4300 blocks away)",
+    "origin": [
+      4176,
+      944
+    ]
+  },
+  {
+    "id": "modified_jungle",
+    "dimension": "overworld",
+    "raw_id": 149,
+    "location": [
+      1088,
+      -160
+    ],
+    "response": "[19:23:15] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:23:15] [Server thread/INFO]: The nearest minecraft:modified_jungle is at [1088, ~, -160] (1099 blocks away)",
+    "origin": [
+      1072,
+      -176
+    ]
+  },
+  {
+    "id": "tall_birch_forest",
+    "dimension": "overworld",
+    "raw_id": 155,
+    "location": [
+      -256,
+      544
+    ],
+    "response": "[19:23:29] [Server thread/INFO]: The nearest minecraft:tall_birch_forest is at [-256, ~, 544] (601 blocks away)",
+    "origin": [
+      -272,
+      528
+    ]
+  },
+  {
+    "id": "tall_birch_hills",
+    "dimension": "overworld",
+    "raw_id": 156,
+    "location": [
+      1888,
+      1056
+    ],
+    "response": "[19:23:34] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:23:34] [Server thread/INFO]: The nearest minecraft:tall_birch_hills is at [1888, ~, 1056] (2163 blocks away)",
+    "origin": [
+      1872,
+      1040
+    ]
+  },
+  {
+    "id": "dark_forest_hills",
+    "dimension": "overworld",
+    "raw_id": 157,
+    "location": [
+      -1536,
+      3008
+    ],
+    "response": "[19:23:39] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:23:40] [Server thread/INFO]: The nearest minecraft:dark_forest_hills is at [-1536, ~, 3008] (3377 blocks away)",
+    "origin": [
+      -1552,
+      2992
+    ]
+  },
+  {
+    "id": "snowy_taiga_mountains",
+    "dimension": "overworld",
+    "raw_id": 158,
+    "location": [
+      -10112,
+      -12672
+    ],
+    "response": "[19:23:51] [Server thread/INFO]: The nearest minecraft:snowy_taiga_mountains is at [-10112, ~, -12672] (2004 blocks away)",
+    "origin": [
+      -10128,
+      -12688
+    ]
+  },
+  {
+    "id": "giant_spruce_taiga",
+    "dimension": "overworld",
+    "raw_id": 160,
+    "location": [
+      3520,
+      2432
+    ],
+    "response": "[19:23:56] [Server thread/INFO]: An unexpected error occurred trying to execute that command\n[19:23:57] [Server thread/INFO]: The nearest minecraft:giant_spruce_taiga is at [3520, ~, 2432] (4278 blocks away)",
+    "origin": [
+      3504,
+      2416
+    ]
+  },
+  {
+    "id": "giant_spruce_taiga_hills",
+    "dimension": "overworld",
+    "raw_id": 161,
+    "location": [
+      -3712,
+      -3872
+    ],
+    "response": "[19:24:02] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:03] [Server thread/INFO]: The nearest minecraft:giant_spruce_taiga_hills is at [-3712, ~, -3872] (5363 blocks away)",
+    "origin": [
+      -3728,
+      -3888
+    ]
+  },
+  {
+    "id": "modified_gravelly_mountains",
+    "dimension": "overworld",
+    "raw_id": 162,
+    "location": [
+      704,
+      -1184
+    ],
+    "response": "[19:24:08] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:08] [Server thread/INFO]: The nearest minecraft:modified_gravelly_mountains is at [704, ~, -1184] (1377 blocks away)",
+    "origin": [
+      688,
+      -1200
+    ]
+  },
+  {
+    "id": "shattered_savanna",
+    "dimension": "overworld",
+    "raw_id": 163,
+    "location": [
+      3072,
+      3392
+    ],
+    "response": "[19:24:13] [Server thread/INFO]: An unexpected error occurred trying to execute that command\n[19:24:14] [Server thread/INFO]: The nearest minecraft:shattered_savanna is at [3072, ~, 3392] (4576 blocks away)",
+    "origin": [
+      3056,
+      3376
+    ]
+  },
+  {
+    "id": "shattered_savanna_plateau",
+    "dimension": "overworld",
+    "raw_id": 164,
+    "location": [
+      448,
+      -3424
+    ],
+    "response": "[19:24:18] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:19] [Server thread/INFO]: The nearest minecraft:shattered_savanna_plateau is at [448, ~, -3424] (3453 blocks away)",
+    "origin": [
+      432,
+      -3440
+    ]
+  },
+  {
+    "id": "eroded_badlands",
+    "dimension": "overworld",
+    "raw_id": 165,
+    "location": [
+      -4864,
+      1824
+    ],
+    "response": "[19:24:25] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:26] [Server thread/INFO]: The nearest minecraft:eroded_badlands is at [-4864, ~, 1824] (5194 blocks away)",
+    "origin": [
+      -4880,
+      1808
+    ]
+  },
+  {
+    "id": "modified_wooded_badlands_plateau",
+    "dimension": "overworld",
+    "raw_id": 166,
+    "location": [
+      -4704,
+      2048
+    ],
+    "response": "[19:24:31] [Server thread/INFO]: An unexpected error occurred trying to execute that command\n[19:24:33] [Server thread/INFO]: The nearest minecraft:modified_wooded_badlands_plateau is at [-4704, ~, 2048] (5130 blocks away)",
+    "origin": [
+      -4720,
+      2032
+    ]
+  },
+  {
+    "id": "bamboo_jungle",
+    "dimension": "overworld",
+    "raw_id": 168,
+    "location": [
+      320,
+      -256
+    ],
+    "response": "[19:24:48] [Server thread/INFO]: The nearest minecraft:bamboo_jungle is at [320, ~, -256] (409 blocks away)",
+    "origin": [
+      304,
+      -272
+    ]
+  },
+  {
+    "id": "bamboo_jungle_hills",
+    "dimension": "overworld",
+    "raw_id": 169,
+    "location": [
+      448,
+      -288
+    ],
+    "response": "[19:24:53] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:53] [Server thread/INFO]: The nearest minecraft:bamboo_jungle_hills is at [448, ~, -288] (532 blocks away)",
+    "origin": [
+      432,
+      -304
+    ]
+  },
+  {
+    "id": "soul_sand_valley",
+    "dimension": "nether",
+    "raw_id": 170,
+    "location": [
+      64,
+      64
+    ],
+    "response": "[19:24:58] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:overworld\n[19:24:58] [Server thread/INFO]: The nearest minecraft:soul_sand_valley is at [64, ~, 64] (90 blocks away); visually selected a denser surface sample in the existing seed-1 source world.",
+    "origin": [
+      -112,
+      352
+    ],
+    "source_world": "../worldmap-vanilla/reference-world"
+  },
+  {
+    "id": "crimson_forest",
+    "dimension": "nether",
+    "raw_id": 171,
+    "location": [
+      224,
+      192
+    ],
+    "response": "[19:25:03] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_nether\n[19:25:03] [Server thread/INFO]: The nearest minecraft:crimson_forest is at [224, ~, 192] (295 blocks away); visually selected a denser surface sample in the existing seed-1 source world.",
+    "origin": [
+      -384,
+      480
+    ],
+    "source_world": "../worldmap-vanilla/reference-world"
+  },
+  {
+    "id": "warped_forest",
+    "dimension": "nether",
+    "raw_id": 172,
+    "location": [
+      -64,
+      -128
+    ],
+    "response": "[19:25:08] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_nether\n[19:25:08] [Server thread/INFO]: The nearest minecraft:warped_forest is at [-64, ~, -128] (143 blocks away); visually selected a denser surface sample in the existing seed-1 source world.",
+    "origin": [
+      -320,
+      80
+    ],
+    "source_world": "../worldmap-vanilla/reference-world"
+  },
+  {
+    "id": "basalt_deltas",
+    "dimension": "nether",
+    "raw_id": 173,
+    "location": [
+      -64,
+      64
+    ],
+    "response": "[19:25:12] [Server thread/INFO]: Unmarked all force loaded chunks in minecraft:the_nether\n[19:25:12] [Server thread/INFO]: The nearest minecraft:basalt_deltas is at [-64, ~, 64] (90 blocks away); visually selected a denser surface sample in the existing seed-1 source world.",
+    "origin": [
+      -912,
+      -272
+    ],
+    "source_world": "../worldmap-vanilla/reference-world"
+  },
+  {
+    "id": "mountain_edge",
+    "dimension": "overworld",
+    "raw_id": 20,
+    "location": [
+      0,
+      0
+    ],
+    "response": "Explicit single-biome dimension using vanilla noise generator and biome features.",
+    "capture_kind": "single_biome",
+    "source_world": "world/dimensions/bloc_capture/mountain_edge",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "deep_warm_ocean",
+    "dimension": "overworld",
+    "raw_id": 47,
+    "location": [
+      0,
+      0
+    ],
+    "response": "Explicit single-biome dimension using vanilla noise generator and biome features.",
+    "capture_kind": "single_biome",
+    "source_world": "world/dimensions/bloc_capture/deep_warm_ocean",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "the_void",
+    "dimension": "overworld",
+    "raw_id": 127,
+    "location": [
+      0,
+      0
+    ],
+    "response": "Minecraft Java 1.16.1 Void superflat preset with its generated start platform.",
+    "capture_kind": "void_preset",
+    "source_world": "../void-capture-281/world",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "modified_jungle_edge",
+    "dimension": "overworld",
+    "raw_id": 151,
+    "location": [
+      0,
+      0
+    ],
+    "response": "Explicit single-biome dimension using vanilla noise generator and biome features.",
+    "capture_kind": "single_biome",
+    "source_world": "world/dimensions/bloc_capture/modified_jungle_edge",
+    "origin": [
+      -16,
+      -16
+    ]
+  },
+  {
+    "id": "modified_badlands_plateau",
+    "dimension": "overworld",
+    "raw_id": 167,
+    "location": [
+      0,
+      0
+    ],
+    "response": "Explicit single-biome dimension using vanilla noise generator and biome features.",
+    "capture_kind": "single_biome",
+    "source_world": "world/dimensions/bloc_capture/modified_badlands_plateau",
+    "origin": [
+      -16,
+      -16
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "Version": "2.9.1",
+  "StartMenuLaunched": true,
+  "ObservedWindowTitle": "Bloc Fantôme 2.9.1",
+  "TutorialNextVerified": true,
+  "Processes": [
+    {
+      "Id": 6220,
+      "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+      "Responding": true
+    },
+    {
+      "Id": 16164,
+      "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+      "Responding": true
+    }
+  ],
+  "RemainingExactPathProcesses": 0,
+  "PreservedUserDataFiles": 9
+}

@@ -1,0 +1,21 @@
+{
+  "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+  "LaunchRoute": "Start Menu shortcut",
+  "Version": "2.9.2",
+  "Processes": [
+    {
+      "Id": 6088,
+      "MainWindowTitle": "Bloc Fantôme 2.9.2",
+      "Responding": true
+    },
+    {
+      "Id": 24904,
+      "MainWindowTitle": "",
+      "Responding": true
+    }
+  ],
+  "TutorialLeaveReopenMinimize": true,
+  "NativeFilePickerOpenedAndCancelled": true,
+  "SHA256": "8D561715E66B58E11C34FE6858EC5A02D1B7DC9EF326716E251B40E10D494FED",
+  "Remaining": 0
+}

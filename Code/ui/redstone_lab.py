@@ -17,10 +17,7 @@ def label(app,text,pos,color=TEXT,font=None):
 
 def button(app,rect,text,selected=False):
     hovered=rect.collidepoint(pygame.mouse.get_pos())
-    pygame.draw.rect(app.screen,(72,42,42) if selected else (45,51,60) if hovered else PANEL,rect,border_radius=5)
-    pygame.draw.rect(app.screen,ACCENT if selected else EDGE,rect,1,border_radius=5)
-    image=app.labSmallFont.render(text,True,TEXT)
-    app.screen.blit(image,image.get_rect(center=rect.center))
+    app.assetManager.drawButton(app.screen,rect,text,app.labSmallFont,hovered,selected)
 
 
 def wrapped(app,text,x,y,width,max_lines=3):
@@ -57,9 +54,10 @@ def thumbnail(app,circuit,size=(48,32)):
 
 def panel(app):
     width,height=app.screen.get_size();x=app._worldViewportRight();w=width-x
-    pygame.draw.rect(app.screen,INK,(x,0,w,height))
-    pygame.draw.line(app.screen,EDGE,(x,0),(x,height))
-    label(app,'REDSTONE LAB',(x+14,16),TEXT,app.smallFont)
+    from ui.chrome import panel as draw_panel
+    draw_panel(app.screen,(x,0,w,height),app.assetManager,ACCENT)
+    from ui.chrome import heading
+    heading(app.screen,(x+8,8,w-16,32),'Redstone Lab',app.assetManager,app.sectionFont)
     label(app,'Java 1.16.1  /  ordinary power',(x+14,43),MUTED)
     app.redstoneLabModeRects={key:pygame.Rect(x+12+i*(w-20)//2,69,(w-28)//2,30) for i,key in enumerate(('test','build'))}
     for key,rect in app.redstoneLabModeRects.items():button(app,rect,'INTERACT' if key=='test' else 'BUILD',(key=='test')==app.interactionMode)
@@ -75,8 +73,7 @@ def panel(app):
         for key,circuit in LAB_CIRCUITS.items():
             rect=pygame.Rect(x+12,y,w-24,row-4);app.redstoneLabCircuitRects[key]=rect
             selected=key==app.redstoneLabCircuitKey
-            pygame.draw.rect(app.screen,(59,38,40) if selected else PANEL,rect,border_radius=4)
-            pygame.draw.rect(app.screen,ACCENT if selected else EDGE,rect,1,border_radius=4)
+            button(app,rect,'',selected)
             preview=thumbnail(app,circuit)
             if preview:
                 if preview.get_height()>rect.height-4:
@@ -130,17 +127,8 @@ def panel(app):
 
 
 def header(app):
-    c=LAB_CIRCUITS.get(app.redstoneLabCircuitKey)
-    if not c:return
-    w=app._worldViewportRight()
-    rect=pygame.Rect(16,14,w-32,86)
-    pygame.draw.rect(app.screen,INK,rect,border_radius=6)
-    pygame.draw.line(app.screen,ACCENT,(rect.x+14,rect.y+15),(rect.x+14,rect.bottom-15),3)
-    label(app,c.name.upper(),(rect.x+27,rect.y+12),TEXT,app.smallFont)
-    wrapped(app,c.instruction,rect.x+27,rect.y+39,rect.width-48,2)
-    foot=pygame.Rect(16,app.screen.get_height()-42,w-32,27)
-    pygame.draw.rect(app.screen,INK,foot,border_radius=5)
-    label(app,'Click to use  /  I build-interact  /  Q E rotate  /  wheel zoom  /  middle drag',(foot.x+10,foot.y+6),MUTED)
+    # Keep the existing workbench in one panel while its behavior is deferred.
+    return
 
 
 def cursor(app):

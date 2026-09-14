@@ -12,18 +12,19 @@ sys.path.insert(0,str(CODE))
 from engine.anvil import _read_region_chunk
 
 
-def verify(world, directory):
+def verify(world, directory, source_worlds=None, paths=None):
     report=[]
-    for path in sorted(directory.glob('*.json.gz')):
+    for path in sorted(paths if paths is not None else directory.glob('*.json.gz')):
         data=json.loads(gzip.decompress(path.read_bytes()))
-        ox,oz=data['origin']
+        ox,oz=data['origin'][:2]
+        oy=data['origin'][2] if len(data['origin'])==3 else 0
         groups=defaultdict(list)
         for x,z,y,pid in data['blocks']:
-            groups[((x+ox)//16,(z+oz)//16)].append((x+ox,z+oz,y,pid))
+            groups[((x+ox)//16,(z+oz)//16)].append((x+ox,z+oz,y+oy,pid))
         dimension={'nether':'DIM-1','end':'DIM1'}.get(data['dimension'],'')
         verified=0
         for (cx,cz),records in groups.items():
-            region=world/dimension/'region'/f'r.{cx//32}.{cz//32}.mca'
+            region=(source_worlds or {}).get(data.get('key',path.stem),world)/dimension/'region'/f'r.{cx//32}.{cz//32}.mca'
             root=_read_region_chunk(region,cx,cz)
             assert root['DataVersion']==2567
             sections={s['Y']:s for s in root['Level']['Sections'] if 'Palette' in s}
@@ -38,6 +39,7 @@ def verify(world, directory):
                 assert palette[state_index]==data['palette'][pid],(path.name,(x,y,z),palette[state_index],data['palette'][pid])
                 verified+=1
         item={'file':path.name,'verified_cells':verified,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'source':'official Java 1.16.1 / seed 1','presentation':data['presentation']}
+        item['authored_decoration_cells'] = len(data.get('decoration_blocks', []))
         report.append(item)
         print(item,flush=True)
     return report

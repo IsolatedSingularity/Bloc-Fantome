@@ -1,0 +1,30 @@
+{
+  "location": [
+    4064,
+    16256
+  ],
+  "bounds": [
+    3939,
+    48,
+    16142,
+    4186,
+    78,
+    16379
+  ],
+  "wastes": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "evidence": "[13:39:58] [Server thread/INFO]: The nearest fortress is at [4064, ~, 16256] (226 blocks away)",
+  "origin": [
+    3920,
+    16112
+  ],
+  "size": [
+    288,
+    288
+  ]
+}

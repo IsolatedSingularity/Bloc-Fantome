@@ -1,0 +1,63 @@
+{
+  "expandedCategories": {
+    "Natural": false,
+    "Wood": false,
+    "Stone & Brick": false,
+    "Ores & Minerals": false,
+    "Colored Blocks": false,
+    "Decorative": false,
+    "Light Sources": false,
+    "Redstone": false,
+    "Nether": false,
+    "End": false,
+    "Functional": false,
+    "Slabs": false
+  },
+  "blocksExpanded": false,
+  "problemsExpanded": false,
+  "experimentalExpanded": false,
+  "structuresExpanded": false,
+  "showGrid": false,
+  "lightingEnabled": false,
+  "showBlockTooltip": true,
+  "worldCenteredRotation": false,
+  "skyboxesEnabled": false,
+  "skyboxSelections": {
+    "overworld": 1,
+    "nether": 0,
+    "end": 1
+  },
+  "skyboxDefaultsVersion": 1,
+  "favoriteBlocks": [],
+  "hotbar": [
+    "GRASS",
+    "DIRT",
+    "STONE",
+    "OAK_PLANKS",
+    "COBBLESTONE",
+    "BRICKS",
+    "GLASS",
+    "OAK_LOG",
+    "WATER"
+  ],
+  "searchHistory": [],
+  "lastMusicTrack": "Eld Unknown - Lena Raine.ogg",
+  "worldMapCompleted": {
+    "overworld": [
+      false,
+      false
+    ],
+    "nether": [
+      false,
+      false
+    ],
+    "end": [
+      false,
+      false
+    ],
+    "ocean": [
+      true,
+      false
+    ]
+  }
+}

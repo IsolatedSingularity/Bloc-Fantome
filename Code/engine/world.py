@@ -62,6 +62,7 @@ class World:
         # It removes buried terrain cells from large-world candidate scans
         # without changing the editable sparse world representation.
         self.surfaceBlocks: Set[Tuple[int, int, int]] = set()
+        self._surfaceTransparentTypes = frozenset()
         self.surfaceChunks: Dict[Tuple[int, int, int], Set[Tuple[int, int, int]]] = {}
         self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
         self.viewSurfacePositionsByView = {rotation: set() for rotation in range(4)}
@@ -209,7 +210,9 @@ class World:
         BlockType = self.catalog.block_type
         if self.blocks.get(pos, BlockType.AIR) == BlockType.AIR:
             return False
-        return any(self.getBlock(*neighbor) == BlockType.AIR for neighbor in self._neighborPositions(pos))
+        return any(self.blocks.get(neighbor, BlockType.AIR) == BlockType.AIR
+                   or self.blocks.get(neighbor) in self._surfaceTransparentTypes
+                   for neighbor in self._neighborPositions(pos))
 
     def _refreshSurfaceNeighborhood(self, pos: Tuple[int, int, int]) -> None:
         for candidate in (pos, *self._neighborPositions(pos)):
@@ -368,6 +371,8 @@ class World:
 
         def neighborIsOpaque(neighbor) -> bool:
             neighborType = self.blocks.get(neighbor, BlockType.AIR)
+            if neighborType in self._surfaceTransparentTypes:
+                return False
             neighborDefinition = self.catalog.definitions.get(neighborType)
             return bool(
                 neighborDefinition
@@ -442,10 +447,13 @@ class World:
 
     def _rebuildSurfaceIndex(self) -> None:
         blocks = self.blocks
-        self.surfaceBlocks = {
-            pos for pos in blocks
-            if any(neighbor not in blocks for neighbor in self._neighborPositions(pos))
-        }
+        if self._surfaceTransparentTypes:
+            self.surfaceBlocks = {pos for pos in blocks if self._isSurfaceBlock(pos)}
+        else:
+            self.surfaceBlocks = {
+                pos for pos in blocks
+                if any(neighbor not in blocks for neighbor in self._neighborPositions(pos))
+            }
         self.surfaceChunks.clear()
         size = self.chunkStorage.chunk_size
         for pos in self.surfaceBlocks:
@@ -455,6 +463,17 @@ class World:
 
     def replace(self, snapshot) -> None:
         """Atomically replace live state from a validated immutable snapshot."""
+        holder = getattr(snapshot, '_prepared', None)
+        if holder:
+            prepared = holder.pop()
+            revision = self.revision + 1
+            retired = self.__dict__.copy()
+            self.__dict__.update(prepared.__dict__)
+            self._retiredState = retired
+            self.revision = revision
+            self.drawOrdersRevision = revision if self.drawOrdersByMode else -1
+            self.dirtyRegions.request_full_redraw()
+            return
         BlockType = self.catalog.block_type
         width = int(snapshot.width)
         depth = int(snapshot.depth)
@@ -462,6 +481,10 @@ class World:
         min_y = int(snapshot.min_y)
         max_y = min_y + height
         blocks = snapshot.blocks if isinstance(snapshot.blocks, dict) else dict(snapshot.blocks)
+        self._surfaceTransparentTypes = frozenset(
+            block for name, block in BlockType.__members__.items()
+            if name in ('WATER', 'BUBBLE_COLUMN')
+        ) if snapshot.scene_metadata.get('water_cutaway') else frozenset()
 
         chunkStorage = ChunkStorage(self.chunkStorage.chunk_size)
         size = chunkStorage.chunk_size
@@ -489,7 +512,14 @@ class World:
             if isinstance(snapshot.surface_positions, set)
             else set(snapshot.surface_positions)
         )
-        if not surfaceBlocks and blocks:
+        if self._surfaceTransparentTypes:
+            visibleBlocks = {pos: block for pos, block in blocks.items()
+                             if block not in self._surfaceTransparentTypes}
+            surfaceBlocks = {
+                pos for pos in visibleBlocks
+                if any(neighbor not in visibleBlocks for neighbor in self._neighborPositions(pos))
+            }
+        elif not surfaceBlocks and blocks:
             surfaceBlocks = {
                 pos for pos in blocks
                 if any(neighbor not in blocks for neighbor in self._neighborPositions(pos))
@@ -582,7 +612,7 @@ class World:
         self.surfaceBlocks = surfaceBlocks
         self.surfaceChunks = surfaceChunks
         suppliedViewSurfaces = snapshot.view_surface_positions_by_view
-        if all(rotation in suppliedViewSurfaces for rotation in range(4)):
+        if not self._surfaceTransparentTypes and all(rotation in suppliedViewSurfaces for rotation in range(4)):
             self.viewSurfacePositionsByView = {
                 rotation: (
                     suppliedViewSurfaces[rotation]
@@ -1353,6 +1383,7 @@ class World:
             counts.clear()
         self.occupiedBounds = None
         self.surfaceBlocks.clear()
+        self._surfaceTransparentTypes = frozenset()
         self.surfaceChunks.clear()
         self.viewSurfaceChunksByView = {rotation: {} for rotation in range(4)}
         self.viewSurfacePositionsByView = {rotation: set() for rotation in range(4)}

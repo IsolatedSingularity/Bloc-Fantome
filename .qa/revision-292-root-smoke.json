@@ -1,0 +1,18 @@
+{
+  "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\BlocFantome.exe",
+  "Version": "2.9.2",
+  "Processes": [
+    {
+      "Id": 2128,
+      "MainWindowTitle": "Bloc Fantôme 2.9.2",
+      "Responding": true
+    },
+    {
+      "Id": 20896,
+      "MainWindowTitle": "",
+      "Responding": true
+    }
+  ],
+  "SHA256": "8D561715E66B58E11C34FE6858EC5A02D1B7DC9EF326716E251B40E10D494FED",
+  "Remaining": 0
+}

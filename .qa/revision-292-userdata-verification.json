@@ -1,0 +1,47 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_autosave.json.gz",
+    "SHA256": "1BD6C444BEF28F257F122D129E731DAC842F74FB8AAEAA0919AC1AFD484D53E3",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_200633.json.gz",
+    "SHA256": "D4A56CB684F893D7208E65C8B40020CEE626A7C9FE57C4D5B3CD63955282CD27",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_201133.json.gz",
+    "SHA256": "30B369526DDFD341985E87B38A76A922B3107A34C71B066477BEDA6C733374F1",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_201633.json.gz",
+    "SHA256": "C6BBA44E0639345EC7E0FB8EA76F98F31C1AB453226E210A9A8576F42AC6B3FB",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260909_202133.json.gz",
+    "SHA256": "5A7938FC0B56E647D9B05F90B4E59F3DD9A7A548043FC783732B27D1B7E61968",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\saves\\_backups\\backup_20260913_120307.json.gz",
+    "SHA256": "BD50CB69C888CED3371F49150A1A3409B4FC548C11852C55DAEA72F7CD6C999F",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\.app_config.json",
+    "SHA256": "7261828CFAACBD7CD4ACEFBE9D7FF566B57785F1D199E65FEC278DFC4A0E1C1F",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\.tutorial_config.json",
+    "SHA256": "BD68B1B89B1419EF8AFD4437BE965E2D13C2151CCED0CA37CE93ABAD32EFB069",
+    "Preserved": true
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\config.json",
+    "SHA256": "6E1EA9153CE088CDF120156266B8034B7059CB2097115CA9DFB95ACEDBE823A2",
+    "Preserved": true
+  }
+]

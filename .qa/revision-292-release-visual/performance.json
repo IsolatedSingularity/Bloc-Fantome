@@ -1,0 +1,50 @@
+[
+  {
+    "page": "history",
+    "width": 1200,
+    "dispatch_ms": 0.56,
+    "ready_ms": 7572.6,
+    "max_loading_frame_ms": 213.57,
+    "p95_ms": 2.22
+  },
+  {
+    "page": "liquids",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 6771.3,
+    "max_loading_frame_ms": 330.05,
+    "p95_ms": 4.55
+  },
+  {
+    "page": "history",
+    "width": 960,
+    "dispatch_ms": 0.07,
+    "ready_ms": 11805.59,
+    "max_loading_frame_ms": 257.49,
+    "p95_ms": 1.87
+  },
+  {
+    "page": "liquids",
+    "width": 960,
+    "dispatch_ms": 0.08,
+    "ready_ms": 6960.05,
+    "max_loading_frame_ms": 280.84,
+    "p95_ms": 3.63
+  },
+  {
+    "page": "history",
+    "width": 1920,
+    "dispatch_ms": 0.09,
+    "ready_ms": 8634.41,
+    "max_loading_frame_ms": 284.99,
+    "p95_ms": 4.09
+  },
+  {
+    "page": "liquids",
+    "width": 1920,
+    "dispatch_ms": 0.07,
+    "ready_ms": 7930.77,
+    "max_loading_frame_ms": 550.73,
+    "p95_ms": 12.63
+  }
+]

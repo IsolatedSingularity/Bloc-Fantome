@@ -46,6 +46,9 @@ def build(*, required: bool = False) -> bool:
     if not compiled.is_file():
         raise FileNotFoundError(f"Cargo did not produce {compiled}")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    if OUTPUT.is_file() and OUTPUT.read_bytes() == compiled.read_bytes():
+        print(f"Native accelerator already matches the compiled build: {OUTPUT}")
+        return True
     shutil.copy2(compiled, OUTPUT)
     print(f"Built optional native accelerator: {OUTPUT}")
     return True

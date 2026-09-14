@@ -246,6 +246,7 @@ class AudioRouter:
         }
         self._cursor = defaultdict(int)
         self._group_volume = defaultdict(lambda: 1.0)
+        self._channel_gains = {}
         self.peak_headroom = self._clamp(peak_headroom)
 
     @staticmethod
@@ -253,7 +254,14 @@ class AudioRouter:
         return max(0.0, min(1.0, float(value)))
 
     def set_group_volume(self, group: str, volume: float) -> None:
-        self._group_volume[group] = self._clamp(volume)
+        volume = self._clamp(volume)
+        if self._group_volume[group] == volume:
+            return
+        self._group_volume[group] = volume
+        for channel in self._groups.get(group, ()):
+            gain = self._channel_gains.get(id(channel))
+            if gain is not None and channel.get_busy():
+                channel.set_volume(gain[0] * volume, gain[1] * volume)
 
     def play(
         self,
@@ -279,11 +287,12 @@ class AudioRouter:
             self._cursor[group] = index + 1
             channel.stop()
 
-        gain = self._clamp(volume) * self._group_volume[group] * self.peak_headroom
+        gain = self._clamp(volume) * self.peak_headroom
         pan = max(-1.0, min(1.0, float(pan)))
         left = gain * (1.0 if pan <= 0.0 else 1.0 - pan)
         right = gain * (1.0 if pan >= 0.0 else 1.0 + pan)
-        channel.set_volume(self._clamp(left), self._clamp(right))
+        self._channel_gains[id(channel)] = (left, right)
+        channel.set_volume(self._clamp(left * self._group_volume[group]), self._clamp(right * self._group_volume[group]))
         channel.play(sound, loops=loops)
         return channel
 

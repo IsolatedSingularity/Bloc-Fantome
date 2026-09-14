@@ -1,0 +1,345 @@
+[
+  {
+    "id": "village_desert_1161",
+    "name": "Desert World",
+    "dimension": "overworld",
+    "origin": [
+      704,
+      10768
+    ],
+    "size": [
+      208,
+      192
+    ],
+    "landmarks": [
+      "minecraft:desert_pyramid",
+      "minecraft:village"
+    ],
+    "bounds": [
+      [
+        747,
+        50,
+        10802,
+        867,
+        85,
+        10876
+      ],
+      [
+        768,
+        64,
+        10880,
+        788,
+        78,
+        10900
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "village_plains_1161",
+    "name": "Plains World",
+    "dimension": "overworld",
+    "origin": [
+      6240,
+      5184
+    ],
+    "size": [
+      304,
+      240
+    ],
+    "landmarks": [
+      "minecraft:desert_pyramid",
+      "minecraft:village"
+    ],
+    "bounds": [
+      [
+        6272,
+        50,
+        5225,
+        6456,
+        89,
+        5378
+      ],
+      [
+        6480,
+        64,
+        5312,
+        6500,
+        78,
+        5332
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "village_taiga_1161",
+    "name": "Taiga World",
+    "dimension": "overworld",
+    "origin": [
+      1072,
+      -12784
+    ],
+    "size": [
+      400,
+      256
+    ],
+    "landmarks": [
+      "minecraft:pillager_outpost",
+      "minecraft:village"
+    ],
+    "bounds": [
+      [
+        1314,
+        50,
+        -12743,
+        1438,
+        98,
+        -12576
+      ],
+      [
+        1109,
+        51,
+        -12715,
+        1180,
+        104,
+        -12644
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "village_savanna_1161",
+    "name": "Savanna World",
+    "dimension": "overworld",
+    "origin": [
+      10224,
+      4992
+    ],
+    "size": [
+      272,
+      432
+    ],
+    "landmarks": [
+      "minecraft:desert_pyramid",
+      "minecraft:village"
+    ],
+    "bounds": [
+      [
+        10271,
+        50,
+        5034,
+        10448,
+        102,
+        5216
+      ],
+      [
+        10272,
+        64,
+        5360,
+        10292,
+        78,
+        5380
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "village_snowy_1161",
+    "name": "Snowbound World",
+    "dimension": "overworld",
+    "origin": [
+      -5632,
+      -960
+    ],
+    "size": [
+      272,
+      224
+    ],
+    "landmarks": [
+      "minecraft:igloo",
+      "minecraft:village"
+    ],
+    "bounds": [
+      [
+        -5588,
+        51,
+        -914,
+        -5448,
+        91,
+        -770
+      ],
+      [
+        -5408,
+        29,
+        -925,
+        -5402,
+        69,
+        -916
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "nether_fortress_biomes_1161",
+    "name": "Nether Fortress",
+    "dimension": "nether",
+    "origin": [
+      3920,
+      16112
+    ],
+    "size": [
+      288,
+      288
+    ],
+    "landmarks": [
+      "minecraft:fortress"
+    ],
+    "bounds": [
+      [
+        3395,
+        48,
+        -338,
+        3643,
+        85,
+        -108
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world",
+    "fortress_cutaway": true
+  },
+  {
+    "id": "bastion_treasure_1161",
+    "name": "Treasure Bastion",
+    "dimension": "nether",
+    "origin": [
+      -1776,
+      -1488
+    ],
+    "size": [
+      192,
+      192
+    ],
+    "landmarks": [
+      "minecraft:bastion_remnant"
+    ],
+    "bounds": [
+      [
+        -1742,
+        17,
+        -1442,
+        -1679,
+        114,
+        -1343
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "bastion_hoglin_stable_1161",
+    "name": "Hoglin Stable Bastion",
+    "dimension": "nether",
+    "origin": [
+      -1664,
+      256
+    ],
+    "size": [
+      192,
+      192
+    ],
+    "landmarks": [
+      "minecraft:bastion_remnant"
+    ],
+    "bounds": [
+      [
+        -1625,
+        19,
+        293,
+        -1552,
+        98,
+        364
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "bastion_bridge_1161",
+    "name": "Bridge Bastion",
+    "dimension": "nether",
+    "origin": [
+      -2192,
+      928
+    ],
+    "size": [
+      192,
+      192
+    ],
+    "landmarks": [
+      "minecraft:bastion_remnant"
+    ],
+    "bounds": [
+      [
+        -2156,
+        19,
+        972,
+        -2069,
+        107,
+        1051
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "bastion_housing_units_1161",
+    "name": "Housing Units Bastion",
+    "dimension": "nether",
+    "origin": [
+      1552,
+      1424
+    ],
+    "size": [
+      192,
+      192
+    ],
+    "landmarks": [
+      "minecraft:bastion_remnant"
+    ],
+    "bounds": [
+      [
+        1587,
+        20,
+        1471,
+        1660,
+        99,
+        1561
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  },
+  {
+    "id": "ocean_monument_1161",
+    "name": "Deep Ocean",
+    "dimension": "overworld",
+    "origin": [
+      -944,
+      -912
+    ],
+    "size": [
+      192,
+      192
+    ],
+    "landmarks": [
+      "minecraft:monument"
+    ],
+    "bounds": [
+      [
+        -909,
+        39,
+        -877,
+        -852,
+        61,
+        -820
+      ]
+    ],
+    "source_world": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bite-Size-Minecraft\\.qa\\natural-292\\world"
+  }
+]

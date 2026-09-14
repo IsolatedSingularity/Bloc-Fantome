@@ -61,6 +61,28 @@ def backend_name() -> str:
     return "rust" if _load_library() is not None else "python"
 
 
+def cubemap_rgb(atlas: bytes, atlas_size, size, yaw, pitch, vertical_center):
+    """Return native RGB pixels, or None for older DLLs/portable checkouts."""
+    library = _load_library()
+    if library is None or _disabled():
+        return None
+    function = getattr(library, 'bf_cubemap_rgb', None)
+    if function is None:
+        return None
+    aw, ah = atlas_size
+    width, height = size
+    if min(aw,ah,width,height) < 1 or max(aw,ah,width,height) > 16384:
+        return None
+    function.argtypes = (ctypes.c_char_p, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+                         ctypes.c_void_p, ctypes.c_size_t, ctypes.c_size_t, ctypes.c_size_t,
+                         ctypes.c_float, ctypes.c_float, ctypes.c_float)
+    function.restype = ctypes.c_int32
+    output = bytearray(width * height * 3)
+    result = function(atlas,len(atlas),aw,ah,(ctypes.c_ubyte*len(output)).from_buffer(output),
+                      len(output),width,height,yaw,pitch,vertical_center)
+    return output if result == 0 else None
+
+
 def sort_positions(
     positions: Iterable[tuple[int, int, int]], rotation: int
 ) -> Optional[tuple[list[tuple[int, int, int]], array, array]]:

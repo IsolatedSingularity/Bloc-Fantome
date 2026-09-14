@@ -5,6 +5,20 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.2] - 2026-09-13
+
+### Changed
+- Rebuilt the 16-page tutorial around distinct source scenes, dimensions, weather, independently turning skies, the live World Map, and the complete counter lab.
+- Expanded all 37 featured biome captures and replaced 13 Java 1.16.1 Worlds with larger source locations. Villages and nearby landmarks retain their original terrain and coordinates.
+- Replaced the splash with the supplied swamp artwork, fully visible with a small regular title along the bottom.
+- Kept one persistent tutorial question mark beside Settings, the lab above Settings, one coordinate readout, and centered canvas controls.
+- Prepack exact source records, stage palettes and camera orders on the loading worker, and reduce overview, minimap, and underwater rendering work for large captures.
+
+### Fixed
+- Separate sky rotation from terrain rotation and remove floating sky objects.
+- Preserve the original build preferences and autosave during tutorial, map, and lab excursions.
+- Reveal submerged source geometry in the ocean cutaway while retaining editable water cells; clear weather particles when changing tutorial demonstrations.
+
 ## [Unreleased]
 
 ### Added

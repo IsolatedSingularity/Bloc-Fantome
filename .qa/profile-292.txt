@@ -1,0 +1,200 @@
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Audio: preloaded decoded track | mixer=(44100, -16, 2) | buffer=1024
+Loading assets...
+    Loaded 32 portal animation frames
+    Loaded portal ambient sound
+    Loaded end portal texture with 4 parallax layers
+    Loaded 32 fire animation frames
+    Loaded 32 soul fire animation frames
+    Loaded 10 Mine Crafter frames
+    Loaded 8 chest textures
+  Loaded 444 textures
+  Created 464 block sprites
+  Built mipmaps for 500 unique sprite(s)
+    Loaded 4 grass sounds
+    Loaded 4 gravel sounds
+    Loaded 4 stone sounds
+    Loaded 4 wood sounds
+    Loaded 4 cloth sounds
+    Loaded 4 sand sounds
+    Loaded 4 snow sounds
+    Loaded 4 coral sounds
+    Loaded 4 wet_grass sounds
+    Loaded 3 glass sounds
+    Loaded water sound
+    Loaded lava sound
+    Loaded click sound
+    Loaded 6 nether_bricks sounds
+    Loaded 6 netherrack sounds
+    Loaded 4 copper sounds
+    Loaded 5 bone_block sounds
+    Loaded 4 spawner sounds
+    Loaded 5 sculk_sensor sounds
+    Loaded 5 sculk_sensor_place sounds
+    Loaded 4 nether_wood sounds
+    Loaded 6 nylium sounds
+    Loaded 5 basalt sounds
+    Loaded 4 nether_ore sounds
+    Loaded 5 ancient_debris sounds
+    Loaded 4 netherite sounds
+    Loaded 6 netherwart sounds
+    Loaded 5 shroomlight sounds
+    Loaded 9 soul_sand sounds
+    Loaded 6 soul_soil sounds
+    Loaded 5 honeyblock sounds
+    Loaded 4 sponge sounds
+    Loaded 4 amethyst sounds
+    Loaded 4 amethyst_place sounds
+    Loaded 6 azalea sounds
+    Loaded 7 azalea_leaves sounds
+    Loaded 6 bamboo_place sounds
+    Loaded 5 bamboo_wood sounds
+    Loaded 4 calcite sounds
+    Loaded 4 calcite_place sounds
+    Loaded 5 candle sounds
+    Loaded 4 chain sounds
+    Loaded 5 cherry_leaves sounds
+    Loaded 5 cherry_wood sounds
+    Loaded 4 deepslate sounds
+    Loaded 6 deepslate_place sounds
+    Loaded 6 deepslate_bricks_place sounds
+    Loaded 5 dripstone sounds
+    Loaded 4 froglight sounds
+    Loaded 6 fungus sounds
+    Loaded 4 hanging_roots sounds
+    Loaded 6 lantern sounds
+    Loaded 6 lantern_place sounds
+    Loaded 6 mangrove_roots sounds
+    Loaded 5 moss sounds
+    Loaded 6 mud sounds
+    Loaded 6 mud_bricks sounds
+    Loaded 6 packed_mud sounds
+    Loaded 7 powder_snow sounds
+    Loaded 4 rooted_dirt sounds
+    Loaded 6 roots sounds
+    Loaded 4 scaffold_place sounds
+    Loaded 9 sculk sounds
+    Loaded 5 sculk_place sounds
+    Loaded 9 sculk_catalyst sounds
+    Loaded 5 sculk_catalyst_place sounds
+    Loaded 6 sculk_shrieker sounds
+    Loaded 5 sculk_shrieker_place sounds
+    Loaded 5 sculk_vein sounds
+    Loaded 6 stem sounds
+    Loaded 5 tuff sounds
+    Loaded 5 tuff_bricks_place sounds
+    Loaded 4 vine sounds
+    Loaded 6 cobweb sounds
+    Loaded 3 trial_spawner sounds
+    Loaded 3 trial_spawner_place sounds
+    Loaded 4 vault sounds
+    Loaded 4 vault_place sounds
+    Loaded 4 decorated_pot sounds
+    Loaded 4 copper_grate sounds
+    Loaded 4 copper_bulb sounds
+    Loaded 4 copper_bulb_place sounds
+    Loaded 3 enchantment_table sounds
+    Loaded 3 chest_close sounds
+    Loaded 4 chest sounds
+    Loaded 2 enderchest sounds
+    Loaded 3 end_portal_eye sounds
+    Loaded 4 end_portal sounds
+    Loaded 3 slime sounds
+    Loaded 14 sculk sounds
+    Loaded 6 copper_chest sounds
+    Loaded 6 copper_chest_weathered sounds
+    Loaded 6 copper_chest_oxidized sounds
+    Loaded door open sound
+    Loaded door close sound
+    Loaded 4 iron_door_open sounds
+    Loaded 4 iron_door_close sounds
+    Pre-loaded relaxing rain track
+    Loaded 3 thunder sounds
+    Loaded 3 thunder ambient sounds
+    Loaded rain texture
+    Loaded 23 cave ambient sounds
+    Loaded 18 phantom footstep sounds
+    Loaded distant knock sound
+    Loaded breathing sound
+    Loaded 7 ghast moan sounds
+    Loaded 6 enderman sounds
+  Loaded 102 sound categories
+  Loaded UI textures
+  Created background
+Assets loaded successfully!
+STAGED history 6.862
+Music decoded: ballad_of_the_cats.ogg
+Now playing: ballad_of_the_cats.ogg
+Switched to Nether dimension
+APPLY history
+         3654671 function calls in 1.979 seconds
+
+   Ordered by: cumulative time
+   List reduced from 408 to 12 due to restriction <12>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    1.638    1.638 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:20834(_render)
+        1    0.004    0.004    1.200    1.200 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:22074(_renderWorld)
+        1    0.148    0.148    1.159    1.159 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:22010(_visibleScreenRenderPlan)
+        1    0.018    0.018    0.946    0.946 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:21704(_visibleBlocksInDrawOrder)
+        1    0.628    0.628    0.929    0.929 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:21722(_editorVisibleBlocksInDrawOrder)
+        1    0.182    0.182    0.427    0.427 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:18793(_renderMinimap)
+        1    0.002    0.002    0.342    0.342 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\tutorial_runtime.py:98(_applyTourScene)
+        1    0.000    0.000    0.340    0.340 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:16770(_applyStagedBuild)
+        1    0.000    0.000    0.340    0.340 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10628(_switchDimension)
+        1    0.000    0.000    0.335    0.335 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10404(_playMenuMusic)
+        1    0.000    0.000    0.334    0.334 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:368(set_playlist)
+        1    0.000    0.000    0.334    0.334 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:414(_activate)
+
+
+STAGED terrain 0.73
+Music decoded: Echo in the Wind - Aaron Cherof.ogg
+Now playing: Echo in the Wind - Aaron Cherof.ogg
+Switched to Overworld dimension
+APPLY terrain
+         482995 function calls in 0.770 seconds
+
+   Ordered by: cumulative time
+   List reduced from 308 to 12 due to restriction <12>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.002    0.002    0.572    0.572 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\tutorial_runtime.py:98(_applyTourScene)
+        1    0.000    0.000    0.570    0.570 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:16770(_applyStagedBuild)
+        1    0.000    0.000    0.570    0.570 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10628(_switchDimension)
+        1    0.000    0.000    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10404(_playMenuMusic)
+        1    0.000    0.000    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:368(set_playlist)
+        1    0.000    0.000    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:414(_activate)
+        1    0.000    0.000    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:429(play_next)
+        1    0.000    0.000    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:106(load)
+        1    0.296    0.296    0.296    0.296 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:92(_decode)
+        1    0.000    0.000    0.269    0.269 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\world.py:1326(resize)
+        1    0.035    0.035    0.269    0.269 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\world.py:1353(clear)
+        1    0.000    0.000    0.198    0.198 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:20834(_render)
+
+
+STAGED dimensions 0.571
+Music decoded: boss.ogg
+Now playing: boss.ogg
+Switched to End dimension
+APPLY dimensions
+         626579 function calls in 0.583 seconds
+
+   Ordered by: cumulative time
+   List reduced from 306 to 12 due to restriction <12>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.002    0.002    0.373    0.373 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\tutorial_runtime.py:98(_applyTourScene)
+        1    0.000    0.000    0.371    0.371 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:16770(_applyStagedBuild)
+        1    0.000    0.000    0.371    0.371 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10628(_switchDimension)
+        1    0.000    0.000    0.337    0.337 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:10404(_playMenuMusic)
+        1    0.000    0.000    0.336    0.336 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:368(set_playlist)
+        1    0.000    0.000    0.336    0.336 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:414(_activate)
+        1    0.000    0.000    0.336    0.336 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:429(play_next)
+        1    0.000    0.000    0.336    0.336 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:106(load)
+        1    0.336    0.336    0.336    0.336 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\engine\audio.py:92(_decode)
+        1    0.000    0.000    0.210    0.210 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:20834(_render)
+        1    0.004    0.004    0.131    0.131 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:22074(_renderWorld)
+        1    0.015    0.015    0.101    0.101 C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft\Code\blocFantome.py:22010(_visibleScreenRenderPlan)
+
+

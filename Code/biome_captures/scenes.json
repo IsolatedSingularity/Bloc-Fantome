@@ -1,0 +1,292 @@
+{
+  "_scene_village_desert_1161": {
+    "file": "overworld__scene_village_desert_1161.json.gz",
+    "world": "village_desert_1161",
+    "title": "Desert World",
+    "palette_count": 211,
+    "scene": {
+      "kind": "world",
+      "id": "village_desert_1161",
+      "name": "Desert World",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        704,
+        10768
+      ],
+      "source_capture": "_scene_village_desert_1161",
+      "accuracy": "source surface section with 4-block geology; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 14773,
+      "underwater": false
+    }
+  },
+  "_scene_village_plains_1161": {
+    "file": "overworld__scene_village_plains_1161.json.gz",
+    "world": "village_plains_1161",
+    "title": "Plains World",
+    "palette_count": 240,
+    "scene": {
+      "kind": "world",
+      "id": "village_plains_1161",
+      "name": "Plains World",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        6240,
+        5184
+      ],
+      "source_capture": "_scene_village_plains_1161",
+      "accuracy": "source surface section with 4-block geology; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 67497,
+      "underwater": false
+    }
+  },
+  "_scene_village_taiga_1161": {
+    "file": "overworld__scene_village_taiga_1161.json.gz",
+    "world": "village_taiga_1161",
+    "title": "Taiga World",
+    "palette_count": 320,
+    "scene": {
+      "kind": "world",
+      "id": "village_taiga_1161",
+      "name": "Taiga World",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        1072,
+        -12784
+      ],
+      "source_capture": "_scene_village_taiga_1161",
+      "accuracy": "source surface section with 4-block geology; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 105018,
+      "underwater": false
+    }
+  },
+  "_scene_village_savanna_1161": {
+    "file": "overworld__scene_village_savanna_1161.json.gz",
+    "world": "village_savanna_1161",
+    "title": "Savanna World",
+    "palette_count": 251,
+    "scene": {
+      "kind": "world",
+      "id": "village_savanna_1161",
+      "name": "Savanna World",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        10224,
+        4992
+      ],
+      "source_capture": "_scene_village_savanna_1161",
+      "accuracy": "source surface section with 4-block geology; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 95509,
+      "underwater": false
+    }
+  },
+  "_scene_village_snowy_1161": {
+    "file": "overworld__scene_village_snowy_1161.json.gz",
+    "world": "village_snowy_1161",
+    "title": "Snowbound World",
+    "palette_count": 220,
+    "scene": {
+      "kind": "world",
+      "id": "village_snowy_1161",
+      "name": "Snowbound World",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        -5632,
+        -960
+      ],
+      "source_capture": "_scene_village_snowy_1161",
+      "accuracy": "source surface section with 4-block geology; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 74108,
+      "underwater": false
+    }
+  },
+  "_scene_nether_fortress_biomes_1161": {
+    "file": "nether__scene_nether_fortress_biomes_1161.json.gz",
+    "world": "nether_fortress_biomes_1161",
+    "title": "Nether Fortress",
+    "palette_count": 65,
+    "scene": {
+      "kind": "world",
+      "id": "nether_fortress_biomes_1161",
+      "name": "Nether Fortress",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        3920,
+        16112
+      ],
+      "source_capture": "_scene_nether_fortress_biomes_1161",
+      "accuracy": "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained; complete fortress materials and supports retained from source",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 66375,
+      "underwater": false,
+      "water_cutaway": false
+    }
+  },
+  "_scene_bastion_treasure_1161": {
+    "file": "nether__scene_bastion_treasure_1161.json.gz",
+    "world": "bastion_treasure_1161",
+    "title": "Treasure Bastion",
+    "palette_count": 80,
+    "scene": {
+      "kind": "world",
+      "id": "bastion_treasure_1161",
+      "name": "Treasure Bastion",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        -1776,
+        -1488
+      ],
+      "source_capture": "_scene_bastion_treasure_1161",
+      "accuracy": "source biome-floor cutaway; 12-block geology; original vegetation and block states; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 58201,
+      "underwater": false
+    }
+  },
+  "_scene_bastion_hoglin_stable_1161": {
+    "file": "nether__scene_bastion_hoglin_stable_1161.json.gz",
+    "world": "bastion_hoglin_stable_1161",
+    "title": "Hoglin Stable Bastion",
+    "palette_count": 89,
+    "scene": {
+      "kind": "world",
+      "id": "bastion_hoglin_stable_1161",
+      "name": "Hoglin Stable Bastion",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        -1664,
+        256
+      ],
+      "source_capture": "_scene_bastion_hoglin_stable_1161",
+      "accuracy": "source biome-floor cutaway; 12-block geology; original vegetation and block states; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 32392,
+      "underwater": false
+    }
+  },
+  "_scene_bastion_bridge_1161": {
+    "file": "nether__scene_bastion_bridge_1161.json.gz",
+    "world": "bastion_bridge_1161",
+    "title": "Bridge Bastion",
+    "palette_count": 52,
+    "scene": {
+      "kind": "world",
+      "id": "bastion_bridge_1161",
+      "name": "Bridge Bastion",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        -2192,
+        928
+      ],
+      "source_capture": "_scene_bastion_bridge_1161",
+      "accuracy": "source biome-floor cutaway; 12-block geology; original vegetation and block states; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 29019,
+      "underwater": false
+    }
+  },
+  "_scene_bastion_housing_units_1161": {
+    "file": "nether__scene_bastion_housing_units_1161.json.gz",
+    "world": "bastion_housing_units_1161",
+    "title": "Housing Units Bastion",
+    "palette_count": 58,
+    "scene": {
+      "kind": "world",
+      "id": "bastion_housing_units_1161",
+      "name": "Housing Units Bastion",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        1552,
+        1424
+      ],
+      "source_capture": "_scene_bastion_housing_units_1161",
+      "accuracy": "source biome-floor cutaway; 12-block geology; original vegetation and block states; complete landmark bounding boxes retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 25698,
+      "underwater": false
+    }
+  },
+  "_scene_ocean_monument_1161": {
+    "file": "overworld__scene_ocean_monument_1161.json.gz",
+    "world": "ocean_monument_1161",
+    "title": "Deep Ocean",
+    "palette_count": 85,
+    "scene": {
+      "kind": "world",
+      "id": "ocean_monument_1161",
+      "name": "Deep Ocean",
+      "version": "Java 1.16.1",
+      "seed": 1,
+      "origin": [
+        -944,
+        -912
+      ],
+      "source_capture": "_scene_ocean_monument_1161",
+      "accuracy": "source seabed section with 4-block geology; complete landmark bounding boxes retained; original water retained",
+      "provider": "Official Java world capture",
+      "default_terrain_view": "all",
+      "fit_context": true,
+      "structure_blocks": 15700,
+      "underwater": true,
+      "water_cutaway": true
+    }
+  },
+  "_scene_tour_outpost": {
+    "file": "_scene_tour_outpost.json.gz",
+    "title": "outpost",
+    "kind": "tutorial",
+    "palette_count": 320
+  },
+  "_scene_tour_fortress": {
+    "file": "_scene_tour_fortress.json.gz",
+    "title": "fortress",
+    "kind": "tutorial",
+    "palette_count": 65
+  },
+  "_scene_tour_bastion": {
+    "file": "_scene_tour_bastion.json.gz",
+    "title": "bastion",
+    "kind": "tutorial",
+    "palette_count": 80
+  },
+  "_scene_tour_well": {
+    "file": "_scene_tour_well.json.gz",
+    "title": "Desert well",
+    "kind": "tutorial",
+    "palette_count": 211
+  }
+}

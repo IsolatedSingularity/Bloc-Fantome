@@ -1,0 +1,314 @@
+[
+  {
+    "biome": "plains",
+    "load_ms": 315.911200013943,
+    "cells": 37016,
+    "zoom": 0.254,
+    "frames": [
+      {
+        "turn": 0,
+        "ms": 256.78,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 4.54,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 4.32,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 3.45,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 4.54,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 5.24,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 4.11,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 3.9,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 62.98,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 10.5,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 4.94,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 4.14,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 4.89,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 3.91,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 3.99,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 5.6,
+        "build_index": 0,
+        "cached": true
+      }
+    ]
+  },
+  {
+    "biome": "warped_forest",
+    "load_ms": 1053.5990999778733,
+    "cells": 52220,
+    "zoom": 0.17,
+    "frames": [
+      {
+        "turn": 0,
+        "ms": 419.24,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.93,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 8.24,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.09,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.73,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.65,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 8.05,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 8.88,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 59.97,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 14.77,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 12.24,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 8.91,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 8.22,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 6.93,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 7.61,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 7.59,
+        "build_index": 0,
+        "cached": true
+      }
+    ]
+  },
+  {
+    "biome": "end_highlands",
+    "load_ms": 1092.3153000185266,
+    "cells": 36412,
+    "zoom": 0.25,
+    "frames": [
+      {
+        "turn": 0,
+        "ms": 250.3,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 8.4,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 9.43,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 9.13,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.32,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 7.77,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 10.53,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 0,
+        "ms": 10.91,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 45.75,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 12.84,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 11.94,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 10.01,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 7.54,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 9.63,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 8.77,
+        "build_index": 0,
+        "cached": true
+      },
+      {
+        "turn": 1,
+        "ms": 8.59,
+        "build_index": 0,
+        "cached": true
+      }
+    ]
+  }
+]

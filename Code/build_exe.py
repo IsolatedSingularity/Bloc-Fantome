@@ -33,7 +33,7 @@ NATIVE_LIBRARY = os.path.join(
 ZEKTON_FONT = os.path.join(
     PROJECT_ROOT, "Assets", "Fonts", "Zekton", "Zekton-Regular.otf"
 )
-HORROR_TITLE = os.path.join(PROJECT_ROOT, "References", "Titles", "horror.png")
+SPLASH_ART = os.path.join(PROJECT_ROOT, "Assets", "Icons", "Splash_Swamp.jpg")
 SKYBOX_ATLAS_ROOT = os.path.join(
     PROJECT_ROOT, "Assets", "Skyboxes", "Black Mesa", "assets", "minecraft",
     "optifine", "sky",
@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.7.3"
+VERSION = "2.9.2"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -118,9 +118,9 @@ def build(debug: bool = False, diagnostic: bool = False):
             f"{ZEKTON_FONT}. Restore it from the owner's local Zekton bundle; "
             "see Assets/Fonts/ZEKTON_LOCAL_SETUP.md."
         )
-    if not os.path.isfile(HORROR_TITLE):
+    if not os.path.isfile(SPLASH_ART):
         raise FileNotFoundError(
-            f"Required splash title artwork is missing: {HORROR_TITLE}"
+            f"Required splash title artwork is missing: {SPLASH_ART}"
         )
     missing_skyboxes = [path for path in SKYBOX_ATLASES if not os.path.isfile(path)]
     if missing_skyboxes:
@@ -133,6 +133,11 @@ def build(debug: bool = False, diagnostic: bool = False):
             "Required source-derived World Map template bundle is missing: "
             + WORLD_MAP_TEMPLATE_BUNDLE
         )
+    # Build before importing engine modules: those can load and lock the DLL
+    # in this process on Windows, preventing the builder from replacing it.
+    native_result = subprocess.run(
+        [sys.executable, NATIVE_BUILDER], cwd=SCRIPT_DIR, check=False
+    )
     map_region_root = os.path.join(SCRIPT_DIR, 'world_map_regions')
     from engine.world_map_regions import REGIONS
     required_regions = tuple(f'{dimension}_{key}' for dimension,regions in REGIONS.items() for key,_ in regions)
@@ -141,9 +146,35 @@ def build(debug: bool = False, diagnostic: bool = False):
     missing_regions = [name for name in required_files if not os.path.isfile(os.path.join(map_region_root,name))]
     if missing_regions:
         raise FileNotFoundError('Missing vanilla World Map capture/atlas: ' + ', '.join(missing_regions))
-    forest_splash = os.path.join(PROJECT_ROOT, 'Assets', 'Icons', 'Splash_Background_Warped_Forest.png')
-    if not os.path.isfile(forest_splash):
-        raise FileNotFoundError('Missing source-rendered warped forest splash: ' + forest_splash)
+    from engine.biome_catalog import BIOMES
+    from engine.biome_capture import manifest, ROOT as CAPTURE_ROOT
+    from engine.capture_materials import MATERIALS
+    captures=manifest()
+    if set(captures)!={e['id'] for e in BIOMES}:
+        raise ValueError('Release requires all 79 Java biome captures')
+    from engine.biome_capture import scene_manifest
+    required_capture_files=[CAPTURE_ROOT/'manifest.json',CAPTURE_ROOT/'scenes.json']
+    for name,row in scene_manifest().items():
+        if row.get('world') and not row.get('scene'):
+            raise ValueError(f'Missing compact World metadata: {name}')
+        required_capture_files.append(CAPTURE_ROOT/row['file'])
+        required_capture_files.extend(CAPTURE_ROOT/'atlases'/f'{name}_{view}.png' for view in range(4))
+    for name,row in captures.items():
+        required_capture_files.extend((CAPTURE_ROOT/row['file'],CAPTURE_ROOT/row['preview']))
+        required_capture_files.extend(CAPTURE_ROOT/'atlases'/f'{name}_{view}.png' for view in range(4))
+    required_capture_files.extend(CAPTURE_ROOT/'materials'/f'{name.lower()}.png' for name in MATERIALS)
+    if any(not path.is_file() for path in required_capture_files):
+        raise FileNotFoundError('Incomplete source biome capture/atlas/material package')
+    from tools.pack_scene_captures import pack_all
+    print(f'Prepacked {pack_all(CAPTURE_ROOT)} updated source captures')
+    biome_textures = ('podzol_top','podzol_side','mycelium_top','mycelium_side','red_sand',
+                      'mushroom_stem','red_mushroom_block','brown_mushroom_block','bamboo_stalk',
+                      'poppy','dandelion','sunflower_front','brain_coral_block','fire_coral_block',
+                      'tube_coral_block','lily_pad')
+    missing_biome_textures = [name for name in biome_textures if not os.path.isfile(
+        os.path.join(PROJECT_ROOT,'Assets','Texture Hub','blocks',name+'.png'))]
+    if missing_biome_textures:
+        raise FileNotFoundError('Missing biome palette textures: '+', '.join(missing_biome_textures))
     if not os.path.isfile(DRAGON_HEAD_TEXTURE):
         raise FileNotFoundError(
             "Required End ship dragon-head texture is missing: "
@@ -159,12 +190,6 @@ def build(debug: bool = False, diagnostic: bool = False):
     
     # Keep the desktop/taskbar resource synchronized with the runtime icon.
     subprocess.run([sys.executable, ICON_GENERATOR], cwd=SCRIPT_DIR, check=True)
-
-    # The accelerator is intentionally optional. A missing Rust toolchain or
-    # failed native build leaves the exact Python path in the packaged app.
-    native_result = subprocess.run(
-        [sys.executable, NATIVE_BUILDER], cwd=SCRIPT_DIR, check=False
-    )
 
     # Create build directory if it doesn't exist
     os.makedirs(BUILD_DIR, exist_ok=True)
@@ -268,6 +293,9 @@ def build(debug: bool = False, diagnostic: bool = False):
         cmd.append(f"--add-data={source_path}{os.pathsep}worlds")
     cmd.append(f"--add-data={WORLD_MAP_TEMPLATE_BUNDLE}{os.pathsep}.")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'world_map_regions')}{os.pathsep}world_map_regions")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'biome_captures')}{os.pathsep}biome_captures")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'world_previews')}{os.pathsep}world_previews")
+    cmd.append(f"--add-data={SPLASH_ART}{os.pathsep}Assets/Icons")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)

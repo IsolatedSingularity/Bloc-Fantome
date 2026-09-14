@@ -1,0 +1,512 @@
+[
+  {
+    "dimension": "overworld",
+    "region": "plains",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.420300061814487,
+    "max_ms": 6.455600028857589
+  },
+  {
+    "dimension": "overworld",
+    "region": "taiga",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.576199968345463,
+    "max_ms": 6.084199994802475
+  },
+  {
+    "dimension": "overworld",
+    "region": "swamp",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.582300014793873,
+    "max_ms": 8.149500004947186
+  },
+  {
+    "dimension": "overworld",
+    "region": "flowers",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 6.899100029841065,
+    "max_ms": 7.158400025218725
+  },
+  {
+    "dimension": "overworld",
+    "region": "mushroom",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.904100020416081,
+    "max_ms": 6.405699998140335
+  },
+  {
+    "dimension": "overworld",
+    "region": "desert",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 7.165499962866306,
+    "max_ms": 7.355600013397634
+  },
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 6.0391000006347895,
+    "max_ms": 6.099999998696148
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 5.982600036077201,
+    "max_ms": 7.593800080940127
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 9.05880006030202,
+    "max_ms": 9.097500005736947
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 9.533200063742697,
+    "max_ms": 9.707199991680682
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 8.939800085499883,
+    "max_ms": 8.995999931357801
+  },
+  {
+    "dimension": "nether",
+    "region": "deltas",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 9.592299931682646,
+    "max_ms": 9.92089998908341
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 7.917500101029873,
+    "max_ms": 8.139900048263371
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 4.4284999603405595,
+    "max_ms": 4.579899949021637
+  },
+  {
+    "dimension": "ocean",
+    "region": "monument",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 8.458999916911125,
+    "max_ms": 8.60100006684661
+  },
+  {
+    "dimension": "ocean",
+    "region": "shipwreck",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 10.268500074744225,
+    "max_ms": 10.293200029991567
+  },
+  {
+    "dimension": "ocean",
+    "region": "reef",
+    "size": [
+      960,
+      640
+    ],
+    "pan_p95_ms": 8.15490004606545,
+    "max_ms": 8.482499979436398
+  },
+  {
+    "dimension": "overworld",
+    "region": "plains",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.028299944475293,
+    "max_ms": 9.26590000744909
+  },
+  {
+    "dimension": "overworld",
+    "region": "taiga",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 10.031600017100573,
+    "max_ms": 10.056599974632263
+  },
+  {
+    "dimension": "overworld",
+    "region": "swamp",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 6.591100012883544,
+    "max_ms": 8.051000069826841
+  },
+  {
+    "dimension": "overworld",
+    "region": "flowers",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 10.453200084157288,
+    "max_ms": 11.111599975265563
+  },
+  {
+    "dimension": "overworld",
+    "region": "mushroom",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 7.420399924740195,
+    "max_ms": 9.293799987062812
+  },
+  {
+    "dimension": "overworld",
+    "region": "desert",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.955300018191338,
+    "max_ms": 10.072999983094633
+  },
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.743500035256147,
+    "max_ms": 10.174499941058457
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.187099989503622,
+    "max_ms": 10.757700074464083
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 11.101900017820299,
+    "max_ms": 11.212500045076013
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.523499989882112,
+    "max_ms": 10.919200023636222
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.44080005865544,
+    "max_ms": 9.738900000229478
+  },
+  {
+    "dimension": "nether",
+    "region": "deltas",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 11.22780004516244,
+    "max_ms": 11.383299948647618
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 8.36059998255223,
+    "max_ms": 8.423899998888373
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.030200075358152,
+    "max_ms": 9.23189998138696
+  },
+  {
+    "dimension": "ocean",
+    "region": "monument",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 10.423899977467954,
+    "max_ms": 10.960199986584485
+  },
+  {
+    "dimension": "ocean",
+    "region": "shipwreck",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 10.8173000626266,
+    "max_ms": 10.835800087079406
+  },
+  {
+    "dimension": "ocean",
+    "region": "reef",
+    "size": [
+      1200,
+      800
+    ],
+    "pan_p95_ms": 9.430999984033406,
+    "max_ms": 9.53730009496212
+  },
+  {
+    "dimension": "overworld",
+    "region": "plains",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 9.087400045245886,
+    "max_ms": 9.088600054383278
+  },
+  {
+    "dimension": "overworld",
+    "region": "taiga",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 11.658600065857172,
+    "max_ms": 12.046099989674985
+  },
+  {
+    "dimension": "overworld",
+    "region": "swamp",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 11.283700005151331,
+    "max_ms": 11.297699995338917
+  },
+  {
+    "dimension": "overworld",
+    "region": "flowers",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 11.512700002640486,
+    "max_ms": 11.662299977615476
+  },
+  {
+    "dimension": "overworld",
+    "region": "mushroom",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 11.815499980002642,
+    "max_ms": 11.834300006739795
+  },
+  {
+    "dimension": "overworld",
+    "region": "desert",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.527699974365532,
+    "max_ms": 8.941699983552098
+  },
+  {
+    "dimension": "nether",
+    "region": "bastion",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.665800094604492,
+    "max_ms": 8.805599994957447
+  },
+  {
+    "dimension": "nether",
+    "region": "fortress",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.822999894618988,
+    "max_ms": 8.968000067397952
+  },
+  {
+    "dimension": "nether",
+    "region": "warped",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 9.33539995457977,
+    "max_ms": 9.766399976797402
+  },
+  {
+    "dimension": "nether",
+    "region": "crimson",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 9.592500049620867,
+    "max_ms": 11.323300073854625
+  },
+  {
+    "dimension": "nether",
+    "region": "valley",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.991300011985004,
+    "max_ms": 10.002299910411239
+  },
+  {
+    "dimension": "nether",
+    "region": "deltas",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 10.6187000637874,
+    "max_ms": 11.269400012679398
+  },
+  {
+    "dimension": "end",
+    "region": "central",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 8.290400030091405,
+    "max_ms": 8.454900002107024
+  },
+  {
+    "dimension": "end",
+    "region": "city",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 7.2364999214187264,
+    "max_ms": 8.475600043311715
+  },
+  {
+    "dimension": "ocean",
+    "region": "monument",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 9.58910002373159,
+    "max_ms": 9.656500071287155
+  },
+  {
+    "dimension": "ocean",
+    "region": "shipwreck",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 10.971499956212938,
+    "max_ms": 11.451099999248981
+  },
+  {
+    "dimension": "ocean",
+    "region": "reef",
+    "size": [
+      1920,
+      1080
+    ],
+    "pan_p95_ms": 9.137199958786368,
+    "max_ms": 10.478400043211877
+  }
+]

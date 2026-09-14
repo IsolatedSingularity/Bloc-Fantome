@@ -1,0 +1,20 @@
+{
+  "Version": "2.9.1",
+  "SHA256": "6CF0D2B0A07B6D249B5A111818517E837D94D29830EDE31FBDEDE76ACCAFA541",
+  "Shortcuts": [
+    {
+      "Shortcut": "C:\\Users\\hunkb\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Bloc Fantôme\\Bloc Fantôme.lnk",
+      "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+      "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme",
+      "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+      "TargetExists": true
+    },
+    {
+      "Shortcut": "C:\\Users\\hunkb\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Bloc Fantôme\\Uninstall Bloc Fantôme.lnk",
+      "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\unins000.exe",
+      "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme",
+      "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+      "TargetExists": true
+    }
+  ]
+}

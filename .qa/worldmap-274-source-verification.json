@@ -1,0 +1,138 @@
+[
+  {
+    "file": "end_central.json.gz",
+    "verified_cells": 82586,
+    "sha256": "f26487053ea495745c592dda76ad3e5adc105d58d2fcfc6c44c4a2e5da1f94e1",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "unaltered terrain and structures",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "end_city.json.gz",
+    "verified_cells": 423054,
+    "sha256": "fe8dd872ed6f67a5650e10a333801b7b76773ca68728f0bf47bb1d38d4c042c0",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "complete source islands; whole distant boundary-crossing islands omitted",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_bastion.json.gz",
+    "verified_cells": 264360,
+    "sha256": "471ec7948906f80951f8d1f0e493ea3ec76a4a2e0acdf8281472d8561ac79bc6",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_crimson.json.gz",
+    "verified_cells": 156573,
+    "sha256": "ca9e16829657165b1e9596cdfa09750d9f88e9b9b1fa1dae95a85c67edb2dadc",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_deltas.json.gz",
+    "verified_cells": 81262,
+    "sha256": "3813d7cdf7abfb50a7966e56bd59a739caac18107d0cc87821a013ef9940d78c",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_fortress.json.gz",
+    "verified_cells": 224102,
+    "sha256": "17843f269216882f65555560ba75bae63be13fff5c241a5c025f08e05b3c2ecd",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_valley.json.gz",
+    "verified_cells": 96065,
+    "sha256": "75f51589744d6290604660e8b22386105d2b51776fccd75f0b8d8a7183b63b85",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "nether_warped.json.gz",
+    "verified_cells": 167474,
+    "sha256": "b7428d64fc087010f3767909bd43833e9debebc62b21b681aa03585e257e0028",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "first open cavern and structure-footprint cutaway; 12-block source geology; structure materials retained",
+    "authored_decoration_cells": 20
+  },
+  {
+    "file": "ocean_monument.json.gz",
+    "verified_cells": 210478,
+    "sha256": "07cd146340862af2b5667caf6c1d3ee816c0d02d70893743b16cce9af71b37c9",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "water cutaway; source seabed section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "ocean_reef.json.gz",
+    "verified_cells": 33745,
+    "sha256": "5b88f6df9a9d8a13f6aead0af8faa31e93710acc17cd51816dd4506172608764",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "water cutaway; source seabed section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "ocean_shipwreck.json.gz",
+    "verified_cells": 179385,
+    "sha256": "7892e290c94d236871d7bae04d7ce2c767d37688eb7fc656a40c38d1bcdfc06a",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "water cutaway; source seabed section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_desert.json.gz",
+    "verified_cells": 66240,
+    "sha256": "ce2028c3008bb75898f3c09280e8b20b860deb317cfdfa8dff21086ff533ee50",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_flowers.json.gz",
+    "verified_cells": 61977,
+    "sha256": "e362e12c61a2eee3ab3720bced28c193a50db017963c365d76e67d3caeae11dc",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_mushroom.json.gz",
+    "verified_cells": 1106221,
+    "sha256": "f1398cb045ebbcb4bdca583e3fa850812ba77663c33565075a0fbfa70f270ae4",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_plains.json.gz",
+    "verified_cells": 166650,
+    "sha256": "77174dd9d6b4883e39ec32f3be509e328fe4f789b4ffaf464cf53fec6c4ebb3d",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_swamp.json.gz",
+    "verified_cells": 128604,
+    "sha256": "a922df078c333139898755b7ef70f8af379a36ac624e56205cb681861a32b470",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  },
+  {
+    "file": "overworld_taiga.json.gz",
+    "verified_cells": 118761,
+    "sha256": "11d2e373963b90f0645086c165a2a50b8a78673af973632d00718e58d04fc3df",
+    "source": "official Java 1.16.1 / seed 1",
+    "presentation": "source surface section with 12-block geology",
+    "authored_decoration_cells": 0
+  }
+]

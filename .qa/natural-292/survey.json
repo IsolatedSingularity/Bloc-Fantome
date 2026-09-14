@@ -1,0 +1,602 @@
+[
+  {
+    "biome": "desert",
+    "biome_location": [
+      1600,
+      1984
+    ],
+    "location": [
+      832,
+      2400
+    ],
+    "evidence": [
+      "[12:30:26] [Server thread/INFO]: The nearest minecraft:desert is at [1600, ~, 1984] (2548 blocks away)",
+      "[12:30:26] [Server thread/INFO]: The nearest village is at [832, ~, 2400] (873 blocks away)",
+      "[12:30:26] [Server thread/INFO]: The nearest desert_pyramid is at [1616, ~, 2048] (859 blocks away)"
+    ],
+    "extra": "minecraft:desert_pyramid",
+    "extra_location": [
+      1616,
+      2048
+    ]
+  },
+  {
+    "biome": "desert",
+    "biome_location": [
+      6016,
+      -1824
+    ],
+    "location": [
+      6224,
+      -2752
+    ],
+    "evidence": [
+      "[12:30:26] [Server thread/INFO]: The nearest minecraft:desert is at [6016, ~, -1824] (2718 blocks away)",
+      "[12:30:26] [Server thread/INFO]: The nearest village is at [6224, ~, -2752] (951 blocks away)",
+      "[12:30:26] [Server thread/INFO]: The nearest desert_pyramid is at [6176, ~, -2032] (721 blocks away)"
+    ],
+    "extra": "minecraft:desert_pyramid",
+    "extra_location": [
+      6176,
+      -2032
+    ]
+  },
+  {
+    "biome": "desert",
+    "biome_location": [
+      -4512,
+      512
+    ],
+    "location": [
+      -4512,
+      1056
+    ],
+    "evidence": [
+      "[12:30:26] [Server thread/INFO]: The nearest minecraft:desert is at [-4512, ~, 512] (724 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [-4512, ~, 1056] (544 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest desert_pyramid is at [-4608, ~, 1344] (303 blocks away)"
+    ],
+    "extra": "minecraft:desert_pyramid",
+    "extra_location": [
+      -4608,
+      1344
+    ]
+  },
+  {
+    "biome": "desert",
+    "biome_location": [
+      448,
+      4416
+    ],
+    "location": [
+      752,
+      3776
+    ],
+    "evidence": [
+      "[12:30:27] [Server thread/INFO]: The nearest minecraft:desert is at [448, ~, 4416] (611 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [752, ~, 3776] (708 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest desert_pyramid is at [544, ~, 4384] (642 blocks away)"
+    ],
+    "extra": "minecraft:desert_pyramid",
+    "extra_location": [
+      544,
+      4384
+    ]
+  },
+  {
+    "biome": "desert",
+    "biome_location": [
+      128,
+      -3776
+    ],
+    "location": [
+      0,
+      -3872
+    ],
+    "evidence": [
+      "[12:30:27] [Server thread/INFO]: The nearest minecraft:desert is at [128, ~, -3776] (257 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [0, ~, -3872] (160 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest desert_pyramid is at [864, ~, -4336] (980 blocks away)"
+    ],
+    "extra": "minecraft:desert_pyramid",
+    "extra_location": [
+      864,
+      -4336
+    ]
+  },
+  {
+    "biome": "plains",
+    "biome_location": [
+      -128,
+      96
+    ],
+    "location": [
+      -176,
+      -288
+    ],
+    "evidence": [
+      "[12:30:27] [Server thread/INFO]: The nearest minecraft:plains is at [-128, ~, 96] (160 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [-176, ~, -288] (386 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest pillager_outpost is at [80, ~, 320] (659 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      80,
+      320
+    ]
+  },
+  {
+    "biome": "plains",
+    "biome_location": [
+      3744,
+      128
+    ],
+    "location": [
+      3920,
+      224
+    ],
+    "evidence": [
+      "[12:30:27] [Server thread/INFO]: The nearest minecraft:plains is at [3744, ~, 128] (286 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [3920, ~, 224] (200 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest pillager_outpost is at [2384, ~, 2704] (2917 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      2384,
+      2704
+    ]
+  },
+  {
+    "biome": "plains",
+    "biome_location": [
+      -4032,
+      -32
+    ],
+    "location": [
+      -3840,
+      -736
+    ],
+    "evidence": [
+      "[12:30:27] [Server thread/INFO]: The nearest minecraft:plains is at [-4032, ~, -32] (45 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest village is at [-3840, ~, -736] (729 blocks away)",
+      "[12:30:27] [Server thread/INFO]: The nearest pillager_outpost is at [-4480, ~, 1296] (2130 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -4480,
+      1296
+    ]
+  },
+  {
+    "biome": "plains",
+    "biome_location": [
+      0,
+      4288
+    ],
+    "location": [
+      752,
+      3776
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:plains is at [0, ~, 4288] (288 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [752, ~, 3776] (909 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [1536, ~, 3936] (800 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      1536,
+      3936
+    ]
+  },
+  {
+    "biome": "plains",
+    "biome_location": [
+      64,
+      -3904
+    ],
+    "location": [
+      0,
+      -3872
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:plains is at [64, ~, -3904] (115 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [0, ~, -3872] (71 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [-1264, ~, -4928] (1647 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -1264,
+      -4928
+    ]
+  },
+  {
+    "biome": "taiga",
+    "biome_location": [
+      -224,
+      -224
+    ],
+    "location": [
+      -176,
+      -288
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:taiga is at [-224, ~, -224] (316 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [-176, ~, -288] (80 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [80, ~, 320] (659 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      80,
+      320
+    ]
+  },
+  {
+    "biome": "taiga",
+    "biome_location": [
+      3936,
+      -320
+    ],
+    "location": [
+      3424,
+      -224
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:taiga is at [3936, ~, -320] (326 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [3424, ~, -224] (520 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [608, ~, 1152] (3134 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      608,
+      1152
+    ]
+  },
+  {
+    "biome": "taiga",
+    "biome_location": [
+      -3744,
+      64
+    ],
+    "location": [
+      -3792,
+      0
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:taiga is at [-3744, ~, 64] (263 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [-3792, ~, 0] (80 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [-4480, ~, 1296] (1467 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -4480,
+      1296
+    ]
+  },
+  {
+    "biome": "taiga",
+    "biome_location": [
+      -224,
+      5184
+    ],
+    "location": [
+      -736,
+      5920
+    ],
+    "evidence": [
+      "[12:30:28] [Server thread/INFO]: The nearest minecraft:taiga is at [-224, ~, 5184] (1205 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest village is at [-736, ~, 5920] (896 blocks away)",
+      "[12:30:28] [Server thread/INFO]: The nearest pillager_outpost is at [688, ~, 6912] (1735 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      688,
+      6912
+    ]
+  },
+  {
+    "biome": "taiga",
+    "biome_location": [
+      -800,
+      -2752
+    ],
+    "location": [
+      -144,
+      -3008
+    ],
+    "evidence": [
+      "[12:30:29] [Server thread/INFO]: The nearest minecraft:taiga is at [-800, ~, -2752] (1482 blocks away)",
+      "[12:30:29] [Server thread/INFO]: The nearest village is at [-144, ~, -3008] (704 blocks away)",
+      "[12:30:29] [Server thread/INFO]: The nearest pillager_outpost is at [-1264, ~, -4928] (2222 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -1264,
+      -4928
+    ]
+  },
+  {
+    "biome": "savanna",
+    "biome_location": [
+      768,
+      2112
+    ],
+    "location": [
+      832,
+      2400
+    ],
+    "evidence": [
+      "[12:30:29] [Server thread/INFO]: The nearest minecraft:savanna is at [768, ~, 2112] (2247 blocks away)",
+      "[12:30:29] [Server thread/INFO]: The nearest village is at [832, ~, 2400] (295 blocks away)",
+      "[12:30:29] [Server thread/INFO]: The nearest pillager_outpost is at [-208, ~, 1104] (1661 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -208,
+      1104
+    ]
+  },
+  {
+    "biome": "savanna",
+    "biome_location": [
+      6080,
+      -2112
+    ],
+    "location": [
+      6224,
+      -2752
+    ],
+    "evidence": [
+      "[12:30:29] [Server thread/INFO]: The nearest minecraft:savanna is at [6080, ~, -2112] (2964 blocks away)",
+      "[12:30:29] [Server thread/INFO]: The nearest village is at [6224, ~, -2752] (656 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [9552, ~, -4608] (3810 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      9552,
+      -4608
+    ]
+  },
+  {
+    "biome": "savanna",
+    "biome_location": [
+      -4416,
+      -352
+    ],
+    "location": [
+      -3840,
+      -736
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:savanna is at [-4416, ~, -352] (544 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [-3840, ~, -736] (692 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [-4480, ~, 1296] (2130 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -4480,
+      1296
+    ]
+  },
+  {
+    "biome": "savanna",
+    "biome_location": [
+      352,
+      3616
+    ],
+    "location": [
+      352,
+      3200
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:savanna is at [352, ~, 3616] (520 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [352, ~, 3200] (416 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [1536, ~, 3936] (1394 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      1536,
+      3936
+    ]
+  },
+  {
+    "biome": "savanna",
+    "biome_location": [
+      -32,
+      -4032
+    ],
+    "location": [
+      0,
+      -3872
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:savanna is at [-32, ~, -4032] (45 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [0, ~, -3872] (163 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [-1264, ~, -4928] (1647 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -1264,
+      -4928
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "biome_location": [
+      -1344,
+      96
+    ],
+    "location": [
+      -1760,
+      -320
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [-1344, ~, 96] (1347 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [-1760, ~, -320] (588 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [-208, ~, 1104] (2106 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -208,
+      1104
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "biome_location": [
+      3968,
+      32
+    ],
+    "location": [
+      3920,
+      224
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [3968, ~, 32] (45 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [3920, ~, 224] (197 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest pillager_outpost is at [2384, ~, 2704] (2917 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      2384,
+      2704
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "biome_location": [
+      -5216,
+      -832
+    ],
+    "location": [
+      -5536,
+      -848
+    ],
+    "evidence": [
+      "[12:30:30] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [-5216, ~, -832] (1473 blocks away)",
+      "[12:30:30] [Server thread/INFO]: The nearest village is at [-5536, ~, -848] (320 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest pillager_outpost is at [-4480, ~, 1296] (2389 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -4480,
+      1296
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "biome_location": [
+      -2272,
+      1152
+    ],
+    "location": [
+      -1712,
+      512
+    ],
+    "evidence": [
+      "[12:30:31] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [-2272, ~, 1152] (3643 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest village is at [-1712, ~, 512] (850 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest pillager_outpost is at [-208, ~, 1104] (1616 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -208,
+      1104
+    ]
+  },
+  {
+    "biome": "snowy_tundra",
+    "biome_location": [
+      -1568,
+      -4608
+    ],
+    "location": [
+      -1824,
+      -4880
+    ],
+    "evidence": [
+      "[12:30:31] [Server thread/INFO]: The nearest minecraft:snowy_tundra is at [-1568, ~, -4608] (1681 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest village is at [-1824, ~, -4880] (373 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest pillager_outpost is at [-1264, ~, -4928] (562 blocks away)"
+    ],
+    "extra": "minecraft:pillager_outpost",
+    "extra_location": [
+      -1264,
+      -4928
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "biome_location": [
+      0,
+      0
+    ],
+    "location": [
+      192,
+      0
+    ],
+    "evidence": [
+      "[12:30:31] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [0, ~, 0] (0 blocks away)",
+      "[12:30:31] [Server thread/INFO]: The nearest fortress is at [192, ~, 0] (192 blocks away)"
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "biome_location": [
+      4064,
+      32
+    ],
+    "location": [
+      3520,
+      -224
+    ],
+    "evidence": [
+      "[12:30:32] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [4064, ~, 32] (71 blocks away)",
+      "[12:30:32] [Server thread/INFO]: The nearest fortress is at [3520, ~, -224] (601 blocks away)"
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "biome_location": [
+      -4064,
+      -64
+    ],
+    "location": [
+      -4544,
+      -528
+    ],
+    "evidence": [
+      "[12:30:32] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [-4064, ~, -64] (90 blocks away)",
+      "[12:30:32] [Server thread/INFO]: The nearest fortress is at [-4544, ~, -528] (667 blocks away)"
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "biome_location": [
+      -96,
+      3904
+    ],
+    "location": [
+      -752,
+      3792
+    ],
+    "evidence": [
+      "[12:30:32] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [-96, ~, 3904] (135 blocks away)",
+      "[12:30:32] [Server thread/INFO]: The nearest fortress is at [-752, ~, 3792] (665 blocks away)"
+    ]
+  },
+  {
+    "biome": "nether_wastes",
+    "biome_location": [
+      0,
+      -4000
+    ],
+    "location": [
+      -192,
+      -4720
+    ],
+    "evidence": [
+      "[12:30:32] [Server thread/INFO]: The nearest minecraft:nether_wastes is at [0, ~, -4000] (0 blocks away)",
+      "[12:30:32] [Server thread/INFO]: The nearest fortress is at [-192, ~, -4720] (745 blocks away)"
+    ]
+  }
+]

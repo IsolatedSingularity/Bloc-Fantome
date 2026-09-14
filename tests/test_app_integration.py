@@ -141,7 +141,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.worldMapDimension, "ocean")
         self.assertEqual(self.app.currentDimension, app_module.DIMENSION_OVERWORLD)
         self.assertFalse(self.app.worldMapScene.playable_anchors)
-        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 1)
+        self.assertEqual(len(self.app.worldMapScene.locked_anchors), 2)
         self.app._startWorldMapLevel(0)
         self.assertEqual(self.app.worldMapMode, "hub")
         self.assertIsNone(self.app.worldMapObjective)
@@ -242,7 +242,8 @@ class AppIntegrationTests(unittest.TestCase):
                 self.app.fitWorldButtonRect,
             ):
                 self.assertTrue(canvas.contains(rect), rect)
-            self.assertEqual(self.app.worldMapButtonRect.centerx, canvas.centerx)
+            left=self.app.terrainViewButtonRect.left if self.app.sceneStructurePositions else self.app.worldMapButtonRect.left
+            self.assertLessEqual(abs((left+self.app.fitWorldButtonRect.right)/2-canvas.centerx),1)
             new_center = self.app.renderer._screenToWorldPoint(
                 (960 - app_module.PANEL_WIDTH) // 2, 640 // 2, self.app.cameraFocusZ
             )
@@ -1218,7 +1219,8 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertTrue(tutorial.visible)
             self.assertTrue(self.app.tutorialAdvancedMode)
             self.assertEqual(tutorial.currentStep, 0)
-            self.assertEqual(len(tutorial.TUTORIAL_STEPS), 17)
+            self.assertEqual(len(tutorial.TUTORIAL_STEPS), 16)
+            self.assertFalse(tutorial.menuOpen)
         finally:
             tutorial.onStepChange = old_callback
             tutorial.hide()
@@ -1247,57 +1249,117 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(self.app.selectedBlock, app_module.BlockType.OBSIDIAN)
         self.assertIsNone(self.app._tutorialSessionSnapshot)
 
-    def test_advanced_tutorial_uses_dedicated_32x32_showcases_and_restores(self):
-        self.app.world.setBlock(2, 3, 1, app_module.BlockType.EMERALD_BLOCK)
-        original_blocks = dict(self.app.world.blocks)
-        basic_count = len(app_module.STRUCTURE_WELCOME_SHOWCASE["blocks"])
+    def _settle_tutorial_load(self):
+        pending=getattr(self.app,'_pendingTourLoad',None)
+        if pending:
+            pending[0].result(timeout=120)
+            self.app._pollTourLoad()
+        self.assertFalse(self.app.tooltipText.startswith('Could not load tutorial scene:'))
 
+    def test_linear_tour_starts_immediately_and_restores_original(self):
+        original=dict(self.app.world.blocks)
         self.app._beginTutorial(advanced=True)
-        self.assertEqual(
-            (self.app.world.width, self.app.world.depth, self.app.world.height),
-            (32, 32, 32),
-        )
-        non_floor = sum(1 for (x, y, z) in self.app.world.blocks if z > 0)
-        self.assertGreater(non_floor, basic_count)
-        self.app.tutorialScreen.hide()
-        self.assertEqual(dict(self.app.world.blocks), original_blocks)
-
-    def test_every_advanced_lesson_has_a_fitted_scene_and_matching_hotbar(self):
-        self.app._beginTutorial(advanced=True)
-        tutorial = self.app.tutorialScreen
         try:
-            for index, names in enumerate(tutorial.ADVANCED_HOTBARS):
-                self.app._onTutorialStepChange(index)
-                self.assertEqual((self.app.world.width, self.app.world.depth), (32, 32))
-                title = tutorial.TUTORIAL_STEPS[index]["title"]
-                expected_dimension = (
-                    app_module.DIMENSION_NETHER if "Nether" in title else
-                    app_module.DIMENSION_END if "End" in title else
-                    app_module.DIMENSION_OVERWORLD
-                )
-                self.assertEqual(self.app.currentDimension, expected_dimension)
-                self.assertEqual(self.app.world.dimension, expected_dimension)
-                self.assertIsNotNone(self.app.world.occupiedBounds)
-                self.assertGreater(len(self.app.world.blocks), 250)
-                expected = [tutorial._iconNameToBlockType(name) for name in names]
-                self.assertNotIn(None, expected)
-                self.assertEqual(self.app.hotbar, expected)
-                self.assertGreater(self.app.zoomLevel, 0)
-                self.assertLessEqual(self.app.zoomLevel, 1)
+            self.assertFalse(self.app.tutorialScreen.menuOpen)
+            self.assertEqual(self.app.tutorialScreen.lesson['id'],'welcome')
+            self.assertNotEqual(dict(self.app.world.blocks),original)
+        finally:self.app.tutorialScreen.hide()
+        self.assertEqual(dict(self.app.world.blocks),original)
 
-            # The advanced liquid lesson contains both controlled reservoirs,
-            # and the End lesson has non-flat terrain beneath its tower.
-            self.app._onTutorialStepChange(8)
-            self.assertIn(app_module.BlockType.WATER, self.app.world.blocks.values())
-            self.assertIn(app_module.BlockType.LAVA, self.app.world.blocks.values())
-            self.app._onTutorialStepChange(11)
-            endHeights = {
-                self.app.world.getHighestBlock(x, y)
-                for x in range(10, 22) for y in range(10, 22)
-            }
-            self.assertGreater(len(endHeights), 3)
+    def test_linear_tour_next_back_and_direct_jump_always_replace_example(self):
+        self.app._beginTutorial(advanced=False)
+        tour=self.app.tutorialScreen
+        try:
+            original_example=dict(self.app.world.blocks)
+            self.app._placeBlockWithUndo(1,1,2,app_module.BlockType.GOLD_BLOCK)
+            tour._onNextClick()
+            self._settle_tutorial_load()
+            self.assertEqual(tour.currentStep,1)
+            self.assertEqual(self.app.world.getBlock(1,1,2),app_module.BlockType.AIR)
+            tour._onBackClick()
+            self.assertEqual(dict(self.app.world.blocks),original_example)
+            for index,page in enumerate(tour.TUTORIAL_STEPS):
+                tour.selectLesson(index)
+                self._settle_tutorial_load()
+                if self.app.worldMapActive:self.app._exitWorldMap()
+                if self.app.redstoneLabActive:self.app._toggleRedstoneLab()
+                self.assertEqual(tour.lesson['id'],page['id'])
+                self.assertTrue(self.app.world.blocks)
+                self.assertEqual(self.app.hotbar,[app_module.BlockType[n.upper()] for n in page['icons']])
+                self.assertFalse(page['goals'])
+                self.assertGreater(self.app.zoomLevel,0)
+            tour._onNextClick()
+            self.assertFalse(tour.visible)
         finally:
-            tutorial.hide()
+            if tour.visible:tour.hide()
+
+    def test_tour_reset_restores_page_after_optional_edits(self):
+        self.app._beginTutorial(advanced=True);tour=self.app.tutorialScreen
+        try:
+            tour.selectLesson(3);self._settle_tutorial_load();before=dict(self.app.world.blocks)
+            self.app._placeBlockWithUndo(1,1,2,app_module.BlockType.DIAMOND_BLOCK)
+            tour.selectLesson(3,retry=True)
+            self._settle_tutorial_load()
+            self.assertEqual(dict(self.app.world.blocks),before)
+        finally:tour.hide()
+
+    def test_tour_has_no_required_tasks_or_deferred_redstone_chapters(self):
+        from engine.tutorial_lessons import TOUR
+        self.assertTrue(all(not p['goals'] for p in TOUR))
+        self.assertFalse(any(p['id']=='horror' for p in TOUR))
+        self.assertIn('redstone',{p['id'] for p in TOUR})
+        self.assertIn('worldmap',{p['id'] for p in TOUR})
+
+    def test_horror_is_an_explicit_optional_detour(self):
+        self.app._beginTutorial(advanced=True);tour=self.app.tutorialScreen
+        try:
+            tour.selectLesson(len(tour.TUTORIAL_STEPS)-1)
+            tour.handleEvent(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=tour.optionalRect.center))
+            self.assertEqual(tour.lesson['id'],'horror')
+            tour._onBackClick()
+            self.assertEqual(tour.lesson['id'],'saving')
+        finally:tour.hide()
+
+    def test_guided_exit_restores_tools_clipboard_and_saved_path(self):
+        self.app.brushSize=3
+        self.app.mirrorModeX=True
+        self.app.clipboard=[((0,0,0),app_module.BlockType.GOLD_BLOCK,None)]
+        self.app.currentBuildPath='original-build.json.gz'
+        self.app._beginTutorial(advanced=False)
+        self.app.clipboard.clear()
+        self.assertIsNone(self.app.currentBuildPath)
+        self.app.tutorialScreen.hide()
+        self.assertEqual(self.app.brushSize,3)
+        self.assertTrue(self.app.mirrorModeX)
+        self.assertEqual(self.app.clipboard,[((0,0,0),app_module.BlockType.GOLD_BLOCK,None)])
+        self.assertEqual(self.app.currentBuildPath,'original-build.json.gz')
+        self.app.brushSize=1
+        self.app.mirrorModeX=False
+
+    def test_biome_cards_filter_and_need_explicit_open(self):
+        panel=self.app.biomePanel
+        self.app.blocksExpanded=False
+        self.app.experimentalExpanded=False
+        self.app.structuresExpanded=False
+        panel.expanded=False
+        self.app.inventoryScroll=self.app.inventoryScrollTarget=0
+        self.app._renderPanel()
+        self.app._handlePanelClick(*self.app.lessonControlRects['biomes'].center)
+        self.assertEqual(self.app.previewBrowser.expanded,'Biomes')
+        library=self.app.library
+        library.open(self.app,'Biomes')
+        library.tab='Biomes';library.refresh(self.app);library.render(self.app)
+        before=dict(self.app.world.blocks)
+        rect,entry=library.rows[0]
+        library.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=rect.center),self.app)
+        self.assertEqual(dict(self.app.world.blocks),before)
+        library.render(self.app)
+        with patch.object(self.app,'_queueBiomeScene') as opened:
+            library.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=library.open_rect.center),self.app)
+            opened.assert_called_once_with(entry['value']['id'])
+        self.assertEqual(len(panel.entries('nether')),5)
+        self.assertEqual(len(panel.entries('end')),3)
+        panel.expanded=False
 
     def test_tutorial_window_drags_minimizes_and_restores(self):
         tutorial = app_module.TutorialScreen(
@@ -1387,14 +1449,13 @@ class AppIntegrationTests(unittest.TestCase):
             "rt", encoding="utf-8",
         ) as handle:
             nether = json.load(handle)
-        self.assertEqual(len(nether["scene"]["biome_regions"]), 5)
-        with gzip.open(
-            Path(app_module.WORLDS_DIR) / "ocean_monument_1161.json.gz",
-            "rt", encoding="utf-8",
-        ) as handle:
-            ocean = json.load(handle)
-        self.assertEqual(len(ocean["scene"]["decorations"]), 4)
-        self.assertIn("elder_guardian", {item["type"] for item in ocean["scene"]["decorations"]})
+        self.assertTrue(nether['scene']['source_capture'])
+        self.assertNotIn('biome_regions',nether['scene'])
+        with gzip.open(Path(app_module.WORLDS_DIR)/'ocean_monument_1161.json.gz','rt') as handle:
+            ocean=json.load(handle)
+        self.assertEqual(ocean['scene']['origin'],[-944,-912])
+        self.assertFalse(ocean['scene'].get('decorations'))
+        self.assertTrue(any(r['type']=='WATER' for r in ocean['blocks']))
 
     def test_end_city_world_structure_sits_above_terrain(self):
         path = Path(app_module.WORLDS_DIR) / "end_city_1161.json.gz"
@@ -1417,16 +1478,8 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertTrue(all(
             terrainTop[column] < structureBase[column] for column in shared
         ))
-        padHeights = {
-            terrainTop[(x, y)]
-            for x in range(99, 156) for y in range(105, 151)
-        }
-        self.assertGreaterEqual(len(padHeights), 5)
-        groundContacts = {
-            column for column, base in structureBase.items() if base == 19
-        }
-        self.assertTrue(groundContacts)
-        self.assertTrue(all(terrainTop[column] == 18 for column in groundContacts))
+        self.assertEqual(scene['scene']['source_capture'],'_tutorial_end_city')
+        self.assertEqual(len(scene['blocks']),99237)
 
     def test_small_canvas_resets_camera_after_large_world(self):
         path = Path(app_module.WORLDS_DIR) / "ancient_city_121.json.gz"
@@ -1732,44 +1785,22 @@ class AppIntegrationTests(unittest.TestCase):
         press_escape()
         self.assertFalse(self.app.running)
 
-    def test_tutorial_loads_nether_and_end_showcases(self):
-        for title, dimension, minimumBlocks in (
-            ("The Nether", app_module.DIMENSION_NETHER, 500),
-            ("The End", app_module.DIMENSION_END, 300),
-        ):
-            index = next(
-                stepIndex
-                for stepIndex, step in enumerate(app_module.TutorialScreen.TUTORIAL_STEPS)
-                if step["title"] == title
-            )
-            self.app._onTutorialStepChange(index)
-            self.assertEqual(self.app.currentDimension, dimension)
-            self.assertGreaterEqual(len(self.app.world.blocks), minimumBlocks)
-            if title == "The End":
-                self.assertEqual((self.app.world.width, self.app.world.depth), (16, 16))
-                self.assertIn(app_module.BlockType.END_STONE, self.app.world.blocks.values())
-                self.assertIn(app_module.BlockType.END_STONE_BRICKS, self.app.world.blocks.values())
-                self.assertIn(app_module.BlockType.MAGENTA_STAINED_GLASS, self.app.world.blocks.values())
-                self.assertGreaterEqual(
-                    max(z for (x, y, z), block in self.app.world.blocks.items()
-                        if block == app_module.BlockType.PURPUR_BLOCK),
-                    3,
-                )
-            occupied = self.app.world.blocks
-            center = (
-                (min(pos[0] for pos in occupied) + max(pos[0] for pos in occupied)) / 2,
-                (min(pos[1] for pos in occupied) + max(pos[1] for pos in occupied)) / 2,
-                (min(pos[2] for pos in occupied) + max(pos[2] for pos in occupied)) / 2,
-            )
-            self.assertGreater(self.app.zoomLevel, 0.0)
-            self.assertLessEqual(self.app.zoomLevel, 1.0)
-            centerScreen = self.app.renderer.worldToScreen(*center)
-            self.assertAlmostEqual(
-                centerScreen[0],
-                (app_module.WINDOW_WIDTH - app_module.PANEL_WIDTH) / 2,
-                delta=2,
-            )
-            self.assertAlmostEqual(centerScreen[1], 400, delta=2)
+    def test_tutorial_can_open_nether_and_end_biomes_and_restore(self):
+        original=dict(self.app.world.blocks)
+        self.app._beginTutorial(advanced=True)
+        tutorial=self.app.tutorialScreen
+        try:
+            tutorial.selectLesson(next(i for i,s in enumerate(tutorial.TUTORIAL_STEPS) if s['id']=='biomes'))
+            for biome,dimension,block in [('warped_forest','nether',app_module.BlockType.WARPED_STEM),
+                                          ('end_highlands','end',app_module.BlockType.END_STONE)]:
+                self.app._openBiomeScene(biome)
+                self.assertEqual(self.app.currentDimension,dimension)
+                self.assertEqual(self.app.sceneMetadata['biome'],biome)
+                self.assertIn(block,self.app.world.blocks.values())
+                self.assertIsNone(self.app.currentBuildPath)
+        finally:
+            tutorial.hide()
+        self.assertEqual(dict(self.app.world.blocks),original)
 
     def test_door_uses_two_synchronized_cells_and_undo(self):
         self.assertTrue(self.app._placeDoorWithUndo(

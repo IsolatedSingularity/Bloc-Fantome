@@ -363,12 +363,11 @@ def render(output_dir: Path) -> None:
     app._render()
     save_capture(screen, output_dir / "tutorial_advanced.png")
     for step_index, filename in (
-        (6, "tutorial_advanced_mirror.png"),
-        (8, "tutorial_advanced_liquids.png"),
-        (11, "tutorial_advanced_end.png"),
+        (5, "tutorial_advanced_mirror.png"),
+        (15, "tutorial_advanced_liquids.png"),
+        (19, "tutorial_advanced_horror.png"),
     ):
-        tutorial.currentStep = step_index
-        app._onTutorialStepChange(step_index)
+        tutorial.selectLesson(step_index)
         app._render()
         save_capture(screen, output_dir / filename)
     tutorial.hide()
@@ -675,19 +674,18 @@ def render(output_dir: Path) -> None:
     save_capture(screen, output_dir / "settings.png")
     app.settingsMenuOpen = False
 
-    for step_index, filename in (
-        (10, "tutorial_nether.png"),
-        (11, "tutorial_end.png"),
-        (12, "tutorial_weather.png"),
-        (13, "tutorial_lighting.png"),
+    app._beginTutorial(advanced=True)
+    for key,biome,filename in (
+        ('biomes','warped_forest','tutorial_nether.png'),
+        ('biomes','end_highlands','tutorial_end.png'),
+        ('skies',None,'tutorial_weather.png'),
+        ('lighting',None,'tutorial_lighting.png'),
     ):
-        app._onTutorialStepChange(step_index)
-        if step_index >= 12:
-            app._fitWorldToViewport(notify=False)
-        app.renderer.offsetX = app.targetOffsetX
-        app.renderer.offsetY = app.targetOffsetY
+        tutorial.selectLesson(next(i for i,step in enumerate(tutorial.TUTORIAL_STEPS) if step['id']==key))
+        if biome: app._openBiomeScene(biome)
         app._render()
-        save_capture(screen, output_dir / filename)
+        save_capture(screen,output_dir/filename)
+    tutorial.hide()
 
     # README dimension art: renderer-only captures in the structure's actual
     # dimension. These intentionally omit the panel, HUD, hotbar, and controls.
@@ -842,6 +840,10 @@ def render_world_map_regions(output_dir: Path) -> None:
                 save_capture(app.screen,output_dir/f'{dimension}_{key}_{width}.png')
                 # Every source region button stays inside its native viewport.
                 assert all(app.screen.get_rect().contains(rect) for rect in app.worldMapView.region_rects.values())
+                assert len(app.worldMapView.node_hit_rects)==2
+                assert all(rect.width>0 for rect in app.worldMapView.node_hit_rects)
+                for rect in app.worldMapView.node_hit_rects:
+                    assert app.worldMapView.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=rect.center)) is None
                 times=[]
                 for frame in range(24):
                     app.renderer.offsetX+=3
@@ -871,6 +873,231 @@ def render_world_map_regions(output_dir: Path) -> None:
     pygame.quit()
 
 
+def render_guided(output_dir: Path) -> None:
+    """Exercise the full biome roster, both courses, and native sky rotation."""
+    import json
+    from engine.biome_catalog import BIOMES
+    output_dir.mkdir(parents=True,exist_ok=True)
+    app=app_module.BlocFantome()
+    if not app.assetManager.loadAllAssets(): raise RuntimeError('Assets unavailable')
+    app.tutorialScreen.setAssets(app.assetManager.buttonNormal,app.assetManager.buttonHover,
+        app.assetManager.checkboxTexture,app.assetManager.checkboxSelectedTexture,app.assetManager.clickSound,app.assetManager)
+    montage=pygame.Surface((8*250,10*182))
+    montage.fill((23,29,27))
+    font=app_module.load_ui_font(13)
+    for i,entry in enumerate(BIOMES):
+        x,y=(i%8)*250,(i//8)*182
+        preview=app.biomePanel.preview(entry,app.assetManager,(242,140))
+        montage.blit(preview,(x+4,y+2))
+        words=entry['id'].replace('_',' ').title().split()
+        lines=['']
+        for word in words:
+            candidate=(lines[-1]+' '+word).strip()
+            if font.size(candidate)[0]>240: lines.append(word)
+            else: lines[-1]=candidate
+        for j,line in enumerate(lines): montage.blit(font.render(line,True,(228,229,205)),(x+5,y+144+j*16))
+    save_capture(montage,output_dir/'all_79_biomes.png')
+    measurements=[]
+    for width,height in ((1200,800),(960,640),(1920,1080)):
+        app._applyWindowSize(width,height)
+        splash=SplashScreen(app.screen,app.clock,app_module.TEXTURES_DIR,app_module.FONTS_DIR,app_module.ICONS_DIR)
+        splash.present()
+        save_capture(app.screen,output_dir/f'splash_{width}.png')
+        app._beginTutorial(advanced=False)
+        app.tutorialScreen.hintVisible=True
+        app._render()
+        save_capture(app.screen,output_dir/f'getting_started_{width}.png')
+        app.tutorialScreen.hide()
+        app._beginTutorial(advanced=True)
+        app._render()
+        save_capture(app.screen,output_dir/f'handbook_contents_{width}.png')
+        for i,step in enumerate(app.tutorialScreen.TUTORIAL_STEPS):
+            app.tutorialScreen.selectLesson(i)
+            app.tutorialScreen.hintVisible=True
+            app._render()
+            save_capture(app.screen,output_dir/f'lesson_{step["id"]}_{width}.png')
+        app.tutorialScreen.minimized=True
+        app._render()
+        save_capture(app.screen,output_dir/f'tutorial_minimized_{width}.png')
+        app.tutorialScreen.hide()
+        app.blocksExpanded=False
+        app.experimentalExpanded=False
+        app.structuresExpanded=False
+        app.biomePanel.expanded=True
+        app.inventoryScroll=app.inventoryScrollTarget=0
+        for dimension,biome in (('overworld','birch_forest'),('nether','warped_forest'),('end','end_highlands')):
+            app._openBiomeScene(biome)
+            app.tooltipTimer=0
+            app.skyboxesEnabled=True
+            app.skyboxRenderer.update(0,dimension,view_rotation=0)
+            app.skyboxRenderer.update(400,dimension,view_rotation=0)
+            for _ in range(5):app._render()
+            save_capture(app.screen,output_dir/f'biomes_{dimension}_{width}.png')
+            timings=[]
+            for _ in range(20):
+                start=time.perf_counter()
+                app._render()
+                timings.append((time.perf_counter()-start)*1000)
+            measurements.append(dict(kind='settled',dimension=dimension,size=[width,height],p95_ms=sorted(timings)[18]))
+            timings=[]
+            for step in range(24):
+                app.clock.tick(60)
+                start=time.perf_counter()
+                app.skyboxRenderer.update(16,dimension,view_rotation=1)
+                app._render()
+                timings.append((time.perf_counter()-start)*1000)
+            measurements.append(dict(kind='sky_rotation',dimension=dimension,size=[width,height],p95_ms=sorted(timings)[22],max_ms=max(timings)))
+            save_capture(app.screen,output_dir/f'sky_rotated_{dimension}_{width}.png')
+        app.skyboxesEnabled=False
+    (output_dir/'performance.json').write_text(json.dumps(measurements,indent=2))
+    app.worldLoadExecutor.shutdown(wait=True)
+    pygame.quit()
+
+
+def render_consistency(output_dir: Path) -> None:
+    """Native UI captures plus real Q/E camera checks on curated biome scenes."""
+    import json
+    from ui.biomes import CURATED_IDS
+    output_dir.mkdir(parents=True,exist_ok=True)
+    app=app_module.BlocFantome()
+    app_module.DERIVED_WORLD_CACHE_DIR=str(output_dir/'scene-cache')
+    assert app.assetManager.loadAllAssets()
+    app.tutorialScreen.setAssets(app.assetManager.buttonNormal,app.assetManager.buttonHover,
+        app.assetManager.checkboxTexture,app.assetManager.checkboxSelectedTexture,app.assetManager.clickSound,app.assetManager)
+    measurements=[]
+    for width,height in ((960,640),(1200,800),(1920,1080)):
+        app._applyWindowSize(width,height)
+        app.tutorialScreen.visible=False
+        app.blocksExpanded=False
+        app.experimentalExpanded=False
+        app.inventoryScroll=app.inventoryScrollTarget=0
+        app._openBiomeScene('plains')
+        app.tooltipTimer=0
+        app._render()
+        save_capture(app.screen,output_dir/f'editor_{width}.png')
+        for tab in app.library.TABS:
+            app.library.open(app,tab)
+            if app.library.entries:app.library.pending=app.library.entries[0]
+            app._render()
+            save_capture(app.screen,output_dir/f'library_{tab.replace(" ","_")}_{width}.png')
+        app.library.visible=False
+        app.settingsMenuOpen=True;app._render()
+        save_capture(app.screen,output_dir/f'settings_{width}.png')
+        app.settingsMenuOpen=False;app.showShortcutsPanel=True;app._render()
+        save_capture(app.screen,output_dir/f'help_{width}.png')
+        app.showShortcutsPanel=False
+        app._beginTutorial(advanced=False)
+        app._render();save_capture(app.screen,output_dir/f'tutorial_{width}.png')
+        for i in range(len(app.tutorialScreen.TUTORIAL_STEPS)):
+            app.tutorialScreen.selectLesson(i)
+            app._render()
+            save_capture(app.screen,output_dir/f'tour_{i:02}_{width}.png')
+        app.tutorialScreen.hide()
+        app._toggleRedstoneLab();app._render()
+        save_capture(app.screen,output_dir/f'lab_{width}.png')
+        app._toggleRedstoneLab()
+    if '--ui-only' in sys.argv:
+        app.worldLoadExecutor.shutdown(wait=True)
+        pygame.quit()
+        return
+    app._applyWindowSize(1920,1080)
+    app.tutorialScreen.visible=False
+    app.library.visible=False
+    for name in CURATED_IDS:
+        start=time.perf_counter();app._openBiomeScene(name)
+        row={'biome':name,'load_ms':round((time.perf_counter()-start)*1000,2),'views':[]}
+        for turn in range(4):
+            before=app.renderer.viewRotation
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_e,unicode='e',mod=0))
+            app._handleEvents()
+            assert app.renderer.viewRotation==(before+1)%4,(name,'camera input blocked')
+            times=[]
+            for frame in range(8):
+                start=time.perf_counter();app._update();app._render()
+                times.append((time.perf_counter()-start)*1000)
+            assert app.renderStats['drawn']>0,(name,'empty camera view')
+            assert app._worldSurfaceBuild is None,(name,'unfinished render')
+            row['views'].append({'rotation':app.renderer.viewRotation,'cold_ms':round(times[0],2),'settled_max_ms':round(max(times[3:]),2),'drawn':app.renderStats['drawn']})
+            if name in ('plains','warped_forest','end_highlands'):
+                save_capture(app.screen,output_dir/f'{name}_rotation_{turn}.png')
+        measurements.append(row)
+        print(name,row['views'],flush=True)
+    (output_dir/'biome_camera_performance.json').write_text(json.dumps(measurements,indent=2))
+    app.worldLoadExecutor.shutdown(wait=True)
+    pygame.quit()
+
+
+def render_tour(output_dir: Path):
+    """Every demonstration and preview shelf, native resolutions and four camera views."""
+    import json
+    output_dir.mkdir(parents=True,exist_ok=True)
+    app=app_module.BlocFantome()
+    app_module.DERIVED_WORLD_CACHE_DIR=str(output_dir/'scene-cache')
+    assert app.assetManager.loadAllAssets()
+    app._generateStructurePreviews()
+    app._preloadTutorialMusic()
+    app.tutorialScreen.setAssets(app.assetManager.buttonNormal,app.assetManager.buttonHover,
+        app.assetManager.checkboxTexture,app.assetManager.checkboxSelectedTexture,app.assetManager.clickSound,app.assetManager)
+    metrics=[]
+    def settle():
+        frames=[];deadline=time.perf_counter()+120
+        while time.perf_counter()<deadline:
+            t=time.perf_counter();app._update();app._render();frames.append((time.perf_counter()-t)*1000)
+            if not getattr(app,'_pendingTourLoad',None) and app._worldSurfaceBuild is None:break
+            time.sleep(.001)
+        assert not getattr(app,'_pendingTourLoad',None),'Tour load timed out'
+        assert not app.tooltipText.startswith('Could not load tutorial scene:'),app.tooltipText
+        for _ in range(3):app._render()
+        return frames
+    for width,height in (((1200,800),) if '--quick' in sys.argv else ((1200,800),(960,640),(1920,1080))):
+        app._applyWindowSize(width,height)
+        from splash import SplashScreen
+        from runtime_paths import TEXTURES_DIR, FONTS_DIR, ICONS_DIR
+        splash=SplashScreen(app.screen,app.clock,TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
+        splash.present();save_capture(app.screen,output_dir/f'splash_{width}.png')
+        app._beginTutorial(advanced=False)
+        for i,step in enumerate(app.tutorialScreen.TUTORIAL_STEPS):
+            requested=next((arg.split('=',1)[1].split(',') for arg in sys.argv if arg.startswith('--pages=')),None)
+            if requested and step['id'] not in requested:continue
+            start=time.perf_counter();app.tutorialScreen.selectLesson(i)
+            dispatch=(time.perf_counter()-start)*1000
+            frames=settle();ready=(time.perf_counter()-start)*1000
+            save_capture(app.screen,output_dir/f"tour_{step['id']}_{width}.png")
+            print('Rendered',step['id'],width,round(ready),flush=True)
+            if app.worldMapActive:
+                app._exitWorldMap()
+            if app.redstoneLabActive:
+                app._toggleRedstoneLab()
+            if width==1200:
+                for rotation in range(1,4):
+                    app._rotateViewAndRecenter(1);settle()
+                    save_capture(app.screen,output_dir/f"tour_{step['id']}_view{rotation}.png")
+                app._rotateViewAndRecenter(1);settle()
+            stable=[]
+            for _ in range(20):
+                t=time.perf_counter();app._render();stable.append((time.perf_counter()-t)*1000)
+            metrics.append(dict(page=step['id'],width=width,dispatch_ms=round(dispatch,2),ready_ms=round(ready,2),max_loading_frame_ms=round(max(frames),2),p95_ms=round(sorted(stable)[18],2)))
+        app.tutorialScreen.optional=True;app._loadGuidedLesson(15);settle()
+        save_capture(app.screen,output_dir/f'optional_chapel_{width}.png')
+        app.tutorialScreen.minimized=True;app._render();save_capture(app.screen,output_dir/f'minimized_{width}.png')
+        app.tutorialScreen.hide()
+        app.blocksExpanded=app.experimentalExpanded=False
+        for section in app.previewBrowser.SECTIONS:
+            app.previewBrowser.expand(app,section);app.inventoryScroll=app.inventoryScrollTarget=0
+            settle();save_capture(app.screen,output_dir/f'previews_{section}_{width}.png')
+        for tab in app.library.TABS:
+            app.library.open(app,tab)
+            if app.library.entries:app.library.pending=app.library.entries[0]
+            settle();save_capture(app.screen,output_dir/f'library_{tab.replace(" ","_")}_{width}.png')
+        app.library.visible=False;app.settingsMenuOpen=True
+        app._render();save_capture(app.screen,output_dir/f'settings_{width}.png')
+        app.settingsMenuOpen=False;app.showShortcutsPanel=True
+        app._render();save_capture(app.screen,output_dir/f'help_{width}.png');app.showShortcutsPanel=False
+    (output_dir/'performance.json').write_text(json.dumps(metrics,indent=2))
+    app.worldLoadExecutor.shutdown(wait=True);pygame.quit()
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
-    (render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)
+    (render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)

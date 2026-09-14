@@ -117,6 +117,17 @@ def test_write_build_is_atomic_v5_and_round_trips_state(tmp_path):
     assert loaded.structure_positions == {(2, 3, 4)}
 
 
+def test_captured_source_palette_round_trips_on_ordinary_blocks(tmp_path):
+    path=tmp_path/'capture.json.gz'
+    props=BlockProperties(sourceCapture='warped_forest',sourcePalette=7)
+    snapshot=WorldSnapshot(8,8,16,blocks={(2,3,4):Block.STONE},properties={(2,3,4):props})
+    write_build(path,snapshot,DEFINITIONS)
+    loaded=read_build(path,CATALOG,BuildReadPolicy()).snapshot
+    assert loaded.properties[(2,3,4)].sourceCapture=='warped_forest'
+    assert loaded.properties[(2,3,4)].sourcePalette==7
+    assert props.copy().sourceCapture==props.sourceCapture
+
+
 def test_redstone_component_state_round_trips(tmp_path):
     path = tmp_path / "redstone.json.gz"
     properties = BlockProperties(

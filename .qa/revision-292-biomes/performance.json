@@ -1,0 +1,58 @@
+[
+  {
+    "biome": "the_end",
+    "blocks": 568661,
+    "ready_ms": 6696.89,
+    "loading_frame_max_ms": 1586.66,
+    "views": [
+      {
+        "rotation": 0,
+        "drawn": 41149,
+        "frame_p95_ms": 3.89
+      },
+      {
+        "rotation": 1,
+        "drawn": 41083,
+        "frame_p95_ms": 3.65
+      },
+      {
+        "rotation": 2,
+        "drawn": 40878,
+        "frame_p95_ms": 4.29
+      },
+      {
+        "rotation": 3,
+        "drawn": 41107,
+        "frame_p95_ms": 3.76
+      }
+    ]
+  },
+  {
+    "biome": "deep_ocean",
+    "blocks": 30696,
+    "ready_ms": 1096.59,
+    "loading_frame_max_ms": 570.16,
+    "views": [
+      {
+        "rotation": 3,
+        "drawn": 5200,
+        "frame_p95_ms": 9.51
+      },
+      {
+        "rotation": 0,
+        "drawn": 5210,
+        "frame_p95_ms": 9.36
+      },
+      {
+        "rotation": 1,
+        "drawn": 4748,
+        "frame_p95_ms": 11.9
+      },
+      {
+        "rotation": 2,
+        "drawn": 5065,
+        "frame_p95_ms": 9.74
+      }
+    ]
+  }
+]

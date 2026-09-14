@@ -1,0 +1,130 @@
+[
+  {
+    "page": "welcome",
+    "width": 1200,
+    "dispatch_ms": 5.94,
+    "ready_ms": 122.05,
+    "max_loading_frame_ms": 78.68,
+    "p95_ms": 2.16
+  },
+  {
+    "page": "blocks",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 528.04,
+    "max_loading_frame_ms": 96.82,
+    "p95_ms": 3.66
+  },
+  {
+    "page": "camera",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 1293.59,
+    "max_loading_frame_ms": 223.63,
+    "p95_ms": 2.12
+  },
+  {
+    "page": "history",
+    "width": 1200,
+    "dispatch_ms": 0.1,
+    "ready_ms": 10705.88,
+    "max_loading_frame_ms": 1028.99,
+    "p95_ms": 2.23
+  },
+  {
+    "page": "structures",
+    "width": 1200,
+    "dispatch_ms": 5.08,
+    "ready_ms": 18032.35,
+    "max_loading_frame_ms": 910.18,
+    "p95_ms": 2.86
+  },
+  {
+    "page": "terrain",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 1267.06,
+    "max_loading_frame_ms": 331.19,
+    "p95_ms": 2.62
+  },
+  {
+    "page": "biomes",
+    "width": 1200,
+    "dispatch_ms": 0.12,
+    "ready_ms": 2576.45,
+    "max_loading_frame_ms": 556.36,
+    "p95_ms": 2.6
+  },
+  {
+    "page": "dimensions",
+    "width": 1200,
+    "dispatch_ms": 0.61,
+    "ready_ms": 1680.26,
+    "max_loading_frame_ms": 533.03,
+    "p95_ms": 2.84
+  },
+  {
+    "page": "skies",
+    "width": 1200,
+    "dispatch_ms": 99.97,
+    "ready_ms": 239.98,
+    "max_loading_frame_ms": 127.68,
+    "p95_ms": 4.29
+  },
+  {
+    "page": "rain",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 2022.65,
+    "max_loading_frame_ms": 291.64,
+    "p95_ms": 3.86
+  },
+  {
+    "page": "snow",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 1838.05,
+    "max_loading_frame_ms": 143.13,
+    "p95_ms": 4.57
+  },
+  {
+    "page": "liquids",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 20396.87,
+    "max_loading_frame_ms": 405.48,
+    "p95_ms": 4.91
+  },
+  {
+    "page": "lighting",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 11059.81,
+    "max_loading_frame_ms": 1274.44,
+    "p95_ms": 3.86
+  },
+  {
+    "page": "redstone",
+    "width": 1200,
+    "dispatch_ms": 0.08,
+    "ready_ms": 509.56,
+    "max_loading_frame_ms": 458.7,
+    "p95_ms": 4.41
+  },
+  {
+    "page": "worldmap",
+    "width": 1200,
+    "dispatch_ms": 683.93,
+    "ready_ms": 901.11,
+    "max_loading_frame_ms": 203.49,
+    "p95_ms": 3.8
+  },
+  {
+    "page": "saving",
+    "width": 1200,
+    "dispatch_ms": 0.07,
+    "ready_ms": 1826.35,
+    "max_loading_frame_ms": 292.24,
+    "p95_ms": 3.07
+  }
+]

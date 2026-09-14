@@ -43,7 +43,7 @@ def test_dead_duplicate_types_are_not_exported():
 
 
 def test_block_enum_name_and_value_contract():
-    values = [(member.name, member.value) for member in blocFantome.BlockType if member.name != "COMPARATOR"]
+    values = [(member.name, member.value) for member in blocFantome.BlockType if member.name != "COMPARATOR" and member.value < 560]
     assert blocFantome.BlockType.COMPARATOR.value == 548
     assert len(values) == 340
     assert _digest(values) == "8ef8365c6f45454d4a1ecb022164e8263c90e8ed759dd6462d8a95015019697a"
@@ -52,11 +52,11 @@ def test_block_enum_name_and_value_contract():
 def test_block_catalog_and_sound_contract():
     definitions = [
         (block.name, vars(definition))
-        for block, definition in blocFantome.BLOCK_DEFINITIONS.items() if block.name != "COMPARATOR"
+        for block, definition in blocFantome.BLOCK_DEFINITIONS.items() if block.name != "COMPARATOR" and block.value < 560
     ]
     sounds = [
         (block.name, vars(sound))
-        for block, sound in blocFantome.BLOCK_SOUNDS.items() if block.name != "COMPARATOR"
+        for block, sound in blocFantome.BLOCK_SOUNDS.items() if block.name != "COMPARATOR" and block.value < 560
     ]
     assert len(definitions) == len(sounds) == 339
     assert _digest(definitions) == "e85e4cb9105c7192f255cf9c1e3fcfc85c5c0be437aa465303a0a02944fddfa2"
@@ -65,7 +65,7 @@ def test_block_catalog_and_sound_contract():
 
 def test_category_order_and_membership_contract():
     categories = [
-        (name, [block.name for block in blocks if block.name != "COMPARATOR"])
+        (name, [block.name for block in blocks if block.name != "COMPARATOR" and block.value < 560])
         for name, blocks in blocFantome.BLOCK_CATEGORIES.items()
     ]
     assert len(categories) == 12
@@ -89,8 +89,11 @@ def test_structure_tutorial_and_weather_summary_contract():
     ]
     assert len(structures) == 40
     assert _digest(structures) == "00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2"
-    assert len(tutorial) == 17
-    assert _digest(tutorial) == "feb5ea23a90ee8d142e7ef811203e624a657cf21d29d503fd2d05abc8e43c0ae"
+    from engine.tutorial_lessons import TOUR
+    assert len(tutorial) == len(TOUR) == 16
+    assert len({step['id'] for step in TOUR}) == len(TOUR)
+    assert all(not step['goals'] and step['hint'] for step in TOUR)
+    assert sum(bool(step['is_horror']) for step in TOUR) == 0
     assert _digest(blocFantome.DIMENSION_WEATHER) == "ba1a097351944d2a2aa27be50da2a101866f25f4b52f952fb757e0beb3f5da65"
 
 
@@ -139,3 +142,14 @@ def test_structure_registry_composition_does_not_mutate_builtin_mapping():
 
     assert composed == builtins
     assert composed is not builtins
+
+
+def test_biome_palette_additions_have_stable_ids_and_complete_catalogs():
+    names=['MYCELIUM','PODZOL','RED_SAND','MUSHROOM_STEM','RED_MUSHROOM_BLOCK','BROWN_MUSHROOM_BLOCK',
+           'BAMBOO','POPPY','DANDELION','SUNFLOWER','BRAIN_CORAL_BLOCK','FIRE_CORAL_BLOCK','TUBE_CORAL_BLOCK','LILY_PAD']
+    for index,name in enumerate(names):
+        block=blocFantome.BlockType[name]
+        assert block.value == 560+index
+        assert block in blocFantome.BLOCK_DEFINITIONS
+        assert block in blocFantome.BLOCK_SOUNDS
+        assert block in blocFantome.BLOCK_CATEGORIES['Natural']

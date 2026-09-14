@@ -1,0 +1,10 @@
+[
+  {
+    "page": "liquids",
+    "width": 1200,
+    "dispatch_ms": 0.64,
+    "ready_ms": 6855.6,
+    "max_loading_frame_ms": 217.7,
+    "p95_ms": 5.78
+  }
+]

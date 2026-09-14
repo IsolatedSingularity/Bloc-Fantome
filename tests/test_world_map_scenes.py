@@ -35,7 +35,7 @@ def test_nether_regions_preserve_full_vanilla_assemblies_and_all_five_biomes():
     for key,_label in REGIONS['nether']:
         data=load_region('nether',key)
         assert data['seed']==1 and data['data_version']==2567
-        assert len(data['chunks'])==225
+        assert len(data['chunks'])==data['size'][0]*data['size'][1]//256
         biomes.update(map(int,data['biomes']))
     assert {8,170,171,172,173} <= biomes
     bastion=load_region('nether','bastion')['structures']['bastion_remnant:-50,-9']
@@ -44,6 +44,20 @@ def test_nether_regions_preserve_full_vanilla_assemblies_and_all_five_biomes():
     fortress=load_region('nether','fortress')['structures']['fortress:21,-8']
     assert len(fortress['Children'])==147
     assert fortress['BB']==[237,48,-184,454,83,-13]
+    data=load_region('nether','fortress')
+    ox,oz=data['origin']
+    for piece in fortress['Children']:
+        x0,y0,z0,x1,y1,z1=piece['BB']
+        assert ox<=x0<=x1<ox+data['size'][0]
+        assert oz<=z0<=z1<oz+data['size'][1]
+    states={(x+ox,z+oz,y):data['palette'][pid]['Name'] for x,z,y,pid in data['blocks']}
+    for piece in fortress['Children']:
+        x0,y0,z0,x1,y1,z1=piece['BB']
+        if piece['id']=='minecraft:necsr':
+            assert sum(states.get((x,z,y0+4))=='minecraft:soul_sand'
+                       for x in range(x0,x1+1) for z in range(z0,z1+1))==20
+        elif piece['id']=='minecraft:nece':
+            assert states.get(((x0+x1)//2,(z0+z1)//2,y0+5))=='minecraft:lava'
 
 
 def test_end_capture_contains_central_island_and_complete_natural_city_ship():
@@ -88,23 +102,56 @@ def test_ocean_hub_has_full_58_block_monument_without_decorative_water_blocks():
     assert counts['minecraft:kelp'] > 0 and counts['minecraft:seagrass'] > 0
     assert counts['minecraft:water'] == 0
     assert scene.runtime_dimension == 'overworld'
-    assert scene.route_indices == (0,)
+    assert scene.route_indices == (0,1)
     ship = load_region('ocean','shipwreck')
     assert ship['structures']['shipwreck:-18,11']['BB'] == [-292,50,187,-269,58,195]
     assert not world.blocks
 
 
-def test_overworld_has_requested_biomes_and_complete_taiga_village():
+def test_overworld_has_snowy_taiga_and_larger_mushroom_islands():
     taiga = load_region('overworld','taiga')
     mushroom = load_region('overworld','mushroom')
-    assert '5' in taiga['biomes'] and '14' in mushroom['biomes']
+    assert '30' in taiga['biomes'] and '14' in mushroom['biomes']
     assert any(p['Name']=='minecraft:spruce_log' for p in taiga['palette'])
     assert {'minecraft:mycelium','minecraft:red_mushroom_block','minecraft:brown_mushroom_block'} <= {p['Name'] for p in mushroom['palette']}
-    ox,oz=taiga['origin']
-    for piece in taiga['structures']['village:-11,-18']['Children']:
-        x0,y0,z0,x1,y1,z1=piece['BB']
-        assert ox<=x0<=x1<ox+taiga['size'][0]
-        assert oz<=z0<=z1<oz+taiga['size'][1]
+    counts=Counter(taiga['palette'][pid]['Name'] for x,z,y,pid in taiga['blocks'])
+    assert counts['minecraft:snow'] > 1000
+    assert mushroom['size'][0]>=512
+    counts=Counter(mushroom['palette'][pid]['Name'] for x,z,y,pid in mushroom['blocks'])
+    assert counts['minecraft:red_mushroom_block']>100
+    assert counts['minecraft:brown_mushroom_block']>100
+
+
+def test_every_region_has_two_named_nonplayable_landmarks():
+    world=_world()
+    for dimension,regions in REGIONS.items():
+        for key,_ in regions:
+            scene=build_region_hub(world,dimension,key)
+            assert not scene.playable_anchors
+            assert len(scene.locked_anchors)==len(scene.route_labels)==2
+            assert scene.route_labels[0]!=scene.route_labels[1]
+
+
+def test_biome_selection_and_portal_provenance():
+    for dimension,key,biome,minimum in [('overworld','plains','1',.75),
+                                      ('overworld','flowers','132',.6),
+                                      ('overworld','desert','2',.8),
+                                      ('nether','warped','172',.9),
+                                      ('nether','crimson','171',.9),
+                                      ('nether','valley','170',.89),
+                                      ('nether','deltas','173',.85)]:
+        data=load_region(dimension,key)
+        assert data['surface_biomes'][biome]/sum(data['surface_biomes'].values())>=minimum
+    swamp=load_region('overworld','swamp')
+    assert any(name.startswith('ruined_portal:') for name in swamp['structures'])
+    reef=load_region('ocean','reef')
+    counts=Counter(reef['palette'][pid]['Name'] for x,z,y,pid in reef['blocks'])
+    assert sum(count for name,count in counts.items() if 'coral' in name)>100
+    assert counts['minecraft:sea_pickle']>0
+    warped=load_region('nether','warped')
+    assert len(warped['decoration_blocks'])==20
+    assert all(warped['palette'][pid]['Name']!='minecraft:nether_portal' for x,z,y,pid in warped['blocks'])
+    assert sum(warped['palette'][pid]['Name']=='minecraft:nether_portal' for x,z,y,pid in warped['decoration_blocks'])==6
 
 
 def test_outer_islands_have_no_end_stone_at_capture_boundaries():
