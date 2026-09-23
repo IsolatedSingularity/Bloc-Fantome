@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-09-20",
+  "items": [
+    {
+      "id": "sky-cloud-cube",
+      "title": "Cloudy Skyboxes · cubemaps",
+      "creator": "Screaming Brain Studios",
+      "source_url": "https://opengameart.org/content/cloudy-skyboxes-0",
+      "license": "CC0-1.0",
+      "format": "2048×1536 horizontal-cross PNGs; 512×512 faces",
+      "mood": "cloud masses; dusk; night",
+      "notes": "Publisher describes 25 skies in two projections; one sentence says 32 files per pack, so archive member count remains unverified. Convert the cross layout to Bloc 3×2.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null,
+      "group": "skyboxes",
+      "url": null,
+      "output": "skyboxes/sbs_-_cloudy_skyboxes_-_cubemap.zip",
+      "kind": "zip",
+      "max_bytes": 33554432,
+      "resolver": {
+        "type": "page_link",
+        "basename": "sbs_-_cloudy_skyboxes_-_cubemap.zip",
+        "allowed_hosts": [
+          "opengameart.org"
+        ]
+      }
+    },
+    {
+      "id": "sky-cloud-pano",
+      "title": "Cloudy Skyboxes · panoramas",
+      "creator": "Screaming Brain Studios",
+      "source_url": "https://opengameart.org/content/cloudy-skyboxes-0",
+      "license": "CC0-1.0",
+      "format": "2048×1024 equirectangular PNGs",
+      "mood": "same sky collection in another projection",
+      "notes": "Alternative to cubemaps, not an additional 25 unique skies. Choose one projection rather than download both automatically.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null,
+      "group": "skyboxes",
+      "url": null,
+      "output": "skyboxes/sbs_-_cloudy_skyboxes_-_panorama.zip",
+      "kind": "zip",
+      "max_bytes": 41943040,
+      "resolver": {
+        "type": "page_link",
+        "basename": "sbs_-_cloudy_skyboxes_-_panorama.zip",
+        "allowed_hosts": [
+          "opengameart.org"
+        ]
+      }
+    },
+    {
+      "id": "sky-space",
+      "title": "Space Skyboxes",
+      "creator": "StumpyStrust",
+      "source_url": "https://opengameart.org/content/space-skyboxes-0",
+      "license": "CC0-1.0",
+      "format": "SpaceScape cubemaps",
+      "mood": "surreal/cosmic; optional comparison",
+      "notes": "Correct author for this exact OpenGameArt URL is StumpyStrust, not Screaming Brain Studios. Published bkg.zip is about 122.3 MB; page-only, deliberately excluded from automatic bulk fetch.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null
+    },
+    {
+      "id": "sky-kenney",
+      "title": "Skybox Pack",
+      "creator": "Kenney",
+      "source_url": "https://kenney.nl/assets/skybox-pack",
+      "license": "CC0-1.0",
+      "format": "pack; inspect projection after acquisition",
+      "mood": "stylized baseline for comparison",
+      "notes": "Earlier page inspection reported CC0 and 22 files. A later fetch failed; exact package contents and current direct URL remain unresolved. Page-only.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null
+    },
+    {
+      "id": "sky-qwantani",
+      "title": "Qwantani Dusk 2 (Pure Sky)",
+      "creator": "Greg Zaal (photography), Jarod Guest (processing)",
+      "source_url": "https://polyhaven.com/a/qwantani_dusk_2_puresky",
+      "license": "CC0-1.0",
+      "format": "HDRI source; optional tonemapped panorama",
+      "mood": "quiet dusk; soft warm horizon",
+      "notes": "Sky-only photographic source. A web preview was visually inspected, not decoded locally or checked for cubemap seams. Choose a lower resolution through the page to avoid its large default HDR/EXR download.",
+      "verification": "web_preview_inspected",
+      "bundled": false,
+      "local_path": null
+    },
+    {
+      "id": "sky-kloppenheim06",
+      "title": "Kloppenheim 06 (Pure Sky)",
+      "creator": "Greg Zaal (original), Jarod Guest (sky edits)",
+      "source_url": "https://polyhaven.com/a/kloppenheim_06_puresky",
+      "license": "CC0-1.0",
+      "format": "HDRI; tonemapped panorama available",
+      "mood": "soft low-contrast light; cool ambient sky",
+      "notes": "Sky-only source. Page describes warm rays and scattered cloud. Metadata-only curation; not a downloaded/converted atlas.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null
+    },
+    {
+      "id": "sky-satara",
+      "title": "Satara Night",
+      "creator": "Greg Zaal",
+      "source_url": "https://polyhaven.com/a/satara_night",
+      "license": "CC0-1.0",
+      "format": "tonemapped JPEG panorama; HDRI also available",
+      "mood": "stars and Milky Way; wide night field",
+      "notes": "Visually inspected web image: bright village lights, huts and trees remain at the horizon. Not a pure sky. Reframe/edit before using as an isolated void backdrop.",
+      "verification": "web_image_inspected",
+      "bundled": false,
+      "local_path": null,
+      "group": "skyboxes",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/satara_night.jpg",
+      "output": "skyboxes/satara_night.jpg",
+      "kind": "jpeg",
+      "max_bytes": 12582912
+    },
+    {
+      "id": "sky-moonlit",
+      "title": "Moonlit Golf",
+      "creator": "Greg Zaal",
+      "source_url": "https://polyhaven.com/a/moonlit_golf",
+      "license": "CC0-1.0",
+      "format": "HDRI; tonemapped JPEG panorama",
+      "mood": "cool moonlit night; faint stars",
+      "notes": "Not a pure sky: field and trees remain. Page publishes a tonemapped JPEG option; no local decode or seam review.",
+      "verification": "metadata_only",
+      "bundled": false,
+      "local_path": null,
+      "group": "skyboxes",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/moonlit_golf.jpg",
+      "output": "skyboxes/moonlit_golf.jpg",
+      "kind": "jpeg",
+      "max_bytes": 12582912
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "errors": [],
+  "files_checked": 42,
+  "source_fetch_entries": 83,
+  "create_scene_files": 47,
+  "music_candidates": 11,
+  "ui_sources": 4,
+  "sky_entries": 8,
+  "external_url_checks": "Not performed by this validator; see QA.md for research coverage"
+}

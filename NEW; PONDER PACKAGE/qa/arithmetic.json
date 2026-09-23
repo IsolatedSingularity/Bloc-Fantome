@@ -1,0 +1,32 @@
+{
+  "ponder_movement": {
+    "distance_blocks": 2,
+    "ticks": 40,
+    "ticks_per_second": 20,
+    "seconds": 2.0,
+    "blocks_per_second": 1.0
+  },
+  "bloc_example": {
+    "distance_blocks": 1,
+    "milliseconds": 100,
+    "blocks_per_second": 10.0
+  },
+  "speed_ratio_example": 10.0,
+  "assumed_60fps_frame_intervals": {
+    "ponder": 120.0,
+    "bloc": 6.0
+  },
+  "pcm_example": {
+    "seconds": 180,
+    "sample_rate": 44100,
+    "channels": 2,
+    "bytes_per_sample": 2,
+    "bytes": 31752000,
+    "MiB": 30.28106689453125
+  },
+  "mask_example": {
+    "texels_per_face": 256,
+    "three_faces_1000_blocks": 768000
+  },
+  "note": "Arithmetic verified by Python. These are dimensional examples, not measured frame rates, decoder memory or renderer performance."
+}

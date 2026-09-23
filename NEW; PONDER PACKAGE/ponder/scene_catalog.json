@@ -1,0 +1,431 @@
+{
+  "schema_version": 1,
+  "repository": "Creators-of-Create/Create",
+  "commit": "fc9535d82a29419164a1e9dc9c678bdcddeab30d",
+  "count_definition": "Java scene source files, not storyboard registrations",
+  "files": [
+    {
+      "id": "c-armscenes",
+      "family": "ArmScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ArmScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ArmScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-bearingscenes",
+      "family": "BearingScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BearingScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BearingScenes.java",
+      "coverage": "representative_methods_read",
+      "is_template": false
+    },
+    {
+      "id": "c-beltscenes",
+      "family": "BeltScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BeltScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BeltScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-cartassemblerscenes",
+      "family": "CartAssemblerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CartAssemblerScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CartAssemblerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-chaindrivescenes",
+      "family": "ChainDriveScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChainDriveScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChainDriveScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-chassisscenes",
+      "family": "ChassisScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChassisScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChassisScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-chutescenes",
+      "family": "ChuteScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChuteScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChuteScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-crafterscenes",
+      "family": "CrafterScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CrafterScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CrafterScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-deployerscenes",
+      "family": "DeployerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DeployerScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DeployerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-detectorscenes",
+      "family": "DetectorScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DetectorScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DetectorScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-displayscenes",
+      "family": "DisplayScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DisplayScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DisplayScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-ejectorscenes",
+      "family": "EjectorScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/EjectorScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/EjectorScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-elevatorscenes",
+      "family": "ElevatorScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ElevatorScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ElevatorScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-fanscenes",
+      "family": "FanScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FanScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FanScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-funnelscenes",
+      "family": "FunnelScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FunnelScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FunnelScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-gantryscenes",
+      "family": "GantryScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/GantryScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/GantryScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-itemvaultscenes",
+      "family": "ItemVaultScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ItemVaultScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ItemVaultScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-kineticsscenes",
+      "family": "KineticsScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/KineticsScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/KineticsScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-mechanicaldrillscenes",
+      "family": "MechanicalDrillScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalDrillScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalDrillScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-mechanicalsawscenes",
+      "family": "MechanicalSawScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalSawScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalSawScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-movementactorscenes",
+      "family": "MovementActorScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MovementActorScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MovementActorScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-pistonscenes",
+      "family": "PistonScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PistonScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PistonScenes.java",
+      "coverage": "representative_methods_read",
+      "is_template": false
+    },
+    {
+      "id": "c-processingscenes",
+      "family": "ProcessingScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ProcessingScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ProcessingScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-pulleyscenes",
+      "family": "PulleyScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PulleyScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PulleyScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-redstonescenes",
+      "family": "RedstoneScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes.java",
+      "coverage": "representative_methods_read",
+      "is_template": false
+    },
+    {
+      "id": "c-redstonescenes2",
+      "family": "RedstoneScenes2",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes2.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes2.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-rollerscenes",
+      "family": "RollerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RollerScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RollerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-steamscenes",
+      "family": "SteamScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/SteamScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/SteamScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-templatescenes",
+      "family": "TemplateScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TemplateScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TemplateScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": true
+    },
+    {
+      "id": "c-tunnelscenes",
+      "family": "TunnelScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TunnelScenes.java",
+      "category": "root",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TunnelScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-drainscenes",
+      "family": "DrainScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/DrainScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/DrainScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-fluidmanipulationscenes",
+      "family": "FluidManipulationScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidManipulationScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidManipulationScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-fluidtankscenes",
+      "family": "FluidTankScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidTankScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidTankScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-pipescenes",
+      "family": "PipeScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PipeScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PipeScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-pumpscenes",
+      "family": "PumpScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PumpScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PumpScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-spoutscenes",
+      "family": "SpoutScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/SpoutScenes.java",
+      "category": "fluid",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/SpoutScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-factorygaugescenes",
+      "family": "FactoryGaugeScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/FactoryGaugeScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/FactoryGaugeScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-packagerscenes",
+      "family": "PackagerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/PackagerScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/PackagerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-repackagerscenes",
+      "family": "RepackagerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/RepackagerScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/RepackagerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-stocklinkscenes",
+      "family": "StockLinkScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockLinkScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockLinkScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-stocktickerscenes",
+      "family": "StockTickerScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockTickerScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockTickerScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-tableclothscenes",
+      "family": "TableClothScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/TableClothScenes.java",
+      "category": "highLogistics",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/TableClothScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-trackobserverscenes",
+      "family": "TrackObserverScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackObserverScenes.java",
+      "category": "trains",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackObserverScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-trackscenes",
+      "family": "TrackScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackScenes.java",
+      "category": "trains",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-trainscenes",
+      "family": "TrainScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainScenes.java",
+      "category": "trains",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-trainsignalscenes",
+      "family": "TrainSignalScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainSignalScenes.java",
+      "category": "trains",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainSignalScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    },
+    {
+      "id": "c-trainstationscenes",
+      "family": "TrainStationScenes",
+      "path": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainStationScenes.java",
+      "category": "trains",
+      "source_url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainStationScenes.java",
+      "coverage": "directory_entry_only",
+      "is_template": false
+    }
+  ]
+}

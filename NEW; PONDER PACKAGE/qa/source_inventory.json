@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-09-20",
+  "sources": [
+    {
+      "id": "p-license",
+      "title": "LICENSE",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/LICENSE",
+      "note": "MIT, copyright The Create Team."
+    },
+    {
+      "id": "p-scene",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/PonderScene.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/PonderScene.java",
+      "note": "Schedule, virtual world, reset/replay, render passes and SceneTransform."
+    },
+    {
+      "id": "p-builder",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/PonderSceneBuilder.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/PonderSceneBuilder.java",
+      "note": "Scene facade, explicit delay instructions, 20 ticks per second convention."
+    },
+    {
+      "id": "p-api",
+      "title": "common/src/main/java/net/createmod/ponder/api/scene/SceneBuilder.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/api/scene/SceneBuilder.java",
+      "note": "Documented storyboard API and delay semantics."
+    },
+    {
+      "id": "p-story",
+      "title": "common/src/main/java/net/createmod/ponder/api/scene/PonderStoryBoard.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/api/scene/PonderStoryBoard.java",
+      "note": "program(SceneBuilder, SceneBuildingUtil) functional interface."
+    },
+    {
+      "id": "p-section",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/element/WorldSectionElementImpl.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/element/WorldSectionElementImpl.java",
+      "note": "Section geometry, per-layer caches, transforms, block entities and selection."
+    },
+    {
+      "id": "p-level",
+      "title": "common/src/main/java/net/createmod/ponder/api/level/PonderLevel.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/api/level/PonderLevel.java",
+      "note": "Isolated schematic world and virtual rendering support."
+    },
+    {
+      "id": "p-animate",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/instruction/AnimateElementInstruction.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/instruction/AnimateElementInstruction.java",
+      "note": "Linear delta interpolation, nonblocking animation."
+    },
+    {
+      "id": "p-move",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/instruction/AnimateWorldSectionInstruction.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/instruction/AnimateWorldSectionInstruction.java",
+      "note": "Translation and Euler-rotation adapters; zero-duration force update."
+    },
+    {
+      "id": "p-ticking",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/instruction/TickingInstruction.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/instruction/TickingInstruction.java",
+      "note": "Remaining ticks, completion and blocking behavior."
+    },
+    {
+      "id": "p-ui",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/ui/PonderUI.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/ui/PonderUI.java",
+      "note": "Playback and inspection interface; relevant render excerpts examined."
+    },
+    {
+      "id": "p-debug",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/content/DebugScenes.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/content/DebugScenes.java",
+      "note": "Reference for simultaneous movement/rotation; search excerpts only."
+    },
+    {
+      "id": "p-registry",
+      "title": "common/src/main/java/net/createmod/ponder/foundation/registration/PonderSceneRegistry.java",
+      "url": "https://github.com/Creators-of-Create/Ponder/blob/89819291b726708d119b118dea01667eae0b64c9/common/src/main/java/net/createmod/ponder/foundation/registration/PonderSceneRegistry.java",
+      "note": "Schematic/storyboard registry; search excerpts only."
+    },
+    {
+      "id": "c-license",
+      "title": "LICENSE.md",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/LICENSE.md",
+      "note": "MIT code; assets directory explicitly excluded."
+    },
+    {
+      "id": "c-registry",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/AllCreatePonderScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/AllCreatePonderScenes.java",
+      "note": "Item-to-storyboard registry. mechanical_piston/anchor maps to PistonScenes::movement."
+    },
+    {
+      "id": "c-builder",
+      "title": "src/main/java/com/simibubi/create/foundation/ponder/CreateSceneBuilder.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/foundation/ponder/CreateSceneBuilder.java",
+      "note": "Create-specific kinetic, belt, block-entity and virtual-world helpers."
+    },
+    {
+      "id": "c-armscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ArmScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ArmScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-bearingscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BearingScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BearingScenes.java",
+      "note": "Representative methods read and analyzed."
+    },
+    {
+      "id": "c-beltscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BeltScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/BeltScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-cartassemblerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CartAssemblerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CartAssemblerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-chaindrivescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChainDriveScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChainDriveScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-chassisscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChassisScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChassisScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-chutescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChuteScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ChuteScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-crafterscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CrafterScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/CrafterScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-deployerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DeployerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DeployerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-detectorscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DetectorScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DetectorScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-displayscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DisplayScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/DisplayScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-ejectorscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/EjectorScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/EjectorScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-elevatorscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ElevatorScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ElevatorScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-fanscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FanScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FanScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-funnelscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FunnelScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/FunnelScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-gantryscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/GantryScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/GantryScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-itemvaultscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ItemVaultScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ItemVaultScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-kineticsscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/KineticsScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/KineticsScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-mechanicaldrillscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalDrillScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalDrillScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-mechanicalsawscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalSawScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MechanicalSawScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-movementactorscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MovementActorScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/MovementActorScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-pistonscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PistonScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PistonScenes.java",
+      "note": "Representative methods read and analyzed."
+    },
+    {
+      "id": "c-processingscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ProcessingScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/ProcessingScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-pulleyscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PulleyScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/PulleyScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-redstonescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes.java",
+      "note": "Representative methods read and analyzed."
+    },
+    {
+      "id": "c-redstonescenes2",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes2.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RedstoneScenes2.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-rollerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RollerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/RollerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-steamscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/SteamScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/SteamScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-templatescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TemplateScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TemplateScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-tunnelscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TunnelScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/TunnelScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-drainscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/DrainScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/DrainScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-fluidmanipulationscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidManipulationScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidManipulationScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-fluidtankscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidTankScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/FluidTankScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-pipescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PipeScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PipeScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-pumpscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PumpScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/PumpScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-spoutscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/SpoutScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/fluid/SpoutScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-factorygaugescenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/FactoryGaugeScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/FactoryGaugeScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-packagerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/PackagerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/PackagerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-repackagerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/RepackagerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/RepackagerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-stocklinkscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockLinkScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockLinkScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-stocktickerscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockTickerScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/StockTickerScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-tableclothscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/TableClothScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/highLogistics/TableClothScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-trackobserverscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackObserverScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackObserverScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-trackscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrackScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-trainscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-trainsignalscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainSignalScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainSignalScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "c-trainstationscenes",
+      "title": "src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainStationScenes.java",
+      "url": "https://github.com/Creators-of-Create/Create/blob/fc9535d82a29419164a1e9dc9c678bdcddeab30d/src/main/java/com/simibubi/create/infrastructure/ponder/scenes/trains/TrainStationScenes.java",
+      "note": "Directory entry verified; body not exhaustively audited."
+    },
+    {
+      "id": "b-redstone",
+      "title": "Code/engine/redstone.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/redstone.py",
+      "note": "PistonMotion, 50 ms logic step, 100 ms movement and interpolated payloads."
+    },
+    {
+      "id": "b-models",
+      "title": "Code/engine/piston_models.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/piston_models.py",
+      "note": "Canonical element geometry and UVs, not a replacement animation engine."
+    },
+    {
+      "id": "b-model-renderer",
+      "title": "Code/engine/model_renderer.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/model_renderer.py",
+      "note": "Model-space to renderer-axis mapping; targeted search excerpts."
+    },
+    {
+      "id": "b-cache",
+      "title": "Code/engine/lab_render_cache.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/lab_render_cache.py",
+      "note": "Electrical-only draw-list reuse and retained painter order."
+    },
+    {
+      "id": "b-sky",
+      "title": "Code/engine/skybox.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/skybox.py",
+      "note": "Six-face 3x2 atlas, cached software/native projection, independent drift."
+    },
+    {
+      "id": "b-audio",
+      "title": "Code/engine/audio.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/audio.py",
+      "note": "Predecoded music, preload cache, sequences, MP3 silence trimming."
+    },
+    {
+      "id": "b-tutorial",
+      "title": "Code/engine/tutorial_runtime.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/engine/tutorial_runtime.py",
+      "note": "Snapshot-based practice session and existing tutorial progress events."
+    },
+    {
+      "id": "b-visual-tests",
+      "title": "tests/render_visual_checks.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/tests/render_visual_checks.py",
+      "note": "Existing visual checks; read excerpts, not executed here."
+    },
+    {
+      "id": "b-integration-tests",
+      "title": "tests/test_app_integration.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/tests/test_app_integration.py",
+      "note": "Existing integration assertions; read excerpts, not executed here."
+    },
+    {
+      "id": "b-redstone-tests",
+      "title": "tests/test_redstone.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/tests/test_redstone.py",
+      "note": "In-flight payload regression test located through search."
+    },
+    {
+      "id": "b-readme",
+      "title": "README.md",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/README.md",
+      "note": "Project overview; documentation claims are not independent runtime verification."
+    },
+    {
+      "id": "b-handoff",
+      "title": ".qa/revision-292-handoff.md",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/.qa/revision-292-handoff.md",
+      "note": "2.9.2 handoff; historical QA claims, not rerun."
+    },
+    {
+      "id": "b-app",
+      "title": "Code/blocFantome.py",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/Code/blocFantome.py",
+      "note": "Path verified. Connector could not return the 1,092,830-byte application body."
+    },
+    {
+      "id": "v-final",
+      "title": "shaders/final.fsh",
+      "url": "https://github.com/JumperOnJava/Voxel-Vibes/blob/cf993c038916b48f9a7ee75ed5d9b718d460a1a2/shaders/final.fsh",
+      "note": "World-coordinate quantization and distance-to-sky fog read directly."
+    },
+    {
+      "id": "x-fragment",
+      "title": "shaders/program/base_gbuffers/base_fragment.glsl",
+      "url": "https://github.com/kolgushev/Pixel-Perfect-B/blob/6703487c1e360503510daf54deee8cd7749afc60/shaders/program/base_gbuffers/base_fragment.glsl",
+      "note": "World-aligned shadow receiver sampling; exact quantization excerpt inspected."
+    },
+    {
+      "id": "x-shadow",
+      "title": "shaders/lib/shading/get_shadow.glsl",
+      "url": "https://github.com/kolgushev/Pixel-Perfect-B/blob/6703487c1e360503510daf54deee8cd7749afc60/shaders/lib/shading/get_shadow.glsl",
+      "note": "Absolute-position-anchored noise sampling excerpt."
+    },
+    {
+      "id": "x-language",
+      "title": "shaders/lang/en_US.lang",
+      "url": "https://github.com/kolgushev/Pixel-Perfect-B/blob/6703487c1e360503510daf54deee8cd7749afc60/shaders/lang/en_US.lang",
+      "note": "Author describes pixelated shadows and Complementary inspiration."
+    },
+    {
+      "id": "v-project",
+      "title": "Voxel Vibes project page",
+      "url": "https://modrinth.com/shader/voxel-vibes",
+      "note": "Published feature list and GPL declaration; a GPU shader reference, not a CPU library."
+    },
+    {
+      "id": "sh-fog",
+      "title": "Silent Hill 2 Enhanced Edition comparison",
+      "url": "https://enhanced.townofsilenthill.com/SH2/compare.htm#fog",
+      "note": "Maintainer comparison. Older platform comparison, not a current performance benchmark or original Team Silent postmortem."
+    },
+    {
+      "id": "sky-cloud-cube",
+      "title": "Cloudy Skyboxes · cubemaps",
+      "url": "https://opengameart.org/content/cloudy-skyboxes-0",
+      "note": "Publisher describes 25 skies in two projections; one sentence says 32 files per pack, so archive member count remains unverified. Convert the cross layout to Bloc 3×2."
+    },
+    {
+      "id": "sky-cloud-pano",
+      "title": "Cloudy Skyboxes · panoramas",
+      "url": "https://opengameart.org/content/cloudy-skyboxes-0",
+      "note": "Alternative to cubemaps, not an additional 25 unique skies. Choose one projection rather than download both automatically."
+    },
+    {
+      "id": "sky-space",
+      "title": "Space Skyboxes",
+      "url": "https://opengameart.org/content/space-skyboxes-0",
+      "note": "Correct author for this exact OpenGameArt URL is StumpyStrust, not Screaming Brain Studios. Published bkg.zip is about 122.3 MB; page-only, deliberately excluded from automatic bulk fetch."
+    },
+    {
+      "id": "sky-kenney",
+      "title": "Skybox Pack",
+      "url": "https://kenney.nl/assets/skybox-pack",
+      "note": "Earlier page inspection reported CC0 and 22 files. A later fetch failed; exact package contents and current direct URL remain unresolved. Page-only."
+    },
+    {
+      "id": "sky-qwantani",
+      "title": "Qwantani Dusk 2 (Pure Sky)",
+      "url": "https://polyhaven.com/a/qwantani_dusk_2_puresky",
+      "note": "Sky-only photographic source. A web preview was visually inspected, not decoded locally or checked for cubemap seams. Choose a lower resolution through the page to avoid its large default HDR/EXR download."
+    },
+    {
+      "id": "sky-kloppenheim06",
+      "title": "Kloppenheim 06 (Pure Sky)",
+      "url": "https://polyhaven.com/a/kloppenheim_06_puresky",
+      "note": "Sky-only source. Page describes warm rays and scattered cloud. Metadata-only curation; not a downloaded/converted atlas."
+    },
+    {
+      "id": "sky-satara",
+      "title": "Satara Night",
+      "url": "https://polyhaven.com/a/satara_night",
+      "note": "Visually inspected web image: bright village lights, huts and trees remain at the horizon. Not a pure sky. Reframe/edit before using as an isolated void backdrop."
+    },
+    {
+      "id": "sky-moonlit",
+      "title": "Moonlit Golf",
+      "url": "https://polyhaven.com/a/moonlit_golf",
+      "note": "Not a pure sky: field and trees remain. Page publishes a tonemapped JPEG option; no local decode or seam review."
+    },
+    {
+      "id": "music-xb2",
+      "title": "Xenoblade Chronicles 2 official soundtrack catalogue",
+      "url": "https://www.procyon-studio.co.jp/special/xbostportal/en/xb2ost.html",
+      "note": "Exact compositions and per-track credits checked against current official list."
+    },
+    {
+      "id": "music-zelda",
+      "title": "Zelda & Piano: Ocarina of Time",
+      "url": "https://gamechops.com/zeldapiano2/",
+      "note": "GameChops: Super Piano 64 solo-piano arrangements; original composer Koji Kondo."
+    },
+    {
+      "id": "music-c418",
+      "title": "Minecraft - Volume Alpha",
+      "url": "https://c418.bandcamp.com/album/minecraft-volume-alpha",
+      "note": "Artist release and download page; track names/durations verified."
+    },
+    {
+      "id": "music-celeste",
+      "title": "Celeste Original Soundtrack",
+      "url": "https://radicaldreamland.bandcamp.com/album/celeste-original-soundtrack",
+      "note": "Lena Raine artist release; Awake is the selected candidate."
+    },
+    {
+      "id": "ui-kenney",
+      "title": "UI Audio",
+      "url": "https://kenney.nl/assets/ui-audio",
+      "note": "50 files per publisher. Dry button/switch/click reference, not automatically the desired ethereal final set."
+    },
+    {
+      "id": "ui-impact",
+      "title": "Impact Sounds",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "note": "130 foley files per publisher. Audition quiet physical contacts; no individual member filenames were inspected."
+    },
+    {
+      "id": "ui-chimes",
+      "title": "Wind Chimes",
+      "url": "https://opengameart.org/content/wind-chimes",
+      "note": "Three approximately three-minute loops, not a UI one-shot pack. Useful as a resonance audition source; original files remain unedited."
+    },
+    {
+      "id": "ui-infographics",
+      "title": "Interface & Infographics",
+      "url": "https://sonniss.com/sound-effects/interface-infographics/",
+      "note": "117 designed stereo files, 24-bit/96kHz, 99.3 MB. Named synth hardware and glass/chime/pluck tags. Preview/acquisition page only; not purchased or redistributed."
+    },
+    {
+      "id": "v-license",
+      "title": "LICENSE.txt",
+      "url": "https://github.com/JumperOnJava/Voxel-Vibes/blob/cf993c038916b48f9a7ee75ed5d9b718d460a1a2/LICENSE.txt",
+      "note": "License path identified in repository listing. Retrieve alongside source."
+    },
+    {
+      "id": "x-license",
+      "title": "LICENSE",
+      "url": "https://github.com/kolgushev/Pixel-Perfect-B/blob/6703487c1e360503510daf54deee8cd7749afc60/LICENSE",
+      "note": "License path identified in repository listing. Retrieve alongside source."
+    },
+    {
+      "id": "b-license",
+      "title": "LICENSE",
+      "url": "https://github.com/IsolatedSingularity/Bloc-Fantome/blob/0391259c5ebc0519feb324477fdc1f62bc66ccb7/LICENSE",
+      "note": "License path identified in repository listing. Retrieve alongside source."
+    }
+  ]
+}

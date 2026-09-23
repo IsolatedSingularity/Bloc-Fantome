@@ -1,0 +1,29 @@
+test_404_does_not_leave_partial (test_helpers.Tests.test_404_does_not_leave_partial) ... ok
+test_actual_manifests_parse (test_helpers.Tests.test_actual_manifests_parse) ... ok
+test_ambiguous_page_link_fails (test_helpers.Tests.test_ambiguous_page_link_fails) ... ok
+test_budget_rejects_declared_size (test_helpers.Tests.test_budget_rejects_declared_size) ... ok
+test_budget_rejects_stream_without_content_length (test_helpers.Tests.test_budget_rejects_stream_without_content_length) ... ok
+test_dry_run_writes_nothing_and_makes_no_requests (test_helpers.Tests.test_dry_run_writes_nothing_and_makes_no_requests) ... ok
+test_existing_file_preserved_without_network (test_helpers.Tests.test_existing_file_preserved_without_network) ... ok
+test_full_ponder_tree_filter (test_helpers.Tests.test_full_ponder_tree_filter) ... ok
+test_html_rejected_and_part_removed (test_helpers.Tests.test_html_rejected_and_part_removed) ... ok
+test_http_only_for_loopback_test_mode (test_helpers.Tests.test_http_only_for_loopback_test_mode) ... ok
+test_license_auto_selection (test_helpers.Tests.test_license_auto_selection) ... ok
+test_method_indexer (test_helpers.Tests.test_method_indexer) ... ok
+test_output_traversal_rejected (test_helpers.Tests.test_output_traversal_rejected) ... ok
+test_page_link_resolution (test_helpers.Tests.test_page_link_resolution) ... ok
+test_page_resolution_and_download_end_to_end_local (test_helpers.Tests.test_page_resolution_and_download_end_to_end_local) ... ok
+test_real_local_text_transfer (test_helpers.Tests.test_real_local_text_transfer) ... ok
+test_real_local_zip_crc_and_inventory (test_helpers.Tests.test_real_local_zip_crc_and_inventory) ... ok
+test_redirect_to_external_http_rejected (test_helpers.Tests.test_redirect_to_external_http_rejected) ... ok
+test_redirect_validated (test_helpers.Tests.test_redirect_validated) ... ok
+test_symlink_escape_rejected (test_helpers.Tests.test_symlink_escape_rejected) ... ok
+test_truncated_tree_rejected (test_helpers.Tests.test_truncated_tree_rejected) ... ok
+test_unknown_selection_rejected (test_helpers.Tests.test_unknown_selection_rejected) ... ok
+test_zero_bytes_rejected (test_helpers.Tests.test_zero_bytes_rejected) ... ok
+test_zip_traversal_rejected (test_helpers.Tests.test_zip_traversal_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.582s
+
+OK

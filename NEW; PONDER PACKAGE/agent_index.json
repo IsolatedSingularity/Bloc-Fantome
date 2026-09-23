@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "start": "README_FOR_AGENTS.md",
+  "routes": {
+    "piston_smoothness": [
+      "bloc_fantome/current_architecture.md",
+      "ponder/piston_redstone_deep_dive.md",
+      "bloc_fantome/ponder_mapping.md",
+      "bloc_fantome/opportunities.md"
+    ],
+    "ponder_engine": [
+      "ponder/architecture.md",
+      "ponder/animation_primitives.md",
+      "ponder/rendering.md",
+      "ponder/source_map.md"
+    ],
+    "scene_discovery": [
+      "ponder/scene_catalog.json",
+      "ponder/scene_catalog.md",
+      "scripts/source_manifest.json"
+    ],
+    "atmosphere": [
+      "rendering/pixel_locked_shadows.md",
+      "rendering/lightweight_lighting.md",
+      "rendering/fog_atmosphere.md"
+    ],
+    "sky_assets": [
+      "skyboxes/catalog.md",
+      "skyboxes/manifest.json"
+    ],
+    "audio": [
+      "audio/music_references.md",
+      "audio/ui_sound_references.md",
+      "audio/manifest.json",
+      "audio/local_music/README.md"
+    ]
+  },
+  "evidence_labels": [
+    "observed",
+    "inference",
+    "proposal"
+  ],
+  "qa": "QA.md",
+  "scope": {
+    "research_only": true,
+    "no_game_changes": true,
+    "no_horror_design": true,
+    "no_generated_audio": true
+  }
+}
