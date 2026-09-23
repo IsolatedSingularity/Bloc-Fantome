@@ -1,3 +1,7 @@
+PRE-IMPLEMENTATION QA GATE (2026-09-23)
+Read docs/PRE_IMPLEMENTATION_QA.md before further feature/refactor work.
+Resolve P0 findings first. Treat .qa patch/mutation scripts as historical unless explicitly revalidated.
+
 Next
 
 LUNA
