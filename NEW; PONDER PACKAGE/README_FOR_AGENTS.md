@@ -1,5 +1,7 @@
 # Bloc Fantôme · visual/audio reference kit
 
+> **Current Bloc integration bridge:** before translating any of this material into app work, read [`../docs/PONDER_REFERENCE_BRIDGE.md`](../docs/PONDER_REFERENCE_BRIDGE.md). It distinguishes the high-value Ponder presentation ideas from Create-specific or out-of-scope machinery.
+
 Research snapshot: 20 September 2026. **Reference material, not a game update.**
 
 Start here, then read only the relevant branch below. This kit contains source-grounded notes, a complete **47-file Create scene catalogue**, source/asset manifests, and a tested selective downloader. It does not contain a replacement renderer, a Java-to-Python port, an implemented tutorial, commercial music recordings, or a downloaded asset dump.
