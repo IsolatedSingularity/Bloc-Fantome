@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="10" time="1.740" timestamp="2026-10-18T16:49:57.715352-07:00" hostname="cathedral"><testcase classname="tests.test_public_contract" name="test_required_public_exports_remain_available" time="0.000" /><testcase classname="tests.test_public_contract" name="test_dead_duplicate_types_are_not_exported" time="0.000" /><testcase classname="tests.test_public_contract" name="test_block_enum_name_and_value_contract" time="0.001" /><testcase classname="tests.test_public_contract" name="test_block_catalog_and_sound_contract" time="0.001" /><testcase classname="tests.test_public_contract" name="test_category_order_and_membership_contract" time="0.000" /><testcase classname="tests.test_public_contract" name="test_structure_tutorial_and_weather_summary_contract" time="0.001"><failure message="AssertionError: assert 'fbd97d083d19...9fef5d6040c52' == '00a10913750f...1239f158f3dc2'&#10;  &#10;  - 00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2&#10;  + fbd97d083d199892208aed4e3ddd9e61e83fc70661ab684e87c9fef5d6040c52">def test_structure_tutorial_and_weather_summary_contract():
+        structures = [
+            (
+                key,
+                value.get("name"),
+                len(value.get("blocks", ())),
+                value.get("source_file"),
+                value.get("source_version"),
+            )
+            for key, value in blocFantome.PREMADE_STRUCTURES.items()
+        ]
+        tutorial = [
+            (step.get("title"), step.get("demo"), step.get("icon"))
+            for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
+        ]
+        assert len(structures) == 40
+&gt;       assert _digest(structures) == "00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2"
+E       AssertionError: assert 'fbd97d083d19...9fef5d6040c52' == '00a10913750f...1239f158f3dc2'
+E         
+E         - 00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2
+E         + fbd97d083d199892208aed4e3ddd9e61e83fc70661ab684e87c9fef5d6040c52
+
+tests\test_public_contract.py:91: AssertionError</failure></testcase><testcase classname="tests.test_public_contract" name="test_runtime_paths_are_absolute_and_keep_assets_external" time="0.000" /><testcase classname="tests.test_public_contract" name="test_visible_product_name_is_accented_while_executable_name_stays_compatible" time="0.025" /><testcase classname="tests.test_public_contract" name="test_structure_registry_composition_does_not_mutate_builtin_mapping" time="0.000" /><testcase classname="tests.test_public_contract" name="test_biome_palette_additions_have_stable_ids_and_complete_catalogs" time="0.000" /></testsuite></testsuites>

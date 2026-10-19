@@ -78,7 +78,8 @@ def test_structure_tutorial_and_weather_summary_contract():
             key,
             value.get("name"),
             len(value.get("blocks", ())),
-            value.get("source_file"),
+            (Path(value["source_file"]).relative_to(ROOT).as_posix()
+             if value.get("source_file") else value.get("source_file")),
             value.get("source_version"),
         )
         for key, value in blocFantome.PREMADE_STRUCTURES.items()
@@ -88,7 +89,7 @@ def test_structure_tutorial_and_weather_summary_contract():
         for step in blocFantome.TutorialScreen.TUTORIAL_STEPS
     ]
     assert len(structures) == 40
-    assert _digest(structures) == "00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2"
+    assert _digest(structures) == "f1d0dcb0aabb540ae8689118bb7fe235159dcc92869a482a91c4106067e5b2cb"
     from engine.tutorial_lessons import TOUR
     assert len(tutorial) == len(TOUR) == 16
     assert len({step['id'] for step in TOUR}) == len(TOUR)

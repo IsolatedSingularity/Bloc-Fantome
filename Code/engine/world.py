@@ -42,6 +42,12 @@ class World:
             height: Z dimension (vertical) of the world
         """
         self.catalog = catalog
+        # Catalog definitions are immutable; classify once rather than per face.
+        self._opaqueCubeTypes = frozenset(
+            block for block, definition in catalog.definitions.items()
+            if definition and not any(getattr(definition, field, False) for field in
+                ("transparent", "isLiquid", "isThin", "isSlab", "isStair", "isPortal", "modelKind"))
+        )
         self.width = width
         self.depth = depth
         self.height = height
@@ -354,36 +360,14 @@ class World:
         blockType = self.blocks.get(pos, BlockType.AIR)
         if blockType == BlockType.AIR or pos not in self.surfaceBlocks:
             return ()
-        definition = self.catalog.definitions.get(blockType)
-        opaqueCube = bool(
-            definition
-            and not getattr(definition, "transparent", False)
-            and not getattr(definition, "isLiquid", False)
-            and not getattr(definition, "isThin", False)
-            and not getattr(definition, "isSlab", False)
-            and not getattr(definition, "isStair", False)
-            and not getattr(definition, "isPortal", False)
-            and not getattr(definition, "modelKind", None)
-        )
-        if not opaqueCube:
+        if blockType not in self._opaqueCubeTypes:
             return range(4)
         x, y, z = pos
 
         def neighborIsOpaque(neighbor) -> bool:
             neighborType = self.blocks.get(neighbor, BlockType.AIR)
-            if neighborType in self._surfaceTransparentTypes:
-                return False
-            neighborDefinition = self.catalog.definitions.get(neighborType)
-            return bool(
-                neighborDefinition
-                and not getattr(neighborDefinition, "transparent", False)
-                and not getattr(neighborDefinition, "isLiquid", False)
-                and not getattr(neighborDefinition, "isThin", False)
-                and not getattr(neighborDefinition, "isSlab", False)
-                and not getattr(neighborDefinition, "isStair", False)
-                and not getattr(neighborDefinition, "isPortal", False)
-                and not getattr(neighborDefinition, "modelKind", None)
-            )
+            return (neighborType in self._opaqueCubeTypes
+                    and neighborType not in self._surfaceTransparentTypes)
 
         if not neighborIsOpaque((x, y, z + 1)):
             return range(4)

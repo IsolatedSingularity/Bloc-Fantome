@@ -1,0 +1,36 @@
+{
+  "cells": 659181,
+  "visibility_before_s": 2.2111523000057787,
+  "visibility_after_s": 1.5230914000421762,
+  "visibility_exact": true,
+  "views": [
+    {
+      "rotation": 0,
+      "uncached_total_ms": 1216.9230997096747,
+      "uncached_peak_ms": 39.24720000941306,
+      "cached_ms": 0.7606999715790153,
+      "pixel_equal": true
+    },
+    {
+      "rotation": 1,
+      "uncached_total_ms": 1322.6710002636537,
+      "uncached_peak_ms": 242.31989996042103,
+      "cached_ms": 0.8632000535726547,
+      "pixel_equal": true
+    },
+    {
+      "rotation": 2,
+      "uncached_total_ms": 1303.9587998064235,
+      "uncached_peak_ms": 48.42900007497519,
+      "cached_ms": 0.9199000196531415,
+      "pixel_equal": true
+    },
+    {
+      "rotation": 3,
+      "uncached_total_ms": 1319.6614996995777,
+      "uncached_peak_ms": 52.94530000537634,
+      "cached_ms": 0.8995999814942479,
+      "pixel_equal": true
+    }
+  ]
+}

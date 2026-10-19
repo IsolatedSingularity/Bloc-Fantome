@@ -1,0 +1,30 @@
+SANCTUARY REFERENCE SOURCES
+Downloaded for local architectural study, 2026-10-18. Not runtime assets.
+
+Sainte-Chapelle, Centre des monuments nationaux, official visitor guide:
+https://www.sainte-chapelle.fr/en/content/download/9827901/file/Document%20de%20visite%20Sainte%20Chapelle%20en.pdf?inLanguage=eng-GB&version=37
+Local: Sainte-Chapelle-visitor-guide.pdf
+Examined upper-chapel plan on page 2: axial nave, repeated bays, terminal apse.
+Applied: coherent bay spacing and a glass sanctuary at the end of the aisle.
+This design is a stylized open sanctuary, not a reconstruction.
+
+V&A, The Gothic style - an introduction:
+https://www.vam.ac.uk/articles/the-gothic-style-an-introduction
+Local: Westminster-buttress-study.jpg
+https://vanda-production-assets.s3.amazonaws.com/2019/06/17/10/41/02/f8797750-8615-42dc-87f6-21fe6205a856/buttress.jpg
+Examined the supporting pier, upper connection and buttress slope.
+Applied: buttresses placed on the same axes as the transverse arches; supports
+connect to actual piers, rather than acting as detached decorative pieces.
+
+Minecraft, Kiel Cathedral, builder kimandjax, article by Kate Gray:
+https://www.minecraft.net/fr-ca/article/kiel-cathedral
+Local: Kiel-cathedral-construction.jpeg
+https://www.minecraft.net/content/dam/minecraftnet/archive/ProgressONE.jpeg
+Examined the construction cutaway, tall repeated openings and layered depth.
+Applied: an exposed interior that communicates scale without enclosing the view.
+The build is original geometry; no schematic was imported.
+
+Technical reference checked for the orbit study:
+https://www.pygame.org/docs/ref/display.html
+The app's Pygame 2.6.1 supports an OpenGL display. This is a distinct display mode,
+so integration must explicitly handle entering/leaving and restoring the editor.

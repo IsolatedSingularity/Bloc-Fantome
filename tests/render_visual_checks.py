@@ -81,7 +81,7 @@ def render(output_dir: Path) -> None:
         app_module.ICONS_DIR,
     )
     splash._draw_background(screen)
-    screen.blit(splash.title, splash.title.get_rect(center=(600, 400)))
+    screen.blit(splash.title, splash._title_rect())
     save_capture(screen, output_dir / "splash.png")
 
     artwork = pygame.image.load(
@@ -1054,6 +1054,11 @@ def render_tour(output_dir: Path):
         app._applyWindowSize(width,height)
         from splash import SplashScreen
         from runtime_paths import TEXTURES_DIR, FONTS_DIR, ICONS_DIR
+        compact=pygame.Surface(SplashScreen.fitted_window_size(width,height,ICONS_DIR))
+        fitted=SplashScreen(compact,app.clock,TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
+        fitted._draw_background(compact)
+        compact.blit(fitted.title,fitted._title_rect())
+        save_capture(compact,output_dir/f'splash_fitted_{width}.png')
         splash=SplashScreen(app.screen,app.clock,TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
         splash.present();save_capture(app.screen,output_dir/f'splash_{width}.png')
         app._beginTutorial(advanced=False)
@@ -1098,6 +1103,57 @@ def render_tour(output_dir: Path):
     app.worldLoadExecutor.shutdown(wait=True);pygame.quit()
 
 
+def render_opening(output_dir: Path):
+    """Approved monument scene: reveal poses, rotations and native-size controls."""
+    import json
+    from ui.opening_scene import OpeningScene
+    output_dir.mkdir(parents=True,exist_ok=True)
+    app=app_module.BlocFantome()
+    assert app.assetManager.loadAllAssets()
+    metrics=[]
+    for size in ((1200,800),(960,640),(1920,1080)):
+        app._applyWindowSize(*size)
+        scene=OpeningScene(size,app.assetManager)
+        for name,elapsed,placed in (('dark',0,None),('light',2,None),('ready',4.5,None),
+                                    ('rise',5.4,4.5),('slide',6.9,4.5),('open',9.2,4.5)):
+            scene.elapsed=elapsed;scene.placed_at=placed;scene.update(0)
+            scene.render(app.screen)
+            save_capture(app.screen,output_dir/f'{name}_{size[0]}.png')
+        for rotation in range(1,4):
+            scene.renderer.angle=scene.target_angle=135+rotation*90;scene.update(0);scene.render(app.screen)
+            save_capture(app.screen,output_dir/f'open_view{rotation}_{size[0]}.png')
+        timings=[]
+        for frame in range(60):
+            start=time.perf_counter();scene.update(1/60);scene.render(app.screen)
+            timings.append((time.perf_counter()-start)*1000)
+        metrics.append(dict(size=size,p95_ms=sorted(timings)[56],max_ms=max(timings)))
+        scene.renderer.angle=scene.target_angle=135
+        scene.activate('door');scene.update(5);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'cinematic_rise_{size[0]}.png')
+        scene.update(scene.RISE_END-5);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'cinematic_wide_{size[0]}.png')
+        scene.update(scene.RISE_DURATION-scene.RISE_END+.1);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'sanctuary_{size[0]}.png')
+        scene.activate('altar');scene.update(1.5);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'sanctuary_awakened_{size[0]}.png')
+        scene.update(3.5);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'sanctuary_controls_hidden_{size[0]}.png')
+        scene.handle_event(pygame.event.Event(pygame.MOUSEWHEEL,y=2,precise_y=2.5))
+        scene.update(.5);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'sanctuary_zoom_{size[0]}.png')
+        scene.close()
+        app.settingsMenuOpen=True;app._render()
+        save_capture(app.screen,output_dir/f'settings_{size[0]}.png')
+        app.settingsMenuOpen=False
+        from runtime_paths import TEXTURES_DIR,FONTS_DIR,ICONS_DIR
+        compact=pygame.Surface(SplashScreen.fitted_window_size(*size,ICONS_DIR))
+        splash=SplashScreen(compact,app.clock,TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
+        splash._draw_background(compact);compact.blit(splash.title,splash._title_rect())
+        save_capture(compact,output_dir/f'splash_fitted_{size[0]}.png')
+    (output_dir/'performance.json').write_text(json.dumps(metrics,indent=2))
+    app.worldLoadExecutor.shutdown(wait=True);pygame.quit()
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
-    (render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)
+    (render_opening if '--opening' in sys.argv else render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)

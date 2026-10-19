@@ -1,0 +1,66 @@
+PONDER SANCTUARY: ARCHITECTURE REVIEW CHECKPOINT
+2026-10-18
+
+Owner direction accepted in chat
+Two connected scenes. First shrine reveals a clickable doorway; the second
+monument rises from below and the camera approaches it. Second scene is an open
+cathedral sanctuary explored through hover/click feedback, not an alignment
+puzzle. The eventual correct target should feel discoverable. A third monument
+descending from above is explicitly outside this pass. Exit restores the prior
+world. Redstone Map remains paused.
+
+Palette: ivory stone, muted blue glass, warm amber light. Clean silhouette with
+crafted details. Atlantis reference is scale/light/atmosphere, not literal faces.
+Void: sparse motes, layered shafts, faint distant silhouettes.
+Controls: translucent Q/E with complete arrows, idle press demonstrations until
+first use, restrained ripple, soft rotation sound and rare quiet interactive-target
+hover sound. Continuous orbit and a slider requested, subject to feasibility.
+
+Display: fitted windowed full painting; no separate black strip; small title over
+subtle lower-edge darkening. Version appears in square brackets only in native
+window caption. Borderless fullscreen for opening; restore prior editor window.
+Keep a windowed preview option for testing.
+
+Release target clarification
+The owner uses C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe.
+Verified that copy is 2.9.2. Embryo root and installed executable are both 2.9.4
+with matching hashes. Next authorized release must update the owner's GitHub
+runtime copy as well as Embryo root EXE and installer; synchronize required media
+without overwriting that checkout's source, saves or settings. Start Menu is lower
+priority per latest owner direction but should be updated when completing release.
+
+Architecture review artifacts
+.qa/sanctuary-preview/architecture.py is a static study, not application code.
+Two equal nave bays, axial aisle, clustered supports, upper blue windows, exposed
+transverse arches, connected exterior buttresses, stepped apse and a single
+central amber motif. Fine block spacing improves the arch silhouette.
+Original geometry: 17,780 cells, including 16,216 solid cells. All solid cells form
+one face-connected component. This detects detached pieces, not structural
+engineering validity. No live world was edited.
+
+sanctuary-view-0.png through -3.png use the current game sprite renderer at 1080p.
+orbit-135.png is the front-quarter GPU study; orbit--35.png the opposite quarter.
+Geometry rendering only: no final atmospheric lighting, interaction or animation.
+Reference PDF and two reference images are in References/Sanctuary, with SOURCES.txt.
+
+Continuous orbit feasibility
+Current app uses four projected sprite views; a continuous orbit cannot be obtained
+by merely sliding that camera. A separate bounded-scene mesh renderer was probed
+in .qa/sanctuary-preview/orbit_probe.py using existing raw textures and OpenGL via
+Windows ctypes, without installing dependencies or changing the app renderer.
+Depth-buffered opaque faces and sorted translucent faces are batched.
+See orbit-feasibility.json for measured GPU/driver, counts and timings. The hidden-
+window probe covers rendering and glass sorting only, with glFinish. It excludes
+UI, particles, ray picking, audio, display switching, visible swap/vsync and
+end-to-end input latency. No finished-game FPS claim follows from these numbers.
+
+Recommendation: confine GPU rendering to the two presentation scenes. Validate
+slider/ray picking at several angles, transparent depth ordering, native FHD
+framing, fullscreen/windowed restoration and fallback behavior before release.
+Do not migrate the editor or introduce a general timeline framework.
+
+STOP POINT
+Owner explicitly selected architecture preview before animation. Present actual
+renders and orbit feasibility now; wait for composition feedback before integrating
+the two-scene sequence. No 2.9.5 EXE was built during this preview checkpoint.
+Existing 2.9.4 application code and installed release were not modified this turn.

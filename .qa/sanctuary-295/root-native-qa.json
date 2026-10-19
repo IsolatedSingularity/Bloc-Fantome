@@ -1,0 +1,12 @@
+{
+  "Version": "2.9.5",
+  "GhostPlacement": true,
+  "DoorwayCinematic": true,
+  "SanctuaryCrossClick": true,
+  "ContinuousSlider": true,
+  "ReturnToEditor": true,
+  "TutorialCanvasResizeThenNext": true,
+  "TutorialWheelZoomThenNext": true,
+  "NativeUI": "computer-use sky",
+  "RootQAProcessesRemaining": 0
+}

@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.9.2"
+VERSION = "2.9.6"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -122,6 +122,13 @@ def build(debug: bool = False, diagnostic: bool = False):
         raise FileNotFoundError(
             f"Required splash title artwork is missing: {SPLASH_ART}"
         )
+    opening_music = os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub', 'opening', 'panoir-you-have-time.ogg')
+    if not os.path.isfile(opening_music):
+        raise FileNotFoundError(f'Required owner-selected opening music is missing: {opening_music}')
+    for cue in ('orbit-bed.wav', 'sanctuary-rise.wav'):
+        path = os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub', 'opening', cue)
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f'Required SuperCollider opening cue is missing: {path}')
     missing_skyboxes = [path for path in SKYBOX_ATLASES if not os.path.isfile(path)]
     if missing_skyboxes:
         raise FileNotFoundError(
@@ -138,6 +145,11 @@ def build(debug: bool = False, diagnostic: bool = False):
     native_result = subprocess.run(
         [sys.executable, NATIVE_BUILDER], cwd=SCRIPT_DIR, check=False
     )
+    if native_result.returncode and os.path.isfile(NATIVE_LIBRARY):
+        raise RuntimeError(
+            "Native accelerator refresh failed. Close source/test processes "
+            "using the DLL before rebuilding; refusing to silently omit it."
+        )
     map_region_root = os.path.join(SCRIPT_DIR, 'world_map_regions')
     from engine.world_map_regions import REGIONS
     required_regions = tuple(f'{dimension}_{key}' for dimension,regions in REGIONS.items() for key,_ in regions)

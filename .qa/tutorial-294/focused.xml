@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="12" time="64.511" timestamp="2026-10-18T17:32:12.868576-07:00" hostname="cathedral"><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_basic_tutorial_restores_the_existing_build_and_editor_state" time="4.270" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_horror_is_an_explicit_optional_detour" time="0.266" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_linear_tour_next_back_and_direct_jump_always_replace_example" time="33.800" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_linear_tour_starts_immediately_and_restores_original" time="0.108" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_persistent_tome_starts_the_advanced_tutorial" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_has_no_required_tasks_or_deferred_redstone_chapters" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_reset_restores_page_after_optional_edits" time="15.735" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_zoom_then_next_reframes_and_leaves_special_modes" time="0.794"><failure message="AssertionError: Tuples differ: (0.288, 654.424778761062, 821.6548672566373) != (0.288, 654.2657325467062, 821.6747173058018)&#10;&#10;First differing element 1:&#10;654.424778761062&#10;654.2657325467062&#10;&#10;- (0.288, 654.424778761062, 821.6548672566373)&#10;+ (0.288, 654.2657325467062, 821.6747173058018)">self = &lt;test_app_integration.AppIntegrationTests testMethod=test_tour_zoom_then_next_reframes_and_leaves_special_modes&gt;
+
+    def test_tour_zoom_then_next_reframes_and_leaves_special_modes(self):
+        self.app._beginTutorial(advanced=False)
+        tour=self.app.tutorialScreen
+        try:
+            self._settle_tutorial_load()
+            self.app._handleZoom(.25,650,400)
+            self.app.panOffsetX=500
+            self.app.layerViewEnabled=True
+            tour._onNextClick()
+            self._settle_tutorial_load()
+            camera=(self.app.zoomLevel,self.app.renderer.offsetX,self.app.renderer.offsetY)
+            self.assertGreater(camera[0],.2)
+            self.assertFalse(self.app.layerViewEnabled)
+            self.app._handleZoom(.25,650,400)
+            tour.selectLesson(1,retry=True)
+            self._settle_tutorial_load()
+&gt;           self.assertEqual(camera,(self.app.zoomLevel,self.app.renderer.offsetX,self.app.renderer.offsetY))
+E           AssertionError: Tuples differ: (0.288, 654.424778761062, 821.6548672566373) != (0.288, 654.2657325467062, 821.6747173058018)
+E           
+E           First differing element 1:
+E           654.424778761062
+E           654.2657325467062
+E           
+E           - (0.288, 654.424778761062, 821.6548672566373)
+E           + (0.288, 654.2657325467062, 821.6747173058018)
+
+tests\test_app_integration.py:1316: AssertionError</failure></testcase><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_can_open_nether_and_end_biomes_and_restore" time="7.026" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_rooms_match_the_supplied_open_builds" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_window_drags_minimizes_and_restores" time="0.007" /><testcase classname="tests.test_natural_scenes" name="test_splash_retains_owner_image_and_native_regular_title" time="0.083"><failure message="assert (1, 0) == (0, 0)&#10;  &#10;  At index 0 diff: 1 != 0&#10;  Use -v to get more diff">def test_splash_retains_owner_image_and_native_regular_title():
+        import pygame
+        from splash import SplashScreen
+        from runtime_paths import ICONS_DIR,FONTS_DIR,TEXTURES_DIR
+        repo=Path(__file__).resolve().parents[1]
+        assert hashlib.sha256((repo/'mariana-salimena-swamp-artstation.jpg').read_bytes()).digest()==hashlib.sha256((Path(ICONS_DIR)/'Splash_Swamp.jpg').read_bytes()).digest()
+        pygame.display.init();pygame.font.init()
+        try:
+            for size in ((960,640),(1200,800),(1920,1080)):
+                fitted=SplashScreen.fitted_window_size(*size,ICONS_DIR)
+                screen=pygame.display.set_mode(fitted)
+                splash=SplashScreen(screen,pygame.time.Clock(),TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
+                assert abs(splash.artwork_rect.width/splash.artwork_rect.height-1920/890)&lt;.005
+                assert screen.get_rect().contains(splash.artwork_rect)
+                assert splash.artwork_rect.bottom &lt; splash._title_rect().top
+&gt;               assert splash.artwork_rect.topleft==(0,0)
+E               assert (1, 0) == (0, 0)
+E                 
+E                 At index 0 diff: 1 != 0
+E                 Use -v to get more diff
+
+tests\test_natural_scenes.py:56: AssertionError</failure></testcase></testsuite></testsuites>

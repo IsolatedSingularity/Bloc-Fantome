@@ -1237,6 +1237,7 @@ class AppIntegrationTests(unittest.TestCase):
 
         self.app._beginTutorial(advanced=False)
         self.assertTrue(self.app.tutorialScreen.visible)
+        self._settle_tutorial_load()
         self.assertNotEqual(dict(self.app.world.blocks), original_blocks)
         self.app.tutorialScreen.hide()
 
@@ -1262,6 +1263,7 @@ class AppIntegrationTests(unittest.TestCase):
         try:
             self.assertFalse(self.app.tutorialScreen.menuOpen)
             self.assertEqual(self.app.tutorialScreen.lesson['id'],'welcome')
+            self._settle_tutorial_load()
             self.assertNotEqual(dict(self.app.world.blocks),original)
         finally:self.app.tutorialScreen.hide()
         self.assertEqual(dict(self.app.world.blocks),original)
@@ -1270,6 +1272,7 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._beginTutorial(advanced=False)
         tour=self.app.tutorialScreen
         try:
+            self._settle_tutorial_load()
             original_example=dict(self.app.world.blocks)
             self.app._placeBlockWithUndo(1,1,2,app_module.BlockType.GOLD_BLOCK)
             tour._onNextClick()
@@ -1277,6 +1280,7 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertEqual(tour.currentStep,1)
             self.assertEqual(self.app.world.getBlock(1,1,2),app_module.BlockType.AIR)
             tour._onBackClick()
+            self._settle_tutorial_load()
             self.assertEqual(dict(self.app.world.blocks),original_example)
             for index,page in enumerate(tour.TUTORIAL_STEPS):
                 tour.selectLesson(index)
@@ -1292,6 +1296,35 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertFalse(tour.visible)
         finally:
             if tour.visible:tour.hide()
+
+    def test_tour_zoom_then_next_reframes_and_leaves_special_modes(self):
+        self.app._beginTutorial(advanced=False)
+        tour=self.app.tutorialScreen
+        try:
+            self._settle_tutorial_load()
+            self.app._handleZoom(.25,650,400)
+            self.app.panOffsetX=500
+            self.app.layerViewEnabled=True
+            tour._onNextClick()
+            self._settle_tutorial_load()
+            camera=(self.app.zoomLevel,self.app.renderer.offsetX,self.app.renderer.offsetY)
+            self.assertGreater(camera[0],.2)
+            self.assertFalse(self.app.layerViewEnabled)
+            self.app._handleZoom(.25,650,400)
+            tour.selectLesson(1,retry=True)
+            self._settle_tutorial_load()
+            self.assertEqual(camera,(self.app.zoomLevel,self.app.renderer.offsetX,self.app.renderer.offsetY))
+            for page in ('worldmap','redstone'):
+                tour.selectLesson(next(i for i,p in enumerate(tour.TUTORIAL_STEPS) if p['id']==page))
+                self._settle_tutorial_load()
+                self.assertTrue(self.app.worldMapActive if page=='worldmap' else self.app.redstoneLabActive)
+                tour.selectLesson(0)
+                tour.selectLesson(1)
+                self._settle_tutorial_load()
+                self.assertFalse(self.app.worldMapActive)
+                self.assertFalse(self.app.redstoneLabActive)
+                self.assertEqual(self.app.sceneMetadata.get('biome'),'_scene_tour_well')
+        finally:tour.hide()
 
     def test_tour_reset_restores_page_after_optional_edits(self):
         self.app._beginTutorial(advanced=True);tour=self.app.tutorialScreen

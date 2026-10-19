@@ -1,0 +1,24 @@
+         36357963 function calls (36357090 primitive calls) in 17.638 seconds
+
+   Ordered by: cumulative time
+   List reduced from 448 to 16 due to restriction <16>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      605    0.833    0.001   26.406    0.044 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20878(_render)
+        2    0.000    0.000   15.349    7.674 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:54(run)
+        1    0.015    0.015   15.308   15.308 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:34(_stageTourScene)
+        1    0.011    0.011   13.959   13.959 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15983(_stageBiomeScene)
+      648    1.726    0.003   11.645    0.018 {built-in method time.sleep}
+   233001    0.772    0.000    5.820    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:357(_surfaceViewsForPosition)
+  1424504    1.039    0.000    4.267    0.000 {built-in method builtins.any}
+      605    1.151    0.002    4.238    0.007 {built-in method pygame.display.flip}
+      605    0.481    0.001    2.828    0.005 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22139(_renderWorld)
+   170937    0.436    0.000    2.108    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:8277(getScaledSprite)
+     6196    1.209    0.000    2.054    0.000 {built-in method pygame.transform.scale}
+      605    0.271    0.000    1.829    0.003 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:18562(_renderHotbar)
+   809945    0.530    0.000    1.504    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:367(neighborIsOpaque)
+  2760276    0.866    0.000    1.202    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:509(<genexpr>)
+    94035    1.164    0.000    1.164    0.000 {method 'blit' of 'pygame.surface.Surface' objects}
+  3933398    0.978    0.000    1.028    0.000 {method 'get' of 'dict' objects}
+
+

@@ -18,9 +18,9 @@ from engine.block_state import (
 )
 
 
-MAGIC = b"BFC6"
+MAGIC = b"BFC7"
 HEADER = struct.Struct("<4s32sI")
-RECORD = struct.Struct("<hhhHHBBBBBB")
+RECORD = struct.Struct("<hhhHHBBBBBBBBBBii")
 STAIR_SHAPES = tuple(StairShape)
 
 
@@ -59,7 +59,7 @@ def load(path: str, expected_digest: bytes, block_type):
     surface_positions = set()
     view_surface_positions_by_view = {rotation: set() for rotation in range(4)}
     for values in RECORD.iter_unpack(payload):
-        x, y, z, type_value, flags, facing, slab, stair, door_half, hinge, liquid = values
+        x, y, z, type_value, flags, facing, slab, stair, door_half, hinge, liquid, oxidation, power, delay, state_flags, capture_index, palette = values
         props = None
         if flags & 1:
             props = BlockProperties(
@@ -69,6 +69,11 @@ def load(path: str, expected_digest: bytes, block_type):
                 stairShape=STAIR_SHAPES[stair],
                 doorHalf=DoorHalf.UPPER if door_half else DoorHalf.LOWER,
                 doorHinge=DoorHinge.RIGHT if hinge else DoorHinge.LEFT,
+                oxidationStage=oxidation, redstonePower=power, repeaterDelay=delay,
+                powered=bool(state_flags & 1), repeaterLocked=bool(state_flags & 2),
+                pistonExtended=bool(state_flags & 4), sticky=bool(state_flags & 8),
+                comparatorSubtract=bool(state_flags & 16),
+                sourceCapture=metadata["captures"][capture_index], sourcePalette=palette,
             )
         liquid_state = None
         if flags & 4:
@@ -100,27 +105,30 @@ def load(path: str, expected_digest: bytes, block_type):
     if len(bounds) != 4:
         raise ValueError("Invalid world cache bounds")
     width, depth, height, min_y = bounds
-    if not (1 <= width <= 256 and 1 <= depth <= 256 and 1 <= height <= 512):
+    if not (1 <= width <= 512 and 1 <= depth <= 512 and 1 <= height <= 512):
         raise ValueError("Invalid world cache dimensions")
     if any(
         not (0 <= x < width and 0 <= y < depth and min_y <= z < min_y + height)
         for x, y, z, *_ in staged
     ):
         raise ValueError("World cache record is outside declared bounds")
-    return metadata["dimension"], bounds, scene, staged, 0
+    return metadata["dimension"], bounds, scene, staged, metadata.get("skipped_count", 0)
 
 
 def write(path: str, digest: bytes, dimension: str, bounds, scene,
           staged: Iterable, structure_positions,
           exterior_glass_positions=(), structure_surfaces_by_view=None,
-          surface_positions=(), view_surface_positions_by_view=None) -> None:
+          surface_positions=(), view_surface_positions_by_view=None, skipped_count=0) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     staged = tuple(staged)
     serialized_scene = {
         key: value for key, value in scene.items() if not key.startswith("_")
     }
+    captures = sorted({props.sourceCapture for *_, props, liquid in staged if props is not None})
+    capture_indices = {name: index for index, name in enumerate(captures)}
     metadata = json.dumps(
-        {"dimension": dimension, "bounds": list(bounds), "scene": serialized_scene},
+        {"dimension": dimension, "bounds": list(bounds), "scene": serialized_scene,
+         "captures": captures, "skipped_count": skipped_count},
         separators=(",", ":"),
     ).encode("utf-8")
     temp_path = path + ".tmp"
@@ -162,6 +170,14 @@ def write(path: str, digest: bytes, dimension: str, bounds, scene,
             handle.write(RECORD.pack(
                 x, y, z, block.value, flags, facing, slab, stair,
                 door_half, hinge, liquid,
+                props.oxidationStage if props else 0,
+                props.redstonePower if props else 0,
+                props.repeaterDelay if props else 1,
+                (int(props.powered) | int(props.repeaterLocked) << 1 |
+                 int(props.pistonExtended) << 2 | int(props.sticky) << 3 |
+                 int(props.comparatorSubtract) << 4) if props else 0,
+                capture_indices[props.sourceCapture] if props else -1,
+                props.sourcePalette if props else -1,
             ))
     os.replace(temp_path, path)
 

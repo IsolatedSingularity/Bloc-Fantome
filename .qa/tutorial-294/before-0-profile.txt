@@ -1,0 +1,24 @@
+         767712 function calls in 0.360 seconds
+
+   Ordered by: cumulative time
+   List reduced from 419 to 16 due to restriction <16>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.182    0.182 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\ui\tutorial.py:59(selectLesson)
+        1    0.000    0.000    0.182    0.182 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:11595(_onTutorialStepChange)
+        1    0.000    0.000    0.182    0.182 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:55(_loadGuidedLesson)
+        1    0.004    0.004    0.181    0.181 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:90(_applyTourScene)
+        1    0.000    0.000    0.177    0.177 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:16822(_applyStagedBuild)
+        1    0.001    0.001    0.159    0.159 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20870(_render)
+        1    0.029    0.029    0.140    0.140 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:448(replace)
+        1    0.018    0.018    0.131    0.131 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22131(_renderWorld)
+        1    0.006    0.006    0.071    0.071 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:411(_rebuildViewSurfaceIndex)
+     5011    0.014    0.000    0.062    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:357(_surfaceViewsForPosition)
+        1    0.005    0.005    0.047    0.047 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22051(_visibleScreenRenderPlan)
+        1    0.000    0.000    0.039    0.039 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:21745(_visibleBlocksInDrawOrder)
+        1    0.007    0.007    0.039    0.039 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:21763(_editorVisibleBlocksInDrawOrder)
+        1    0.005    0.005    0.037    0.037 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:17059(_normalizeSpecialBlockTopology)
+   127566    0.029    0.000    0.036    0.000 {method 'get' of 'dict' objects}
+    20853    0.013    0.000    0.036    0.000 {built-in method builtins.any}
+
+

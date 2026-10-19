@@ -50,12 +50,20 @@ class GuidedTutorialAppMixin:
             if step['world']=='end_city_1161':return self._stageBiomeScene('_tutorial_end_city')[0]
             return self._readBuildFile(os.path.join(WORLDS_DIR,step['world']+'.json.gz'))[3]
         from engine.tutorial_scenes import scene_snapshot
-        return scene_snapshot(step['id'])
+        from engine.world_snapshot import prepare_snapshot
+        return prepare_snapshot(scene_snapshot(step['id']), self.world.catalog)
 
     def _loadGuidedLesson(self,index):
+        if self.worldMapActive:
+            self._exitWorldMap()
+        if self.redstoneLabActive:
+            self._toggleRedstoneLab()
         self._cancelTourLoad()
         step=self.tutorialScreen.lesson
         self._guidedActiveLesson=step['id']
+        self.currentBuildPath=None
+        self.panning=False
+        self.layerViewEnabled=False
         self.library.visible=False
         for name,value in dict(brushSize=1,mirrorModeX=False,mirrorModeY=False,radialSymmetry=0,
             fillToolActive=False,fillStart=None,measurementMode=False,measurePoint1=None,measurePoint2=None,
@@ -70,11 +78,7 @@ class GuidedTutorialAppMixin:
         if hasattr(self,'previewBrowser'):
             focus=step.get('focus')
             self.previewBrowser.expand(self,{'worlds':'Worlds','biomes':'Biomes','structures':'Structures'}.get(focus))
-        if not step.get('capture') and not step.get('world') and step['id']!='redstone':
-            snapshot=self._stageTourScene(step)
-            self._applyTourScene(snapshot,step)
-        elif step.get('capture') or step.get('world') or step['id']=='redstone':
-            self._pendingTourLoad=(self.worldLoadExecutor.submit(self._stageTourScene,dict(step)),step['id'])
+        self._pendingTourLoad=(self.worldLoadExecutor.submit(self._stageTourScene,dict(step)),step['id'])
 
     def _pollTourLoad(self):
         pending=getattr(self,'_pendingTourLoad',None)
@@ -110,7 +114,7 @@ class GuidedTutorialAppMixin:
         self.hotbar=[BlockType[name.upper()] for name in step['icons']]
         self.hotbarSelectedSlot=0;self.selectedBlock=self.hotbar[0];self.previewFacing=Facing.SOUTH
         self.renderer.setViewRotation(0)
-        self._fitWorldToViewport(notify=False)
+        self._frameGuidedLesson(step)
         self._biomeViewSurfaces.clear();self._capturedRenderTiles.clear()
         self._invalidateViewCaches()
         import pygame
@@ -130,6 +134,33 @@ class GuidedTutorialAppMixin:
             self._openWorldMap()
         elif step['id']=='redstone':
             self._toggleRedstoneLab()
+
+    def _frameGuidedLesson(self, step):
+        """Frame the teaching subject, retaining the full surrounding world."""
+        # Small lessons have authored subject bounds. Terrain and neighbouring
+        # buildings remain editable, but no longer determine the teaching zoom.
+        if step.get('frame') is not None:
+            self._fitBoundsToViewport(step['frame'],notify=False)
+            # Lift compact subjects above the hotbar while retaining headroom.
+            self.renderer.offsetY-=self.screen.get_height()*.065
+            self.targetOffsetY=self.renderer.offsetY
+            return
+        bounds = self.world.occupiedBounds
+        if bounds is None:
+            return
+        low, high = bounds
+        # Large source captures include context far beyond the demonstrated object.
+        radius = {'welcome':18, 'blocks':14, 'camera':17, 'history':30,
+                  'structures':32, 'dimensions':24, 'lighting':24}.get(step['id'], 32)
+        cx, cy = (low[0]+high[0])/2, (low[1]+high[1])/2
+        x0, x1 = max(low[0],round(cx-radius)), min(high[0],round(cx+radius))
+        y0, y1 = max(low[1],round(cy-radius)), min(high[1],round(cy+radius))
+        tops = [self.world.getHighestBlock(x,y) for x in range(x0,x1+1) for y in range(y0,y1+1)]
+        z1 = max(tops) if tops else high[2]
+        z0 = max(low[2], sorted(tops)[len(tops)//2]-4) if tops else low[2]
+        if step['id']=='history':
+            z0,z1=48,82
+        self._fitBoundsToViewport(((x0,y0,z0),(x1,y1,z1)),notify=False)
 
     def _recordTutorialPlacement(self,block):
         tutorial=self.tutorialScreen

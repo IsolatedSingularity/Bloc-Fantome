@@ -217,35 +217,53 @@ class BatchCommand(Command):
         if not self.commands:
             return False
         
-        success = True
+        self._executed = False
+        completed = []
         with ExitStack() as stack:
             for world in self._worlds():
                 bulk_update = getattr(world, "bulkUpdate", None)
                 if bulk_update is not None:
                     stack.enter_context(bulk_update())
-            for cmd in self.commands:
-                if not cmd.execute():
-                    success = False
-        
+            try:
+                for cmd in self.commands:
+                    if not cmd.execute():
+                        while completed:
+                            if not completed.pop().undo():
+                                raise RuntimeError("Batch rollback failed")
+                        return False
+                    completed.append(cmd)
+            except Exception:
+                for previous in reversed(completed):
+                    previous.undo()
+                raise
         self._executed = True
-        return success
-    
+        return True
+
     def undo(self) -> bool:
         """Undo all commands in reverse order"""
         if not self._executed:
             return False
         
-        success = True
+        undone = []
         with ExitStack() as stack:
             for world in self._worlds():
                 bulk_update = getattr(world, "bulkUpdate", None)
                 if bulk_update is not None:
                     stack.enter_context(bulk_update())
-            for cmd in reversed(self.commands):
-                if not cmd.undo():
-                    success = False
-        
-        return success
+            try:
+                for cmd in reversed(self.commands):
+                    if not cmd.undo():
+                        while undone:
+                            if not undone.pop().execute():
+                                raise RuntimeError("Batch undo rollback failed")
+                        return False
+                    undone.append(cmd)
+            except Exception:
+                for cmd in reversed(undone):
+                    cmd.execute()
+                raise
+        self._executed = False
+        return True
     
     def get_description(self) -> str:
         if len(self.commands) == 1:

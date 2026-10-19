@@ -1,0 +1,41 @@
+Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome.
+Read AGENTS.md and docs\handoffs\MAINTENANCE_AUDIT_2026-10-18.txt, then implement
+the maintenance work. The audit is an orientation, not a substitute for checking
+the live implementation. Preserve existing behavior, artwork, assets and saves.
+
+Fix, in order:
+1. Save/backup fidelity and failure reporting. Use the existing canonical save
+   format, retain valid old backups until replacements commit, and preserve full
+   world bounds, block state, liquids and metadata.
+2. Build parsing and load ownership. Handle corrupt/all-invalid/duplicate/future-
+   version inputs deliberately without replacing a live world on failure. Prevent
+   pending or stale asynchronous loads from overwriting later edits or modes.
+3. Undo transactionality and cached-versus-uncached load equivalence. Repair the
+   existing location-dependent structure fingerprint without weakening its content
+   checks or merely accepting a different machine-specific hash.
+4. Reproduce and improve large-world loading pauses and camera/zoom/rotation stalls.
+   Profile representative heavy scenes; fix measured bottlenecks without reducing
+   source fidelity or rendering quality. Resolve related resolution/DPI/UI defects.
+5. Fix the startup presentation: show the full supplied swamp painting, preserve
+   its aspect ratio, center it with balanced margins, and reserve space BELOW it
+   for a small regular-weight generic title. Verify the real packaged launch.
+
+Related reproduced defects are in scope. Redstone Map development, new Ponder
+features and a lighting overhaul are deferred. Missing light emitters are low
+priority. Avoid unrelated refactoring and dependency changes. Existing legacy
+classes can be dead copies; identify the actual runtime owner before editing.
+
+Keep this practical. Use existing tests and small regressions for actual bugs.
+Do not introduce contracts, harnesses, generic validation frameworks or speculative
+abstractions. Keep useful existing tests and their requirements. Run focused checks
+as you work and one full regression pass when stable. Use targeted visual checks
+and before/after timing evidence; do not build an exhaustive benchmark programme.
+
+Complete the stable batch with consistent patch-version metadata, the rebuilt
+BlocFantome.exe and installer in the clone, installation/upgrade, and a verified
+launch through the actual Bloc Fantome Start Menu shortcut. Preserve user data,
+verify shortcut target/icon/working directory, and close QA processes. Keep final
+artifacts and a concise handoff inside the clone; .codex is scratch space only.
+Leave changes unstaged, uncommitted and unpushed. Proceed without routine phase
+approvals; ask only for a material unresolved design choice or consequential scope
+expansion. Report what changed, decisive verification and any remaining limitations.

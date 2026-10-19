@@ -1,0 +1,76 @@
+Bloc Fantôme 2.9.5: two-scene sanctuary presentation
+
+Approved direction
+Doorway click starts the cinematic. The camera shifts the shrine left with a modest pullback, retaining its visible
+glowstone. The cathedral emerges through a clipped void plane at upper right,
+initially partly cropped. The shrine lowers while its glowstone withdraws upward,
+and the camera tracks the rising sanctuary into its final close composition. Two detached, bay-aligned arcades and paired
+stepped lantern towers frame the nave. Ivory stone, muted blue glass, amber light.
+The third monument and Redstone Map development remain deferred.
+
+Behavior
+Place the ghost stone, click the revealed doorway, then touch the glass cross.
+The altar is also interactive when visible from the current angle. Other marked
+piers give a light/sound response. Return restores the previous world, camera,
+window dimensions and undo history. Escape or the upper-right X also exits.
+The opening uses borderless fullscreen; --opening-windowed is the testing option.
+F11 toggles only the presentation display. Continuous Q/E orbit and the slider
+unlock after the first reveal and pause during the cinematic. Settings contains
+replay and the persisted skip-on-launch toggle.
+
+Presentation and fixes
+Native-resolution textured geometry and native-size UI, using a bounded OpenGL
+presentation renderer. The editor renderer remains unchanged. The software
+fallback uses the same camera and motion but flat-colored faces.
+Sparse hover/rotation/chime sounds, a smooth low-frequency stone rumble with audible harmonics and grinding cues, and
+restrained screen tremor accompany the movement. The owner-selected piano is
+retained. Audio cue execution was checked; no subjective listening claim.
+The full swamp painting fits its startup window, with a small title over a
+lower-edge vignette. Only the native window caption contains [2.9.5].
+Small tutorial subjects now use explicit subject bounds; subjects sit above the hotbar. The tower bounds were
+corrected against actual captured block coordinates after visual inspection.
+A retained pygame SDL Window wrapper prevents a native crash after returning
+from the OpenGL presentation to the software editor.
+
+References
+References/Sanctuary/SOURCES.txt and the local Sainte-Chapelle guide, Kiel
+cathedral image and Westminster buttress study informed the repeated bay plan,
+pointed profiles, buttress alignment and terminal glazed focal point.
+The approved static preview is retained in .qa/sanctuary-preview.
+SDL wrapper ownership was checked against pygame 2.6.1 source:
+https://raw.githubusercontent.com/pygame/pygame/2.6.1/src_c/cython/pygame/_sdl2/video.pyx
+
+Verification evidence
+.qa/sanctuary-295/verified.log and verified.xml: 369 tests passed in 200.81s.
+.qa/sanctuary-295/tight-tests.log: 30 focused tests passed.
+.qa/sanctuary-295/full-flow-tight-fullscreen.log: real Windows display,
+ghost -> doorway -> cross -> Return -> editor, complete and clean exit.
+.qa/sanctuary-295/display-restore.json: fullscreen/windowed/restore checks,
+live-world and undo preservation.
+.qa/sanctuary-295/render-profile.json: AMD Radeon 860M, native GPU draw/update/
+picking/upload/finish/present sample, 60 measured frames per size. P95 7.74 ms
+at 1200x800 and 8.59 ms at 1920x1080; maximum 13.46 ms; no GL errors.
+These are local presentation measurements, not a hardware-wide guarantee.
+.qa/sanctuary-295/cinematic-*.png and sanctuary.png: native GPU compositions.
+.qa/sanctuary-295/tutorial-focus and tutorial-lifted: actual tutorial renders,
+including the final centered tower and all four rotations.
+
+Release validation and artifact locations are recorded in
+.qa/sanctuary-295/release-summary.json after packaging and installation.
+Release completed: root, installed and GitHub-folder EXEs are all 2.9.5 with
+identical SHA-256 A7124F86FBD416FC30F57696D7D49698E74ADA6770AFB747D79201B7B1DD4748.
+Installer: Code/build/installer/BlocFantome_Setup_2.9.5.exe; install exit code 0.
+Actual Start Menu launch verified, including target/icon/working directory.
+All 64 tracked save/settings hashes preserved; no exact-path QA processes remain.
+Native root EXE: ghost, doorway, cross, slider and Return verified by Windows
+mouse input. Canvas resize -> Next and mouse-wheel zoom -> Next both reset to
+the next correctly framed tutorial subject. The GitHub copy and installed
+Start Menu launch both displayed the expected opening and version.
+See root-native-qa.json, installed-native-qa.json, archive.json, artifact-copies.json,
+userdata-after.json and ../consistency-start-menu-295.json for the release evidence.
+The earlier release-final.log contains sandbox TemporaryDirectory access-denied
+failures (9 failed, 360 passed). No behavior checks were relaxed. verified.log
+reruns the suite with temporary files rooted inside the writable checkout.
+Audio channel playback, post-fade gains, sample peaks and duration are recorded
+in audio-cues.json. movement-cue.wav is the rumble at the default effective gain.
+Changes remain unstaged, uncommitted and unpushed. README was not edited.

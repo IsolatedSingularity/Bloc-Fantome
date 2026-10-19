@@ -1,0 +1,63 @@
+{
+  "expandedCategories": {
+    "Natural": false,
+    "Wood": false,
+    "Stone & Brick": false,
+    "Ores & Minerals": false,
+    "Colored Blocks": false,
+    "Decorative": false,
+    "Light Sources": false,
+    "Redstone": false,
+    "Nether": false,
+    "End": false,
+    "Functional": false,
+    "Slabs": false
+  },
+  "blocksExpanded": false,
+  "problemsExpanded": false,
+  "experimentalExpanded": false,
+  "structuresExpanded": false,
+  "showGrid": false,
+  "lightingEnabled": false,
+  "showBlockTooltip": true,
+  "worldCenteredRotation": false,
+  "skyboxesEnabled": true,
+  "skyboxSelections": {
+    "overworld": 2,
+    "nether": 0,
+    "end": 1
+  },
+  "skyboxDefaultsVersion": 2,
+  "favoriteBlocks": [],
+  "hotbar": [
+    "GRASS",
+    "DIRT",
+    "STONE",
+    "OAK_PLANKS",
+    "COBBLESTONE",
+    "BRICKS",
+    "GLASS",
+    "OAK_LOG",
+    "WATER"
+  ],
+  "searchHistory": [],
+  "lastMusicTrack": "Wending - Lena Raine.ogg",
+  "worldMapCompleted": {
+    "overworld": [
+      true,
+      false
+    ],
+    "nether": [
+      true,
+      false
+    ],
+    "end": [
+      true,
+      false
+    ],
+    "ocean": [
+      true,
+      false
+    ]
+  }
+}

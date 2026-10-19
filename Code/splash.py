@@ -28,6 +28,13 @@ class SplashScreen:
     the supplied artwork.
     """
 
+    @staticmethod
+    def fitted_window_size(max_width, max_height, icons_dir):
+        """Fit the launch window to the complete painting with an overlaid title."""
+        artwork = pygame.image.load(os.path.join(icons_dir, 'Splash_Swamp.jpg'))
+        scale = min(max_width / artwork.get_width(), max_height / artwork.get_height())
+        return round(artwork.get_width() * scale), round(artwork.get_height() * scale)
+
     def __init__(self, screen: pygame.Surface, clock: pygame.time.Clock,
                  textures_dir: str, fonts_dir: str, icons_dir: str):
         """
@@ -50,9 +57,9 @@ class SplashScreen:
         self.window_height = screen.get_height()
 
         # Load resources
-        self.background_tile = self._create_background_tile()
         self.title_font = self._load_title_font()
         self.title = self._load_title_artwork()
+        self.background_tile = self._create_background_tile()
         self.first_presented_at = None
 
     def _load_title_font(self) -> pygame.font.Font:
@@ -72,18 +79,27 @@ class SplashScreen:
         path = os.path.join(self.icons_dir, 'Splash_Swamp.jpg')
         if os.path.isfile(path):
             artwork = pygame.image.load(path).convert()
-            scale = min(self.window_width / artwork.get_width(), self.window_height / artwork.get_height())
+            available = pygame.Rect(0, 0, self.window_width, self.window_height)
+            scale = min(available.width / artwork.get_width(), available.height / artwork.get_height())
             size = (round(artwork.get_width() * scale), round(artwork.get_height() * scale))
             artwork = pygame.transform.smoothscale(artwork, size)
-            self.artwork_rect = artwork.get_rect(center=background.get_rect().center)
+            self.artwork_rect = artwork.get_rect(center=available.center)
             background.blit(artwork, self.artwork_rect)
+            # A restrained lower-edge vignette follows the painting, without a
+            # separate strip, blurred patch or crop of the supplied composition.
+            depth=min(120,round(self.artwork_rect.height*.23))
+            shade=pygame.Surface((self.artwork_rect.width,depth),pygame.SRCALPHA)
+            for y in range(depth):
+                alpha=round(132*(y/max(1,depth-1))**1.8)
+                pygame.draw.line(shade,(3,7,12,alpha),(0,y),(shade.get_width(),y))
+            background.blit(shade,(self.artwork_rect.left,self.artwork_rect.bottom-depth))
         return background
 
     def _draw_background(self, target: pygame.Surface) -> None:
         target.blit(self.background_tile, (0, 0))
 
     def _title_rect(self) -> pygame.Rect:
-        return self.title.get_rect(midbottom=(self.window_width // 2, self.window_height - 26))
+        return self.title.get_rect(center=(self.window_width // 2, self.window_height - 24))
 
     def present(self) -> None:
         """Put the splash on screen immediately before expensive startup work."""
@@ -140,9 +156,7 @@ class SplashScreen:
 
         # Fade phase
         if game_frame is None:
-            # Create blank game frame
-            game_frame = pygame.Surface((self.window_width, self.window_height))
-            self._draw_background(game_frame)
+            return
 
         splash_frame = self.screen.copy()
 

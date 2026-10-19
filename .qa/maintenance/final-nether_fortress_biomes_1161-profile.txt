@@ -1,0 +1,48 @@
+         45371252 function calls (45371179 primitive calls) in 25.658 seconds
+
+   Ordered by: cumulative time
+   List reduced from 703 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.003    0.003   19.953   19.953 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:16513(_readBuildFile)
+        1    1.046    1.046   19.940   19.940 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15975(_stageBiomeScene)
+        1    0.010    0.010   17.971   17.971 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world_snapshot.py:55(prepare_snapshot)
+        2    2.924    1.462   10.994    5.497 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:448(replace)
+  290/289    0.037    0.000    5.192    0.018 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20864(_render)
+        1    0.429    0.429    5.105    5.105 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\build_io.py:221(_draw_orders)
+      289    1.137    0.004    4.215    0.015 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22125(_renderWorld)
+        1    0.337    0.337    4.151    4.151 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:411(_rebuildViewSurfaceIndex)
+   298614    0.760    0.000    3.644    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:357(_surfaceViewsForPosition)
+  1292963    3.033    0.000    3.033    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\build_io.py:245(<genexpr>)
+  1756061    0.908    0.000    2.982    0.000 {built-in method builtins.any}
+        4    1.156    0.289    1.860    0.465 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:420(prepareViewSurfaceChunks)
+  3790104    1.272    0.000    1.730    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:509(<genexpr>)
+  1023799    0.611    0.000    1.620    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:367(neighborIsOpaque)
+  5294528    1.500    0.000    1.603    0.000 {method 'get' of 'dict' objects}
+       12    0.907    0.076    1.530    0.128 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\native_acceleration.py:86(sort_positions)
+        1    0.000    0.000    1.163    1.163 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:10629(_switchDimension)
+        1    0.000    0.000    1.162    1.162 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:10405(_playMenuMusic)
+        1    0.000    0.000    1.160    1.160 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\audio.py:368(set_playlist)
+        1    0.000    0.000    1.160    1.160 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\audio.py:414(_activate)
+        1    0.000    0.000    1.160    1.160 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\audio.py:429(play_next)
+        1    0.000    0.000    1.160    1.160 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\audio.py:106(load)
+        1    1.160    1.160    1.160    1.160 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\audio.py:92(_decode)
+   552656    0.467    0.000    1.044    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:386(<genexpr>)
+   218344    0.491    0.000    1.029    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:8277(getScaledSprite)
+  3478196    0.987    0.000    0.987    0.000 {method 'add' of 'set' objects}
+  3007612    0.612    0.000    0.942    0.000 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\enum.py:1266(__hash__)
+  3878865    0.619    0.000    0.619    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\native_acceleration.py:99(<genexpr>)
+    26611    0.572    0.000    0.572    0.000 {method 'blit' of 'pygame.surface.Surface' objects}
+  3790104    0.512    0.000    0.512    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:206(_neighborPositions)
+      289    0.280    0.001    0.466    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22045(_visibleScreenRenderPlan)
+  3251068    0.431    0.000    0.431    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:428(<genexpr>)
+  1904565    0.336    0.000    0.336    0.000 {built-in method builtins.round}
+  3007614    0.329    0.000    0.329    0.000 {built-in method builtins.hash}
+   218378    0.198    0.000    0.328    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\renderer.py:128(worldToScreen)
+  2029198    0.277    0.000    0.277    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:389(<genexpr>)
+   218344    0.076    0.000    0.255    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:115(getBlockProperties)
+  290/289    0.003    0.000    0.244    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\skybox.py:394(render)
+   744817    0.188    0.000    0.231    0.000 {built-in method builtins.max}
+      289    0.003    0.000    0.209    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15276(_renderSnow)
+
+

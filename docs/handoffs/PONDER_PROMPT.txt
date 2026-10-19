@@ -1,0 +1,27 @@
+Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome after the maintenance
+phase. Read AGENTS.md, its latest maintenance handoff, and the relevant parts of
+NEW; PONDER PACKAGE. Preserve the game's existing visual identity and working
+simulation, save/undo behavior, native-size typography and release workflow.
+
+This is broader Ponder-inspired presentation work. Redstone Map development is
+paused. The old bridge's piston-first recommendation is research, not the owner's
+complete creative brief. Do not default to improving the Lab or porting Create.
+
+Saved references include checker-grid / Dive to Heart / Monument Valley imagery,
+an opening-disc concept, quiet human-composed piano, restrained ethereal UI sounds,
+sky/atmosphere ideas, grouped geometry motion, reveals, framing and annotations.
+These are references, not a selected storyboard or approved animation checklist.
+
+First review the owner's supplied browser context and ask focused questions about
+the intended first scene, exact reference animation, camera, pacing, interaction,
+audio and exit/reset behavior. Describe one concrete proposed scene and wait for
+creative approval before implementing it. Do not reinterpret missing details as
+permission for a broad redesign or invent narrative/horror direction.
+
+Once approved, build the smallest coherent scene using existing systems. Compare
+its rendered result with the selected references and revise to the owner's feedback.
+Avoid a general timeline engine, renderer rewrite, new contract/harness framework
+or unnecessary dependency work. Use focused tests and visual checks proportionate
+to the change. Final delivery includes updated EXE/installer, installation and
+verified Start Menu launch, preserved user data and a concise handoff in the clone.
+Use .codex only for temporary agent work. Leave Git changes unstaged and unpushed.

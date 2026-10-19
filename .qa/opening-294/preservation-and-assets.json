@@ -1,0 +1,18 @@
+{
+  "CheckedUserFiles": 50,
+  "Changed": [],
+  "InstalledAssets": [
+    {
+      "Path": "Assets\\Fonts\\Zekton\\Zekton-Regular.otf",
+      "SHA256": "CCB418D49F2445618BE270AD8306FBB0551DA3C219E39EEC5DFE41869C0D9C27"
+    },
+    {
+      "Path": "Assets\\Sound Hub\\opening\\panoir-you-have-time.ogg",
+      "SHA256": "C50CBBE9A48214D6053892120E4AF80D8365861F3DA29A9D7C90D17CEE343A33"
+    },
+    {
+      "Path": "Assets\\Icons\\Splash_Swamp.jpg",
+      "SHA256": "2B870C6D22E0488CCEF9752ACAC19403A21BC1BF629C96205F43D7E5DAAD9A1F"
+    }
+  ]
+}

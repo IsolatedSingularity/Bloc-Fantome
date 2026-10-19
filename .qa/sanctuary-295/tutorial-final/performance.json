@@ -1,0 +1,10 @@
+[
+  {
+    "page": "camera",
+    "width": 1200,
+    "dispatch_ms": 0.16,
+    "ready_ms": 1613.97,
+    "max_loading_frame_ms": 394.12,
+    "p95_ms": 3.81
+  }
+]

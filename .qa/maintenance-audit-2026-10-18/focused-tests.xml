@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="77" time="19.869" timestamp="2026-10-18T16:48:02.106565-07:00" hostname="cathedral"><testcase classname="tests.test_build_io" name="test_read_build_returns_snapshot_with_nested_state_and_roles" time="0.020" /><testcase classname="tests.test_build_io" name="test_read_build_rejects_invalid_payload_without_live_world" time="0.011" /><testcase classname="tests.test_build_io" name="test_write_build_is_atomic_v5_and_round_trips_state" time="0.012" /><testcase classname="tests.test_build_io" name="test_captured_source_palette_round_trips_on_ordinary_blocks" time="0.010" /><testcase classname="tests.test_build_io" name="test_redstone_component_state_round_trips" time="0.011" /><testcase classname="tests.test_scene_cache.SceneCacheTests" name="test_fixed_record_cache_round_trips_roles_states_and_liquids" time="0.002"><failure message="PermissionError: [WinError 5] Access is denied: 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm'">self = &lt;test_scene_cache.SceneCacheTests testMethod=test_fixed_record_cache_round_trips_roles_states_and_liquids&gt;
+
+    def test_fixed_record_cache_round_trips_roles_states_and_liquids(self):
+        digest = bytes(range(32))
+        props = BlockProperties(
+            facing=Facing.WEST,
+            slabPosition=SlabPosition.TOP,
+            stairShape=StairShape.OUTER_LEFT,
+        )
+        staged = [
+            (1, 2, -3, FakeBlock.STAIRS, props, None),
+            (4, 5, 6, FakeBlock.WATER, None, (7, False, True)),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(pathlib.Path(directory) / "scene.bfc")
+&gt;           scene_cache.write(
+                path, digest, "overworld", (16, 16, 32, -8),
+                {"kind": "world", "version": "1.21"}, staged, {(1, 2, -3)},
+                {(4, 5, 6)}, {0: {(1, 2, -3)}, 1: {(4, 5, 6)}},
+                {(1, 2, -3), (4, 5, 6)},
+                {0: {(1, 2, -3)}, 1: {(4, 5, 6)}},
+            )
+
+tests\test_scene_cache.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm\\scene.bfc'
+digest = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f'
+dimension = 'overworld', bounds = (16, 16, 32, -8)
+scene = {'kind': 'world', 'version': '1.21'}
+staged = ((1, 2, -3, &lt;FakeBlock.STAIRS: 20&gt;, BlockProperties(facing=&lt;Facing.WEST: 3&gt;, isOpen=False, slabPosition=&lt;SlabPosition....orSubtract=False, sourceCapture='', sourcePalette=-1), None), (4, 5, 6, &lt;FakeBlock.WATER: 70&gt;, None, (7, False, True)))
+structure_positions = {(1, 2, -3)}, exterior_glass_positions = {(4, 5, 6)}
+structure_surfaces_by_view = {0: {(1, 2, -3)}, 1: {(4, 5, 6)}}
+surface_positions = {(1, 2, -3), (4, 5, 6)}
+view_surface_positions_by_view = {0: {(1, 2, -3)}, 1: {(4, 5, 6)}}
+
+    def write(path: str, digest: bytes, dimension: str, bounds, scene,
+              staged: Iterable, structure_positions,
+              exterior_glass_positions=(), structure_surfaces_by_view=None,
+              surface_positions=(), view_surface_positions_by_view=None) -&gt; None:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        staged = tuple(staged)
+        serialized_scene = {
+            key: value for key, value in scene.items() if not key.startswith("_")
+        }
+        metadata = json.dumps(
+            {"dimension": dimension, "bounds": list(bounds), "scene": serialized_scene},
+            separators=(",", ":"),
+        ).encode("utf-8")
+        temp_path = path + ".tmp"
+        structure_surfaces_by_view = structure_surfaces_by_view or {}
+        view_surface_positions_by_view = view_surface_positions_by_view or {}
+&gt;       with open(temp_path, "wb") as handle:
+             ^^^^^^^^^^^^^^^^^^^^^
+E       PermissionError: [Errno 13] Permission denied: 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm\\scene.bfc.tmp'
+
+Code\engine\scene_cache.py:129: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+path = 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm'
+onexc = &lt;function TemporaryDirectory._rmtree.&lt;locals&gt;.onexc at 0x00000286A4F10040&gt;
+
+    def _rmtree_unsafe(path, onexc):
+        def onerror(err):
+            onexc(os.scandir, err.filename, err)
+        results = os.walk(path, topdown=False, onerror=onerror, followlinks=os._walk_symlinks_as_files)
+        for dirpath, dirnames, filenames in results:
+            for name in dirnames:
+                fullname = os.path.join(dirpath, name)
+                try:
+                    os.rmdir(fullname)
+                except OSError as err:
+                    onexc(os.rmdir, fullname, err)
+            for name in filenames:
+                fullname = os.path.join(dirpath, name)
+                try:
+                    os.unlink(fullname)
+                except OSError as err:
+                    onexc(os.unlink, fullname, err)
+        try:
+&gt;           os.rmdir(path)
+E           PermissionError: [WinError 5] Access is denied: 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm'
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\shutil.py:637: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_scene_cache.SceneCacheTests testMethod=test_fixed_record_cache_round_trips_roles_states_and_liquids&gt;
+
+    def test_fixed_record_cache_round_trips_roles_states_and_liquids(self):
+        digest = bytes(range(32))
+        props = BlockProperties(
+            facing=Facing.WEST,
+            slabPosition=SlabPosition.TOP,
+            stairShape=StairShape.OUTER_LEFT,
+        )
+        staged = [
+            (1, 2, -3, FakeBlock.STAIRS, props, None),
+            (4, 5, 6, FakeBlock.WATER, None, (7, False, True)),
+        ]
+&gt;       with tempfile.TemporaryDirectory() as directory:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_scene_cache.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:950: in __exit__
+    self.cleanup()
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:954: in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:934: in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\shutil.py:781: in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\shutil.py:639: in _rmtree_unsafe
+    onexc(os.rmdir, path, err)
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:906: in onexc
+    _resetperms(path)
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:286: in _resetperms
+    _dont_follow_symlinks(_os.chmod, path, 0o700)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+func = &lt;built-in function chmod&gt;
+path = 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm'
+args = (448,)
+
+    def _dont_follow_symlinks(func, path, *args):
+        # Pass follow_symlinks=False, unless not supported on this platform.
+        if func in _os.supports_follow_symlinks:
+            func(path, *args, follow_symlinks=False)
+        elif _os.name == 'nt' or not _os.path.islink(path):
+&gt;           func(path, *args)
+E           PermissionError: [WinError 5] Access is denied: 'C:\\Users\\hunkb\\AppData\\Local\\Packages\\sandbox.{7704e887-83c2-42a7-abc6-58e44ed603e5}\\AC\\Temp\\tmpqt8arfvm'
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:277: PermissionError</failure></testcase><testcase classname="tests.test_undo" name="test_remove_undo_restores_properties_and_liquid_state" time="0.000" /><testcase classname="tests.test_undo" name="test_batch_execute_and_undo_each_increment_world_revision_once" time="0.001" /><testcase classname="tests.test_redstone" name="test_dust_propagates_full_strength_then_decays_to_zero" time="0.001" /><testcase classname="tests.test_redstone" name="test_repeater_strongly_powers_through_solid_block" time="0.001" /><testcase classname="tests.test_redstone" name="test_repeater_facing_is_input_side_and_emits_from_the_opposite_side" time="0.001" /><testcase classname="tests.test_redstone" name="test_repeater_reads_loaded_wire_power_after_directional_output_fallback" time="0.000" /><testcase classname="tests.test_redstone" name="test_repeater_uses_selected_two_game_tick_delay" time="0.000" /><testcase classname="tests.test_redstone" name="test_repeater_extends_an_input_pulse_shorter_than_its_delay" time="0.000" /><testcase classname="tests.test_redstone" name="test_dust_climbs_one_block_and_continues_decaying" time="0.000" /><testcase classname="tests.test_redstone" name="test_powered_side_repeater_locks_main_repeater" time="0.000" /><testcase classname="tests.test_redstone" name="test_repeater_lock_state_change_reports_dirty_component" time="0.001" /><testcase classname="tests.test_redstone" name="test_redstone_torch_inverts_power_on_supporting_block" time="0.001" /><testcase classname="tests.test_redstone" name="test_redstone_torch_does_not_count_its_own_support_as_input" time="0.001" /><testcase classname="tests.test_redstone" name="test_redstone_torch_only_checks_power_emitted_by_its_support_face" time="0.000" /><testcase classname="tests.test_redstone" name="test_torch_inverter_chain_converges_when_downstream_is_visited_first" time="0.001" /><testcase classname="tests.test_redstone" name="test_sticky_piston_pushes_and_pulls_one_block" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_extension_and_retraction_emit_their_real_sound_routes" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_accepts_java_quasi_power_around_block_above" time="0.000" /><testcase classname="tests.test_redstone" name="test_slime_moves_side_neighbors_but_does_not_stick_to_honey" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_motion_is_time_based_and_completes_after_six_sixty_fps_frames" time="0.000" /><testcase classname="tests.test_redstone" name="test_piston_breaks_fragile_redstone_instead_of_moving_it" time="0.000" /><testcase classname="tests.test_redstone" name="test_sticky_retraction_does_not_pull_fragile_block_at_initial_cell" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_world_writes_trigger_a_follow_up_topology_pass" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_breaks_both_fragile_door_cells_and_cannot_move_block_entities" time="0.001" /><testcase classname="tests.test_redstone" name="test_redstone_lamp_uses_four_game_tick_off_delay" time="0.000" /><testcase classname="tests.test_redstone" name="test_component_tick_reports_lamp_powered_by_repeater_transition" time="0.000" /><testcase classname="tests.test_redstone" name="test_wire_connection_mask_encodes_north_east_south_west" time="0.000" /><testcase classname="tests.test_redstone" name="test_wire_connection_mask_requires_vanilla_step_geometry" time="0.001" /><testcase classname="tests.test_redstone" name="test_wire_up_mask_marks_only_supported_step_connections" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_base_is_solid_for_redstone_support_and_wire_climb" time="0.000" /><testcase classname="tests.test_redstone" name="test_slime_and_honey_remain_solid_redstone_supports_even_with_translucent_art" time="0.000" /><testcase classname="tests.test_redstone" name="test_sticky_piston_leaves_immovable_side_branch_blocks_in_place" time="0.000" /><testcase classname="tests.test_redstone" name="test_sticky_side_chain_skips_immovable_block_behind_the_branch" time="0.001" /><testcase classname="tests.test_redstone" name="test_repeater_can_strong_power_through_a_piston_base" time="0.000" /><testcase classname="tests.test_redstone" name="test_wire_strongly_powers_a_solid_block_and_relays_to_a_lamp" time="0.000" /><testcase classname="tests.test_redstone" name="test_dust_recalculation_does_not_seed_through_a_wire_only_solid_relay" time="0.001" /><testcase classname="tests.test_redstone" name="test_strong_power_respects_floor_lever_mount_when_crossing_a_solid" time="0.000" /><testcase classname="tests.test_redstone" name="test_wire_does_not_connect_visually_to_consumers_that_cannot_emit_power" time="0.000" /><testcase classname="tests.test_redstone" name="test_isolated_dust_does_not_emit_side_power_to_a_lamp" time="0.000" /><testcase classname="tests.test_redstone" name="test_local_dirty_update_recalculates_only_the_touched_wire_component" time="0.001" /><testcase classname="tests.test_redstone" name="test_stone_button_powers_for_twenty_game_ticks_then_releases" time="0.001" /><testcase classname="tests.test_redstone" name="test_piston_chain_limit_is_twelve_blocks" time="0.001" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[piston_door]" time="0.095" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[hidden_entrance]" time="0.102" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[staircase]" time="0.184" /><testcase classname="tests.test_redstone_lab" name="test_clock_runs_stops_and_restarts_without_burnout[clock]" time="0.054" /><testcase classname="tests.test_redstone_lab" name="test_clock_runs_stops_and_restarts_without_burnout[slow_clock]" time="0.027" /><testcase classname="tests.test_redstone_lab" name="test_feed_tape_moves_marker_and_conserves_every_block" time="0.019" /><testcase classname="tests.test_redstone_lab" name="test_vertical_sticky_piston_pushes_and_pulls[Facing.UP-1]" time="0.001" /><testcase classname="tests.test_redstone_lab" name="test_vertical_sticky_piston_pushes_and_pulls[Facing.DOWN--1]" time="0.001" /><testcase classname="tests.test_redstone_lab" name="test_reset_discards_pending_clock_and_button_work" time="0.003" /><testcase classname="tests.test_redstone_lab" name="test_torch_waits_two_game_ticks_before_inverting" time="0.000" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[0]" time="4.316" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[1]" time="4.331" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[2]" time="4.301" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[3]" time="4.880" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-piston_door]" time="0.019" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-staircase]" time="0.036" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-clock]" time="0.036" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-slow_clock]" time="0.017" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-piston_door]" time="0.024" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-staircase]" time="0.036" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-clock]" time="0.042" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-slow_clock]" time="0.018" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-piston_door]" time="0.018" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-staircase]" time="0.029" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-clock]" time="0.049" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-slow_clock]" time="0.018" /><testcase classname="tests.test_redstone_lab" name="test_comparator_compare_subtract_delay_and_strong_output" time="0.001" /><testcase classname="tests.test_redstone_lab" name="test_staircase_forms_two_adjacent_treads_at_each_rise" time="0.010" /><testcase classname="tests.test_redstone_lab" name="test_bundled_models_and_counter_match_local_reference_cells" time="0.102" /></testsuite></testsuites>

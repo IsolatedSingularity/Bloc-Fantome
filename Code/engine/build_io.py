@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import struct
+import zlib
 from typing import Optional
 
 from domain.blocks import (
@@ -382,10 +383,17 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
     except (gzip.BadGzipFile, OSError):
         with path.open("r", encoding="utf-8") as handle:
             save_data = json.load(handle)
+    except (EOFError, zlib.error) as error:
+        raise ValueError("Truncated or corrupt compressed build") from error
     if not isinstance(save_data, dict) or not isinstance(save_data.get("blocks"), list):
         raise ValueError("Invalid build file format")
 
-    save_version = int(save_data.get("version", 1))
+    try:
+        save_version = int(save_data.get("version", 1))
+    except (TypeError, ValueError) as error:
+        raise ValueError("Invalid build version") from error
+    if save_version not in range(1, 6):
+        raise ValueError(f"Unsupported build version: {save_version}")
     dimension = save_data.get("dimension", DIMENSION_OVERWORLD)
     if dimension not in (DIMENSION_OVERWORLD, DIMENSION_NETHER, DIMENSION_END):
         raise ValueError(f"Unknown dimension: {dimension}")
@@ -414,7 +422,7 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
     if not isinstance(scene, dict):
         scene = {}
     scene = dict(scene)
-    staged = []
+    staged = {}
     structure_positions = set()
     skipped_count = 0
     for block_data in save_data["blocks"]:
@@ -447,12 +455,17 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
                     bool(block_data.get("liquidSource", True)),
                     bool(block_data.get("liquidFalling", False)),
                 )
-            staged.append((x, y, z, parsed_type, block_properties, liquid_state))
+            # Last valid row wins, including removal of earlier state and role.
+            staged[(x, y, z)] = (x, y, z, parsed_type, block_properties, liquid_state)
+            structure_positions.discard((x, y, z))
             if block_data.get("role") == "structure":
                 structure_positions.add((x, y, z))
         except (KeyError, TypeError, ValueError):
             skipped_count += 1
 
+    if save_data["blocks"] and not staged:
+        raise ValueError("Build contains no valid blocks")
+    staged = list(staged.values())
     if save_version < 4:
         occupied = {(x, y, z) for x, y, z, *_ in staged}
         migrated = []
@@ -507,6 +520,7 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
                 structure_surfaces,
                 surface_positions,
                 view_surface_positions,
+                skipped_count=skipped_count,
             )
             scene_cache.prune(str(cache_policy.derived_cache_dir))
         except (OSError, ValueError, struct.error) as error:

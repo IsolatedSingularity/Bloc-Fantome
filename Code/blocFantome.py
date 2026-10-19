@@ -1,4 +1,4 @@
-﻿"""
+"""
 Bloc Fantôme
 
 An isometric 2.5D building simulator using Pygame. Users can place blocks from an
@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "2.9.2"
+APP_VERSION = "2.9.6"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -56,7 +56,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.9.2'
+        myappid = 'blocfantome.builder.2.9.6'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -9051,10 +9051,11 @@ class BlocFantome(GuidedTutorialAppMixin):
         
         # Set up display
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
-        pygame.display.set_caption(f"{TITLE} {APP_VERSION}")
+        pygame.display.set_caption(f"{TITLE} [{APP_VERSION}]")
         try:
             from pygame._sdl2.video import Window
-            Window.from_display_module().minimum_size = (960, 640)
+            self._displayWindow = Window.from_display_module()
+            self._displayWindow.minimum_size = (960, 640)
         except (ImportError, AttributeError, pygame.error):
             pass
         self.clock = pygame.time.Clock()
@@ -9558,6 +9559,8 @@ class BlocFantome(GuidedTutorialAppMixin):
         
         # Settings menu
         self.settingsMenuOpen = False
+        self.openingScene = None
+        self._openingMusic = None
         # Q/E follows the cursor by default. The gear setting switches to the
         # fixed vertical axis through the editable world's X/Y center.
         self.worldCenteredRotation = False
@@ -10077,7 +10080,7 @@ class BlocFantome(GuidedTutorialAppMixin):
                     FONTS_DIR,
                     ICONS_DIR,
                 )
-            splash.show(pre_render_callback=pre_render_game)
+            splash.show(pre_render_callback=None if getattr(self, '_compactStartupSplash', False) else pre_render_game)
             return True
         except Exception as e:
             print(f"Splash screen error: {e}")
@@ -10100,7 +10103,12 @@ class BlocFantome(GuidedTutorialAppMixin):
     def run(self) -> None:
         """Main application loop"""
         startupSplash = None
+        startupWindowSize = self.screen.get_size()
+        self._compactStartupSplash = True
         try:
+            self.screen = pygame.display.set_mode(
+                SplashScreen.fitted_window_size(*startupWindowSize, ICONS_DIR)
+            )
             startupSplash = SplashScreen(
                 self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
             )
@@ -10149,6 +10157,12 @@ class BlocFantome(GuidedTutorialAppMixin):
         # Show splash screen (also starts music during fade)
         if not self._showSplashScreen(startupSplash):
             return  # User quit during splash
+        self._compactStartupSplash = False
+        self.screen = pygame.display.set_mode(startupWindowSize, pygame.RESIZABLE)
+        self._applyWindowSize(*startupWindowSize, recreate=False)
+        from ui.opening_scene import skip_on_launch
+        if not skip_on_launch():
+            self._openOpeningScene()
         
         print("\n=== Bloc Fantôme Started ===")
         print("Controls:")
@@ -11980,7 +11994,21 @@ class BlocFantome(GuidedTutorialAppMixin):
         """Handle pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if self.openingScene is not None:self._closeOpeningScene()
                 self.running = False
+                continue
+            if getattr(self, 'openingScene', None) is not None:
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_F11 or
+                    (event.key == pygame.K_RETURN and getattr(event, 'mod', 0) & pygame.KMOD_ALT)):
+                    self._setOpeningDisplay(not self._openingWindowed)
+                    break
+                elif event.type == pygame.VIDEORESIZE:
+                    self.openingScene.resize(pygame.display.get_window_size())
+                else:
+                    self.openingScene.handle_event(event)
+                    if self.openingScene.closed:
+                        self._closeOpeningScene()
+                        break  # Do not replay remaining presentation input in the editor.
                 continue
             if event.type == pygame.VIDEORESIZE:
                 self._applyWindowSize(event.w, event.h)
@@ -11990,6 +12018,13 @@ class BlocFantome(GuidedTutorialAppMixin):
                 or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT)
             ):
                 self._toggleFullscreen()
+                continue
+            if self.pendingWorldLoad is not None:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.pendingWorldLoad[0].cancel()
+                    self.pendingWorldLoad = None
+                    self.tooltipText = "World load cancelled"
+                    self.tooltipTimer = 1800
                 continue
             if self.worldMapActive:
                 action = self.worldMapView.handle_event(event)
@@ -14170,6 +14205,9 @@ class BlocFantome(GuidedTutorialAppMixin):
 
     def _update(self):
         """Update game state"""
+        if self.openingScene is not None:
+            self.openingScene.update(self.clock.get_time()/1000.0)
+            return
         self._pollWorldLoad()
         self._pollBiomeLoad()
         self._pollTourLoad()
@@ -16138,6 +16176,10 @@ class BlocFantome(GuidedTutorialAppMixin):
         path = os.path.join(WORLDS_DIR, entry.filename)
         future = self.worldLoadExecutor.submit(self._readBuildFile, path)
         self.pendingWorldLoad = (future, entry, path)
+        self._worldLoadOwner = (self.world, self.world.revision, self.currentDimension,
+                                self.worldMapActive, self.redstoneLabActive,
+                                self._tutorialSessionSnapshot)
+        self.panning = False
         self.tooltipText = f"Loading {entry.name}..."
         self.tooltipTimer = 60000
 
@@ -16148,6 +16190,12 @@ class BlocFantome(GuidedTutorialAppMixin):
         if not future.done():
             return
         self.pendingWorldLoad = None
+        owner = (self.world, self.world.revision, self.currentDimension,
+                 self.worldMapActive, self.redstoneLabActive, self._tutorialSessionSnapshot)
+        if owner != self._worldLoadOwner:
+            self.tooltipText = "World load cancelled because the canvas changed"
+            self.tooltipTimer = 3000
+            return
         try:
             dimension, bounds, metadata, staged, skipped = future.result()
             opened = self._applyStagedBuild(
@@ -16946,7 +16994,7 @@ class BlocFantome(GuidedTutorialAppMixin):
                 filepath,
                 silent,
             )
-        except (OSError, ValueError, json.JSONDecodeError) as error:
+        except (OSError, ValueError, EOFError) as error:
             if not silent:
                 print(f"Could not open build: {error}")
                 self.tooltipText = f"Open failed: {error}"
@@ -17878,16 +17926,27 @@ class BlocFantome(GuidedTutorialAppMixin):
             return
         
         currentTime = pygame.time.get_ticks()
+        if currentTime < getattr(self, "_autoSaveRetryAt", 0):
+            return
         if currentTime - self.lastAutoSaveTime >= self.autoSaveInterval:
             # Create rolling backup before auto-save
-            if self.autoBackupEnabled:
-                self._createRollingBackup()
+            backupFailed = self.autoBackupEnabled and not self._createRollingBackup()
             
-            self._saveBuilding(os.path.basename(self.autoSavePath), silent=True)
+            if not self._saveBuilding(os.path.basename(self.autoSavePath), silent=True):
+                self._autoSaveRetryAt = currentTime + 10000
+                self.autoSaveFlashTimer = 0
+                self.tooltipText = "Autosave failed; your world is still open"
+                self.tooltipTimer = 3000
+                return
+            self._autoSaveRetryAt = 0
             self.lastAutoSaveTime = currentTime
             
             # Show "Saved" indicator for ~1 second (60 frames at 60fps)
             self.autoSaveFlashTimer = 60
+            if backupFailed:
+                self.tooltipText = "Autosaved, but recovery backup failed"
+                self.tooltipTimer = 5000
+                return
             
             # Horror: Rare creepy autosave message (0.5% chance)
             if self.horrorEnabled and random.random() < 0.005:
@@ -17920,66 +17979,27 @@ class BlocFantome(GuidedTutorialAppMixin):
             # Sort by time (oldest first)
             backups.sort(key=lambda x: x[1])
             
-            # Delete oldest backups if we have too many
-            while len(backups) >= self.maxBackups:
+            # Commit the replacement before retiring any recovery point.
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            backupPath = os.path.join(self.backupDir, f"backup_{timestamp}.json.gz")
+            if not self._saveBackup(backupPath):
+                return False
+            while len(backups) >= max(1, self.maxBackups):
                 oldest = backups.pop(0)
-                try:
-                    os.remove(oldest[0])
-                except OSError as e:
-                    print(f"Warning: Could not remove old backup: {e}")
-            
-            # Create new backup with timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backupFilename = f"backup_{timestamp}.json.gz"
-            backupPath = os.path.join(self.backupDir, backupFilename)
-            
-            # Save current world as backup
-            self._saveBackup(backupPath)
-            
+                os.remove(oldest[0])
+            return True
+
         except Exception as e:
             print(f"Backup error: {e}")
+            return False
     
     def _saveBackup(self, filepath: str):
-        """Save a backup to specified path (compressed) with atomic write"""
-        import json
-        import gzip
-        
-        blocks = []
-        for (x, y, z), blockType in self.world.blocks.items():
-            blockData = {"x": x, "y": y, "z": z, "type": blockType.name}
-            props = self.world.getBlockProperties(x, y, z)
-            if props:
-                if props.facing:
-                    blockData["facing"] = props.facing.name if hasattr(props.facing, 'name') else str(props.facing)
-                if props.isOpen:
-                    blockData["isOpen"] = props.isOpen
-                if props.slabPosition:
-                    blockData["slabPosition"] = props.slabPosition.name if hasattr(props.slabPosition, 'name') else str(props.slabPosition)
-            blocks.append(blockData)
-        
-        saveData = {
-            "version": 3,  # Version 3 = atomic writes + proper enum serialization
-            "dimension": self.currentDimension,
-            "blocks": blocks
-        }
-        
-        try:
-            # Atomic write: write to temp file, then rename
-            tempPath = filepath + '.tmp'
-            jsonStr = json.dumps(saveData, separators=(',', ':'))
-            with gzip.open(tempPath, 'wt', encoding='utf-8') as f:
-                f.write(jsonStr)
-            # Atomic rename (prevents corruption if write fails mid-way)
-            os.replace(tempPath, filepath)
-        except (OSError, IOError) as e:
-            print(f"Warning: Backup save failed: {e}")
-            # Clean up temp file if it exists
-            if os.path.exists(tempPath):
-                try:
-                    os.remove(tempPath)
-                except OSError:
-                    pass
-    
+        """Use the same atomic v5 serializer as ordinary saves."""
+        saved = self._saveBuilding(filepath=filepath, silent=True)
+        if not saved:
+            print(f"Backup save failed: {filepath}")
+        return saved
+
     def _getBackupFiles(self) -> List[Tuple[str, str]]:
         """Get list of backup files with their timestamps"""
         from datetime import datetime
@@ -18480,6 +18500,77 @@ class BlocFantome(GuidedTutorialAppMixin):
             return True
         return False
     
+    def _openOpeningScene(self):
+        from ui.opening_scene import OpeningScene, skip_on_launch, MUSIC_PATH
+        # Display changes belong to this presentation, never to editor camera sizing.
+        from pygame._sdl2 import Window
+        # Pygame 2.6.1 stores a borrowed Python Window pointer in SDL user data.
+        # Keep its wrapper alive while SDL events may refer to this window.
+        self._displayWindow=Window.from_display_module()
+        self._openingDisplay=(self.screen.get_size(),self.fullscreen,self._displayWindow.position)
+        self.openingScene = OpeningScene(self.screen.get_size(),self.assetManager,skip=skip_on_launch(),
+            effects_volume=0 if self.effectsMuted else self.effectsVolume)
+        self._setOpeningDisplay('--opening-windowed' in sys.argv or pygame.display.get_driver()=='dummy')
+        self.settingsMenuOpen = False
+        self.panning = False
+        self.draggingSlider = None
+        # Preserve every live world, camera, tool and undo record. Pause the
+        # existing sound channels; the presentation owns an otherwise unused one.
+        pygame.mixer.pause()
+        self.musicController.pause()
+        if os.path.isfile(MUSIC_PATH):
+            try:
+                if self._openingMusic is None:
+                    self._openingMusic = pygame.mixer.Sound(MUSIC_PATH)
+                channel=pygame.mixer.Channel(30)
+                channel.set_volume(0 if self.musicMuted else self.musicVolume*.8)
+                channel.play(self._openingMusic,loops=-1,fade_ms=1800)
+            except pygame.error as error:
+                print(f'Opening music unavailable: {error}')
+
+    def _setOpeningDisplay(self, windowed):
+        from ui.presentation_renderer import PresentationRenderer
+        from pygame._sdl2 import Window
+        scene=self.openingScene
+        if scene.gpu:scene.gpu.close();scene.gpu=None
+        self._openingWindowed=windowed
+        if pygame.display.get_driver()=='dummy':return
+        size=self._openingDisplay[0] if windowed else pygame.display.get_desktop_sizes()[0]
+        flags=pygame.OPENGL|pygame.DOUBLEBUF|(pygame.RESIZABLE if windowed else pygame.NOFRAME)
+        try:
+            pygame.display.gl_set_attribute(pygame.GL_DEPTH_SIZE,24)
+            self.screen=pygame.display.set_mode(size,flags,vsync=0)
+            self._displayWindow=Window.from_display_module()
+            self._displayWindow.position=self._openingDisplay[2] if windowed else (0,0)
+            pygame.event.pump()
+            self.screen=pygame.display.get_surface()
+            scene.gpu=PresentationRenderer()
+            scene.resize(pygame.display.get_window_size())
+            pygame.event.clear((pygame.VIDEORESIZE,pygame.WINDOWRESIZED,pygame.WINDOWSIZECHANGED))
+        except (pygame.error,OSError,AttributeError) as error:
+            # Keep the world accessible on machines without a compatibility context.
+            print(f'Opening GPU unavailable, using software presentation: {error}')
+            self.screen=pygame.display.set_mode(self._openingDisplay[0],pygame.RESIZABLE)
+            self._displayWindow=Window.from_display_module()
+            self._openingWindowed=True
+            scene.resize(self.screen.get_size())
+
+    def _closeOpeningScene(self):
+        from pygame._sdl2 import Window
+        pygame.mixer.Channel(30).stop()
+        if self.openingScene:self.openingScene.close()
+        self.openingScene = None
+        size,fullscreen,position=self._openingDisplay
+        if pygame.display.get_driver()!='dummy':
+            self.screen=pygame.display.set_mode(size,pygame.FULLSCREEN if fullscreen else pygame.RESIZABLE)
+            self._displayWindow=Window.from_display_module()
+            if not fullscreen:self._displayWindow.position=position
+            pygame.event.pump()
+            self.screen=pygame.display.get_surface()
+            pygame.event.clear((pygame.VIDEORESIZE,pygame.WINDOWRESIZED,pygame.WINDOWSIZECHANGED))
+        pygame.mixer.unpause()
+        self.musicController.unpause()
+
     def _handleSettingsClick(self, mouseX: int, mouseY: int):
         """Handle clicks on the settings menu"""
         menuRect = self._settingsMenuRect()
@@ -18534,9 +18625,20 @@ class BlocFantome(GuidedTutorialAppMixin):
                 return
             y += 36
 
+        if pygame.Rect(sliderX,y,sliderWidth,30).collidepoint(mouseX,mouseY):
+            self._openOpeningScene()
+        elif pygame.Rect(sliderX,y+36,sliderWidth,30).collidepoint(mouseX,mouseY):
+            from ui.opening_scene import save_skip, skip_on_launch
+            try:
+                save_skip(not skip_on_launch())
+                self.assetManager.playClickSound()
+            except OSError as exc:
+                self.tooltipText = f"Could not save opening preference: {exc}"
+                self.tooltipTimer = 4000
+
     def _settingsMenuRect(self) -> pygame.Rect:
         """Return the single geometry source used by Settings input/rendering."""
-        width, height = 460, 536
+        width, height = 460, 608
         return pygame.Rect(
             (WINDOW_WIDTH - width) // 2,
             (WINDOW_HEIGHT - height) // 2,
@@ -18600,7 +18702,15 @@ class BlocFantome(GuidedTutorialAppMixin):
                 newW = int(spriteW * scale)
                 newH = int(spriteH * scale)
                 
-                scaled = pygame.transform.scale(sprite, (newW, newH))
+                cache = getattr(self, '_hotbarIconCache', None)
+                if cache is None:
+                    cache = self._hotbarIconCache = {}
+                key = (sprite, newW, newH)
+                scaled = cache.get(key)
+                if scaled is None:
+                    if len(cache) >= 64:
+                        cache.clear()
+                    scaled = cache[key] = pygame.transform.scale(sprite, (newW, newH))
                 
                 # Center the sprite in the slot
                 offsetX = slotX + (slotSize - newW) // 2
@@ -18990,6 +19100,16 @@ class BlocFantome(GuidedTutorialAppMixin):
                 self.smallFont, toggleRect.collidepoint(mousePos), value,
             )
             y += 36
+
+        openingRect=pygame.Rect(sliderX,y,sliderWidth,30)
+        self.assetManager.drawButton(self.screen,openingRect,'Opening scene',
+            self.smallFont,openingRect.collidepoint(mousePos),False)
+        from ui.opening_scene import skip_on_launch
+        skip=skip_on_launch()
+        skipRect=pygame.Rect(sliderX,y+36,sliderWidth,30)
+        self.assetManager.drawButton(self.screen,skipRect,
+            f"Skip opening on launch: {'ON' if skip else 'OFF'}",
+            self.smallFont,skipRect.collidepoint(mousePos),skip)
         
         version = self.smallFont.render(f"Bloc Fantôme {APP_VERSION}", True, (215, 215, 215))
         self.screen.blit(version, (menuRect.left + 18, menuRect.bottom - 24))
@@ -19593,8 +19713,6 @@ class BlocFantome(GuidedTutorialAppMixin):
         """Fit precomputed inclusive world bounds into the editable viewport."""
         (minX, minY, minZ), (maxX, maxY, maxZ) = bounds
 
-        oldZoom = self.zoomLevel
-        oldOffset = (self.renderer.offsetX, self.renderer.offsetY)
         self.renderer.setZoom(1.0)
         self.renderer.offsetX = 0.0
         self.renderer.offsetY = 0.0
@@ -19628,7 +19746,7 @@ class BlocFantome(GuidedTutorialAppMixin):
             availableHeight / max(1, height),
         ))), 3)
         self.renderer.setZoom(self.zoomLevel)
-        self.renderer.offsetX, self.renderer.offsetY = oldOffset
+        self.renderer.offsetX = self.renderer.offsetY = 0.0
 
         centerWorld = (
             (minX + maxX) / 2.0,
@@ -20880,6 +20998,10 @@ class BlocFantome(GuidedTutorialAppMixin):
 
     def _render(self) -> None:
         """Render the game"""
+        if self.openingScene is not None:
+            self.openingScene.render(self.screen)
+            pygame.display.flip()
+            return
         if (self.worldMapActive and self.worldMapMode == "hub"
                 and self.worldMapView.source_map is not None):
             self.screen.fill({"nether": (27,17,20), "end": (13,11,22),
@@ -21132,7 +21254,7 @@ class BlocFantome(GuidedTutorialAppMixin):
         pygame.draw.rect(self.screen, (138, 138, 148), panel, 2)
         title = self.font.render(f"Loading {entry.name}", True, (255, 255, 255))
         detail = self.smallFont.render(
-            "Staging editable cells and derived cache...", True, (205, 205, 215)
+            "Opening world... Press Esc to cancel", True, (205, 205, 215)
         )
         self.screen.blit(title, title.get_rect(center=(panel.centerx, panel.y + 30)))
         self.screen.blit(detail, detail.get_rect(center=(panel.centerx, panel.y + 62)))
@@ -22192,6 +22314,11 @@ class BlocFantome(GuidedTutorialAppMixin):
             self.xrayAlpha if self.xrayEnabled else None,
             animationKey,
         )
+        # Finish one animation sample while a cold surface is being assembled.
+        # Water/fire frame changes must not restart its batches every tick.
+        if (self._worldSurfaceBuild is not None and self._worldSurfaceBuildKey is not None
+                and self._worldSurfaceBuildKey[:-1] == surfaceKey[:-1]):
+            surfaceKey = self._worldSurfaceBuildKey
         # Moving piston cells are composited at sub-cell positions every frame.
         self.redstone.prune_stale_motions()
         canCacheSurface = not self.horrorEnabled and not self.redstone.active_motions
@@ -22217,7 +22344,7 @@ class BlocFantome(GuidedTutorialAppMixin):
             self._renderSpawnerParticles()
             return
 
-        biomeView = self.sceneMetadata.get('kind') == 'biome' and canCacheSurface
+        biomeView = self.sceneMetadata.get('kind') in ('biome', 'world') and canCacheSurface
         if biomeView and surfaceKey in self._biomeViewSurfaces:
             surface, offset = self._biomeViewSurfaces[surfaceKey]
             self._worldSurfaceCache = surface
@@ -22233,8 +22360,8 @@ class BlocFantome(GuidedTutorialAppMixin):
         targetSurface = self.screen
         incrementalZoomBuild = bool(
             canCacheSurface
-            and self._worldZoomFallback is not None
-            and len(blocksToDraw) > 4000
+            and len(blocksToDraw) > (256 if self.tutorialScreen.visible else 4000)
+            and (self._worldZoomFallback is not None or len(blocksToDraw) > 20000)
         )
         if canCacheSurface:
             cacheSize = (
@@ -22255,7 +22382,7 @@ class BlocFantome(GuidedTutorialAppMixin):
             else:
                 targetSurface = pygame.Surface(cacheSize, pygame.SRCALPHA)
         startIndex = self._worldSurfaceBuildIndex if incrementalZoomBuild else 0
-        transitionBatch = 800 if self._worldTransitionKind == "load" else 2400 if self._worldTransitionKind == "rotation" else 4200
+        transitionBatch = 800 if self._worldTransitionKind == "load" or self._worldZoomFallback is None else 2400 if self._worldTransitionKind == "rotation" else 4200
         endIndex = (
             min(len(blocksToDraw), startIndex + transitionBatch)
             if incrementalZoomBuild
@@ -22271,8 +22398,17 @@ class BlocFantome(GuidedTutorialAppMixin):
             blits = reusedBlits
             drawnCount = len(blits)
 
-        # Draw blocks
-        for _, x, y, z, blockType in (() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]):
+        # Yield cold sprite work between frames without dropping any cells.
+        import time
+        batchStarted = time.perf_counter()
+        for itemIndex, (_, x, y, z, blockType) in enumerate(
+            (() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]), startIndex
+        ):
+            if (incrementalZoomBuild and (self.tutorialScreen.visible or self._worldTransitionKind == 'load')
+                    and itemIndex > startIndex and (itemIndex-startIndex)%32 == 0):
+                if time.perf_counter()-batchStarted >= 0.008:
+                    endIndex = itemIndex
+                    break
             if (x, y, z) in movingTargets:
                 continue
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
@@ -22468,10 +22604,12 @@ class BlocFantome(GuidedTutorialAppMixin):
 
         if incrementalZoomBuild and endIndex < len(blocksToDraw):
             self._worldSurfaceBuildIndex = endIndex
-            self.screen.blit(
-                self._worldZoomFallback,
-                (-self._worldSurfaceMargin, -self._worldSurfaceMargin),
-            )
+            if self._worldZoomFallback is not None:
+                self.screen.blit(self._worldZoomFallback,
+                                 (-self._worldSurfaceMargin, -self._worldSurfaceMargin))
+            else:
+                self.screen.blit(targetSurface,
+                                 (-self._worldSurfaceMargin, -self._worldSurfaceMargin))
             self.renderStats = {
                 "candidates": allCandidateCount,
                 "screen_candidates": len(blocksToDraw),

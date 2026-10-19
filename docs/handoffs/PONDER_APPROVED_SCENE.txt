@@ -1,0 +1,48 @@
+PONDER ART DIRECTION: APPROVED FIRST SCENE
+2026-10-18
+
+Owner approved the concrete scene below in chat and then explicitly requested
+implementation in the current High pass. The optional scene is implemented in
+Code/ui/opening_scene.py alongside the verified maintenance baseline for 2.9.4.
+Redstone Map stays paused. See the final 2.9.4 handoff for release verification.
+
+Mood: peaceful and welcoming. An ambiguous deep-blue space like Kingdom Hearts'
+Dive to Heart, not a literal underwater scene or a horror setting.
+
+Opening: darkness reveals a compact, muted checker platform without an extra rim. A floating glowstone vein points downward toward a pale quartz stair-and-lantern shrine. Only the lower
+tip of the vein remains in frame. Keep Minecraft's material identity and a carefully framed isometric
+view. Monument Valley informs composition, not non-Euclidean mechanics.
+
+One interaction: a ghost block invites placement on the monument. Placing it
+makes two intact monument sections rise and slide into a precisely aligned new
+arrangement, revealing a warm interior light. Whole groups must move coherently;
+the sequence, silhouettes, depth ordering and final alignment matter most.
+This is an intimate interactive demonstration, not a bridge-building assignment
+or another panel-driven tutorial. Art direction takes priority over curriculum.
+
+Camera: fixed during the opening and reveal, then allow player-controlled
+rotation. Hover highlights the ghost; native Q/E keycaps animate a first turn.
+No instructional prose, replay label or preferences clutter the scene.
+The skip preference and replay entry live in Settings. Keep the opening
+quiet and uncluttered; do not introduce narrative or explanatory panels.
+
+Music selected by owner:
+https://www.youtube.com/watch?v=zkCR5KsJy1w
+The owner explicitly states permission from the artist and authorizes acquisition.
+The recording is panoir's "you're not behind. you have time." The exact audio was
+downloaded, and its first complete chapter ("one", 00:00-04:18) was converted to
+stereo 44.1 kHz Ogg with gentle entrance/exit fades. Source and metadata are in
+.qa/tutorial-294; the release asset and credits are in Assets/Sound Hub/opening.
+No substitute recording was used. Auditory review by the owner remains useful.
+
+Delivery: optional prototype before replacing the existing tour. Include a skip
+toggle. Leaving or finishing restores the user's previous world. Preserve saves,
+undo and existing simulation; do not build a general timeline engine or rewrite
+the renderer. Use the supplied Ponder package as the source reference for grouped
+presentation transforms and sequential reveals. The old piston-first bridge is
+not the approved creative scene.
+
+Current refinement incorporates the owner's minimal-UI, higher-vein, rim-free
+platform and meaningful architectural composition feedback.
+Complete that pass through EXE, installer, installation and verified Start Menu
+launch. Leave changes unstaged, uncommitted and unpushed; do not edit README.md.

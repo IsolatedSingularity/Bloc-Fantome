@@ -34,6 +34,8 @@ def test_late_import_cannot_replace_next_page_or_restored_editor(app):
     with patch.object(app.worldLoadExecutor,'submit',return_value=future):
         app.tutorialScreen.selectLesson(index)
     app.tutorialScreen.selectLesson(0)
+    app._pendingTourLoad[0].result(timeout=120)
+    app._pollTourLoad()
     welcome=dict(app.world.blocks)
     from engine.tutorial_scenes import scene_snapshot
     future.set_result(scene_snapshot('mirror'))
@@ -48,6 +50,8 @@ def test_map_excursion_returns_to_same_tutorial_and_original_canvas(app):
     app._beginTutorial(advanced=False)
     index=next(i for i,p in enumerate(TOUR) if p['id']=='worldmap')
     app.tutorialScreen.selectLesson(index)
+    app._pendingTourLoad[0].result(timeout=120)
+    app._pollTourLoad()
     assert app.worldMapActive
     demo=dict(app._worldMapSessionSnapshot['world'].blocks)
     assert app.worldMapActive and not app.tutorialScreen.visible
@@ -181,3 +185,47 @@ def test_hidden_source_water_does_not_intercept_monument_clicks(app):
     props.sourceCapture = '_scene_ocean'
     with patch.object(app, 'sceneMetadata', {'water_cutaway': True}), patch.object(app.world, 'getBlockProperties', return_value=props):
         assert app._pickRenderedBlockFace(10, 10, 1, 1, 1, BlockType.WATER) is None
+
+def test_cold_tutorial_render_finishes_while_animation_frames_advance(app):
+    app._beginTutorial(advanced=False)
+    app._pendingTourLoad[0].result(timeout=120)
+    app._pollTourLoad()
+    try:
+        assert app._worldZoomFallback is not None
+        for frame in range(180):
+            app.assetManager.currentWaterVisualFrame=frame%16
+            app._specialAnimationRevision+=1
+            app._render()
+            if app._worldSurfaceCache is not None:
+                break
+        assert app._worldSurfaceCache is not None
+        assert app._worldSurfaceBuild is None
+        assert app._worldZoomFallback is None
+        assert app.renderStats['drawn']>0
+    finally:
+        app.tutorialScreen.hide()
+
+
+@pytest.mark.parametrize('key',['welcome','blocks','camera','skies'])
+def test_small_tutorial_subject_fills_and_centers_in_free_viewport(app,key):
+    step=next(p for p in TOUR if p['id']==key)
+    app.tutorialScreen.visible=True;app.tutorialScreen.minimized=False
+    app.tutorialScreen.panelX=14
+    app.renderer.setViewRotation(0)
+    # Arrival must discard arbitrary zoom/pan left by the previous page.
+    app.zoomLevel=.1;app.renderer.setZoom(.1);app.renderer.offsetX=-900
+    app._frameGuidedLesson(step)
+    low,high=step['frame']
+    points=[app.renderer.worldToScreen(x,y,z) for x in (low[0],high[0])
+            for y in (low[1],high[1]) for z in (low[2],high[2])]
+    left=app.tutorialScreen.panelX+app.tutorialScreen.panelWidth+18
+    right=app._worldViewportRight()
+    center=app.renderer.worldToScreen(*[(a+b)/2 for a,b in zip(low,high)])
+    assert abs(center[0]-(left+right)/2)<1
+    assert abs(center[1]-app.screen.get_height()*.435)<1
+    width=max(p[0] for p in points)-min(p[0] for p in points)
+    height=max(p[1] for p in points)-min(p[1] for p in points)
+    assert max(width/(right-left),height/app.screen.get_height())>.7
+    assert min(p[0] for p in points)>=left
+    assert max(p[0] for p in points)<=right
+    app.tutorialScreen.visible=False

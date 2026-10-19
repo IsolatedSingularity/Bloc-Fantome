@@ -1,0 +1,64 @@
+Bloc Fantome 2.9.4 maintenance and opening scene handoff
+
+Scope
+Maintenance: canonical backups and honest failure reporting; deliberate invalid
+build handling; stale/pending load protection; transactional undo; full-state
+cache equivalence and portable structure fingerprints. Tutorial pages now stage
+off the input thread, reset their camera and frame the subject more closely.
+Cold drawing is time-sliced and hotbar icons cached without dropping source cells.
+Startup uses the entire swamp painting in a fitted window with a narrow title
+strip, then restores the editor dimensions. Redstone Map work remains paused.
+
+Opening scene
+A rim-free muted checker platform, pale quartz stairs and a split lantern shrine
+in an ambiguous blue void. Only the descending glowstone tip enters the frame.
+Hover highlights the ghost seal. Placement moves two intact porticoes into exact
+alignment and reveals the lantern. Native-size Q/E buttons demonstrate one turn;
+click either key or press Q/E to rotate. Escape or the small X returns to the
+previous canvas. Settings > Opening scene replays; Skip opening on launch is a
+persisted Settings preference. No live-world or undo edits occur in the scene.
+
+Music is the owner's selected panoir recording, first complete 4:18 chapter,
+stereo 44.1 kHz Ogg with gentle fades. Assets/Sound Hub/opening/CREDITS.txt records
+the source and excerpt. Decoding and packaging are checked; listening assessment
+remains with the owner.
+
+Evidence
+.qa/opening-294 contains native-size poses and four views at 960x640, 1200x800
+and 1920x1080, a 12-second motion preview, focused tests and final suite report.
+Scene-only render p95 was 3.23 ms at 1200x800 and 5.91 ms at 1920x1080 in the
+headless visual check; this is not an end-to-end FPS claim.
+.qa/tutorial-294 contains tutorial framing, dispatch/loading profiles, splash
+captures, archive verification and user-data baselines. Large captured worlds
+still have cold preparation costs; this pass does not claim instant heavy-world
+loads or a universal 60 FPS guarantee.
+
+Release verification completed
+360 tests passed in 158.31 seconds: .qa/opening-294/release.xml.
+A live packaged test exposed animation repeatedly restarting a cold tutorial
+render. Fixed the build key to finish the current sample and added the advancing-
+animation regression. Rebuilt both artifacts after the fix.
+
+Root BlocFantome.exe and Code/build/installer/BlocFantome_Setup_2.9.4.exe built
+successfully. Archive check: 938 source/visual files byte-for-byte, new opening
+module, Tk dialogs and native acceleration. Source/root/installer metadata 2.9.4.
+Installed EXE matches root SHA256:
+FDECB520F92C71658DC054C7F6929BF73F173318B26DD64455878E568D835F14
+
+Upgraded C:\Users\hunkb\AppData\Local\Programs\Bloc Fantome (accented folder).
+Actual Start Menu Bloc Fantome shortcut launched that installed 2.9.4 EXE.
+Target, icon and working directory verified for app/uninstaller shortcuts:
+.qa/consistency-start-menu-294.json.
+Live UI: fitted full-aspect swamp painting/title strip; opening scene; ghost
+placement, grouped reveal and clickable Q/E; return to visible tutorial; root
+Zoom then Next resets framing. Installed opening and tutorial return checked.
+Keyboard event handling passes integration tests; this desktop helper's synthetic
+key events did not visibly act, so live keyboard behavior is not claimed here.
+
+50 existing save/settings files unchanged after installation and live QA.
+Installed font, music and painting hashes match source:
+.qa/opening-294/preservation-and-assets.json.
+All exact-path root/installed QA processes closed; zero remain:
+.qa/opening-294/packaged-live-checks.json.
+Build/install logs: .qa/opening-294/build-final.log, installer-final.log, install.log.
+Changes remain unstaged, uncommitted and unpushed. README is unchanged.

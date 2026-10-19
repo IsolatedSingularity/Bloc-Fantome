@@ -1,0 +1,2 @@
+from pathlib import Path
+p=Path('Code/blocFantome.py');s=p.read_text(encoding='utf-8').replace('        if currentTime < getattr(self, "_autoSaveRetryAt", 0):\n            return\n','');a=s.index('    def _autoSave(');pos=s.index('        currentTime = pygame.time.get_ticks()',a)+len('        currentTime = pygame.time.get_ticks()');s=s[:pos]+'\n        if currentTime < getattr(self, "_autoSaveRetryAt", 0):\n            return'+s[pos:];p.write_text(s,encoding='utf-8')

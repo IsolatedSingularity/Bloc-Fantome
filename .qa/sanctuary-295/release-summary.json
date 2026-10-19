@@ -1,0 +1,38 @@
+{
+  "Version": "2.9.5",
+  "TestsPassed": 369,
+  "FullSuiteSeconds": 200.81,
+  "ArchiveSourceAssetsVerified": 938,
+  "Copies": [
+    {
+      "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\BlocFantome.exe",
+      "Version": "2.9.5",
+      "SHA256": "A7124F86FBD416FC30F57696D7D49698E74ADA6770AFB747D79201B7B1DD4748"
+    },
+    {
+      "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\GitHub\\Bloc-Fantome\\BlocFantome.exe",
+      "Version": "2.9.5",
+      "SHA256": "A7124F86FBD416FC30F57696D7D49698E74ADA6770AFB747D79201B7B1DD4748"
+    },
+    {
+      "Path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+      "Version": "2.9.5",
+      "SHA256": "A7124F86FBD416FC30F57696D7D49698E74ADA6770AFB747D79201B7B1DD4748"
+    }
+  ],
+  "Installer": {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code\\build\\installer\\BlocFantome_Setup_2.9.5.exe",
+    "SHA256": "C8983DDB4ACEC01BB69BA23E11704153746DF1DF26247B3A744FDD5AF4147E0B",
+    "InstallExitCode": 0
+  },
+  "StartMenuVerified": true,
+  "NativeRootClickThrough": true,
+  "NativeSecondarySmoke": true,
+  "NativeInstalledSmoke": true,
+  "UserData": {
+    "Checked": 64,
+    "Changed": 0,
+    "ChangedPaths": []
+  },
+  "RemainingExactPathQAProcesses": 0
+}

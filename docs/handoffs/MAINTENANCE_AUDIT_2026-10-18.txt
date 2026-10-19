@@ -1,0 +1,232 @@
+BLOC FANTOME: FIX-FIRST AUDIT AND CREATIVE CONTEXT
+2026-10-18
+
+CURRENT USER DIRECTION
+
+The audit was read-only. The user has now agreed on a maintenance phase and
+requested prompts for the next development chat, using Astra.
+Redstone Map work is paused. Do not automatically select Redstone Lab or piston
+polish as the next creative task because an old agent handoff recommends it.
+The intended Ponder-inspired work is broader; the user has browser context that
+has not yet been supplied or inspected. Recover that brief before choosing the
+creative animation sequence. Do not equate research suggestions with user choices.
+
+BASELINE AND LOCAL COPIES
+
+Active clone:
+C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+Additional recovered copy:
+C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome
+
+Audit baseline: main, HEAD 68cb7a9a85a75449ed47eaefd9feed9fee612a31, clean before
+the new handoff/prompt files and compact audit evidence were added.
+Current runtime version 2.9.2. Last source/release work was September 13; the later
+September commits add QA/reference handoffs. No application code, tests, README,
+Git history, or user saves were changed by this audit. Durable handoffs/prompts
+and compact evidence now live inside the clone. Temporary reproduction scripts
+and scratch fixtures remain agent workspace material outside the clone.
+
+CONFIRMED MAINTENANCE PREFERENCES
+
+- Fix save/backup reliability, build parsing/loading, undo and cache correctness
+  first. Related reproduced defects can be fixed during that work.
+- Then prioritize large worlds, loading pauses and camera movement. Measure the
+  actual bottleneck and preserve scene/source fidelity.
+- Preserve the full swamp painting, centered with balanced margins and a small
+  plain title BELOW it. Current splash source already aspect-fits the painting
+  and requests Segoe UI, but overlays the title near the window bottom and does
+  not reserve a separate title area. Verify the actual launch and display scaling.
+- UI sizing, resolution and DPI defects belong in the maintenance scope.
+- Missing light emitters are low priority and must not expand into a lighting
+  rebuild. Ponder features and Redstone Map development remain deferred.
+- Use existing tests and focused regressions for real bugs. No new contract
+  framework, harness, generic validation layer or speculative architectural rewrite.
+  Run the complete regression suite once the batch stabilizes; repeat only when
+  a subsequent change or failure warrants it. Existing useful tests stay intact.
+- Finish the stable batch with an updated root EXE and installer in the clone,
+  install/upgrade the app, and verify the actual Start Menu launch. Preserve user
+  saves/configuration and close exact-path QA processes afterward.
+- Final builds, installer, assets, prompts, handoffs and compact release evidence
+  belong in the clone. The global .codex tree is temporary agent workspace, never
+  the sole home of a deliverable or a runtime dependency.
+
+Read the active clone's AGENTS.md before work. It was recovered, exists locally,
+and is ignored by Git. README edits require specific approval; changes should
+remain unstaged, uncommitted and unpushed. Historical .qa mutation scripts must
+not be executed merely because their names sound relevant.
+
+WHERE THE BUG BACKLOG LIVES
+
+Most useful current handoff: docs\PRE_IMPLEMENTATION_QA.md (September 23).
+Older overlapping lists: References\OPEN_PROBLEMS.md, root OPEN_INACCURACIES.md,
+References\REFACTOR_IMPLEMENTATION_PLAN.md, nextIdeas.txt.
+Root OPEN_PROBLEMS.md and REFACTOR_IMPLEMENTATION_PLAN.md are restored local
+copies of the corresponding References files. Their contents are identical
+after BOM and line-ending normalization; they are not independent issue lists.
+GitHub connector search of repo:IsolatedSingularity/Bloc-Fantome is:issue returned
+no issues. The actionable records found are principally local documents.
+
+RECOMMENDED FIX ORDER
+
+1. Save and recovery correctness, P0-1 and P0-2.
+   Exact current _saveBackup method writes v3 without bounds or modern state.
+   A synthetic 64x64x32 world with min_y=-8 and two blocks restored as 12x12x12,
+   min_y=0, with only one block retained.
+   Exact _autoSave method showed the Saved flash for 60 frames and advanced its
+   timestamp after _saveBuilding returned False.
+   Exact rotation method removed an existing synthetic recovery file even when
+   no replacement was produced.
+   Source: Code\blocFantome.py:17874, :17904, :17942.
+   Goal: canonical v5 serializer, truthful success reporting, and retaining old
+   recovery points until the replacement has committed successfully. Add failure
+   injection and large-world/state round-trip regressions.
+
+2. Build parsing and asynchronous load ownership, P0-3 and P0-4.
+   Direct read_build probes accepted an all-invalid nonempty build as an empty
+   snapshot, accepted version 999, and left water state/properties/structure role
+   attached to a later STONE row at a duplicate coordinate. Truncated gzip raised
+   EOFError, outside the normal app load handler's expected exception tuple.
+   Source: Code\engine\build_io.py:306 and :357;
+   Code\blocFantome.py:16926.
+   Static inspection still finds no pendingWorldLoad input guard equivalent to
+   the biome/tutorial guards. _pollWorldLoad applies completed results without
+   session/mode identity validation. This race was not reproduced in a live UI.
+   Source: Code\blocFantome.py:11979 and :16144.
+   Goal: fail without replacing live state on corrupt inputs; explicitly define
+   duplicate/future-version policies; delayed/cancelled/stale loads must never
+   overwrite subsequent edits or another mode. Do not weaken existing criteria.
+
+3. Undo transactionality and cache equivalence, P1-1 and P1-2.
+   A success/failure/success BatchCommand returned False, left both successful
+   edits applied, and added zero undo entries. Reproduced with real commands and
+   UndoManager using an isolated synthetic state.
+   Source: Code\engine\undo.py:197 and :276.
+   A real bundled read followed by its BFC6 cache hit changed powered True to
+   False, power 15 to 0, repeater delay 4 to 1, lock True to False, and source
+   capture/palette to defaults. A valid width-300 build never obtains a cache hit
+   because the reader accepts only width/depth <=256 while v5 supports 512.
+   Source: Code\engine\scene_cache.py:40 and :112.
+   These are general persistence/undo defects, not requests for new Lab features.
+
+4. Repair the location-dependent contract test while preserving its content
+   contract. tests\test_public_contract.py:91 hashes eight absolute source_file
+   paths. Current hash is fbd97d083d199892208aed4e3ddd9e61e83fc70661ab684e87c9fef5d6040c52.
+   Replacing ONLY the checkout root with the former
+   C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft
+   reproduces expected 00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2.
+   No expected digest or test source was changed. This is a portability defect,
+   not evidence that recovered structure contents changed. Use stable relative
+   identifiers rather than simply accepting an arbitrary new absolute-path hash.
+
+SMALL NON-REDSTONE VISUAL CANDIDATE AFTER THE DATA-SAFETY FIXES
+
+The missing-light-emission finding remains valid for constant emitters. Current
+catalog values for FIRE, SOUL_FIRE, END_PORTAL and ENDER_CHEST are zero. The local
+official Java 1.16.1 Blocks.java specifies 15, 10, 15 and 7 respectively. Live
+World lighting consumes those catalog values and special-cases only redstone
+torches and lamps. This was statically checked, not screenshot-tested.
+Do not blindly assign constant emission to conditional cases such as charged
+anchors, active ore, lit furnaces, or portal frames with eyes; their state support
+needs its own inspection. Other documented editor-model candidates include
+neighbor-aware fence/wall/pane shapes; those still use fixed detail boxes.
+
+ALREADY TACKLED OR MISLEADING OLD ENTRIES
+
+OPEN_INACCURACIES.md is stale for vertical pistons, comparators, wire step
+connections, slime/honey adhesion, fragile block destruction and block-entity
+immovability. Current implementation and passing tests cover these specific
+behaviors. Comparators still do not support all container/item-frame inputs;
+component support is not a claim of full vanilla parity.
+Its upright-wall-torch claim is also superseded by source-derived torch geometry
+and the Redstone Lab model/source evidence.
+
+nextIdeas.txt still lists biome previews, local Minecraft extraction and adding
+a fortress as future work, but these already exist substantially. The 2.9.2
+handoff documents natural-source fortress/world replacements, 37 featured biomes,
+previews and the revised tutorial. Broader sound/transparency audits, additional
+structures, and true-3D World Map travelers remain proposals, not completed work.
+
+OPEN_PROBLEMS.md already asks for polygon picking and liquid worklists; current
+renderer has convex face-polygon picking, and World has separate water/lava
+queues. This does not prove extreme-Z picking or liquid performance is solved.
+The undo memory description claims full world snapshots; current cell commands
+save cell-level previous state. Large batches can still be costly.
+The 500-entry litBlockCache remains real, despite other caches having byte limits.
+Depth-order limitations need a reproducible scene before attempting a new sorter.
+
+Modularization is incomplete: Code\blocFantome.py has 23,498 lines and still
+defines legacy World/IsometricRenderer before rebinding to engine modules. Patch
+the actual runtime owner, not a dead in-file copy. Do not start a broad cleanup
+before the data-safety regressions are addressed.
+
+Other real or still-unverified handoff items: fresh Java sound bootstrap uses the
+JAR instead of reconstructing asset-index objects; Pillow is absent from declared
+dev requirements despite visual tools importing it; native builds can reuse a
+stale DLL; natural Java 1.21 Ancient City/Trial Chamber captures remain a fidelity
+task; loading stalls, physical Q/E checks and subjective audio checks are not all
+closed. The old ocean-water-omission report was superseded by the 2.9.2 retained-
+water cutaway. The older Bridge Bastion gallery note refers to a separate surface;
+later natural-world replacements alone do not prove that gallery entry is fixed.
+Revalidate the specific surface before closing or reopening that item.
+
+PONDER AND THE USER'S BROADER IDEAS
+
+All 44 files under NEW; PONDER PACKAGE survived. In the preceding verification,
+their bytes matched both local clones and the local full-backup ZIP. The kit is
+43 tracked files plus a restored local Biome shortcut. The old backup contained
+no downloads directory inside this package either. It includes research, scene
+catalogues, manifests and download tools, not a full downloaded Create mod or an
+implemented new animation system.
+
+Preserved creative references include:
+- The shortcut named Miette; Checker Grid or Dive to Heart + Monument Valley.
+- A quiet, welcoming opening and a monochrome disc design mentioned as deferred
+  artistic work, not a fully specified design.
+- Human-composed quiet piano references and restrained ethereal/physical UI audio;
+  these are audition candidates, not final selected recordings or event mappings.
+- Skybox, lighting, surface-locked shadow and depth/fog ideas.
+- Group translation/rotation about pivots, reveals/hides/merges, camera framing,
+  annotations, particles, pauses, action gates, replay/reset and state restoration.
+
+The kit explicitly defers exact disc layout and horror/narrative direction to
+the owner. It does NOT contain a complete approved storyboard, exact selected
+animation list, scene order, durations, final camera choreography, or final audio
+map. Its examples and the September bridge's piston-first recommendation are
+agent research suggestions. They must not override the latest user direction.
+
+VERIFICATION AND EVIDENCE
+
+Current audit: 77 distinct existing build-I/O/cache/undo/redstone tests passed.
+The first run was 76 passed plus a sandbox-temp PermissionError; the one affected
+scene-cache test passed after TEMP/TMP were set to this writable audit directory.
+Separate public-contract run: 9 passed, 1 failed for the absolute-path issue above.
+The broader recovery audit earlier today recorded 332 passed and that same single
+failure out of 333. The full suite was not repeated in this project review.
+
+Synthetic bug reproductions use actual engine functions and exact AST-extracted
+app method bodies with isolated fixtures; they are not full UI integrations.
+No new visual QA, sound audition, performance benchmark or full game session was
+performed in this review. No upstream downloads, dependency installs or Git writes.
+
+Evidence in .qa\maintenance-audit-2026-10-18 under the clone:
+audit-results.json              Observed results for the bug probes
+contract-portability.json       Root-only digest diagnosis
+focused-tests.xml              Initial 77-test run, including temp setup failure
+scene-cache-recheck.xml         Corrected temp setup, affected test passed
+contract-tests.xml              Current 9-pass/1-failure contract run
+
+The fixtures path recorded in audit-results.json is historical provenance, not
+a required input. The compact results and reproduction descriptions above are
+self-contained; no deliverable depends on the global .codex directory.
+
+Latest useful project evidence:
+.qa\revision-292-handoff.md
+References\Redstone_Lab_QA.md
+docs\PRE_IMPLEMENTATION_QA.md
+docs\PONDER_REFERENCE_BRIDGE.md
+NEW; PONDER PACKAGE\README_FOR_AGENTS.md
+NEW; PONDER PACKAGE\bloc_fantome\opportunities.md
+
+Suggested next-chat start: read this file and AGENTS.md, preserve the recovered
+assets, resolve save/backup regressions first, then parser/load ownership. Obtain
+the owner's browser brief before deciding the broader Ponder-inspired feature.

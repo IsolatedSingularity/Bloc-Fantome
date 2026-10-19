@@ -5,6 +5,43 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.5] - 2026-10-18
+
+### Added
+- Connect the opening shrine to an ascending open sanctuary with repeated pointed arches, a muted blue glass apse and detached architectural echoes in the void.
+- Continuous camera orbit, a drag slider, translucent Q/E hints, sparse hover/interaction cues, stone movement rumble and restrained settling tremor. Touch the sanctuary light to reveal Return; the previous world and undo history remain intact.
+- Borderless fullscreen presentation with restored editor dimensions on exit. `--opening-windowed` previews in a window; F11 toggles presentation mode independently of the editor.
+
+### Fixed
+- Shift the shrine left with a modest pullback on the doorway click, raise the sanctuary through the void at upper right with aligned detached arcades and lantern towers, retract the shrine and glowstone, then approach the visible glass focal point.
+- Frame the cottage, village well, outpost and observatory around their actual subject bounds, lifted above the hotbar, on tutorial page changes.
+- Preserve the SDL window wrapper across presentation display changes so returning to the editor remains stable.
+- Remove the splash title strip, keep the complete painting and place its small title over a subtle lower-edge vignette. Show the version in square brackets in the native window caption.
+- Render the presentation at the active display resolution with depth-correct textured geometry. Keep the builder's existing renderer unchanged.
+
+## [2.9.4] - 2026-10-18
+
+### Added
+- An optional, skippable opening: a checker platform, hanging glowstone vein and pale monument in a quiet blue void. One ghost-block placement triggers two coherent moving sections and reveals an interior light.
+- A stair-and-lantern shrine, hover-highlighted placement and animated native-size Q/E key buttons after the reveal. Settings reopens the scene and holds the persisted skip-on-launch toggle; leaving preserves the live build, camera and undo history.
+- The owner-selected panoir recording, using its complete first chapter with soft fades and bounded predecoded playback.
+
+### Fixed
+- Fit the startup window to the full swamp painting and a narrow title strip, then restore the editor size.
+- Frame tutorial subjects more closely, reset page cameras, and leave map/lab modes when changing lessons.
+- Stage every tutorial page off the input thread; cache hotbar icons and time-slice cold terrain drawing without dropping cells. Finish an in-progress render despite advancing water/fire frames.
+
+## [2.9.3] - 2026-10-18
+
+### Fixed
+- Preserve complete v5 world state in backups, retain recovery history on write failure, and report autosave failures truthfully.
+- Reject corrupt, all-invalid and unsupported future builds; replace duplicate cells with the complete last valid row.
+- Block editing during pending World loads, support Escape cancellation, and discard results belonging to an older canvas or mode.
+- Roll back failed undo batches and retain modern block state in derived scene caches, including large canvas bounds.
+- Make the structure fingerprint independent of checkout location without dropping content fields.
+- Reduce repeated visibility classification and spread large initial renders over frames at unchanged final quality.
+- Reserve a separate title area below the full, aspect-preserved swamp painting.
+
 ## [2.9.2] - 2026-09-13
 
 ### Changed

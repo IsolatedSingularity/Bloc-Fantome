@@ -1,0 +1,24 @@
+         6588724 function calls (6551643 primitive calls) in 2.380 seconds
+
+   Ordered by: cumulative time
+   List reduced from 398 to 16 due to restriction <16>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       94    0.097    0.001    3.311    0.035 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20886(_render)
+        2    0.000    0.000    1.883    0.942 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:54(run)
+        1    0.005    0.005    1.871    1.871 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:34(_stageTourScene)
+        1    0.000    0.000    1.586    1.586 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15983(_stageBiomeScene)
+      137    0.178    0.001    1.069    0.008 {built-in method time.sleep}
+       94    0.102    0.001    1.042    0.011 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22147(_renderWorld)
+187656/187642    0.116    0.000    0.800    0.000 {built-in method builtins.any}
+       94    0.111    0.001    0.600    0.006 {built-in method pygame.display.flip}
+    31752    0.054    0.000    0.503    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:357(_surfaceViewsForPosition)
+    27751    0.076    0.000    0.503    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:8277(getScaledSprite)
+      276    0.155    0.001    0.273    0.001 {built-in method pygame.transform.scale}
+   394940    0.088    0.000    0.196    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22176(<genexpr>)
+   666792    0.129    0.000    0.184    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:509(<genexpr>)
+    14696    0.169    0.000    0.169    0.000 {method 'blit' of 'pygame.surface.Surface' objects}
+   723516    0.144    0.000    0.155    0.000 {method 'get' of 'dict' objects}
+712254/675188    0.091    0.000    0.134    0.000 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\enum.py:1266(__hash__)
+
+

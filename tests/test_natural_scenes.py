@@ -47,12 +47,19 @@ def test_splash_retains_owner_image_and_native_regular_title():
     pygame.display.init();pygame.font.init()
     try:
         for size in ((960,640),(1200,800),(1920,1080)):
-            screen=pygame.display.set_mode(size)
+            fitted=SplashScreen.fitted_window_size(*size,ICONS_DIR)
+            screen=pygame.display.set_mode(fitted)
             splash=SplashScreen(screen,pygame.time.Clock(),TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
             assert abs(splash.artwork_rect.width/splash.artwork_rect.height-1920/890)<.005
             assert screen.get_rect().contains(splash.artwork_rect)
+            assert splash.artwork_rect.contains(splash._title_rect())
+            # Integer aspect fitting can leave a single rounding pixel.
+            assert max(splash.artwork_rect.topleft)<=1
+            assert abs(splash.artwork_rect.width-fitted[0])<=1
+            assert abs(splash.artwork_rect.height-fitted[1])<=1
+            assert abs(splash.artwork_rect.centerx-fitted[0]//2)<=1
             assert not splash.title_font.get_bold()
-            assert splash._title_rect().centerx==size[0]//2
-            assert splash._title_rect().bottom==size[1]-26
+            assert splash._title_rect().centerx==fitted[0]//2
+            assert splash._title_rect().centery==fitted[1]-24
     finally:
         pygame.display.quit()

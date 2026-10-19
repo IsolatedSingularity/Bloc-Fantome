@@ -1,0 +1,14 @@
+{
+  "orbit-bed": {
+    "seconds": 6.0,
+    "peak": 0.72,
+    "rms": 0.12291093399615016,
+    "engine": "SuperCollider 3.14.1"
+  },
+  "sanctuary-rise": {
+    "seconds": 5.501333333333333,
+    "peak": 0.85,
+    "rms": 0.18400990785641302,
+    "engine": "SuperCollider 3.14.1"
+  }
+}

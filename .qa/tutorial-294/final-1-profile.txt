@@ -1,0 +1,24 @@
+         2989426 function calls (2988667 primitive calls) in 1.175 seconds
+
+   Ordered by: cumulative time
+   List reduced from 586 to 16 due to restriction <16>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       65    0.047    0.001    1.630    0.025 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20886(_render)
+        2    0.000    0.000    0.923    0.461 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:54(run)
+        1    0.001    0.001    0.732    0.732 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:34(_stageTourScene)
+        1    0.000    0.000    0.731    0.731 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15983(_stageBiomeScene)
+      108    0.137    0.001    0.375    0.003 {built-in method time.sleep}
+101089/101075    0.060    0.000    0.324    0.000 {built-in method builtins.any}
+       65    0.032    0.000    0.270    0.004 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:22147(_renderWorld)
+        4    0.011    0.003    0.203    0.051 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:420(prepareViewSurfaceChunks)
+    12248    0.023    0.000    0.176    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:357(_surfaceViewsForPosition)
+        2    0.008    0.004    0.165    0.083 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:448(replace)
+       65    0.067    0.001    0.138    0.002 {built-in method pygame.display.flip}
+    13899    0.129    0.000    0.129    0.000 {method 'blit' of 'pygame.surface.Surface' objects}
+   414407    0.070    0.000    0.108    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:509(<genexpr>)
+        1    0.008    0.008    0.105    0.105 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world_snapshot.py:55(prepare_snapshot)
+       91    0.000    0.000    0.080    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\biome_capture.py:33(source_sprite)
+        1    0.005    0.005    0.076    0.076 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\biome_capture.py:27(atlas)
+
+
