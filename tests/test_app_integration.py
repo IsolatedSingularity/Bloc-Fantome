@@ -187,14 +187,10 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._startWorldMapLevel()
         self.assertNotEqual([block.name for block in self.app.hotbar], original_hotbar)
         self.app.worldMapCompleted[app_module.DIMENSION_OVERWORLD][0] = True
-        writer = mock_open()
         try:
-            with patch("builtins.open", writer):
+            with patch.object(app_module,"write_json_atomic") as writer:
                 self.app._saveAppConfig()
-            payload = "".join(
-                call.args[0] for call in writer().write.call_args_list
-            )
-            saved = json.loads(payload)
+            saved = writer.call_args.args[1]
             self.assertEqual(saved["hotbar"], original_hotbar)
             self.assertEqual(
                 saved["worldMapCompleted"][app_module.DIMENSION_OVERWORLD],
@@ -209,10 +205,9 @@ class AppIntegrationTests(unittest.TestCase):
         secondary = [app_module.BlockType.DIAMOND_BLOCK] + list(self.app.hotbar2[1:])
         self.app.hotbar, self.app.hotbar2 = list(primary), list(secondary)
         self.app._toggleRedstoneLab()
-        writer = mock_open()
-        with patch('builtins.open', writer):
+        with patch.object(app_module,'write_json_atomic') as writer:
             self.app._saveAppConfig()
-        saved = json.loads(''.join(call.args[0] for call in writer().write.call_args_list))
+        saved = writer.call_args.args[1]
         self.assertEqual(saved['hotbar'], [block.name for block in primary])
         self.app._openWorldMap()
         self.app._startWorldMapLevel()

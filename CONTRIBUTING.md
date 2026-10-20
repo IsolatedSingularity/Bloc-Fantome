@@ -16,8 +16,8 @@ Thank you for your interest in contributing! This document provides guidelines a
 ## Getting Started
 
 ### Prerequisites
-- Python 3.8 or higher
-- pygame library
+- Python 3.12 (tested with 3.12.10, Windows x64)
+- Runtime libraries from `requirements.txt` (Pygame and NumPy)
 - Git
 - Minecraft Java Edition 1.21.1+ (for assets)
 
@@ -29,7 +29,7 @@ cd Bloc-Fantome
 
 ### Install Dependencies
 ```bash
-pip install pygame
+python -m pip install -r requirements-dev.txt
 ```
 
 ### Setup Assets
@@ -83,6 +83,7 @@ Run the automated and deterministic checks from the repository root:
 
 ```bash
 python -m pytest -q
+python -m pytest -q -m core
 python tests/render_visual_checks.py
 python tests/render_world_checks.py
 python tests/benchmark_large_world.py ancient_city_121 trial_chamber_121
@@ -92,6 +93,7 @@ python tests/benchmark_large_world.py ancient_city_121 trial_chamber_121
 ```bash
 python Code/build_exe.py --diagnostic
 python Code/build_exe.py
+python Code/build_exe.py --diagnostic --output-dir .qa/review-package
 ```
 
 ---
@@ -252,11 +254,49 @@ runs:
 - Fit plus first exact frame below 250 ms.
 - Bounded world-surface and sprite-cache memory reported by the benchmark.
 
-The software Pygame renderer currently meets these practical budgets. NumPy is
-not a dependency and a GPU backend is intentionally not maintained: neither is
-accepted without an isolated benchmark showing the gains defined by the
-refactor plan, equivalent deterministic output, a tested one-file build, and an
-automatic Pygame fallback.
+These are verification targets, not universal hardware guarantees. Record the
+hardware, viewport, cold/warm state and sample conditions with benchmark results.
+The editor uses the software Pygame renderer; the opening also has an OpenGL
+presentation path and a software fallback. NumPy is an existing runtime
+requirement for presentation geometry and audio processing.
+
+### Reproducible source and release inputs
+
+`requirements.txt` contains runtime dependencies, `requirements-dev.txt` adds
+pytest and Pillow for tests/visual checks, and `requirements-build.txt` adds
+PyInstaller. Rust, FFmpeg, SuperCollider and source-media import/export tools are
+authoring/build tools, not Python runtime prerequisites. No dependency or asset
+download is performed by application startup.
+
+The full default suite exercises local release assets and prepared tutorials.
+`pytest -m core` explicitly selects tracked-source tests that require neither
+private media nor ignored lesson bundles. This is a separate scope, not a
+replacement for the full release gate. Tests use `.qa/pytest` for their default
+temporary root; give concurrent runs distinct `--basetemp` paths.
+
+Owner-supplied Zekton, skyboxes, selected audio, extracted texture/sound libraries
+and the current opening rig are local release inputs. They are intentionally
+private/ignored and are checked by the build script. Source checkouts retain the
+font fallback. A source-only core pass does not establish release readiness.
+
+Regenerate exact derived data after changing source inputs:
+
+```bash
+python Code/tools/pack_scene_captures.py
+python Code/tools/bake_tutorial.py
+```
+
+The bundle fingerprint covers lesson code, captured metadata/cells and bundled
+world/structure sources, with a Python/schema compatibility check and per-file
+SHA-256 verification. Partial rebakes retain other valid lessons only for the
+same fingerprint. Missing/stale/damaged accelerators fall back to their exact
+source builders; release validation rejects missing or damaged bundles.
+Prepared pickle files are trusted local build output, never a user-save format.
+Keep originals; do not substitute invented source scenes to satisfy packaging.
+
+Review builds can use `--output-dir` to preserve rollback executables. Installation
+and Start Menu verification remain release handoff requirements, subject to an
+explicit owner instruction to hold installation for review.
 
 ### Architecture Invariants
 
@@ -283,7 +323,7 @@ Malformed loads must leave the current live world unchanged.
 ### Manual Testing Checklist
 Before submitting changes, verify:
 
-- [ ] **Fresh install** - Delete `.app_config.json` and test startup
+- [ ] **Fresh preferences** - Test with an isolated QA copy; preserve the owner's configuration
 - [ ] **Save/Load** - Create a build, save it, reload it
 - [ ] **All dimensions** - Test in Overworld, Nether, and End
 - [ ] **Block placement** - Test placing and removing blocks

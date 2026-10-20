@@ -154,6 +154,7 @@ def test_tour_excursions_never_save_demo_preferences_or_autosave(app, tmp_path, 
     import blocFantome as module
     original_grid = app.showGrid
     original_sky = app.skyboxesEnabled
+    original_selections = dict(app.skyboxRenderer.selected_indices)
     original_hotbar = [block.name for block in app.hotbar]
     app._beginTutorial(advanced=False)
     if destination == 'worldmap':
@@ -162,12 +163,14 @@ def test_tour_excursions_never_save_demo_preferences_or_autosave(app, tmp_path, 
         app._toggleRedstoneLab()
     app.showGrid = not original_grid
     app.skyboxesEnabled = not original_sky
+    app.skyboxRenderer.set_selection('overworld',0 if original_selections['overworld'] else 1,crossfade=False)
     target = tmp_path / 'preferences.json'
     with patch.object(module, 'APP_CONFIG_FILE', str(target)):
         app._saveAppConfig()
     saved = json.loads(target.read_text())
     assert saved['showGrid'] == original_grid
     assert saved['skyboxesEnabled'] == original_sky
+    assert saved['skyboxSelections'] == original_selections
     assert saved['hotbar'] == original_hotbar
     with patch.object(app, 'autoSaveEnabled', True), patch.object(app, 'lastAutoSaveTime', -10**9), patch.object(app, '_saveBuilding') as save:
         app._autoSave()
@@ -177,6 +180,7 @@ def test_tour_excursions_never_save_demo_preferences_or_autosave(app, tmp_path, 
     if app.redstoneLabActive:
         app._toggleRedstoneLab()
     app.tutorialScreen.hide()
+    assert app.skyboxRenderer.selected_indices == original_selections
 
 
 def test_hidden_source_water_does_not_intercept_monument_clicks(app):

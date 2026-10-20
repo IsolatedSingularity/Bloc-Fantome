@@ -4,6 +4,8 @@ import gzip
 import hashlib
 import json
 import struct
+import logging
+import zlib
 
 
 class CaptureRecords(Sequence):
@@ -32,13 +34,19 @@ def load_capture_file(path):
     original = path.read_bytes()
     packed = path.parent / 'runtime' / path.name
     if packed.exists():
-        metadata = json.loads(gzip.decompress(packed.read_bytes()))
-        if metadata.pop('_source_sha256', None) == hashlib.sha256(original).hexdigest():
-            cells = packed.with_name(path.name.removesuffix('.json.gz') + '.cells.gz')
-            records = CaptureRecords(gzip.decompress(cells.read_bytes()))
-            if len(records) != metadata.pop('_record_count'):
-                raise ValueError('Packed capture cell count mismatch')
-            metadata['blocks'] = records
-            return metadata
+        try:
+            metadata = json.loads(gzip.decompress(packed.read_bytes()))
+            if metadata.pop('_source_sha256', None) == hashlib.sha256(original).hexdigest():
+                cells = packed.with_name(path.name.removesuffix('.json.gz') + '.cells.gz')
+                payload = gzip.decompress(cells.read_bytes())
+                if hashlib.sha256(payload).hexdigest() != metadata.pop('_cells_sha256',None):
+                    raise ValueError('Packed capture cell digest mismatch')
+                records = CaptureRecords(payload)
+                if len(records) != metadata.pop('_record_count'):
+                    raise ValueError('Packed capture cell count mismatch')
+                metadata['blocks'] = records
+                return metadata
+        except (OSError,ValueError,EOFError,KeyError,TypeError,zlib.error) as error:
+            logging.getLogger(__name__).warning('Derived capture %s skipped: %s',path.name,error)
     # Source development remains usable before packing or after changing a capture.
     return json.loads(gzip.decompress(original))

@@ -50,16 +50,27 @@ def benchmark_scene(app, path, repetitions):
     # rotation mode so this benchmark measures rendering/cache work, not a
     # synthetic off-canvas cursor fallback.
     app.worldCenteredRotation = True
+    def complete_surface():
+        deadline=time.perf_counter()+120
+        while app._worldSurfaceBuild is not None and time.perf_counter()<deadline:
+            app._renderWorld()
+        if app._worldSurfaceBuild is not None:
+            raise AssertionError('Benchmark world surface never completed')
+    def load_world():
+        if not app._loadBuildingFromPath(str(path),silent=True):
+            raise RuntimeError('Benchmark load failed: '+str(path))
     load = measure(
-        lambda: app._loadBuildingFromPath(str(path), silent=True),
+        load_world,
         repetitions=repetitions,
     )
 
     def cold_render():
         app.zoomLevel = 0.5
         app.renderer.setZoom(0.5)
+        app._biomeViewSurfaces.clear()
         app._invalidateViewCaches()
         app._renderWorld()
+        complete_surface()
 
     cold = measure(cold_render, repetitions=repetitions)
     stable = measure(app._render, repetitions=90, warmup=3)
@@ -68,18 +79,21 @@ def benchmark_scene(app, path, repetitions):
         app.renderer.offsetX += app._worldSurfaceMargin + 80
         app._invalidateViewCaches()
         app._renderWorld()
+        complete_surface()
 
     pan_rebuild = measure(forced_pan, repetitions=repetitions)
 
     def rotate():
         app._rotateViewAndRecenter(1)
         app._renderWorld()
+        complete_surface()
 
     rotation = measure(rotate, repetitions=repetitions)
 
     def fit_and_render():
         app._fitWorldToViewport()
         app._render()
+        complete_surface()
 
     fit = measure(fit_and_render, repetitions=repetitions)
     overview = measure(app._render, repetitions=30, warmup=3)
@@ -87,6 +101,7 @@ def benchmark_scene(app, path, repetitions):
     def overview_rotate():
         app._rotateViewAndRecenter(1)
         app._renderWorld()
+        complete_surface()
 
     overview_rotation = measure(overview_rotate, repetitions=repetitions)
 
@@ -110,10 +125,12 @@ def benchmark_scene(app, path, repetitions):
                   blocFantome.WINDOW_HEIGHT // 2)
         app._handleZoom(app.zoomStep, *center)
         app._renderWorld()
+        complete_surface()
 
     def prepare_zoom_exact():
         app._fitWorldToViewport(notify=False)
         app._renderWorld()
+        complete_surface()
 
     zoom = measure(
         zoom_exact,
@@ -155,6 +172,8 @@ def parse_args(argv=None):
         help="native benchmark viewport as WIDTHxHEIGHT (default: 1200x800)",
     )
     parser.add_argument("--json-output", type=Path)
+    parser.add_argument('--cache-dir',type=Path,default=ROOT/'.qa/benchmark-world-cache',
+                        help='Writable derived cache isolated from user data')
     return parser.parse_args(argv)
 
 
@@ -162,6 +181,8 @@ def main(argv=None) -> int:
     args = parse_args(argv)
     if args.repetitions < 5:
         raise ValueError("cold-operation benchmarks require at least five repetitions")
+    args.cache_dir.mkdir(parents=True,exist_ok=True)
+    blocFantome.DERIVED_WORLD_CACHE_DIR=str(args.cache_dir.resolve())
     app = blocFantome.BlocFantome()
     if not app.assetManager.loadAllAssets():
         raise RuntimeError("assets unavailable")
@@ -180,6 +201,8 @@ def main(argv=None) -> int:
     paths = sorted(Path(blocFantome.WORLDS_DIR).glob("*.json.gz"))
     if requested:
         paths = [path for path in paths if path.stem.replace(".json", "") in requested]
+        found={path.stem.replace('.json','') for path in paths}
+        if found!=requested:raise ValueError('Missing benchmark scenes: '+', '.join(sorted(requested-found)))
     results = []
     for path in paths:
         result = benchmark_scene(app, path, args.repetitions)
@@ -199,9 +222,12 @@ def main(argv=None) -> int:
             f"drawn={result['render']['drawn']} candidates={result['render']['candidates']}"
         )
     if args.json_output:
+        from engine.native_acceleration import backend_name
         args.json_output.parent.mkdir(parents=True, exist_ok=True)
         args.json_output.write_text(
-            json.dumps({"environment": {"python": sys.version, "pygame": pygame.version.ver},
+            json.dumps({"environment": {"python": sys.version, "pygame": pygame.version.ver,
+                                       'viewport':[viewport_width,viewport_height],
+                                       'native_backend':backend_name(),'complete_surfaces':True},
                         "results": results}, indent=2),
             encoding="utf-8",
         )

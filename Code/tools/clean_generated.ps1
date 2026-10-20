@@ -8,9 +8,10 @@ git -C $root ls-files | ForEach-Object { $tracked[([IO.Path]::GetFullPath((Join-
 if($LASTEXITCODE -ne 0){throw 'Cannot establish tracked-file protection'}
 $candidates=@()
 # Keep the newest two installers, including the preceding known-good release.
-$installers=@(Get-ChildItem -LiteralPath (Join-Path $root 'Code\build\installer') -File |
+$installerDir=Join-Path $root 'Code\build\installer'
+$installers=@(if(Test-Path -LiteralPath $installerDir){Get-ChildItem -LiteralPath $installerDir -File |
     Where-Object Name -Match '^BlocFantome_Setup_(\d+\.\d+\.\d+)\.exe$' |
-    Sort-Object { [version]($_.BaseName -replace '^BlocFantome_Setup_','') } -Descending)
+    Sort-Object { [version]($_.BaseName -replace '^BlocFantome_Setup_','') } -Descending})
 $candidates+=@($installers | Select-Object -Skip 2)
 foreach($base in @('Code','tests')){
     $candidates+=@(Get-ChildItem -LiteralPath (Join-Path $root $base) -Directory -Recurse -Filter '__pycache__')

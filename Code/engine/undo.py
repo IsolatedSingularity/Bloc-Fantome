@@ -324,13 +324,13 @@ class UndoManager:
         if not self.undo_stack:
             return None
         
-        command = self.undo_stack.pop()
+        # Keep ownership until the command succeeds, including when it raises.
+        command = self.undo_stack[-1]
         if command.undo():
+            self.undo_stack.pop()
             self.redo_stack.append(command)
             return command
         else:
-            # If undo failed, put command back
-            self.undo_stack.append(command)
             return None
     
     def redo(self) -> Optional[Command]:
@@ -343,13 +343,12 @@ class UndoManager:
         if not self.redo_stack:
             return None
         
-        command = self.redo_stack.pop()
+        command = self.redo_stack[-1]
         if command.execute():
+            self.redo_stack.pop()
             self.undo_stack.append(command)
             return command
         else:
-            # If redo failed, put command back
-            self.redo_stack.append(command)
             return None
     
     def can_undo(self) -> bool:

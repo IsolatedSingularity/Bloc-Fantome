@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "Code"))
 import pygame
 import blocFantome as app_module
 from splash import SplashScreen
+from visual_wait import settle_scene
 from engine.app_icon import (
     render_explorer_icon_surface,
     render_runtime_icon_surface,
@@ -973,7 +974,7 @@ def render_consistency(output_dir: Path) -> None:
         app.inventoryScroll=app.inventoryScrollTarget=0
         app._openBiomeScene('plains')
         app.tooltipTimer=0
-        app._render()
+        settle_scene(app)
         save_capture(app.screen,output_dir/f'editor_{width}.png')
         for tab in app.library.TABS:
             app.library.open(app,tab)
@@ -987,10 +988,10 @@ def render_consistency(output_dir: Path) -> None:
         save_capture(app.screen,output_dir/f'help_{width}.png')
         app.showShortcutsPanel=False
         app._beginTutorial(advanced=False)
-        app._render();save_capture(app.screen,output_dir/f'tutorial_{width}.png')
+        settle_scene(app);save_capture(app.screen,output_dir/f'tutorial_{width}.png')
         for i in range(len(app.tutorialScreen.TUTORIAL_STEPS)):
             app.tutorialScreen.selectLesson(i)
-            app._render()
+            settle_scene(app)
             save_capture(app.screen,output_dir/f'tour_{i:02}_{width}.png')
         app.tutorialScreen.hide()
         app._toggleRedstoneLab();app._render()
@@ -1006,6 +1007,9 @@ def render_consistency(output_dir: Path) -> None:
     for name in CURATED_IDS:
         start=time.perf_counter();app._openBiomeScene(name)
         row={'biome':name,'load_ms':round((time.perf_counter()-start)*1000,2),'views':[]}
+        # Camera coverage starts from a completed load. Keep the existing
+        # eight-frame rotation assertion below as a separate performance gate.
+        settle_scene(app)
         for turn in range(4):
             before=app.renderer.viewRotation
             pygame.event.clear()

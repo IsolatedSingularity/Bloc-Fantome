@@ -371,23 +371,14 @@ class World:
 
         if not neighborIsOpaque((x, y, z + 1)):
             return range(4)
-        exposed = {
-            (1, 0): not neighborIsOpaque((x + 1, y, z)),
-            (-1, 0): not neighborIsOpaque((x - 1, y, z)),
-            (0, 1): not neighborIsOpaque((x, y + 1, z)),
-            (0, -1): not neighborIsOpaque((x, y - 1, z)),
-        }
-        sideDirections = (
-            ((0, 1), (1, 0)),
-            ((1, 0), (0, -1)),
-            ((0, -1), (-1, 0)),
-            ((-1, 0), (0, 1)),
-        )
-        return tuple(
-            rotation
-            for rotation, directions in enumerate(sideDirections)
-            if any(exposed[direction] for direction in directions)
-        )
+        # Each camera sees two adjacent sides. Avoid building a dictionary,
+        # four direction tuples and four generators for every surface cell.
+        east = not neighborIsOpaque((x + 1, y, z))
+        west = not neighborIsOpaque((x - 1, y, z))
+        north = not neighborIsOpaque((x, y + 1, z))
+        south = not neighborIsOpaque((x, y - 1, z))
+        visible = (north or east, east or south, south or west, west or north)
+        return tuple(rotation for rotation, exposed in enumerate(visible) if exposed)
 
     def _refreshViewSurfacePosition(self, pos: Tuple[int, int, int]) -> None:
         size = self.chunkStorage.chunk_size

@@ -105,7 +105,8 @@ def write_version_resource() -> None:
     with open(VERSION_FILE, "w", encoding="utf-8") as handle:
         handle.write(content)
 
-def build(debug: bool = False, diagnostic: bool = False):
+def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
+    dist_dir=os.path.abspath(os.fspath(output_dir)) if output_dir is not None else DIST_DIR
     print("=" * 60)
     print(f"Building Bloc Fantôme Executable v{VERSION}")
     print("=" * 60)
@@ -182,16 +183,10 @@ def build(debug: bool = False, diagnostic: bool = False):
         raise FileNotFoundError('Incomplete source biome capture/atlas/material package')
     from tools.pack_scene_captures import pack_all
     print(f'Prepacked {pack_all(CAPTURE_ROOT)} updated source captures')
-    from engine.tutorial_prepared import fingerprint
-    import json
-    prepared_path=os.path.join(SCRIPT_DIR,'tutorial_prepared','manifest.json')
-    with open(prepared_path,encoding='utf-8') as handle:prepared_index=json.load(handle)
-    if prepared_index.get('code')!=fingerprint():
-        raise ValueError('Prepared lessons are stale; run Code/tools/bake_tutorial.py before building')
+    from engine.tutorial_prepared import validate_bundle
     from engine.tutorial_lessons import TOUR
     required_lessons={step['id'] for step in TOUR if step.get('capture') or step.get('world')}
-    if set(prepared_index['lessons'])!=required_lessons:
-        raise ValueError('Release requires every prepared large tutorial lesson')
+    validate_bundle(required=required_lessons)
     biome_textures = ('podzol_top','podzol_side','mycelium_top','mycelium_side','red_sand',
                       'mushroom_stem','red_mushroom_block','brown_mushroom_block','bamboo_stalk',
                       'poppy','dandelion','sunflower_front','brain_coral_block','fire_coral_block',
@@ -226,7 +221,7 @@ def build(debug: bool = False, diagnostic: bool = False):
         sys.executable, "-m", "PyInstaller",
         "--onefile",                    # Single .exe file
         f"--icon={ICON_PATH}",          # Application icon
-        f"--distpath={DIST_DIR}",       # Output directory for the exe
+        f"--distpath={dist_dir}",
         f"--workpath={WORK_DIR}",       # Temp build files
         f"--specpath={BUILD_DIR}",      # Spec file location
         f"--name={executable_name}",    # Name of the executable
@@ -329,14 +324,14 @@ def build(debug: bool = False, diagnostic: bool = False):
     print("\nRunning PyInstaller with options:")
     print(f"  Main script: {MAIN_SCRIPT}")
     print(f"  Icon: {ICON_PATH}")
-    print(f"  Output: {DIST_DIR}")
+    print(f"  Output: {dist_dir}")
     print()
     
     # Run PyInstaller
     result = subprocess.run(cmd, cwd=SCRIPT_DIR)
     
     if result.returncode == 0:
-        exe_path = os.path.join(DIST_DIR, f"{executable_name}.exe")
+        exe_path = os.path.join(dist_dir, f"{executable_name}.exe")
         print("\n" + "=" * 60)
         print("BUILD SUCCESSFUL!")
         print("=" * 60)
@@ -344,7 +339,7 @@ def build(debug: bool = False, diagnostic: bool = False):
         
         print("\n--- Distribution Instructions ---")
         print("To share this application, provide users with:")
-        print("  1. BlocFantome.exe (from project root)")
+        print(f"  1. {exe_path}")
         print("  2. Instructions to run setup_assets.py first")
         print("  3. config.json (optional, for custom settings)")
         print("\nNote: Users must have Minecraft Java Edition 1.21.1+ installed")
@@ -363,13 +358,14 @@ def build(debug: bool = False, diagnostic: bool = False):
 def main():
     parser = argparse.ArgumentParser(description="Build Bloc Fantôme executable")
     parser.add_argument("--debug", action="store_true", help="Build with console for debugging")
+    parser.add_argument('--output-dir',help='Isolated build destination; preserves the root rollback executable')
     parser.add_argument(
         "--diagnostic", action="store_true",
         help="Build BlocFantome-Diagnostic.exe with console audio diagnostics",
     )
     args = parser.parse_args()
     
-    return build(debug=args.debug, diagnostic=args.diagnostic)
+    return build(debug=args.debug, diagnostic=args.diagnostic, output_dir=args.output_dir)
 
 
 if __name__ == "__main__":

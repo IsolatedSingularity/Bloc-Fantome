@@ -168,3 +168,42 @@ def test_autosave_reports_backup_failure_even_when_main_save_succeeds():
     app._autoSave()
     assert app.autoSaveFlashTimer==60 and app.lastAutoSaveTime!=-100000
     assert 'backup failed' in app.tooltipText
+
+
+@pytest.mark.parametrize('operation', ['undo', 'redo'])
+def test_history_survives_command_exception(operation):
+    manager=UndoManager()
+    command=Mock()
+    source=manager.undo_stack if operation=='undo' else manager.redo_stack
+    source.append(command)
+    getattr(command,'undo' if operation=='undo' else 'execute').side_effect=OSError('injected')
+    with pytest.raises(OSError):getattr(manager,operation)()
+    assert source==[command]
+    assert manager.get_history_count()==((1,0) if operation=='undo' else (0,1))
+
+
+@pytest.mark.parametrize('change', ['edit', 'canvas', 'mode'])
+def test_stale_biome_load_cannot_replace_newer_canvas(change):
+    app=app_stub();future=Future()
+    app.worldLoadExecutor=Mock();app.worldLoadExecutor.submit.return_value=future
+    app.pendingBiomeLoad=app.pendingWorldLoad=app.pendingBiomeWarmup=None
+    app._queueBiomeScene('fixture')
+    if change=='edit':app.world.setBlock(1,1,1,module.BlockType.STONE)
+    elif change=='canvas':app.world=World(12,12,12,catalog=app.world.catalog)
+    else:app.worldMapActive=True
+    future.set_result((object(),{}));app._applyBiomeScene=Mock()
+    app._pollBiomeLoad()
+    app._applyBiomeScene.assert_not_called()
+    assert app.pendingBiomeLoad is None
+
+
+@pytest.mark.parametrize('kind',['Biome','World'])
+def test_cancelled_load_does_not_retain_replaced_world(kind):
+    import weakref,gc
+    app=app_stub();previous=weakref.ref(app.world)
+    setattr(app,'_'+kind.lower()+'LoadOwner',app._captureLoadOwner())
+    app.world=World(12,12,12,catalog=app.world.catalog)
+    setattr(app,'pending'+kind+'Load',None)
+    getattr(app,'_poll'+kind+'Load')()
+    gc.collect()
+    assert previous() is None

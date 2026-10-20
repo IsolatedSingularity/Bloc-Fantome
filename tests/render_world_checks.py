@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "Code"))
 
 import pygame
 import blocFantome
+from visual_wait import settle_scene
 
 
 SCENES = (
@@ -51,7 +52,7 @@ def render(output_dir: Path, scenes=SCENES) -> None:
         path = Path(blocFantome.WORLDS_DIR) / f"{scene_id}.json.gz"
         if not app._loadBuildingFromPath(str(path), silent=True):
             raise RuntimeError(f"Could not load {scene_id}")
-        app._render()
+        settle_scene(app)
         pygame.image.save(app.screen, output_dir / f"{scene_id}_overview.png")
 
         if app.sceneStructurePositions:
@@ -66,7 +67,7 @@ def render(output_dir: Path, scenes=SCENES) -> None:
             app.renderer.offsetX = app.targetOffsetX
             app.renderer.offsetY = app.targetOffsetY
             app._invalidateViewCaches()
-            app._render()
+            settle_scene(app)
             pygame.image.save(app.screen, output_dir / f"{scene_id}_detail.png")
 
     app.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)

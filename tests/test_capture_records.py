@@ -34,3 +34,19 @@ def test_packing_preserves_metadata_and_changed_source_never_uses_stale_cells(tm
     assert load_capture_file(path)==data
     assert pack_capture(path)
     assert len(load_capture_file(path)['blocks'])==3
+
+
+@pytest.mark.parametrize('damage',['same_length','missing','truncated','metadata'])
+def test_damaged_derived_capture_uses_exact_source_and_can_be_repacked(tmp_path,damage):
+    path=tmp_path/'scene.json.gz'
+    data=dict(data_version=2567,palette=[{'Name':'minecraft:stone'}],blocks=[[1,2,3,0]])
+    path.write_bytes(gzip.compress(json.dumps(data).encode()))
+    assert pack_capture(path)
+    cells=tmp_path/'runtime/scene.cells.gz'
+    if damage=='same_length':cells.write_bytes(gzip.compress(struct.pack('<4H',9,8,7,0)))
+    elif damage=='missing':cells.unlink()
+    elif damage=='metadata':(tmp_path/'runtime/scene.json.gz').write_bytes(b'broken')
+    else:cells.write_bytes(cells.read_bytes()[:-4])
+    assert load_capture_file(path)==data
+    assert pack_capture(path)
+    assert list(load_capture_file(path)['blocks'])==[(1,2,3,0)]
