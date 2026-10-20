@@ -2,7 +2,7 @@
 
 This is the second **standalone** Codex development prompt, for execution only after Pass 1's builder/atmosphere foundation and review. Prepared 2026-10-20 by the browser-side artistic and technical reviewer.
 
-Repo `IsolatedSingularity/Bloc-Fantome`; main Windows workspace `C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome`. Read local `AGENTS.md`, current HEAD/diff/owner edits, latest accepted implementation handoff, and local `deferred-creature/` *read-only* before adopting any draft. The previously published engineering baseline was `codex/engineering-consolidation@ef6dae62a86a148bdf77d508e4e2422fe2ba5e02` but **rebase planning on the latest accepted Pass 1 source rather than starting from old HEAD**. Retrieve from research branch `docs/builder-ux-research-20261020` the files:
+Repo `IsolatedSingularity/Bloc-Fantome`; main Windows workspace `C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome`. Read local `AGENTS.md`, current HEAD/diff/owner edits, latest accepted implementation handoff, and the reported local `.qa/engineering-audit/deferred-creature/` (if present) *read-only* before adopting any draft. The previously published engineering baseline was `codex/engineering-consolidation@ef6dae62a86a148bdf77d508e4e2422fe2ba5e02` but **rebase planning on the latest accepted Pass 1 source rather than starting from old HEAD**. Retrieve from research branch `docs/builder-ux-research-20261020` the files:
 - `docs/research/BUILDER_FIDELITY_AUDIO_MOTION_2026-10-20.md` (creature chapter);
 - `docs/research/OPENING_SONIC_ATMOSPHERE_AND_CREATIVE_QA_2026-10-20.md`;
 - `docs/research/BUILDER_UX_PERFORMANCE_2026-10-20.md`;
