@@ -1,5 +1,12 @@
 # Codex next-pass handoff: a coherent builder, accurate feedback and measured responsiveness
 
+> **Owner revision, 2026-10-20 (post-engineering review).** UI A (atmospheric workshop, B fallback after substantive visual review), concurrent performance improvements, and creature B (architectural/faceted original) are approved direction. `codex/engineering-consolidation@ef6dae62` is the new implementation starting point, with unresolved cached-load and camera-frame gates; it is not yet an installed release. Explicit user feedback reopens opening ambience/particles, cathedral rise sound and piano playlist in Pass 1. **The older blanket 'do not change opening music/encounter audio' exclusion below is superseded for non-creature opening audio and atmosphere.** Creature-specific ten-layer scream scoring and integration are reserved for Pass 2. New authoritative standalone execution prompts:
+> - [Astra Pass 1: Builder UX, fidelity, sound, atmosphere](ASTRA_PASS1_BUILDER_UX_FIDELITY_SOUND_2026-10-20.md)
+> - [Astra Pass 2: Original creature, procedural animation and cinematic sound](ASTRA_PASS2_ORIGINAL_CREATURE_CINEMATICS_2026-10-20.md)
+> - [Source and sound diagnosis / licensing](../research/OPENING_SONIC_ATMOSPHERE_AND_CREATIVE_QA_2026-10-20.md)
+> This earlier handoff remains background and a source of reusable acceptance checks; use the linked new prompt for current execution scope.
+
+
 Updated 2026-10-20 after the owner's expanded research request.
 
 Read [UI/performance research](../research/BUILDER_UX_PERFORMANCE_2026-10-20.md) and [fidelity/audio/motion research](../research/BUILDER_FIDELITY_AUDIO_MOTION_2026-10-20.md). This handoff is the execution entry point. Its updated scope takes precedence over the earlier narrower handoff and historical refactor/Ponder proposals. Research is not a release approval.
