@@ -44,6 +44,7 @@ class WorldSnapshot:
     view_surface_positions_by_view: Mapping[int, frozenset[Position]] = field(default_factory=dict)
     draw_orders_by_mode: Mapping[str, Mapping[int, tuple]] = field(default_factory=dict)
     _prepared: Any = field(default=None, repr=False, compare=False)
+    _lighting: Any = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.width < 1 or self.depth < 1 or self.height < 1:

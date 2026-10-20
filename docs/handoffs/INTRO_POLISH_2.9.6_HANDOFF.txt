@@ -1,0 +1,71 @@
+Bloc Fantome 2.9.6: intro polish and completed local release
+Owner-facing date: 2026-10-18
+
+Implemented
+- Continuous orbit audio follows actual angular velocity and eases out with the
+  camera. One six-second crossfaded loop replaces repeated grindstone blips.
+- Deeper source-driven masonry rise, authored in SuperCollider 3.14.1. Recorded
+  beacon/grindstone material excites filters/resonators; no runtime Python synthesis.
+  Scores and the bounded two-stage NRT reproduction script are in Code/tools/
+  opening_audio.scd and render_opening_audio.py. Runtime needs only the WAV assets.
+- Cathedral arrival is closer: camera half-height 38 instead of 46, center raised
+  to 20. The cross remains visible and pickable. Detached foreground fragments
+  can extend beyond the frame intentionally.
+- Intro-only wheel zoom uses precise scroll deltas, bounded .55-1.5 scale and
+  exponential easing. Geometry renders at native resolution. Picking uses the
+  same projection. The scripted approach retains its authored framing.
+- Bottom controls fade after three seconds with a .4-second fade. Bottom-edge
+  hover, camera input, new scene and completion reveal them. The current opening
+  still permits Escape/X and Return; the future creature's no-skip phase is not
+  implemented in this release. Editor zoom and world/undo remain isolated.
+
+Verified
+372 tests passed in 177.32 seconds: .qa/intro-296/tests.log and tests.xml.
+Real SDL/OpenGL full flow passed: place, doorway, cross, zoom/orbit, Return,
+restored 1200x800 editor. Evidence: .qa/intro-296/full-flow.log.
+Native 1920x1080 render captures inspected, including close arrival and zoom.
+AMD Radeon 860M measurement, 60 frames after warmup, including update/picking,
+render, glFinish and presentation: p95 13.03 ms, max 14.99 ms. This is a short
+local measurement, not a guarantee for all hardware. No GL error.
+938 archived source/visual assets verified byte-for-byte; required modules,
+native library and Tk runtime present. .qa/intro-296/archive.json.
+Two native-authored WAVs validated for finite samples/headroom and installed
+byte-for-byte. Audio behavior and channel lifetime tested; final subjective
+listening quality remains for owner review, not inferred from waveform checks.
+
+Delivery
+Root: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\BlocFantome.exe
+Installed: C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
+Secondary: C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
+All three report 2.9.6 and SHA256:
+4FF00765D78A036399DDE199BD266DE4C2225890971ADB17A4CFBE18B6F3FEEE
+Installer: Code/build/installer/BlocFantome_Setup_2.9.6.exe
+Installer SHA256:
+7CCBCBB075AD6E89A6BB318D0DD16948E4BF92C95AB969EB8DF1B68A998B933E
+Installer completed with exit 0. Start Menu app/uninstall shortcut target, icon
+and working directory verified. Actual app shortcut launched the installed
+version with caption Bloc Fantôme [2.9.6], fitted painting then fullscreen opening.
+Reports: .qa/consistency-start-menu-296.json, .qa/intro-296/executables.json,
+.qa/intro-296/secondary-runtime.json and install.log.
+23 secondary runtime files verified; EXE and the two new WAVs were updated.
+The secondary EXE survived an eight-second headless startup smoke without taking
+over the owner's desktop. All exact-path QA app processes were then stopped;
+zero remained. Final evidence: .qa/intro-296/release-summary.json.
+64 saves/settings files unchanged across resumed installation/handoff:
+.qa/intro-296/preservation.json. The root app config had changed between the
+interrupted session and resumption; its latest value was preserved, not rolled back.
+
+Native interaction note
+The root EXE opening was visually inspected before interruption. The installed
+Start Menu launch was visually verified after resumption. Repeated hardware mouse
+checks overlapped owner input, so they were stopped instead of competing for the
+cursor. Do not describe the interrupted physical-wheel check as passed. Smooth
+zoom/orbit and restoration passed the real SDL application event-flow check.
+
+Next chat
+docs/handoffs/CREATURE_PROMPT.txt records all approved choices: 35-50 seconds,
+dark folded humanoid, planted climbing plus violent stop-start movement, realistic
+eye, forceful head impacts without gore, sparse layered muffled voices, cinematic
+camera without in-scene Escape/Skip. First checkpoint is a short motion proof at
+the cathedral before the complete encounter. No creature was implemented here.
+Redstone Map remains paused. No README edit, commit or push was made by the agent.

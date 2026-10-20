@@ -1033,6 +1033,7 @@ def render_tour(output_dir: Path):
     import json
     output_dir.mkdir(parents=True,exist_ok=True)
     app=app_module.BlocFantome()
+    app._saveAppConfig=lambda:None
     app_module.DERIVED_WORLD_CACHE_DIR=str(output_dir/'scene-cache')
     assert app.assetManager.loadAllAssets()
     app._generateStructurePreviews()
@@ -1068,7 +1069,14 @@ def render_tour(output_dir: Path):
             start=time.perf_counter();app.tutorialScreen.selectLesson(i)
             dispatch=(time.perf_counter()-start)*1000
             frames=settle();ready=(time.perf_counter()-start)*1000
+            if step['id']=='lighting':
+                assert app.sceneTerrainMode=='hidden' and app.sceneStructurePositions
+                assert any(b==app_module.BlockType.NETHERRACK for b in app.world.blocks.values())
             save_capture(app.screen,output_dir/f"tour_{step['id']}_{width}.png")
+            if step['id']=='welcome':
+                app.tutorialScreen.minimized=True;app._render()
+                save_capture(app.screen,output_dir/f'world_framing_{width}.png')
+                app.tutorialScreen.minimized=False
             print('Rendered',step['id'],width,round(ready),flush=True)
             if app.worldMapActive:
                 app._exitWorldMap()
@@ -1083,6 +1091,9 @@ def render_tour(output_dir: Path):
             for _ in range(20):
                 t=time.perf_counter();app._render();stable.append((time.perf_counter()-t)*1000)
             metrics.append(dict(page=step['id'],width=width,dispatch_ms=round(dispatch,2),ready_ms=round(ready,2),max_loading_frame_ms=round(max(frames),2),p95_ms=round(sorted(stable)[18],2)))
+        if '--tutorial-only' in sys.argv:
+            app.tutorialScreen.hide()
+            continue
         app.tutorialScreen.optional=True;app._loadGuidedLesson(15);settle()
         save_capture(app.screen,output_dir/f'optional_chapel_{width}.png')
         app.tutorialScreen.minimized=True;app._render();save_capture(app.screen,output_dir/f'minimized_{width}.png')
@@ -1141,6 +1152,14 @@ def render_opening(output_dir: Path):
         scene.handle_event(pygame.event.Event(pygame.MOUSEWHEEL,y=2,precise_y=2.5))
         scene.update(.5);scene.render(app.screen)
         save_capture(app.screen,output_dir/f'sanctuary_zoom_{size[0]}.png')
+        # Camera continuity is part of the visual contract: an arbitrary user
+        # orbit/zoom must not cut to a different framing on the cross click.
+        scene.activate('heart');scene.update(0);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'encounter_handoff_start_{size[0]}.png')
+        scene.update(1.4);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'encounter_handoff_mid_{size[0]}.png')
+        scene.update(1.4);scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'encounter_handoff_end_{size[0]}.png')
         scene.close()
         app.settingsMenuOpen=True;app._render()
         save_capture(app.screen,output_dir/f'settings_{size[0]}.png')

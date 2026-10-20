@@ -207,7 +207,7 @@ def test_cold_tutorial_render_finishes_while_animation_frames_advance(app):
 
 
 @pytest.mark.parametrize('key',['welcome','blocks','camera','skies'])
-def test_small_tutorial_subject_fills_and_centers_in_free_viewport(app,key):
+def test_small_tutorial_subject_fills_and_centers_against_background(app,key):
     step=next(p for p in TOUR if p['id']==key)
     app.tutorialScreen.visible=True;app.tutorialScreen.minimized=False
     app.tutorialScreen.panelX=14
@@ -218,14 +218,20 @@ def test_small_tutorial_subject_fills_and_centers_in_free_viewport(app,key):
     low,high=step['frame']
     points=[app.renderer.worldToScreen(x,y,z) for x in (low[0],high[0])
             for y in (low[1],high[1]) for z in (low[2],high[2])]
-    left=app.tutorialScreen.panelX+app.tutorialScreen.panelWidth+18
-    right=app._worldViewportRight()
+    left=0
+    right=app.screen.get_width()
     center=app.renderer.worldToScreen(*[(a+b)/2 for a,b in zip(low,high)])
     assert abs(center[0]-(left+right)/2)<1
-    assert abs(center[1]-app.screen.get_height()*.435)<1
+    assert abs(center[1]-app.screen.get_height()*.445)<1
     width=max(p[0] for p in points)-min(p[0] for p in points)
     height=max(p[1] for p in points)-min(p[1] for p in points)
-    assert max(width/(right-left),height/app.screen.get_height())>.7
-    assert min(p[0] for p in points)>=left
-    assert max(p[0] for p in points)<=right
+    assert .85<max(width/(right-left),height/app.screen.get_height())<1.22
+    # Terrain can extend under the UI and beyond the frame. The subject's
+    # center stays visible and never shifts when the instructions are moved.
+    assert left<center[0]<right
+    original=(app.zoomLevel,app.renderer.offsetX,app.renderer.offsetY)
+    app.tutorialScreen.panelX=450
+    app.tutorialScreen.minimized=True
+    app._frameGuidedLesson(step)
+    assert (app.zoomLevel,app.renderer.offsetX,app.renderer.offsetY)==original
     app.tutorialScreen.visible=False

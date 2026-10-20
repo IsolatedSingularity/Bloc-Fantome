@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.9.6"
+#define MyAppVersion "2.9.8"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
@@ -74,6 +74,7 @@ Source: "..\Assets\Texture Hub\*"; DestDir: "{app}\Assets\Texture Hub"; Flags: i
 Source: "..\Assets\Sound Hub\*"; DestDir: "{app}\Assets\Sound Hub"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Icons\*"; DestDir: "{app}\Assets\Icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Fonts\*"; DestDir: "{app}\Assets\Fonts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\Assets\Opening\Creature\Thorn\*"; DestDir: "{app}\Assets\Opening\Creature\Thorn"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Skyboxes\*"; DestDir: "{app}\Assets\Skyboxes"; Excludes: "Black Mesa\assets\minecraft\optifine\sky\panoramas\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\World Map\*"; DestDir: "{app}\Assets\World Map"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Assets\Extensive Library\textures\entity\enderdragon\dragon.png"; DestDir: "{app}\Assets\World Map\WorldBuilder\ui"; DestName: "enderdragon.png"; Flags: ignoreversion

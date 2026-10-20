@@ -1,0 +1,91 @@
+Bloc Fantôme encounter revision, 2026-10-19
+
+Owner direction incorporated
+Wheel zooms; Q/E continuously orbit. Existing monuments remain intact while the
+camera pans to the slowly rising cathedral. Only restrained Q/E hints remain.
+The encounter is 44 seconds, with native OS close available and no in-scene skip.
+The latest owner instruction removes the photographic eye and explicitly permits
+the locally installed KH2 Twilight Thorn model and animations for private use.
+Cathedral geometry is 20 percent larger; creature scale is .082 instead of .064.
+
+Animation
+161 source bones, 2710 weighted triangles, seven HD materials, eighteen source
+clips. Export was corrected: OpenKH ProvideMatrices accumulates frame DELTAS.
+Passing absolute frames had exhausted clips early and frozen their remaining
+poses. Correct export uses 0 then increments of 1 at the source 30 fps.
+The encounter combines the recovered source overturn/recovery/folding with an
+authored pelvis path, alternating ground steps, planted hands and feet, and
+traveling contractions. Four climbing contacts hold their exact scene targets.
+Three spine/neck strikes reach the front pier at 25.45, 26.55 and 27.65 seconds,
+followed by recoil. Cathedral fragments, distant arcades and the initial shrine
+move toward the creature before the final black transition. Renderer textures
+are released when the OpenGL context is recreated.
+
+Art and audio
+Shrine foundations descend into darkness, the glowstone cluster is enlarged,
+sparse folded red flowers sit on the cathedral platform, and a shared-vertex
+dark faceted ground undulates below the architecture.
+Code/tools/render_encounter_audio.py and encounter_audio.scd form a headless
+SuperCollider workbench. Eleven distinct vocal recordings plus a whisper are
+staggered through continuous stone/mechanism/drain recordings. The latest mix
+opens the voice filters and reduces reverb for clearer but still muffled voices.
+Source URLs/licenses are in Assets/Sound Hub/opening/encounter-sources.json.
+Sonniss direct selective retrieval returned HTTP 403; its Drive mirror reported
+quota exhaustion. The delivered palette uses the individually retrieved sources.
+SC 3.14.1's Limiter UGen crashed even in an isolated minimal NRT test. Rendering
+float WAV without that UGen exits successfully; measured constant gain and PCM16
+conversion provide headroom. This is mastering, not Python synthesis.
+
+Tutorial
+Instructions float at the lower left and retain drag/minimize behavior. Framing
+uses the full background and 22 percent more coverage, independent of panel
+position. The next lesson is prepared while the current lesson is explored.
+The ocean page originally rebuilt indexes for 989663 cells; an isolated staged
+load of the prepared copy took 6.7 s instead of the earlier 26 s rendered cold
+navigation. These are different checks, not a controlled end-to-end speed ratio.
+Twelve read-only prepared lessons total approximately 109 MB. Each load owns its
+state independently. Source fingerprints invalidate stale development bundles;
+the release builder requires matching complete bundles. Rebuild them with
+Code/tools/bake_tutorial.py after relevant world/catalog/tutorial source changes.
+
+Verification and delivery status
+Final reports are under .qa/encounter. The initial broad run had sandbox temporary
+directory permission failures and a version check racing a source version update;
+those results are retained in full-tests.log. The release rerun uses workspace
+TEMP/TMP. The first combined tutorial visual run exited without a Python traceback
+at the ocean page; isolated ocean rendering and all four rotations then passed.
+Final verification (2026-10-19, reconciled 2026-10-20)
+- Full regression suite: 388 passed in 369.97 s (release-tests.log/xml).
+- Final impact, mute and native-close checks: 28 passed in 44.39 s
+  (impact-tests.log). These overlap the full suite; do not sum the counts.
+- Tutorial visual run completed with exit 0: all 16 pages at 960x640,
+  1200x800 and 1920x1080, plus rotation checks, 105 PNGs total
+  (tutorial-release). The heavy lighting page still took 13.45 s in the
+  1200px run under concurrent build load. This is a remaining latency limit.
+- Source app completed the real SDL opening-to-game lifecycle, preserving
+  world revision, camera and tutorial preference; focus loss, display-context
+  recreation and channel cleanup passed (full-flow.json).
+- Standalone native 1080p rendering: median 12.13 ms, p95 22.27 ms, maximum
+  23.53 ms over 180 sampled frames, GL error 0 (native-profile.json).
+  This does not establish a locked 60 FPS.
+- Final preview: .qa/encounter/encounter.mp4, 44.000 s, 1920x1080 H264/AAC.
+- Build and installer compilation succeeded; silent installation exited 0.
+  Archive verification matched 951 bundled files (archive.json).
+- Root, installed and secondary runtime executables are version 2.9.7 with
+  SHA256 b7cf921dbfd4cf71c850ed44db3a6bb9fe2ec3355fb27c00de0bbb9d4ffd5519.
+  Root and secondary startup smokes survived 18 s, then were closed.
+- Start Menu target, working directory and icon were verified after install
+  (.qa/consistency-start-menu-297.json). Launching that actual shortcut showed
+  the installed window titled Bloc Fantome [2.9.7], rendered the opening and
+  accepted the missing-block placement. The user interrupted the remaining
+  manual playthrough; a complete installed cinematic run is not claimed.
+- All 62 baseline save/settings files matched after installation and before
+  interactive startup. At final reconciliation, 61 still match; the installed
+  .app_config.json was rewritten at 2026-10-19 14:16:44 during the app launch.
+  Its current contents were preserved rather than overwriting later settings.
+  Saves and tutorial configuration remain unchanged (userdata-check.json).
+- No BlocFantome.exe processes or the prior preview-server PID remained at
+  the 2026-10-20 reconciliation. No further desktop input was sent after the
+  interruption.
+
+No README edits, staging, commits or pushes. Redstone Map work remains paused.

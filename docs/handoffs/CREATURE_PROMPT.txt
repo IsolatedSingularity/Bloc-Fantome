@@ -1,0 +1,87 @@
+Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome.
+Read AGENTS.md, docs/handoffs/INTRO_POLISH_2.9.6_HANDOFF.txt, and the relevant
+opening_scene.py, opening_audio.py, opening_geometry.py and presentation_renderer.py.
+Preserve the approved two-monument opening, native-resolution rendering, world
+isolation, saves/settings and existing tutorial preference. Redstone Map stays paused.
+Do not edit README.md or stage, commit or push. Inspect the live dirty tree first.
+
+OWNER-APPROVED DIRECTION, 2026-10-18
+Build one unexplained horror encounter after the cathedral cross is clicked:
+piano cuts out; distant footsteps and muffled voices approach; a mostly hidden
+creature climbs onto the cathedral; one violent head-strike sequence; its body
+engulfs the island/world; ordinary Bloc Fantome returns. Target 35-50 seconds,
+with long still moments between abrupt actions. No dialogue, lore or combat.
+
+The creature is cathedral-sized: an elongated humanoid folded backward onto four
+limbs. Dark matte silhouette, restrained pale detail around joints. Motion combines
+deliberate, weighty climbing with violent stop-start passages, impossible contortions
+and sharp twitches. Hands/feet must plant on real architectural contact points.
+Show load transfer, anticipation, recoil and recovery. Do not merely translate a
+rigid mesh, run sine waves through limbs, or cover poor motion with camera shake.
+The owner explicitly wants a realistic human eye, not an optional eye. Reveal it
+briefly and convincingly in the otherwise obscured face, with restrained glitching.
+Head impacts are forceful and disturbing, without visible gore. No copied boss model.
+
+Camera is cinematic and locked during this encounter. The owner explicitly declined
+Escape/Skip DURING it, and wants minimal UI. Hide the opening controls/close glyph
+for this phase and ignore in-scene navigation. Continue processing native OS close,
+window events and audio cleanup; do not trap the operating system. The existing
+skip-on-launch preference still applies before the encounter. Restore the previous
+world/window and normal tutorial preference on completion. Do not force a completed
+tutorial to replay or write the cinematic into saves/undo.
+
+REFERENCE AND AUDIO WORK
+The KH2 reference appears to be Twilight Thorn. Primary licensed guide:
+https://www.piggyback.com/en/kh2_e_samplepages/
+Gameplay candidate: https://www.youtube.com/watch?v=FCXFmipr6t4
+The previous pass identified the reference but did NOT watch/timecode the movement.
+Study actual footage before animation; record a few precise observations about
+held poses, acceleration, limb contacts and negative space. Silent Hill is an
+atmospheric/movement reference, not a request to reproduce a specific character.
+Existing architectural references are in References/Sanctuary and NEW; PONDER PACKAGE.
+
+Read-only orientation initially: C:\Users\hunkb\OneDrive\Documents\Embryo\Horror Audio
+Read its AGENTS.md, docs/STATUS.md, docs/NEXT_SESSION.md, docs/sc/STUDIES.md and
+docs/rack/AMBIENCE_02.md. Its ignored workspace/render corpus was absent when checked.
+Accepted direction there: Rack Counterweight Vault / Listening Membrane r03;
+SuperCollider Unsaid Register / Lacuna Relay polish05. Historical hero_1 scripts
+are not the accepted final studies. SuperCollider 3.14.1 is installed under
+C:\Program Files\SuperCollider-3.14.1. Verify Rack/plugins before depending on them.
+Do not mutate that separate project without need or launch uncontrolled audio jobs.
+
+Author a serious deep drone and approaching footfalls/echoes with SuperCollider
+or VCV Rack. Prefer recorded source material transformed in the native engine.
+No cheap Python oscillator substitute. Approximately twelve distinct muffled
+human vocal samples is a palette target, not twelve simultaneously playing voices.
+Layer sparingly; let silence and distance carry the approach. Use audible low
+harmonics as well as sub-bass, gradual distance/filter/reverb changes, and meaningful
+stereo placement. Do not claim HRTF/localization validation from a stereo file.
+The Horror Audio repository's spatial proof was not human-accepted. Preserve that
+distinction. Respect mute/effects settings, leave headroom, and audit loop seams.
+Current reproducible intro cues: Code/tools/opening_audio.scd and render_opening_audio.py.
+These are presentation cues, not the final creature sound design.
+
+SCOPED DEVELOPMENT ORDER
+1. Study references, then make one short motion proof at the cathedral: planted
+   climbing, a held silhouette, one sharp contortion, and the realistic eye treatment.
+   Review that visual/motion proof with the owner before completing the encounter.
+2. Audition a small coherent sound palette and sync a few decisive contacts/impacts.
+3. Complete the approved 35-50 second sequence, engulf transition and restoration.
+Use a small authored skeleton/contact sequence with procedural articulation and
+secondary motion. Reuse the existing renderer; assess its limits before choosing
+mesh/eye rendering. Do not create a general cinematic/IK/audio framework or change
+dependencies without a concrete need. Avoid random camera glitches, constant shaking
+or incessant screaming. Measure frame time at native 1080p with the actual creature.
+
+Acceptance: compelling silhouette and motion, no foot sliding/architectural
+penetration, no unexplained audio repetition, synchronized impacts and sparse shake,
+legible eye reveal, no state leakage, reliable world/window/audio restoration,
+unchanged skip-on-launch preference and tutorial behavior. Test relevant failures,
+focus loss, resizing, mute, completion and native OS close. Compare rendered motion
+to the references; passing tests alone does not establish art quality.
+
+Finish with a consistent new patch version, verified root EXE and installer,
+installation and actual Start Menu launch. Also update the runtime EXE and required
+assets in C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome, preserving its
+source and user data. Hash-check all copies, verify shortcut target/icon/workdir,
+close QA processes, and leave a concise handoff in docs/handoffs.

@@ -1,0 +1,107 @@
+CREATURE MOTION CHECKPOINT
+Owner-facing date: 2026-10-18
+Checkout: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+Baseline: main, a1fe11ee. Existing CHANGELOG.md and opening_audio.py edits preserved.
+
+Latest owner decisions
+- Downward extension applies to the initial shrine only: irregular architectural
+  foundations fading into darkness without a visible bottom.
+- Enlarge the overhead glowstone cluster organically by roughly 40-60%; show
+  the whole cluster in the default framing.
+- Sparse abyss atmosphere: layered haze, falling dust and distant sound. Do not
+  populate it with additional visible architecture for this pass.
+- Destruction should favor physically pulling masonry into the creature, then
+  engulfing the remainder, rather than mostly an expanding dark covering.
+- Encounter CONTINUES on focus loss. This supersedes the suggested pause.
+- After the cinematic, center the startup/tutorial world against the background
+  viewport, not the remaining space around menus. Leave zoom intuitive/manual.
+- Another architectural stage may be requested later. Creature first for now.
+- Keep the brief's motion review, then sound audition, then full encounter order.
+
+Delivered for motion review only
+- .qa/creature-proof/motion-proof.mp4: silent, 14 seconds, 1920x1080, 30 FPS,
+  420 encoded frames; checked with ffprobe and played in the browser.
+- .qa/creature-proof/review.html: portable local viewer with moment buttons,
+  wide shot, separate native eye-detail render and source attribution.
+- Source: Code/ui/opening_creature.py and Code/tools/render_creature_proof.py.
+- Fixed-length two-bone limbs, authored support targets on real exposed caps,
+  alternating reaches with lifted arcs, delayed torso/pelvis load transfer,
+  a static hold, one rapid contortion with staged recovery, one short eye reveal
+  and lid spasm, and a small masonry extraction following the left hand.
+- Existing native Windows GL renderer is reused. There is no camera shake in
+  this proof. The cinematic camera stays locked; eye-detail.png uses a separate
+  close camera for material review only.
+- Source JPEG is unmodified in Assets/Opening/Creature. Human iris photograph:
+  Petr Novák, Wikipedia, CC BY-SA 2.5. ATTRIBUTION.txt records the source URL,
+  material sampling/lighting adaptation and license. JPEG SHA256:
+  CAFC989C2E0E2C5E6364DC80697F71905975997A3AAF97D1932BCEBC5FF456CD
+
+Reference study actually performed
+https://www.youtube.com/watch?v=FCXFmipr6t4
+Kingdom Hearts 2: Twilight Thorn Boss Fight (PS3 1080p), Boss Fight Database.
+Opened muted in the browser; examined paused frames and frame-stepped the
+1:43-1:48 passage. These are sampled observations, not a motion-capture analysis.
+- 0:31 and 0:36: wide shoulders and narrow torso leave large dark gaps below the
+  arms. The bowed head breaks the symmetry. Feet/ground contacts are outside
+  these crops, so those frames do not establish planted-foot mechanics.
+- 1:43-1:45: airborne player and an almost empty platform prolong anticipation.
+- 1:46, two successive sampled frames: the creature changes from above the
+  platform to head near the floor, with its upper limbs spread. The large
+  displacement happens within the displayed second, rather than as steady drift.
+- 1:48: the head remains low and the appendages spread across the platform.
+  The aftermath pose is readable because the torso does not hide every limb.
+Applied principles: empty spaces between limbs, a held pose, a fast asymmetric
+  change, delayed recovery. Planted cathedral climbing is original authored work;
+  this footage does not demonstrate climbing this architecture. No model copied.
+The licensed Piggyback guide was opened as context, not used as motion evidence:
+https://www.piggyback.com/en/kh2_e_samplepages/
+
+Verification and limits
+- Baseline opening suite: 16 passed, .qa/creature-proof-baseline.xml.
+- Final focused suite: 22 passed in 12.59 s, .qa/creature-proof/tests.xml.
+  Covers exposed anchor surfaces, fixed bone lengths, stationary supports,
+  stateless seeking/frame-rate sampling, brief eye/release behavior, finite
+  meshes and architecture clearance sampled across the sequence and at 60 Hz
+  through the violent passage. Surface vertices, quad centers and edge midpoints
+  are checked. This is sampled clearance evidence, not continuous collision proof.
+- Early geometry failures were diagnosed: contacts below cornice tops, thumbs
+  crossing adjacent rising buttress steps, torso crossing high ribs. Contact
+  positions, hand orientation and body clearance were corrected, not tolerances.
+- Native render profile: .qa/creature-proof/render-profile.json. 120 frames,
+  AMD Radeon 860M, 1920x1080, CPU articulation + GL + glFinish + swap:
+  p50 9.17 ms, p95 15.37 ms, max 17.35 ms; GL error zero.
+  This is a short isolated proof measurement, not full-encounter 60 FPS validation.
+- Inspected the wide captures, eye close-up, encoded playback and individual
+  movement moments. The photographed iris improves the material; artistic
+  acceptance of the face, silhouette, weight and pacing belongs to the owner.
+- No claims of auditory assessment: this proof is deliberately silent.
+- Existing opening scene, builder/tutorial flow, renderer and preference files
+  were not modified. No EXE, installer, installation or shortcut was changed.
+  No README edit, stage, commit or push. No new dependency installed.
+
+Audio orientation completed, read-only
+Read Horror Audio's AGENTS.md, README.md, docs/STATUS.md, NEXT_SESSION.md,
+sc/STUDIES.md and rack/AMBIENCE_02.md. Preserve Counterweight Vault/Listening
+Membrane r03 and Unsaid Register/Lacuna Relay polish05 directions. No separate
+project mutation or audio render job. No claim of headphone spatial acceptance.
+
+Next steps after owner motion review
+1. Incorporate visual/motion feedback before expanding the encounter.
+2. Author and audition a small native SuperCollider/Rack palette, using recorded
+   source material: deep drone, distinct approaching footfalls, sparse muffled
+   human layers. Twelve samples is a palette target, not simultaneous voices.
+3. Finish the 35-50 second encounter, violent head-strike sequence without gore,
+   physical world consumption, piano cut, synchronized contacts and cleanup.
+4. Integrate cross trigger and no in-scene skip/navigation; keep native OS close,
+   window events and focus-loss continuation. Respect mute/effects settings.
+5. Implement shrine foundations/glowstone/ambiance and verify startup/tutorial
+   centering against the background, preserving saves and normal preferences.
+6. Run integrated failure/window/audio/restoration/visual QA; finish a consistent
+   patch release with root EXE, installer, installed Start Menu launch and the
+   secondary checkout's runtime/assets, hashes and preservation checks.
+Redstone Map remains paused.
+
+Reproduce the silent proof
+& 'C:\Users\hunkb\AppData\Local\Programs\Python\Python312\python.exe' Code/tools/render_creature_proof.py --video
+The repository .venv lacks numpy. The existing global Python 3.12.10 has the
+needed pygame 2.6.1 and numpy 2.4.6. No environment was changed.

@@ -146,13 +146,13 @@ class PresentationRenderer:
             gl.glTexImage2D(0x0DE1,0,0x1908,w,h,0,0x1908,0x1401,pointer)
         else:gl.glTexSubImage2D(0x0DE1,0,0,0,w,h,0x1908,0x1401,pointer)
 
-    def draw(self,data):
+    def draw(self,data,mode=0x0007):
         if not len(data):return
         gl=self.gl;data=np.ascontiguousarray(data.reshape(-1,9))
         gl.glVertexPointer(3,0x1406,36,data.ctypes.data)
         gl.glTexCoordPointer(2,0x1406,36,data.ctypes.data+12)
         gl.glColorPointer(4,0x1406,36,data.ctypes.data+20)
-        gl.glDrawArrays(0x0007,0,len(data))
+        gl.glDrawArrays(mode,0,len(data))
 
     def flat(self,quad,colors,texture=None):
         gl=self.gl

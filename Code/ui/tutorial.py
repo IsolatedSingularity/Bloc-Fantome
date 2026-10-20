@@ -15,6 +15,7 @@ class GuidedTutorialMixin:
         self.hintVisible=True;self.retryRequested=False;self.optionsOpen=False
         self.extraRects={};self.menuRects=[];self.highlightRect=None;self.baseline=None
         self.optional=False;self.anomalyShown=False
+        self.loading=False
         super().__init__(*args,**kwargs)
         self.titleFont=load_ui_font(21,bold=True)
         self.contentFont=load_ui_font(17)
@@ -36,20 +37,24 @@ class GuidedTutorialMixin:
     def setAdvanced(self,advanced):
         self.advanced=bool(advanced);self.TUTORIAL_STEPS=TOUR
         self.currentStep=min(getattr(self,'currentStep',0),len(TOUR)-1)
-        self.panelWidth=336;self.panelHeight=366
-        self.panelX=14;self.panelY=64
+        self.panelWidth=352;self.panelHeight=310
+        self.panelX=14;self.panelY=max(8,self.screenHeight-self.panelHeight-94)
+        self._lastScreenHeight=self.screenHeight
         self._layoutPanelControls()
     def resize(self,width,height):
         self.screenWidth,self.screenHeight=width,height
+        bottom_anchored=abs(self.panelY-(getattr(self,'_lastScreenHeight',height)-self.panelHeight-94))<2
         self.panelX=max(8,min(width-self.panelWidth-8,self.panelX))
+        if bottom_anchored:self.panelY=height-self.panelHeight-94
         self.panelY=max(8,min(height-self.panelHeight-8,self.panelY))
+        self._lastScreenHeight=height
         self._layoutPanelControls()
     def _layoutPanelControls(self):
         super()._layoutPanelControls()
-        x=self.panelX+14;y=self.panelY+self.panelHeight-70
-        self.backButtonRect=pygame.Rect(x,y,96,30)
-        self.nextButtonRect=pygame.Rect(x+106,y,96,30)
-        self.skipButtonRect=pygame.Rect(x+212,y,96,30)
+        x=self.panelX+14;y=self.panelY+self.panelHeight-66
+        self.backButtonRect=pygame.Rect(x,y,102,30)
+        self.nextButtonRect=pygame.Rect(x+111,y,102,30)
+        self.skipButtonRect=pygame.Rect(x+222,y,102,30)
         self.checkboxRect=pygame.Rect(x,y+44,14,14)
         self.optionalRect=pygame.Rect(x,y-26,308,21)
     def advancedHotbarNames(self,index):return tuple(TOUR[index]['icons'])
@@ -60,6 +65,12 @@ class GuidedTutorialMixin:
         self.optional=False;self.currentStep=max(0,min(index,len(TOUR)-1))
         self.menuOpen=False;self.lessonStarted=True;self.retryRequested=retry
         self.counts.clear();self.baseline=None;self.highlightRect=None
+        # Measure the exceptional longer page without clipping native text.
+        # Preserve the bottom anchor unless the user has dragged the panel.
+        bottom=self.panelY+self.panelHeight
+        self.panelHeight=344 if self.lesson['id']=='dimensions' else 332 if self.lesson['id']=='saving' else 310
+        self.panelY=max(8,bottom-self.panelHeight)
+        self._layoutPanelControls()
         if self.onStepChange:self.onStepChange(self.currentStep)
         self.retryRequested=False
     @property
@@ -120,12 +131,16 @@ class GuidedTutorialMixin:
         label='OPTIONAL DETOUR' if self.optional else f'TUTORIAL  {self.currentStep+1} / {len(TOUR)}'
         self._button(screen,pygame.Rect(x+8,y+8,w-46,30),label)
         self._button(screen,self.minimizeButtonRect,'-')
-        area=pygame.Rect(x+16,y+52,w-32,self.backButtonRect.top-y-63)
+        if self.loading:
+            # Immediate, quiet feedback while a worker prepares the next world.
+            phase=(pygame.time.get_ticks()%1200)/1200
+            pygame.draw.line(screen,(183,190,164),(x+12,y+41),(x+12+round((w-24)*phase),y+41),2)
+        area=pygame.Rect(x+16,y+47,w-32,self.backButtonRect.top-y-53)
         old=screen.get_clip();screen.set_clip(area)
         yy=wrapped(screen,self.lesson['title'],self.titleFont,area)
-        yy=wrapped(screen,self.lesson['content'][0],self.contentFont,(area.x,yy+12,area.width,100))
-        pygame.draw.line(screen,(95,86,72),(area.x,yy+8),(area.right,yy+8))
-        yy=wrapped(screen,self.lesson['hint'],self.smallFont,(area.x,yy+19,area.width,area.bottom-yy-19),MUTED)
+        yy=wrapped(screen,self.lesson['content'][0],self.contentFont,(area.x,yy+6,area.width,100))
+        pygame.draw.line(screen,(95,86,72),(area.x,yy+4),(area.right,yy+4))
+        yy=wrapped(screen,self.lesson['hint'],self.smallFont,(area.x,yy+10,area.width,area.bottom-yy-10),MUTED)
         screen.set_clip(old)
         if self.currentStep==len(TOUR)-1 and not self.optional:
             screen.blit(self.smallFont.render('Optional: visit the abandoned chapel >',True,(202,185,145)),self.optionalRect)

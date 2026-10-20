@@ -9,6 +9,8 @@ from domain.blocks import BlockType as B
 from ui.presentation_renderer import Camera, make_mesh, PALETTE, FACES
 from ui.opening_geometry import sanctuary, distant_arches
 from ui.opening_audio import OpeningAudio
+from ui.opening_environment import AbyssGround, foundations, flowers
+from ui.opening_encounter import OpeningEncounter, DURATION as ENCOUNTER_DURATION, ARCHITECTURE_SCALE, architecture_mesh
 import numpy as np
 from runtime_paths import BASE_DIR, SOUNDS_DIR
 from ui.fonts import load_ui_font
@@ -42,10 +44,10 @@ class OpeningScene:
     TARGET = (0,3,2)
     READY_AT = 4.4
     REVEAL_DURATION = 4.6
-    RISE_START = 2.2
-    RISE_END = 7.6
-    RISE_DURATION = 10.4
-    SANCTUARY_OFFSET = np.array((-44.0,-36.0,0.0))
+    RISE_START = 3.0
+    RISE_END = 13.0
+    RISE_DURATION = 16.0
+    SANCTUARY_OFFSET = np.array((-70.0,-58.0,0.0))
     ARRIVAL_ANGLE = 160.0
 
     def __init__(self,size,assets,*,skip=False,effects_volume=1):
@@ -57,6 +59,11 @@ class OpeningScene:
         self.phase='shrine'
         self.phase_at=0.0
         self.awakened_at=None
+        self.encounter=None
+        self.orbit_keys=set()
+        self.ground=AbyssGround()
+        self.flowers=flowers()
+        self.flowers[:,:,:3]*=ARCHITECTURE_SCALE
         self.pointer=(-1,-1)
         self.hover=None
         self.feedback={}
@@ -99,8 +106,11 @@ class OpeningScene:
                      (0,-2,13,B.GLOWSTONE,'glow'), (1,-2,14,B.GLOWSTONE,'glow'),
                      (0,-2,14,B.GLOWSTONE,'glow'), (-1,-2,14,B.GLOWSTONE,'glow')]
         self.vein=[(x,y,z+2,b,t) for x,y,z,b,t in self.vein]
+        self.vein.extend((x,y,z,B.GLOWSTONE,'glow') for x,y,z in
+                         ((-2,-2,15),(-1,-3,16),(0,-3,17),(1,-2,17),(1,-1,16)))
         self.sanctuary_cells=sanctuary()
         self.distant_cells=distant_arches()
+        self.encounter=OpeningEncounter(self.sanctuary_cells)
         self.meshes={
             'fixed':make_mesh(self._dict(self.floor+self.pedestals)),
             'vein':make_mesh(self._dict(self.vein)),
@@ -108,8 +118,9 @@ class OpeningScene:
             'right':make_mesh(self._dict(self.sections[1])),
             'placed':make_mesh({self.TARGET:(B.CHISELED_QUARTZ,'stone')}),
             'light':make_mesh({(0,-2,4):(B.GLOWSTONE,'glow')}),
-            'sanctuary':make_mesh(self.sanctuary_cells),
-            'distant':make_mesh(self.distant_cells),
+            'sanctuary':architecture_mesh(self.sanctuary_cells),
+            'distant':architecture_mesh(self.distant_cells),
+            'foundations':foundations(),
         }
         self.resize(size)
 
@@ -132,7 +143,7 @@ class OpeningScene:
 
     @property
     def orbit_enabled(self):
-        return self.complete and self.phase!='approach'
+        return self.complete and self.phase not in ('approach','encounter')
 
     def section_offsets(self):
         t=0 if self.placed_at is None else self.elapsed-self.placed_at
@@ -174,21 +185,29 @@ class OpeningScene:
     def update(self,seconds):
         dt=max(0,seconds);previous=self.elapsed;self.elapsed+=dt
         old_angle=self.renderer.angle
+        angular_speed=0.
+        if self.orbit_enabled and self.orbit_keys:
+            direction=int(pygame.K_e in self.orbit_keys)-int(pygame.K_q in self.orbit_keys)
+            angular_speed=direction*38
+            self.target_angle+=angular_speed*dt
+            self.last_turn=(self.elapsed,direction);self.controls_at=self.elapsed
+        if self.phase=='encounter':
+            t=self.elapsed-self.awakened_at
+            if t>=ENCOUNTER_DURATION:self.closed=True
+            self.audio.update_encounter(t,dt)
         if self.size[1]-155<=self.pointer[1]<=self.size[1] or self.dragging:
             self.controls_at=self.elapsed
         if self.placed_at is not None and previous-self.placed_at<self.REVEAL_DURATION<=self.elapsed-self.placed_at:
             self.controls_at=self.elapsed
         if self.awakened_at is not None and previous-self.awakened_at<=1.2<self.elapsed-self.awakened_at:
             self.controls_at=self.elapsed
-        if self.placed_at is not None:
-            for cue in (.15,.8,1.35,2.0):
-                if previous-self.placed_at<cue<=self.elapsed-self.placed_at:self.audio.play('move',self.elapsed)
+        if self.placed_at is not None and previous-self.placed_at<.15<=self.elapsed-self.placed_at:
+            self.audio.play('move',self.elapsed)
         if self.placed_at is not None and previous-self.placed_at<3.5<=self.elapsed-self.placed_at:
             self.audio.play('settle',self.elapsed)
         if self.phase=='approach':
             before=previous-self.phase_at;t=self.elapsed-self.phase_at
             if before<self.RISE_START<=t:self.audio.play('rise',self.elapsed)
-            if before<4.4<=t:self.audio.play('move',self.elapsed)
             if before<self.RISE_END<=t:self.audio.play('settle',self.elapsed)
             if t>=self.RISE_DURATION-1e-9:
                 self.phase='sanctuary'
@@ -196,21 +215,31 @@ class OpeningScene:
                 self.renderer.angle=self.target_angle=self.ARRIVAL_ANGLE
         # Exponential damping is independent of frame rate, with no snap at 360.
         self.renderer.angle+=(self.target_angle-self.renderer.angle)*(1-math.exp(-dt*7))
+        self.renderer.angle+=angular_speed*(dt*math.exp(-dt*7)-(1-math.exp(-dt*7))/7)
         if self.phase=='shrine':
-            self.renderer.center=np.array((.5,.5,4.0))
-            self.renderer.half=max(10.5,10.5*1.35/(self.size[0]/self.size[1]))
+            self.renderer.center=np.array((.5,.5,6.0))
+            self.renderer.half=max(12.4,12.4*1.35/(self.size[0]/self.size[1]))
         elif self.phase=='approach':
             t=self.elapsed-self.phase_at
-            wide=self.smooth(ramp(t,0,self.RISE_START))
-            arrive=self.smooth(ramp(t,4.8,self.RISE_DURATION-4.8))
-            start=np.array((.5,.5,4));middle=np.array((-18.,-18.,7.))
-            finish=self.SANCTUARY_OFFSET+(.5,-3,20)
-            self.renderer.center=(start+(middle-start)*wide)*(1-arrive)+finish*arrive
-            self.renderer.half=(10.5+15.5*wide+12*arrive)*max(1,1.35/(self.size[0]/self.size[1]))
+            wide=self.smooth(ramp(t,0,4.2))
+            arrive=self.smooth(ramp(t,.6,11.4))
+            start,start_half=self.depart_camera
+            finish=self.SANCTUARY_OFFSET+(.5,-3,25)
+            self.renderer.center=start+(finish-start)*arrive
+            self.renderer.half=start_half+(41*max(1,1.35/(self.size[0]/self.size[1]))-start_half)*wide
             self.renderer.angle=self.depart_angle+(135-self.depart_angle)*wide+(self.ARRIVAL_ANGLE-135)*arrive
+        elif self.phase=='sanctuary':
+            self.renderer.center=self.SANCTUARY_OFFSET+(.5,-3,25)
+            self.renderer.half=41*max(1,1.35/(self.size[0]/self.size[1]))
         else:
-            self.renderer.center=self.SANCTUARY_OFFSET+(.5,-3,20)
-            self.renderer.half=38*max(1,1.35/(self.size[0]/self.size[1]))
+            # Preserve the player's composition at the click, then ease into the
+            # established encounter shot. No cut or zoom snap from an arbitrary orbit.
+            u=self.smooth(ramp(self.elapsed-self.awakened_at,0,2.8))
+            center,half,angle=self.encounter_camera
+            self.renderer.center=center+(self.SANCTUARY_OFFSET+(.5,6,43)-center)*u
+            self.renderer.half=half+(55*max(1,1.35/(self.size[0]/self.size[1]))-half)*u
+            turn=(self.ARRIVAL_ANGLE-angle+180)%360-180
+            self.renderer.angle=self.target_angle=angle+turn*u
         self.zoom+=(self.target_zoom-self.zoom)*(1-math.exp(-dt*10))
         self.renderer.half*=self.zoom
         self.audio.update_orbit((self.renderer.angle-old_angle)/dt if dt and self.orbit_enabled else 0,dt)
@@ -236,12 +265,11 @@ class OpeningScene:
         if not self.ready:return False
         self.placed_at=self.elapsed
         self.audio.play('place',self.elapsed)
-        self.audio.play('rise',self.elapsed)
         return True
 
     def turn(self,direction):
         if not self.orbit_enabled:return
-        self.target_angle+=direction*45
+        self.target_angle+=direction*3
         self.last_turn=(self.elapsed,direction)
         self.demonstrated=True
         self.controls_at=self.elapsed
@@ -255,12 +283,12 @@ class OpeningScene:
                     'altar':((-2,-22,10),(4,-18,14)),
                     'pier':((10,0,7),(12,2,35)),
                     'pier_left':((-10,0,7),(-8,2,35))}
-            return {name:(np.asarray(lo)+self.SANCTUARY_OFFSET,np.asarray(hi)+self.SANCTUARY_OFFSET)
+            return {name:(np.asarray(lo)*ARCHITECTURE_SCALE+self.SANCTUARY_OFFSET,np.asarray(hi)*ARCHITECTURE_SCALE+self.SANCTUARY_OFFSET)
                     for name,(lo,hi) in local.items()}
         return {}
 
     def project_sanctuary(self,point):
-        return self.renderer.project(np.asarray(point)+self.SANCTUARY_OFFSET)
+        return self.renderer.project(np.asarray(point)*ARCHITECTURE_SCALE+self.SANCTUARY_OFFSET)
 
     def target_at(self,pos):
         hits=[]
@@ -275,20 +303,21 @@ class OpeningScene:
         if self.phase=='sanctuary':
             if not hasattr(self,'_opaque_positions'):
                 from ui.presentation_renderer import TRANSPARENT
-                self._opaque_positions=np.array([p for p,(b,t) in cells.items() if b not in TRANSPARENT],dtype=float)+self.SANCTUARY_OFFSET
+                self._opaque_positions=np.array([p for p,(b,t) in cells.items() if b not in TRANSPARENT],dtype=float)*ARCHITECTURE_SCALE+self.SANCTUARY_OFFSET
             positions=self._opaque_positions
         else:positions=np.array(list(cells),dtype=float)
+        cell_size=ARCHITECTURE_SCALE if self.phase=='sanctuary' else 1
         lo,hi=self.targets()[name]
         # The target itself is allowed to occlude its own selection volume.
-        outside=np.any((positions+1<=np.asarray(lo))|(positions>=np.asarray(hi)),axis=1)
+        outside=np.any((positions+cell_size<=np.asarray(lo))|(positions>=np.asarray(hi)),axis=1)
         positions=positions[outside]
         origin,direction=self.renderer.ray(pos)
         parallel=np.abs(direction)<1e-10
         safe=np.where(parallel,1,direction)
-        a=(positions-origin)/safe;b=(positions+1-origin)/safe
+        a=(positions-origin)/safe;b=(positions+cell_size-origin)/safe
         near=np.where(parallel,-np.inf,np.minimum(a,b)).max(axis=1)
         far=np.where(parallel,np.inf,np.maximum(a,b)).min(axis=1)
-        valid=~np.any(parallel & ((origin<positions)|(origin>positions+1)),axis=1)
+        valid=~np.any(parallel & ((origin<positions)|(origin>positions+cell_size)),axis=1)
         if np.any(valid & (far>=np.maximum(0,near)) & (near<distance-.02)):return None
         return name
 
@@ -298,6 +327,7 @@ class OpeningScene:
     def activate(self,name):
         if name=='ghost':self.place()
         elif name=='door' and self.phase=='shrine' and self.complete:
+            self.depart_camera=(self.renderer.center.copy(),self.renderer.half)
             self.phase='approach';self.phase_at=self.elapsed
             self.depart_angle=135+(self.renderer.angle-135+180)%360-180
             # Approach the approved front-quarter composition by the short arc.
@@ -306,8 +336,13 @@ class OpeningScene:
         elif self.phase=='sanctuary' and name in self.targets():
             self.feedback[name]=self.elapsed
             self.audio.play('touch',self.elapsed)
-            if name in ('heart','altar') and self.awakened_at is None:
+            if name=='heart' and self.awakened_at is None:
+                self.encounter_camera=(self.renderer.center.copy(),self.renderer.half,self.renderer.angle)
                 self.awakened_at=self.elapsed
+                self.phase='encounter';self.orbit_keys.clear()
+                self.zoom=self.target_zoom=1.
+                if pygame.mixer.get_init():pygame.mixer.Channel(30).stop()
+                self.audio.start_encounter()
 
     def _slide(self,x):
         fraction=max(0,min(1,(x-self.slider_rect.left)/self.slider_rect.width))
@@ -322,6 +357,11 @@ class OpeningScene:
 
     def handle_event(self,event):
         if hasattr(event,'pos'):self.pointer=event.pos
+        if event.type==pygame.WINDOWFOCUSLOST:
+            self.orbit_keys.clear();self.dragging=False
+        if self.phase=='encounter':return
+        if event.type==pygame.KEYUP and event.key in (pygame.K_q,pygame.K_e):
+            self.orbit_keys.discard(event.key);return
         if hasattr(event,'pos') and self.size[1]-155<=event.pos[1]<=self.size[1]:
             self.controls_at=self.elapsed
         if event.type==pygame.WINDOWFOCUSLOST:self.dragging=False
@@ -334,19 +374,15 @@ class OpeningScene:
             return
         if event.type==pygame.KEYDOWN:
             if event.key==pygame.K_ESCAPE:self.closed=True
-            elif event.key in (pygame.K_q,pygame.K_e):self.turn(-1 if event.key==pygame.K_q else 1)
+            elif event.key in (pygame.K_q,pygame.K_e) and self.orbit_enabled:
+                self.orbit_keys.add(event.key);self.demonstrated=True
             return
         if event.type==pygame.MOUSEBUTTONUP and event.button==1:self.dragging=False
         if event.type==pygame.MOUSEMOTION and self.dragging:self._slide(event.pos[0])
         if event.type!=pygame.MOUSEBUTTONDOWN or event.button!=1:return
-        if self.close_rect.collidepoint(event.pos):self.closed=True;return
-        if self.awakened_at is not None and self.elapsed-self.awakened_at>1.2 and self.return_rect.collidepoint(event.pos):
-            self.closed=True;return
         if self.orbit_enabled:
             for rect,direction in zip(self.turn_rects,(-1,1)):
                 if rect.collidepoint(event.pos):self.turn(direction);return
-            if self.slider_rect.inflate(12,20).collidepoint(event.pos):
-                self.dragging=True;self._slide(event.pos[0]);return
         name=self.target_at(event.pos)
         if name:self.activate(name)
 
@@ -385,6 +421,11 @@ class OpeningScene:
                     a=i*2.4;t0=(t*.25+i*.037)%1
                     point=(center[0]+math.sin(a)*t0*w*.18,center[1]+math.cos(a)*t0*h*.22-t0*45)
                     pygame.draw.circle(surface,(249,216,157,round(160*(1-t0))),point,2)
+        if self.phase=='encounter':
+            t=self.elapsed-self.awakened_at
+            alpha=round(255*ramp(t,40.2,2.3))
+            if alpha:surface.fill((0,0,0,alpha))
+            return surface
         targets=self.targets()
         for name,(lo,hi) in targets.items():
             active=self.hover==name
@@ -405,43 +446,16 @@ class OpeningScene:
                 pygame.draw.circle(surface,(236,224,188,round(180*(1-since/1.2))),center,round(8+since*34),1)
         darkness=round(255*(1-ramp(self.elapsed,.25,3.4)))
         if darkness:pygame.draw.rect(surface,(0,0,0,darkness),surface.get_rect())
-        cx,cy=self.close_rect.center
-        color=(238,237,221,230) if self.close_rect.collidepoint(self.pointer) else (126,151,165,170)
-        pygame.draw.line(surface,color,(cx-5,cy-5),(cx+5,cy+5),2)
-        pygame.draw.line(surface,color,(cx+5,cy-5),(cx-5,cy+5),2)
         surface=self.controls;surface.fill((0,0,0,0))
         if self.orbit_enabled:
             for rect,label,direction in zip(self.turn_rects,('Q','E'),(-1,1)):
-                idle=(not self.demonstrated and direction==1 and (self.elapsed-self.placed_at)%6<.7)
-                pressed=(self.last_turn[1]==direction and self.elapsed-self.last_turn[0]<.22) or idle
-                hover=rect.collidepoint(self.pointer)
-                face=rect.move(0,3 if pressed else 0)
-                pygame.draw.rect(surface,(93,126,142,48 if pressed else 24),face,border_radius=7)
-                pygame.draw.rect(surface,(181,205,211,150 if hover or pressed else 75),face,1,border_radius=7)
-                text=self.font.render(label,True,(217,228,226));surface.blit(text,text.get_rect(center=face.center))
-                # Complete arrowheads with two wings, independent of the arc tangent.
-                y=rect.y-12;x=rect.centerx
-                pygame.draw.line(surface,(155,185,193,160),(x-8,y),(x+8,y),1)
-                tip=x+direction*8
-                pygame.draw.lines(surface,(155,185,193,180),False,[(tip-direction*5,y-4),(tip,y),(tip-direction*5,y+4)],1)
-                if idle:
-                    age=(self.elapsed-self.placed_at)%6
-                    pygame.draw.circle(surface,(168,208,220,round(90*(1-age/.7))),face.center,round(23+age*12),1)
-            track=self.slider_rect
-            pygame.draw.line(surface,(145,174,187,85),track.midleft,track.midright,2)
-            fraction=((self.renderer.angle-135+180)%360)/360
-            knob=(round(track.left+fraction*track.width),track.centery)
-            pygame.draw.circle(surface,(187,210,218,200),knob,4)
-        prompt=None
-        if self.ready:prompt='Place the missing stone.'
-        elif self.phase=='sanctuary' and self.awakened_at is None and self.elapsed-self.phase_at>7:prompt='Touch the light.'
-        if prompt:
-            text=self.small_font.render(prompt,True,(175,197,202))
-            surface.blit(text,text.get_rect(center=(w//2,h-101)))
-        if self.awakened_at is not None and self.elapsed-self.awakened_at>1.2:
-            hover=self.return_rect.collidepoint(self.pointer)
-            text=self.font.render('Return  ›',True,(246,229,190) if hover else (202,215,216))
-            surface.blit(text,text.get_rect(center=self.return_rect.center))
+                idle=not self.demonstrated and (self.elapsed-self.placed_at)%5<.8
+                held=(pygame.K_q if direction<0 else pygame.K_e) in self.orbit_keys
+                pulse=.5+.5*math.sin(self.elapsed*3+direction)
+                face=rect.move(0,2 if held else round(pulse*2) if idle else 0)
+                pygame.draw.rect(surface,(172,192,197,95 if held else 40),face,1,border_radius=5)
+                text=self.small_font.render(label,True,(162,178,180))
+                surface.blit(text,text.get_rect(center=face.center))
         surface.set_alpha(self.controls_alpha)
         self.overlay.blit(surface,(0,0))
         surface=self.overlay
@@ -450,25 +464,42 @@ class OpeningScene:
         return surface
 
     def _visible_meshes(self):
-        if self.phase=='shrine':
-            result=[(self.meshes['fixed'],(0,0,0)),(self.meshes['vein'],(0,0,0))]
-            result.extend((self.meshes[n],o) for n,o in zip(('left','right'),self.section_offsets()))
-            if self.placed_at is not None:result.append((self.meshes['placed'],(0,0,0)))
-            if self.complete:result.append((self.meshes['light'],(0,0,0)))
-            return result
+        result=[(self.meshes[n],(0,0,0)) for n in ('foundations','fixed','vein')]
+        result.extend((self.meshes[n],o) for n,o in zip(('left','right'),self.section_offsets()))
+        if self.placed_at is not None:result.append((self.meshes['placed'],(0,0,0)))
+        if self.complete:result.append((self.meshes['light'],(0,0,0)))
+        if self.phase=='shrine':return result
         t=self.elapsed-self.phase_at
         rise=self.smooth(ramp(t,self.RISE_START,self.RISE_END-self.RISE_START))
-        retract=self.smooth(ramp(t,4.4,3.2))
-        result=[]
-        if self.phase=='approach':
-            result=[(self.meshes['fixed'],(0,0,-retract*75)),
-                    (self.meshes['vein'],(0,0,retract*100))]
-            result.extend((self.meshes[n],(o[0],0,o[2]-retract*75))
-                          for n,o in zip(('left','right'),self.section_offsets()))
-            result.extend((self.meshes[n],(0,0,-retract*75)) for n in ('placed','light'))
+        if self.phase=='encounter':
+            t=self.elapsed-self.awakened_at
+            destruction=self.encounter.masonry(t)
+            if destruction is not None:
+                result=[self.encounter.surroundings(mesh,np.asarray(offset)-self.SANCTUARY_OFFSET,t,34,6) for mesh,offset in result]
+                result=[(mesh,self.SANCTUARY_OFFSET+offset) for mesh,offset in result]
+                result.extend((mesh,self.SANCTUARY_OFFSET+offset) for mesh,offset in destruction)
+                mesh,offset=self.encounter.surroundings(self.meshes['distant'],(0,0,0),t,33,6)
+                result.append((mesh,self.SANCTUARY_OFFSET+offset))
+                return result
         result.extend(((self.meshes['distant'],self.SANCTUARY_OFFSET+(0,0,-(1-rise)*95)),
                        (self.meshes['sanctuary'],self.SANCTUARY_OFFSET+(0,0,-(1-rise)*85))))
         return result
+
+    def _encounter_overlay_gpu(self):
+        # No interface text exists during this phase. Draw its sparse motes
+        # directly instead of uploading an 8 MB transparent FHD image per frame.
+        gpu=self.gpu;gpu.screen_space(self.size);gpu.gl.glDisable(0x0DE1)
+        w,h=self.size;data=np.zeros((34,4,9),dtype='float32')
+        for i in range(34):
+            x=(i*137.7+math.sin(i*9.7)*w*.18+math.sin(self.elapsed*.17+i)*13)%w
+            y=(i*73+self.elapsed*(2+i%3))%(h*.89)
+            r=1 if i%5 else 2
+            data[i,:,:3]=((x-r,y-r,0),(x+r,y-r,0),(x+r,y+r,0),(x-r,y+r,0))
+            data[i,:,5:8]=np.array((133,180,190))/255
+            data[i,:,8]=(35+22*(1+math.sin(self.elapsed*.4+i)))/255
+        gpu.draw(data)
+        alpha=ramp(self.elapsed-self.awakened_at,40.2,2.3)
+        if alpha:gpu.flat(((0,0,0),(w,0,0),(w,h,0),(0,h,0)),((0,0,0,alpha),)*4)
 
     def render(self,screen):
         # SDL2 resizes an OpenGL window without resizing Pygame's placeholder
@@ -478,15 +509,31 @@ class OpeningScene:
         meshes=self._visible_meshes()
         if self.gpu:
             self.gpu.begin(self.renderer,self.elapsed)
-            if self.phase=='approach':self.gpu.clip_below(-12)
+            swallow=ramp(self.elapsed-self.awakened_at,32,9) if self.awakened_at is not None else 0
+            self.gpu.gl.glDisable(0x0DE1)
+            self.gpu.draw(self.ground.mesh(self.elapsed,swallow),0x0004)
+            self.gpu.gl.glEnable(0x0DE1);self.gpu.gl.glBindTexture(0x0DE1,self.gpu.ids[0])
+            if self.phase=='approach':self.gpu.clip_below(-19)
             for mesh,offset in meshes:self.gpu.mesh(mesh,self.renderer,offset)
             self.gpu.clear_clip()
-            self.gpu.overlay(self._draw_overlay())
+            if self.phase in ('sanctuary','encounter'):
+                if self.phase=='sanctuary' or self.elapsed-self.awakened_at<33:
+                    dx,dy,dz=self.SANCTUARY_OFFSET
+                    self.gpu.gl.glTranslatef(dx,dz,-dy);self.gpu.gl.glDisable(0x0DE1)
+                    self.gpu.draw(self.flowers);self.gpu.gl.glTranslatef(-dx,-dz,dy)
+                if self.phase=='encounter':self.encounter.rig.draw(self.gpu,self.elapsed-self.awakened_at,self.SANCTUARY_OFFSET)
+            if self.phase=='encounter':self._encounter_overlay_gpu()
+            else:self.gpu.overlay(self._draw_overlay())
         else:
             # Software inspection/fallback uses the same faces and camera. It is
             # deliberately uncached at screen resolution and never scales text.
             screen.fill((5,15,25))
             faces=[]
+            swallow=ramp(self.elapsed-self.awakened_at,32,9) if self.awakened_at is not None else 0
+            meshes=[((self.ground.mesh(self.elapsed,swallow,coarse=True),),(0,0,0))]+meshes
+            if self.phase=='encounter':
+                creature,_=self.encounter.rig.geometry(self.elapsed-self.awakened_at)
+                meshes.append(((creature.reshape(-1,3,9),),self.SANCTUARY_OFFSET))
             for mesh,offset in meshes:
                 for data in mesh:
                     if not len(data):continue
@@ -501,4 +548,6 @@ class OpeningScene:
 
     def close(self):
         self.audio.close()
-        if self.gpu:self.gpu.close();self.gpu=None
+        if self.gpu:
+            if self.encounter:self.encounter.close(self.gpu)
+            self.gpu.close();self.gpu=None

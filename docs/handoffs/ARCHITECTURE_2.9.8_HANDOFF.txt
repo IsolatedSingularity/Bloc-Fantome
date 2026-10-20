@@ -1,0 +1,91 @@
+Bloc Fantôme 2.9.8, delivered 2026-10-20
+
+Outcome
+Researched Monument Valley's design process, Gothic cathedral construction,
+camera continuity, cinematic production, pacing and UI feedback. The sources,
+interpretations and research limits are in ARCHITECTURE_RESEARCH_2.9.8.txt.
+Added connected diagonal vault ribs, clustered shafts and clerestory tracery.
+The approach reaches the cathedral earlier; the encounter camera begins at the
+player's actual orbit/zoom and eases into its shot. Quiet inspection remains.
+The existing creature, animation, audio, assets and extraction work are retained.
+
+Tutorial
+Prepared lighting data now avoids a synchronous lighting calculation on entry.
+Edits still invalidate it normally. Visual QA also found that the lighting page
+framed a Nether ceiling instead of the bastion. Its source landmark now has an
+architectural selection, uses the existing reversible Terrain: Hidden mode,
+faces the exposed vault and frames the ruin. All 325,478 world cells remain.
+The final lighting-page render took 5.38-6.77 seconds across three resolutions;
+maximum loading frames were 99-307 ms. This is not instantaneous loading, nor a
+controlled comparative benchmark. Steady render p95 was 2.57-8.52 ms.
+
+Verification
+- Full regression suite: 394 passed before the final bastion framing fix.
+- Final affected tutorial, biome and capture suites: 27 passed.
+- Opening focused suite: 30 passed; included in the full suite above.
+- Native full opening-to-editor flow completed; original world/revision, camera
+  and tutorial preference restored, audio channels clean, focus loss tolerated,
+  and display context recreated twice. Encounter p95 frame time: 17 ms.
+- Visual checks: opening and tutorial at 960x640, 1200x800 and 1920x1080;
+  final bastion additionally inspected from all four views.
+- EXE bundle: 951 data/visual files match the source byte for byte; native
+  accelerator, Tk dialogs and required opening/tutorial modules are present.
+- Root and secondary EXEs survived 18-second startup smokes and were closed.
+- Actual installed Start Menu launch showed Bloc Fantôme [2.9.8]. Clicked the
+  shrine, door and cross; checked wheel zoom; watched the retained encounter
+  return to the tutorial; Next and minimize worked. Q tap was sent, but this
+  manual check does not establish held-key orbit behavior; automated coverage
+  verifies that behavior. No new listening claim is made for unchanged audio.
+- git diff --check passed. No commit, staging or push performed.
+
+Delivery
+Installed: C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
+Secondary: C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
+Root, installed and secondary executable SHA256:
+B90EEBA07012C3E1818AAFCD4E275673FA66E3E59D0D3CD5221A12337DA040C7
+Start Menu target, working directory and icon were repaired and verified.
+All exact-path QA processes are closed. All 62 monitored save/settings files
+match their pre-work hashes. The installed app wrote its panel expansion and
+last music selection during QA; its original config was restored after closing.
+
+Cleanup
+Removed 514 untracked generated files, 11,211,175,370 bytes (10.441 GiB), from
+62 audited targets: old installers, PyInstaller work, bytecode and pytest
+fixtures. Kept installers 2.9.8 and 2.9.7. Every selected target was verified
+absent afterward. Kept all source/asset libraries, reference/extraction work,
+Minecraft capture worlds, research, screenshots and prior visual evidence.
+Code/tools/clean_generated.ps1 defaults to a dry run, rejects paths outside the
+workspace or through links, and protects Git-tracked files.
+
+Evidence (relative to repository root)
+.qa/architecture/release-tests.log and release-tests.xml
+.qa/architecture/tutorial-tests-final.log
+.qa/architecture/full-flow.json
+.qa/architecture/native/ and opening/
+.qa/architecture/tutorial-final/ and its performance.json
+.qa/architecture/arrival.mp4 (27-second silent architecture/camera preview)
+.qa/architecture/archive.json and archive-final.log
+.qa/architecture/build-final.log and installer-final.log
+.qa/architecture/install.log and installed-process.json
+.qa/consistency-start-menu-298.json
+.qa/architecture/root-startup.json and secondary-startup.json
+.qa/architecture/cleanup-applied.json and cleanup-verified.json
+.qa/architecture/userdata-check.json and remaining-processes.json
+
+Artistic next decision
+Review the current creature before deciding whether to remove it. The research
+supports developing architectural anticipation and a contrasting quiet interval;
+it does not establish that adding more spectacle will improve this opening.
+
+Source repository handoff, 2026-10-20
+The owner subsequently requested a commit and push for browser GPT review.
+The earlier verification record describes the state at local delivery.
+Source, tests, authoring tools, asset attribution and these notes are included.
+QA evidence, installers, extracted rig/texture media and reference images remain
+local. Prepared tutorial bundles are reproducible caches and also remain local.
+For a source checkout, run python Code/tools/bake_tutorial.py before the prepared
+lesson tests or a release build. The runtime has a source-staging fallback when
+these bundles are absent. Creature/encounter tests require the owner's local
+Assets/Opening/Creature/Thorn media described in its SOURCE.txt; extraction and
+packing tools live in Code/tools/export_opening_rig.ps1 and import_opening_rig.py.
+Other licensed runtime textures/audio/fonts retain their existing local setup.

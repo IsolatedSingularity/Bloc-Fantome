@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "2.9.6"
+APP_VERSION = "2.9.8"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -56,7 +56,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.9.6'
+        myappid = 'blocfantome.builder.2.9.8'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -14207,6 +14207,7 @@ class BlocFantome(GuidedTutorialAppMixin):
         """Update game state"""
         if self.openingScene is not None:
             self.openingScene.update(self.clock.get_time()/1000.0)
+            if self.openingScene.closed:self._closeOpeningScene()
             return
         self._pollWorldLoad()
         self._pollBiomeLoad()
@@ -16021,7 +16022,7 @@ class BlocFantome(GuidedTutorialAppMixin):
             'stone','sandstone','netherrack','basalt','blackstone','soul_sand','soul_soil',
             'lava','water','bedrock','end_stone'}
         landmark_bounds=[s['BB'] for s in data.get('structures',{}).values()
-            if (world_scene or biome_id=='_scene_tour_fortress')
+            if (world_scene or biome_id in ('_scene_tour_fortress','_scene_tour_bastion'))
             and s.get('id') in data.get('landmark_ids',())]
         ox,oy=data['origin'][:2]
         structure_palette={p for p,state in enumerate(palette) if state['Name'].split(':')[-1] not in natural}
@@ -16029,6 +16030,15 @@ class BlocFantome(GuidedTutorialAppMixin):
         if fortress:
             structure_palette={p for p,state in enumerate(palette) if state['Name'].split(':')[-1]
                 in {'nether_bricks','nether_brick_fence','nether_brick_stairs','nether_wart','chest','spawner','soul_sand','lava'}}
+        if biome_id=='_scene_tour_bastion':
+            # Natural ores and vegetation inside the landmark box belong to
+            # the surrounding terrain, not its architectural cutaway.
+            structure_palette={p for p,state in enumerate(palette) if state['Name'].split(':')[-1]
+                in {'polished_blackstone_bricks','cracked_polished_blackstone_bricks',
+                    'chiseled_polished_blackstone','gilded_blackstone',
+                    'polished_blackstone_brick_stairs','blackstone_stairs',
+                    'blackstone_slab','blackstone_wall','polished_basalt',
+                    'lantern','chain','chest','gold_block','spawner'}}
         for x,y,z,p in data['blocks']:
             if p not in resolved:raise ValueError(f'Unsupported capture state: {palette[p]}')
             block,template,fluid=resolved[p]
@@ -16051,6 +16061,8 @@ class BlocFantome(GuidedTutorialAppMixin):
             metadata.update(underwater=True,water_cutaway=True)
         if biome_id=='_scene_tour_fortress':
             metadata.update(default_terrain_view='all',fit_context=True)
+        if biome_id=='_scene_tour_bastion':
+            metadata.update(default_terrain_view='hidden')
         if world_scene:metadata=dict(world_scene)
         width,depth=data['size'][:2]
         height=data['size'][2] if len(data['size'])==3 else 256
@@ -18532,7 +18544,9 @@ class BlocFantome(GuidedTutorialAppMixin):
         from ui.presentation_renderer import PresentationRenderer
         from pygame._sdl2 import Window
         scene=self.openingScene
-        if scene.gpu:scene.gpu.close();scene.gpu=None
+        if scene.gpu:
+            scene.encounter.close(scene.gpu)
+            scene.gpu.close();scene.gpu=None
         self._openingWindowed=windowed
         if pygame.display.get_driver()=='dummy':return
         size=self._openingDisplay[0] if windowed else pygame.display.get_desktop_sizes()[0]
@@ -19728,19 +19742,18 @@ class BlocFantome(GuidedTutorialAppMixin):
         canvasRight = self._worldViewportRight()
         targetX = (canvasLeft + canvasRight) / 2.0
         availableWidth = canvasRight - canvasLeft - 56
-        if self.tutorialScreen.visible and not self.tutorialScreen.minimized:
-            tutorialLeft = max(canvasLeft, self.tutorialScreen.panelX)
-            tutorialRight = min(canvasRight, self.tutorialScreen.panelX + self.tutorialScreen.panelWidth)
-            if tutorialLeft < tutorialRight:
-                leftSpace = tutorialLeft - canvasLeft - 18
-                rightSpace = canvasRight - tutorialRight - 18
-                if rightSpace >= leftSpace:
-                    canvasLeft = tutorialRight + 18
-                else:
-                    canvasRight = tutorialLeft - 18
-                availableWidth = max(120, canvasRight - canvasLeft - 38)
-                targetX = (canvasLeft + canvasRight) / 2.0
+        if self.tutorialScreen.visible:
+            # The tutorial floats over the world. Moving/minimizing its panel
+            # must never displace or shrink the teaching subject.
+            canvasRight = self.screen.get_width()
+            availableWidth = canvasRight - 56
+            targetX = canvasRight / 2.0
         availableHeight = WINDOW_HEIGHT - (200 if self.redstoneLabActive else 92)
+        if self.tutorialScreen.visible and not self.redstoneLabActive:
+            # Fill the background with the lesson. The floating instructions
+            # occupy no reserved camera space; wheel zoom remains available.
+            availableWidth *= 1.22
+            availableHeight *= 1.22
         self.zoomLevel = round(max(self.zoomMin, min(self.zoomMax, min(
             availableWidth / max(1, width),
             availableHeight / max(1, height),
@@ -19755,6 +19768,8 @@ class BlocFantome(GuidedTutorialAppMixin):
         )
         screenX, screenY = self.renderer.worldToScreen(*centerWorld)
         targetY = WINDOW_HEIGHT / 2.0 + (12 if self.redstoneLabActive else 0)
+        if self.tutorialScreen.visible and not self.redstoneLabActive:
+            targetY = WINDOW_HEIGHT * .445
         self.renderer.offsetX += targetX - screenX
         self.renderer.offsetY += targetY - screenY
         self.targetOffsetX = self.renderer.offsetX

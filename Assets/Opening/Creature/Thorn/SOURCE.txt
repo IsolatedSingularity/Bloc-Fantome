@@ -1,0 +1,19 @@
+Private local-development asset, supplied through the owner's installed
+KINGDOM HEARTS -HD 1.5+2.5 ReMIX- Steam copy. KH2 object B_EX100:
+Twilight Thorn, model/skin weights/HD texture remasters and eighteen motions.
+Square Enix / Disney source artwork and animation. Owner-authorized private use.
+
+Targeted extraction from Image/dt/kh2_fifth.hed and .pkg; the game installation
+is read-only. OpenKH release2-1691 provided the model parser and KH2 animation
+emulator: https://github.com/OpenKH/OpenKh/releases/tag/release2-1691
+EmuBasedAnimMatricesProvider.ProvideMatrices accepts incremental frame time,
+not absolute frame numbers. Export uses zero initially, then one frame per call.
+
+Code/tools/export_opening_rig.ps1 and import_opening_rig.py reproduce the
+runtime package from the local extraction in .qa/kh-assets. OpenKH/.NET/SciPy
+are development tools only. Runtime uses NumPy, the existing OpenGL renderer,
+161 source bones, 2710 skinned triangles and seven original HD materials.
+
+The runtime combines source motion with scene-space contact constraints,
+procedural contractions and an authored continuous pelvis trajectory. No
+photographic eye is used in the encounter.

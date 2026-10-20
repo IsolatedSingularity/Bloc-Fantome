@@ -45,7 +45,9 @@ def test_opening_isolated_from_world_undo_and_editor_input(app):
         app._render()
         pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_e,mod=0))
         app._handleEvents()
-        assert scene.target_angle==180
+        scene.update(.5)
+        assert scene.target_angle==pytest.approx(154)
+        scene.handle_event(pygame.event.Event(pygame.KEYUP,key=pygame.K_e))
         assert app.world.revision==revision
         assert app.world.blocks==original
         pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
@@ -58,6 +60,23 @@ def test_opening_isolated_from_world_undo_and_editor_input(app):
         assert app.world.getBlock(2,3,1)==BlockType.DIAMOND_BLOCK
     finally:
         if app.openingScene:app._closeOpeningScene()
+
+
+def test_native_close_remains_available_during_encounter(app):
+    running=app.running
+    app._openOpeningScene()
+    try:
+        scene=app.openingScene
+        scene.update(5);scene.place();scene.update(5)
+        scene.activate('door');scene.update(scene.RISE_DURATION);scene.activate('heart')
+        assert scene.phase=='encounter'
+        pygame.event.clear();pygame.event.post(pygame.event.Event(pygame.QUIT))
+        app._handleEvents()
+        assert app.openingScene is None and not app.running
+        assert not any(pygame.mixer.Channel(i).get_busy() for i in range(25,31))
+    finally:
+        if app.openingScene:app._closeOpeningScene()
+        app.running=running
 
 
 def test_rigid_sections_frame_rate_independent_and_exact_final_pose(app):
@@ -124,23 +143,21 @@ def test_settings_opening_button_matches_rendered_row(app):
     finally:app._closeOpeningScene()
 
 
-def test_idle_hint_does_not_move_camera_and_slider_is_continuous(app):
+def test_idle_hint_does_not_move_camera_and_held_keys_orbit_continuously(app):
     scene=OpeningScene((1200,800),app.assetManager)
-    scene.update(scene.READY_AT)
-    pos=scene.renderer.worldToScreen(*scene.TARGET)
-    assert scene.ghost_hit(pos)
-    assert not scene.ghost_hit((0,0))
-    scene.place();scene.update(10)
+    scene.update(scene.READY_AT);scene.place();scene.update(10)
     assert scene.renderer.angle==135
-    scene.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=scene.turn_rects[1].center))
-    scene.update(.03)
-    assert 135<scene.renderer.angle<180
-    scene.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=scene.slider_rect.center))
-    scene.handle_event(pygame.event.Event(pygame.MOUSEMOTION,pos=(scene.slider_rect.right-20,scene.slider_rect.centery)))
-    assert scene.dragging
-    assert 270<scene.target_angle<315
-    scene.handle_event(pygame.event.Event(pygame.MOUSEBUTTONUP,button=1,pos=scene.pointer))
-    assert not scene.dragging
+    scene.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_e))
+    scene.update(.5)
+    assert scene.target_angle==pytest.approx(154)
+    scene.handle_event(pygame.event.Event(pygame.KEYUP,key=pygame.K_e))
+    scene.update(.5)
+    assert scene.target_angle==pytest.approx(154)
+    scene.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_q))
+    scene.handle_event(pygame.event.Event(pygame.WINDOWFOCUSLOST))
+    scene.update(.5)
+    assert scene.target_angle==pytest.approx(154)
+    scene.close()
 
 
 @pytest.mark.parametrize('size',[(960,640),(1200,800),(1920,1080)])
@@ -155,15 +172,23 @@ def test_two_scene_visible_click_path_and_return(app,size):
     click(door);assert scene.phase=='approach'
     scene.update(2.7)
     assert not scene.targets() and not scene.orbit_enabled
-    assert scene.renderer.half==pytest.approx(26)
+    assert 12.4<scene.renderer.half<35.5
     scene.update(scene.RISE_DURATION-2.7)
     assert scene.phase=='sanctuary'
-    assert scene.renderer.half==pytest.approx(38)
+    assert scene.renderer.half==pytest.approx(41)
     heart=scene.project_sanctuary((1,-25,35))[:2]
     assert scene.target_at(heart)=='heart'
     click(heart);assert scene.awakened_at is not None
+    assert scene.phase=='encounter'
+    locked=(scene.renderer.angle,scene.target_zoom)
+    scene.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+    scene.handle_event(pygame.event.Event(pygame.MOUSEWHEEL,y=2))
     scene.update(1.3);click(scene.return_rect.center)
+    assert not scene.closed and not scene.targets() and not scene.orbit_enabled
+    scene.handle_event(pygame.event.Event(pygame.WINDOWFOCUSLOST))
+    scene.update(43)
     assert scene.closed
+    scene.close()
 
 
 def test_camera_projection_ray_round_trip_and_opaque_occlusion(app):
@@ -237,7 +262,7 @@ def test_controls_fade_and_return_on_bottom_hover_and_completion(app):
 def test_orbit_audio_uses_one_loop_until_motion_stops():
     from unittest.mock import Mock
     from ui.opening_audio import OpeningAudio
-    audio=OpeningAudio();audio.sounds['orbit']=object()
+    audio=OpeningAudio();audio.sounds={'orbit':object()}
     channel=Mock();channel.get_busy.return_value=False
     with patch('ui.opening_audio.pygame.mixer.Channel',return_value=channel):
         audio.update_orbit(90,1/60)
@@ -248,3 +273,44 @@ def test_orbit_audio_uses_one_loop_until_motion_stops():
         for _ in range(120):audio.update_orbit(0,1/60)
         assert channel.stop.called
         audio.close()
+
+
+def test_camera_handoffs_preserve_orbit_zoom_and_ease_without_a_cut(app):
+    import numpy as np
+    scene=OpeningScene((1200,800),app.assetManager,effects_volume=0)
+    try:
+        scene.update(5);scene.place();scene.update(5)
+        scene.renderer.angle=scene.target_angle=215
+        scene.zoom=scene.target_zoom=.72;scene.update(0)
+        before=(scene.renderer.center.copy(),scene.renderer.half,scene.renderer.angle)
+        scene.activate('door');scene.update(0)
+        assert np.allclose(scene.renderer.center,before[0])
+        assert scene.renderer.half==pytest.approx(before[1])
+        assert scene.renderer.angle==pytest.approx(before[2])
+        scene.update(scene.RISE_DURATION)
+        scene.renderer.angle=scene.target_angle=310
+        scene.zoom=scene.target_zoom=.8;scene.update(0)
+        before=(scene.renderer.center.copy(),scene.renderer.half,scene.renderer.angle)
+        scene.activate('heart');scene.update(0)
+        assert np.allclose(scene.renderer.center,before[0])
+        assert scene.renderer.half==pytest.approx(before[1])
+        assert scene.renderer.angle==pytest.approx(before[2])
+        scene.update(.01)
+        assert np.linalg.norm(scene.renderer.center-before[0])<.01
+        assert abs(scene.renderer.angle-before[2])<.01
+        scene.update(2.79)
+        assert scene.renderer.half==pytest.approx(55)
+        assert scene.renderer.angle%360==pytest.approx(scene.ARRIVAL_ANGLE)
+    finally:scene.close()
+
+
+def test_vault_ribs_connect_bay_corners_and_keep_terminal_cross():
+    from ui.opening_geometry import sanctuary
+    cells=sanctuary()
+    for cy in (-8,8):
+        assert cells[0,cy,50][0]==BlockType.CHISELED_QUARTZ
+        for sx in (-1,1):
+            for sy in (-1,1):
+                assert (round(.5+sx*10),round(cy+.5+sy*8),38) in cells
+    for x,z in ((0,18),(-1,17),(0,17),(1,17),(0,16)):
+        assert cells[2*x,-26,2*z][0]==BlockType.YELLOW_STAINED_GLASS

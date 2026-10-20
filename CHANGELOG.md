@@ -5,6 +5,31 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.8] - 2026-10-20
+
+### Changed
+- Add connected diagonal vault ribs, clustered shafts and paired clerestory tracery to the open cathedral, informed by architectural references.
+- Preserve the player's orbit and zoom at cinematic handoffs and bring the rising cathedral into frame earlier.
+- Prepare the lighting tutorial's exact light map off the render thread and retain normal lighting invalidation after edits.
+- Frame the lighting lesson around the bastion and hide its surrounding Nether terrain through the existing reversible terrain control.
+- Add an audited cleanup tool for untracked generated files, retaining the newest two installers and preserving source assets, saves and visual evidence.
+
+## [2.9.7] - 2026-10-19
+
+### Changed
+- Add a 44-second cathedral encounter using the locally supplied articulated Twilight Thorn rig, corrected source animation timing, planted climbing contacts, overturning, recovery, impacts and physical monument consumption.
+- Enlarge the cathedral and creature, remove the experimental photographic eye, retain receding monuments, and add deep shrine foundations, sparse flowers and connected undulating ground.
+- Replace short repeating movement cues with continuous recorded material processed in SuperCollider and eleven staggered vocal takes, with clearer muffled voices.
+- Frame tutorial subjects closer against the full background, keep instructions compact at the lower left, and prepare the next lesson while the current one is explored.
+
+## [2.9.6] - 2026-10-18
+
+### Changed
+- Use a continuous, velocity-following orbit sound and a deeper source-driven sanctuary rise, rendered in SuperCollider with reproducible local scores.
+- Arrive closer to the cathedral and allow smooth, bounded mouse-wheel zoom within the opening, retaining native rendering and accurate picking.
+- Fade bottom presentation controls after three seconds, revealing them on interaction or bottom-edge hover. Preserve the existing editor camera and return behavior.
+- Record the approved creature encounter direction and reference/animation review checkpoint for the next chat. The creature is not included in this release.
+
 ## [2.9.5] - 2026-10-18
 
 ### Added

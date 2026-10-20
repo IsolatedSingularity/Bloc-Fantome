@@ -1,0 +1,82 @@
+Research and design decisions, 2026-10-20
+
+Intent
+Strengthen the existing architectural opening, its camera and interaction, while
+retaining the creature and the owner's Minecraft materials. These are design
+judgments informed by sources, not proof that one formula makes every game good.
+
+Monument Valley
+Ken Wong's direct interviews put architecture and the integrated experience at
+the center. Optical illusions are a tool, not its entire identity. His described
+workflow starts with one readable geometric idea, playable blockout and user
+testing, then an art pass. Each scene contains the information needed to act.
+Our application: give the shrine, threshold, nave and terminal glass distinct
+roles; preserve empty space between masses; make the next action visible without
+adding more HUD. Avoid importing a pastel palette or inventing a perspective
+puzzle merely to resemble the reference.
+https://www.interactive.org/news/ken_wong_dice_awards_2015.asp
+https://architizer.com/blog/practice/materials/an-interview-with-ken-wong-of-monument-valley/amp/
+https://www.gdcvault.com/play/1022476/The-Art-of-Monument
+https://gdcvault.com/play/1020878/Designing-Monument-Valley-Less-Game
+
+Cathedral architecture
+The V&A describes rib vaults, external buttresses, pointed arches and tracery as
+connected structural and visual devices. Chartres's own account emphasizes the
+balance of vertical and horizontal lines, changing light, processional space,
+and the differing character of its windows. The design lesson is a legible
+hierarchy of large masses, repeated bays, then small details, with light giving
+the focal point meaning. More ornament everywhere would obscure that hierarchy.
+Our application: four diagonal ribs converge at each bay boss, attached shafts
+continue the vertical rhythm, paired clerestory lights get small circular
+tracery. Retain the open cutaway and warm terminal cross so both interior and
+interaction remain visible. This is a fictional sanctuary, not a reconstruction.
+https://www.vam.ac.uk/articles/the-gothic-style-an-introduction
+https://www.cathedrale-chartres.org/en/cathedrale/monument/larchitecture/
+https://www.cathedrale-chartres.org/en/visite/decouvrir/la-cathedrale/
+
+Camera, cinematics and emotional rhythm
+Haigh-Hutchinson treats camera presentation as fundamental to interaction, with
+film principles adapted to the player's changing needs. The current cross click
+reset both orbit and zoom immediately, breaking spatial continuity. The revision
+starts from the player's exact camera and eases into the encounter shot. The
+arrival pan reaches a readable cathedral composition before the rise ends.
+Booth's Left 4 Dead presentation distinguishes build-up, peak, fade and relief;
+constant intensity is fatiguing. That is evidence for contrast, not a reason to
+copy an adaptive combat director into this small opening. Retain quiet inspection
+before the voluntary trigger and a finite encounter afterward. Naughty Dog's
+production account also demonstrates that convincing motion needs blocking,
+performance, cleanup, lighting and repeated revision, not just a loaded rig.
+The creature remains intact for the owner's review. Future removal should be an
+explicit artistic decision, not cleanup or a hidden fallback.
+https://media.gdcvault.com/gdc05/slides/GD_Haigh-Hutchinson_FundamentalsReal-TimeCameraDesign2.pdf
+https://steamcdn-a.akamaihd.net/apps/valve/2009/ai_systems_of_l4d_mike_booth.pdf
+https://www.naughtydog.com/blog/cinematic_process_in_the_last_of_us_gamescom_2012
+https://www.gdcvault.com/play/1017700/Designing
+
+UI/UX and latency
+Microsoft's objective-clarity guidance supports recognizable next actions and
+optional reminders. Nielsen's response-time guidance explains why long silent
+loads interrupt attention. Our minimal opening UI remains Q/E; wheel still
+zooms. The existing tutorial overlay remains movable/minimizable. The expensive
+lighting calculation is moved into prepared lesson data or worker staging,
+with exact-result verification and normal invalidation after edits. No fake
+percentage or artificially delayed animation masks the load.
+https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/109
+https://www.nngroup.com/articles/response-times-3-important-limits/
+
+Research limits and visual comparison
+Read direct interviews, museum/cathedral accounts, camera and Valve presentation
+PDFs, and official UX guidance. GDC session descriptions were read; their full
+talk videos were not watched. Inspected an actual Monument Valley gameplay image
+and a Chartres facade photograph against the existing native cathedral/arrival
+renders. Sources and local copies are in .qa/architecture. The scene comparison
+focuses on silhouette, bays, negative space, focal contrast and action visibility,
+not polygon count. Later rendering and test results belong in the release record.
+
+Cleanup boundaries
+Remove only enumerated untracked generated output: older installers (keep the
+newest two), PyInstaller work, Python bytecode and pytest fixture directories.
+Resolve absolute paths, reject linked paths, and protect Git-tracked files.
+Keep user saves/settings, creature assets, licensed source libraries, source
+capture worlds, prior visual evidence and research. File count alone cannot
+establish that a dynamically loaded texture, sound or reference is unused.

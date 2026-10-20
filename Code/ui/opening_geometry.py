@@ -63,6 +63,34 @@ def sanctuary():
         box(x,x,-8,8,19,19)
     # Open transverse ribs keep the interior readable from above.
     for y in (-8,0,8):arch('x',y,0,5,19,6,base=19)
+    # Four diagonal ribs converge at each bay's boss. The vault remains open,
+    # so its load paths and the processional axis read from the orbiting camera.
+    for cy in (-8,8):
+        for sx in (-1,1):
+            for sy in (-1,1):
+                for sample in range(49):
+                    u=sample/48
+                    x=round(.5+sx*10*(1-u));y=round(cy+.5+sy*8*(1-u))
+                    z=round(38+12*math.sin(u*math.pi/2))
+                    for dz in (0,1):cells[x,y,z+dz]=(B.SMOOTH_QUARTZ,'stone')
+        for x in (0,1):
+            for y in (cy,cy+1):
+                for z in (49,50,51):cells[x,y,z]=(B.CHISELED_QUARTZ,'stone')
+    # Slender attached shafts articulate the large piers without closing bays.
+    for x in (-10,10):
+        for y in (-16,0,16):
+            for dx,dy in ((-1,0),(2,1),(0,-1),(1,2)):
+                for z in range(8,36):cells[x+dx,y+dy,z]=(B.QUARTZ_PILLAR,'stone')
+    # Paired clerestory lights with a small circular tracery eye above them.
+    # This is architectural stonework, not an additional interaction target.
+    for x in (-10,10):
+        for cy in (-8,8):
+            for z in range(27,33):
+                for thick in (0,1):cells[x+thick,cy,z]=(B.QUARTZ_PILLAR,'stone')
+            for dy in range(-3,4):
+                for dz in range(-3,4):
+                    if 1.8<=math.hypot(dy,dz)<=2.8:
+                        for thick in (0,1):cells[x+thick,cy+dy,34+dz]=(B.SMOOTH_QUARTZ,'stone')
     # Apse: tall central lancet, flanking oblique windows, stepped sanctuary.
     for y,half in ((-9,5),(-10,5),(-11,4),(-12,4),(-13,3)):
         box(-half,half,y,y,3,4,B.SMOOTH_QUARTZ,'floor')

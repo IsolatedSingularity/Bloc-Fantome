@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.9.6"
+VERSION = "2.9.8"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -125,10 +125,13 @@ def build(debug: bool = False, diagnostic: bool = False):
     opening_music = os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub', 'opening', 'panoir-you-have-time.ogg')
     if not os.path.isfile(opening_music):
         raise FileNotFoundError(f'Required owner-selected opening music is missing: {opening_music}')
-    for cue in ('orbit-bed.wav', 'sanctuary-rise.wav'):
+    for cue in ('orbit-bed.wav', 'sanctuary-rise.wav', 'monument-move.wav', 'abyss-bed.wav', 'encounter.wav'):
         path = os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub', 'opening', cue)
         if not os.path.isfile(path):
             raise FileNotFoundError(f'Required SuperCollider opening cue is missing: {path}')
+    for name in ('rig.npz',*(f'{i}.png' for i in range(7))):
+        path=os.path.join(PROJECT_ROOT,'Assets','Opening','Creature','Thorn',name)
+        if not os.path.isfile(path):raise FileNotFoundError(f'Required opening rig asset is missing: {path}')
     missing_skyboxes = [path for path in SKYBOX_ATLASES if not os.path.isfile(path)]
     if missing_skyboxes:
         raise FileNotFoundError(
@@ -179,6 +182,16 @@ def build(debug: bool = False, diagnostic: bool = False):
         raise FileNotFoundError('Incomplete source biome capture/atlas/material package')
     from tools.pack_scene_captures import pack_all
     print(f'Prepacked {pack_all(CAPTURE_ROOT)} updated source captures')
+    from engine.tutorial_prepared import fingerprint
+    import json
+    prepared_path=os.path.join(SCRIPT_DIR,'tutorial_prepared','manifest.json')
+    with open(prepared_path,encoding='utf-8') as handle:prepared_index=json.load(handle)
+    if prepared_index.get('code')!=fingerprint():
+        raise ValueError('Prepared lessons are stale; run Code/tools/bake_tutorial.py before building')
+    from engine.tutorial_lessons import TOUR
+    required_lessons={step['id'] for step in TOUR if step.get('capture') or step.get('world')}
+    if set(prepared_index['lessons'])!=required_lessons:
+        raise ValueError('Release requires every prepared large tutorial lesson')
     biome_textures = ('podzol_top','podzol_side','mycelium_top','mycelium_side','red_sand',
                       'mushroom_stem','red_mushroom_block','brown_mushroom_block','bamboo_stalk',
                       'poppy','dandelion','sunflower_front','brain_coral_block','fire_coral_block',
@@ -308,6 +321,7 @@ def build(debug: bool = False, diagnostic: bool = False):
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'biome_captures')}{os.pathsep}biome_captures")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'world_previews')}{os.pathsep}world_previews")
     cmd.append(f"--add-data={SPLASH_ART}{os.pathsep}Assets/Icons")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'tutorial_prepared')}{os.pathsep}tutorial_prepared")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)

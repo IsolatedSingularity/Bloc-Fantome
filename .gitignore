@@ -152,6 +152,14 @@ credentials/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+# Local QA evidence, extracted reference media, and reproducible lesson caches.
+# Existing tracked QA files stay tracked; new machine-specific output stays local.
+/.qa/
+/Code/tutorial_prepared/
+/References/Opening/
+/Assets/Opening/**/*.npz
+/Assets/Opening/**/*.png
+/Assets/Opening/**/*.jpg
 logs/
 *.log
 *.db

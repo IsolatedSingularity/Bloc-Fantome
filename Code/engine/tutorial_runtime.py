@@ -22,16 +22,30 @@ class GuidedTutorialAppMixin:
             liquid_levels=dict(world.liquidLevels),liquid_sources=frozenset(world.liquidSources),
             liquid_falling=frozenset(world.liquidFalling),scene_metadata=dict(self.sceneMetadata))
 
-    def _cancelTourLoad(self):
+    def _cancelTourLoad(self, *, navigating=False):
         pending=getattr(self,'_pendingTourLoad',None)
         if pending:pending[0].cancel()
         self._pendingTourLoad=None
+        if not navigating:
+            for future in getattr(self,'_tourWarmLoads',{}).values():future.cancel()
+            self._tourWarmLoads={}
         for name in ('pendingBiomeLoad','pendingWorldLoad'):
             pending=getattr(self,name,None)
             if pending:pending[0].cancel();setattr(self,name,None)
         self.pendingBiomeWarmup=None
 
     def _stageTourScene(self,step):
+        snapshot=self._readTourScene(step)
+        if step['id']=='lighting' and snapshot._lighting is None and snapshot._prepared:
+            from dataclasses import replace
+            snapshot=replace(snapshot,_lighting=snapshot._prepared[0].calculateLighting())
+        return snapshot
+
+    def _readTourScene(self,step):
+        if not getattr(self,'_buildingTutorialBundle',False):
+            from engine.tutorial_prepared import load_lesson
+            prepared=load_lesson(step['id'],self.world.catalog)
+            if prepared is not None:return prepared
         if step['id']=='redstone':
             from engine.redstone_lab import counter
             from engine.world_snapshot import prepare_snapshot
@@ -58,7 +72,7 @@ class GuidedTutorialAppMixin:
             self._exitWorldMap()
         if self.redstoneLabActive:
             self._toggleRedstoneLab()
-        self._cancelTourLoad()
+        self._cancelTourLoad(navigating=True)
         step=self.tutorialScreen.lesson
         self._guidedActiveLesson=step['id']
         self.currentBuildPath=None
@@ -78,7 +92,13 @@ class GuidedTutorialAppMixin:
         if hasattr(self,'previewBrowser'):
             focus=step.get('focus')
             self.previewBrowser.expand(self,{'worlds':'Worlds','biomes':'Biomes','structures':'Structures'}.get(focus))
-        self._pendingTourLoad=(self.worldLoadExecutor.submit(self._stageTourScene,dict(step)),step['id'])
+        warmed=getattr(self,'_tourWarmLoads',{}).pop(step['id'],None)
+        for future in getattr(self,'_tourWarmLoads',{}).values():future.cancel()
+        self._tourWarmLoads={}
+        if warmed is None or warmed.cancelled():
+            warmed=self.worldLoadExecutor.submit(self._stageTourScene,dict(step))
+        self._pendingTourLoad=(warmed,step['id'])
+        self.tutorialScreen.loading=True
 
     def _pollTourLoad(self):
         pending=getattr(self,'_pendingTourLoad',None)
@@ -88,8 +108,18 @@ class GuidedTutorialAppMixin:
         try:
             snapshot=pending[0].result()
             self._applyTourScene(snapshot,self.tutorialScreen.lesson)
+            # Stage only the next page while the current one is being explored.
+            # A prepared snapshot transfers ownership exactly once; never cache
+            # the live world's dictionaries or reuse a consumed holder.
+            from engine.tutorial_lessons import TOUR
+            index=self.tutorialScreen.currentStep+1
+            if index<len(TOUR) and not self.tutorialScreen.optional:
+                step=TOUR[index]
+                self._tourWarmLoads={step['id']:self.worldLoadExecutor.submit(self._stageTourScene,dict(step))}
         except Exception as error:
             self.tooltipText=f'Could not load tutorial scene: {error}';self.tooltipTimer=6000
+        finally:
+            self.tutorialScreen.loading=False
 
     def _applyTourScene(self,snapshot,step):
         from dataclasses import replace
@@ -113,7 +143,9 @@ class GuidedTutorialAppMixin:
         self.showGrid=False
         self.hotbar=[BlockType[name.upper()] for name in step['icons']]
         self.hotbarSelectedSlot=0;self.selectedBlock=self.hotbar[0];self.previewFacing=Facing.SOUTH
-        self.renderer.setViewRotation(0)
+        # The bastion's open vault faces southeast; its rear wall otherwise
+        # hides the very surfaces used to demonstrate lighting.
+        self.renderer.setViewRotation(1 if step['id']=='lighting' else 0)
         self._frameGuidedLesson(step)
         self._biomeViewSurfaces.clear();self._capturedRenderTiles.clear()
         self._invalidateViewCaches()
@@ -121,6 +153,10 @@ class GuidedTutorialAppMixin:
         self._worldZoomFallback=pygame.Surface((self._worldViewportRight()+self._worldSurfaceMargin*2,self.screen.get_height()+self._worldSurfaceMargin*2),pygame.SRCALPHA)
         self._worldTransitionKind='load'
         self.lightingDirty=True;self.redstone.mark_dirty();self.tooltipTimer=0
+        if self.lightingEnabled and snapshot._lighting is not None:
+            self.lightMap=snapshot._lighting
+            self.lightingDirty=False
+            self.litBlockCache.clear();self.litBlockCacheOrder.clear()
         # Authored demo liquids are settled until the visitor edits them.
         self.world.waterUpdateQueue.clear();self.world.lavaUpdateQueue.clear()
         self.world._waterQueued.clear();self.world._lavaQueued.clear()
@@ -141,9 +177,9 @@ class GuidedTutorialAppMixin:
         # buildings remain editable, but no longer determine the teaching zoom.
         if step.get('frame') is not None:
             self._fitBoundsToViewport(step['frame'],notify=False)
-            # Lift compact subjects above the hotbar while retaining headroom.
-            self.renderer.offsetY-=self.screen.get_height()*.065
-            self.targetOffsetY=self.renderer.offsetY
+            return
+        if step['id']=='lighting' and self.sceneStructureBounds:
+            self._fitBoundsToViewport(self.sceneStructureBounds,notify=False)
             return
         bounds = self.world.occupiedBounds
         if bounds is None:
