@@ -153,7 +153,8 @@ credentials/
 .mypy_cache/
 .ruff_cache/
 # Local QA evidence, extracted reference media, and reproducible lesson caches.
-# Existing tracked QA files stay tracked; new machine-specific output stays local.
+# Retained source captures/scripts stay tracked; new output stays local.
+# Archived derived evidence is indexed in docs/QA_ARCHIVE.md.
 /.qa/
 /Code/tutorial_prepared/
 /References/Opening/
