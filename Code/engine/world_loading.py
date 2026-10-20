@@ -113,4 +113,3 @@ class WorldLoadingAppMixin:
         else:
             self.tooltipText = f"Could not open {entry.name}"
             self.tooltipTimer = 3000
-

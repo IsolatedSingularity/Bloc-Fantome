@@ -84,11 +84,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Engineering review
-- Preserve undo/redo history when a command raises, and reject stale biome-load results after edits or mode/canvas changes.
+- Preserve undo/redo history when a command raises, reject stale biome-load results after edits or mode/canvas changes, and release completed/cancelled load ownership references.
 - Write application preferences atomically; retain and restore editor sky selections during tutorial, map and lab excursions.
 - Validate compact capture payload hashes with exact-source recovery; declare the tested NumPy runtime dependency and separate test/build requirements.
 - Version and validate prepared tutorial data, cover its actual source inputs in fingerprints, and preserve valid lessons on partial rebakes.
 - Remove shadowed legacy enum/world/renderer definitions and extract asynchronous load ownership without changing public imports.
+- Reduce per-cell visibility bookkeeping while preserving exact visibility, painter orders and lighting; measure complete cold surfaces rather than their first rendering batch.
 - Archive and independently verify generated QA evidence before untracking it; retain original local copies and source worlds/captures.
 - Defer creature replacement to the owner's later art pass. The existing 2.9.8 opening remains active.
 
