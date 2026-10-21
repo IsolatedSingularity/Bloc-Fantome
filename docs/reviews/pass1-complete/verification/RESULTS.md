@@ -2,6 +2,8 @@
 
 Source commit: `98fc6485fc6575c0bbd0210722836592859f4d8a`, descended from the approved `f63db3ab` review. [Changed source hashes plus prepared bundle manifest](source-manifest.json). Windows Python 3.12.10, Pygame 2.6.1 / SDL 2.28.4. Original engineering ownership, stale-job, atomic-write and exact visibility contracts remain in the full suite.
 
+SHA256 records describe the local Windows QA bytes; Git may normalize text-file line endings. Binary media and executable hashes are unaffected.
+
 | Layer | Result | Evidence |
 |---|---|---|
 | SOURCE/TEST | **464 passed, 198.60 s** | [Complete suite XML](release-suite.xml) |

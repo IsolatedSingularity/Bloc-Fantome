@@ -1,0 +1,35 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+configfile: pytest.ini
+collecting ... collected 26 items
+
+tests/test_maintenance.py::test_backup_roundtrip_and_failed_replacement_retains_history PASSED [  3%]
+tests/test_maintenance.py::test_failed_autosave_does_not_claim_success PASSED [  7%]
+tests/test_maintenance.py::test_invalid_build_preserves_live_world[payload0] PASSED [ 11%]
+tests/test_maintenance.py::test_invalid_build_preserves_live_world[payload1] PASSED [ 15%]
+tests/test_maintenance.py::test_corrupt_build_preserves_live_world[\x1f\x8b\x08\x00*/\xd8j\x02\xff\xabVJ\xca\xc9O\xce.V\xb2\x8a\x8e\xad\x05\x00\xf0\x0e] PASSED [ 19%]
+tests/test_maintenance.py::test_corrupt_build_preserves_live_world[\xff\xfe] PASSED [ 23%]
+tests/test_maintenance.py::test_corrupt_build_preserves_live_world[{"blocks":] PASSED [ 26%]
+tests/test_maintenance.py::test_duplicate_last_row_replaces_entire_cell_and_empty_is_valid PASSED [ 30%]
+tests/test_maintenance.py::test_cache_preserves_modern_properties_and_large_bounds PASSED [ 34%]
+tests/test_maintenance.py::test_batch_failure_rolls_back_and_leaves_history_unchanged[False] PASSED [ 38%]
+tests/test_maintenance.py::test_batch_failure_rolls_back_and_leaves_history_unchanged[True] PASSED [ 42%]
+tests/test_maintenance.py::test_stale_load_cannot_replace_later_edit PASSED [ 46%]
+tests/test_maintenance.py::test_pending_load_blocks_input_and_escape_detaches_running_future PASSED [ 50%]
+tests/test_maintenance.py::test_failed_batch_undo_restores_edits_and_history PASSED [ 53%]
+tests/test_maintenance.py::test_corrupt_deflate_preserves_live_world PASSED [ 57%]
+tests/test_maintenance.py::test_visibility_classification_matches_catalog_for_every_block PASSED [ 61%]
+tests/test_maintenance.py::test_autosave_reports_backup_failure_even_when_main_save_succeeds PASSED [ 65%]
+tests/test_maintenance.py::test_history_survives_command_exception[undo] PASSED [ 69%]
+tests/test_maintenance.py::test_history_survives_command_exception[redo] PASSED [ 73%]
+tests/test_maintenance.py::test_stale_biome_load_cannot_replace_newer_canvas[edit] PASSED [ 76%]
+tests/test_maintenance.py::test_stale_biome_load_cannot_replace_newer_canvas[canvas] PASSED [ 80%]
+tests/test_maintenance.py::test_stale_biome_load_cannot_replace_newer_canvas[mode] PASSED [ 84%]
+tests/test_maintenance.py::test_cancelled_load_does_not_retain_replaced_world[Biome] PASSED [ 88%]
+tests/test_maintenance.py::test_cancelled_load_does_not_retain_replaced_world[World] PASSED [ 92%]
+tests/test_app_integration.py::AppIntegrationTests::test_settings_controls_share_one_bounded_native_panel PASSED [ 96%]
+tests/test_tour_preview.py::test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize PASSED [100%]
+
+============================= 26 passed in 29.96s =============================

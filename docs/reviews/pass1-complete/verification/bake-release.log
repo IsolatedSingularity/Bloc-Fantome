@@ -1,0 +1,15 @@
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Audio: preloaded decoded track | mixer=(44100, -16, 2) | buffer=1024
+blocks 62370 1.38 MB 1.06 s
+camera 106184 2.94 MB 2.44 s
+history 488992 17.76 MB 19.87 s
+structures 779588 22.19 MB 21.08 s
+terrain 130041 3.25 MB 3.15 s
+biomes 207886 5.84 MB 5.74 s
+dimensions 99237 2.71 MB 2.5 s
+rain 134326 3.53 MB 2.93 s
+snow 135256 3.35 MB 3.4 s
+liquids 989663 27.82 MB 20.65 s
+lighting 325478 10.84 MB 11.9 s
+saving 190438 4.86 MB 3.56 s
