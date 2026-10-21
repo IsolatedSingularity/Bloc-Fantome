@@ -1,0 +1,520 @@
+[
+  {
+    "name": "editor-960",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "catalog-960",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "tools-960",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "editor-1200",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "catalog-1200",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "tools-1200",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "editor-1920",
+    "size": [
+      1920,
+      1080
+    ],
+    "drawable": [
+      1920,
+      1080
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1920
+  },
+  {
+    "name": "catalog-1920",
+    "size": [
+      1920,
+      1080
+    ],
+    "drawable": [
+      1920,
+      1080
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1920
+  },
+  {
+    "name": "tools-1920",
+    "size": [
+      1920,
+      1080
+    ],
+    "drawable": [
+      1920,
+      1080
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1920
+  },
+  {
+    "name": "focus",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "quiet",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "clean",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "library-worlds",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "library-biomes",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "library-structures",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "library-saved-builds",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "name": "settings-960-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "help-960-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "build-960-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "settings-960-text125",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.25,
+    "viewport": 960
+  },
+  {
+    "name": "help-960-text125",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.25,
+    "viewport": 960
+  },
+  {
+    "name": "build-960-text125",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.25,
+    "viewport": 960
+  },
+  {
+    "name": "settings-960-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "help-960-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "build-960-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "save-failure-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "tutorial-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "tutorial-minimized-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "world-map-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 960
+  },
+  {
+    "name": "lab-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 700
+  },
+  {
+    "name": "lab-scrolled-text100",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 700
+  },
+  {
+    "name": "world-map-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 960
+  },
+  {
+    "name": "lab-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 570
+  },
+  {
+    "name": "lab-scrolled-text150",
+    "size": [
+      960,
+      640
+    ],
+    "drawable": [
+      960,
+      640
+    ],
+    "driver": "windows",
+    "text_scale": 1.5,
+    "viewport": 570
+  },
+  {
+    "name": "fullscreen",
+    "size": [
+      1920,
+      1200
+    ],
+    "drawable": [
+      1920,
+      1200
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1920
+  },
+  {
+    "name": "windowed-return",
+    "size": [
+      1200,
+      800
+    ],
+    "drawable": [
+      1200,
+      800
+    ],
+    "driver": "windows",
+    "text_scale": 1,
+    "viewport": 1200
+  },
+  {
+    "windows_dpi": 120,
+    "font": "C:\\WINDOWS\\Fonts\\segoeui.ttf",
+    "camera_before": [
+      600.0,
+      332.0,
+      1.089
+    ],
+    "camera_after": [
+      600.0,
+      336.0,
+      1.021
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "Assets/Sound Hub/opening/sanctuary-rise-b4.ogg": {
+    "bytes": 316878,
+    "sha256": "27873b2ea714dd5e6620adc1ea3e8b39ce523fd6a14229a739a5a121d0353f6d"
+  },
+  "Assets/Sound Hub/opening/piano-chapters/01-one.ogg": {
+    "bytes": 4787042,
+    "sha256": "b8137bf16be88367c7d26fb2c43fe503caf8c8e09080286ea504c2cc9ae7d24f"
+  },
+  "Assets/Sound Hub/opening/piano-chapters/03-three.ogg": {
+    "bytes": 3948828,
+    "sha256": "192faa35b7ebd49bb9f6e58802ce17880f55dcc0f25e6ac29f9d57acd9bdca4e"
+  },
+  "Assets/Sound Hub/opening/piano-chapters/07-seven.ogg": {
+    "bytes": 3682231,
+    "sha256": "c5077a05ac25cab68bdd54cef5f8131423ef9339708f1d7e8025a5a188a5c28e"
+  },
+  "Assets/Sound Hub/ui/workshop/cancel.ogg": {
+    "bytes": 8273,
+    "sha256": "16ef27bf6c167a8791d9774d981c6154e74af2e3d58fae6d9f09e8049ea09cc9"
+  },
+  "Assets/Sound Hub/ui/workshop/failure.ogg": {
+    "bytes": 8908,
+    "sha256": "edb646b752392d46c267345dbec011461143805bcc3755c27c39ff54d2b73dec"
+  },
+  "Assets/Sound Hub/ui/workshop/focus.ogg": {
+    "bytes": 6530,
+    "sha256": "a23aa97df29a7991ebb572a2e13b99bba6367464823d02dd66235acf9861dfa3"
+  },
+  "Assets/Sound Hub/ui/workshop/open.ogg": {
+    "bytes": 20473,
+    "sha256": "3d3eacdb7544f3de5078415d3c39ef55c180e77e5c2e8efe68cdc4a5b34ccdaf"
+  },
+  "Assets/Sound Hub/ui/workshop/select.ogg": {
+    "bytes": 7941,
+    "sha256": "a6bf4dcc42b6ae6c5a2c2022e4bec3eab9824a6b9f85a85a9b851e6914656364"
+  },
+  "Assets/Sound Hub/ui/workshop/success.ogg": {
+    "bytes": 26890,
+    "sha256": "68c4c2197378e935c8db9012d53e4097f5e05397d8a1cf8f4e9db8b5bf78895d"
+  }
+}

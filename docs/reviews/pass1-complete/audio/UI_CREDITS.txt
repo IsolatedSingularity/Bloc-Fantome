@@ -1,0 +1,1 @@
+Bloc Fantome Pass 1 semantic UI cues. Derived from owner-cleared game recordings: dig/wood1.ogg, dig/stone1.ogg, block/lodestone/place1.ogg. Originals retained. Reproduction: docs/reviews/pass1-complete/audio. No hover sound is attached.

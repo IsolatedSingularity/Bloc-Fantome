@@ -1,0 +1,38 @@
+[
+  {
+    "file": "01-one.ogg",
+    "edge": "start",
+    "audition_start": 0,
+    "seconds": 12
+  },
+  {
+    "file": "01-one.ogg",
+    "edge": "end",
+    "audition_start": 13,
+    "seconds": 12
+  },
+  {
+    "file": "03-three.ogg",
+    "edge": "start",
+    "audition_start": 26,
+    "seconds": 12
+  },
+  {
+    "file": "03-three.ogg",
+    "edge": "end",
+    "audition_start": 39,
+    "seconds": 12
+  },
+  {
+    "file": "07-seven.ogg",
+    "edge": "start",
+    "audition_start": 52,
+    "seconds": 12
+  },
+  {
+    "file": "07-seven.ogg",
+    "edge": "end",
+    "audition_start": 65,
+    "seconds": 12
+  }
+]

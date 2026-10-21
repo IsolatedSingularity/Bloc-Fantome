@@ -1,0 +1,54 @@
+[
+  {
+    "id": "scree",
+    "url": "https://gamesounds.xyz/Sonniss.com%20-%20GDC%202015%20-%20Game%20Audio%20Bundle/Mechanical%20Wave%20-%20Rock%20Brick%20and%20Dirt/Scree%20Rock_RBD%2006.wav",
+    "original_name": "Mechanical Wave - Rock Brick and Dirt/Scree Rock_RBD 06.wav",
+    "bytes": 5673468,
+    "sha256": "3aa4eb7bd185c5c39c551182365f8033ae79b7f0f980948f188e54e947d2a116",
+    "license": "Sonniss GDC bundle license version effective on 2026-10-20",
+    "delivery": "gamesounds.xyz per-file mirror of GDC 2015"
+  },
+  {
+    "id": "debris",
+    "url": "https://gamesounds.xyz/Sonniss.com%20-%20GDC%202015%20-%20Game%20Audio%20Bundle/Mechanical%20Wave%20-%20Rock%20Brick%20and%20Dirt/Debris%20Brick_RBD%2002.wav",
+    "original_name": "Mechanical Wave - Rock Brick and Dirt/Debris Brick_RBD 02.wav",
+    "bytes": 715116,
+    "sha256": "93c2e7a3b0993b859d50a7562e09d4fb4c90c448d0de78da324889b14684a7a1",
+    "license": "Sonniss GDC bundle license version effective on 2026-10-20",
+    "delivery": "gamesounds.xyz per-file mirror of GDC 2015"
+  },
+  {
+    "id": "stone_tension",
+    "url": "https://gamesounds.xyz/Sonniss.com%20-%20GDC%202015%20-%20Game%20Audio%20Bundle/BeautifulNoise%20-%20Intensity%20by%20Design/BN_Intensity%20by%20Design_039%20Tension%20by%20Stone%202.wav",
+    "original_name": "BeautifulNoise - Intensity by Design/BN_Intensity by Design_039 Tension by Stone 2.wav",
+    "bytes": 102891708,
+    "sha256": "c4b19a37f18f1571a57ca9a15e88b65d8217b94328a122fa2bd87736c21edc77",
+    "license": "Sonniss GDC bundle license version effective on 2026-10-20",
+    "delivery": "gamesounds.xyz per-file mirror of GDC 2015"
+  },
+  {
+    "id": "metal_tension",
+    "url": "https://gamesounds.xyz/Sonniss.com%20-%20GDC%202015%20-%20Game%20Audio%20Bundle/BeautifulNoise%20-%20Intensity%20by%20Design/BN_Intensity%20by%20Design_036%20Tension%20by%20Metal%204.wav",
+    "original_name": "BeautifulNoise - Intensity by Design/BN_Intensity by Design_036 Tension by Metal 4.wav",
+    "bytes": 80221580,
+    "sha256": "f8eb3b8f30b05181a603df6754e5bc48a2b5629e130fe2a79426df201ca0f530",
+    "license": "Sonniss GDC bundle license version effective on 2026-10-20",
+    "delivery": "gamesounds.xyz per-file mirror of GDC 2015"
+  },
+  {
+    "id": "mechanism",
+    "creator": "robindouglasjohnson",
+    "url": "https://freesound.org/people/robindouglasjohnson/sounds/698991/",
+    "preview": "https://cdn.freesound.org/previews/698/698991_4452941-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "title": "Freesound - Clockwork motor by robindouglasjohnson"
+  },
+  {
+    "id": "drain",
+    "creator": "kyles",
+    "url": "https://freesound.org/people/kyles/sounds/452311/",
+    "preview": "https://cdn.freesound.org/previews/452/452311_612689-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "title": "Freesound - water drain from large metal sink gurgle pipe from underneath.flac by kyles"
+  }
+]

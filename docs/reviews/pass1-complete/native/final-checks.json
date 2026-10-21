@@ -1,0 +1,50 @@
+{
+  "driver": "windows",
+  "dpi": 120,
+  "font": "C:\\WINDOWS\\Fonts\\segoeui.ttf",
+  "initial": {
+    "zoom": 1.25,
+    "anchor": [
+      6.0,
+      6.0
+    ]
+  },
+  "trips": [
+    {
+      "size": [
+        1200,
+        800
+      ],
+      "zoom": 1.25,
+      "anchor": [
+        6.0,
+        6.0
+      ]
+    },
+    {
+      "size": [
+        1200,
+        800
+      ],
+      "zoom": 1.25,
+      "anchor": [
+        6.0,
+        6.0
+      ]
+    },
+    {
+      "size": [
+        1200,
+        800
+      ],
+      "zoom": 1.25,
+      "anchor": [
+        6.0,
+        6.0
+      ]
+    }
+  ],
+  "save_reopen_blocks": 147,
+  "save_reopen_exact": true,
+  "input": "Scripted application actions; not native keyboard acceptance"
+}

@@ -1,0 +1,37 @@
+{
+  "source_sha256": "97b2c3cc7abbd7bf0fe50c22a7d2137ca3765485558a7ecbf5298340906cc2d2",
+  "source_url": "https://www.youtube.com/watch?v=zkCR5KsJy1w",
+  "selection": "Chapters one, three and seven: 258, 215 and 200 seconds. Creator boundaries retained. Owner listening acceptance pending.",
+  "chapters": [
+    {
+      "chapter": {
+        "start_time": 0,
+        "title": "one",
+        "end_time": 258
+      },
+      "output": "01-one.ogg",
+      "sha256": "b8137bf16be88367c7d26fb2c43fe503caf8c8e09080286ea504c2cc9ae7d24f",
+      "editing": "Whole creator-defined chapter, original dynamics and timing; no looping fragment, pitch shift or normalization."
+    },
+    {
+      "chapter": {
+        "start_time": 470,
+        "title": "three",
+        "end_time": 685
+      },
+      "output": "03-three.ogg",
+      "sha256": "192faa35b7ebd49bb9f6e58802ce17880f55dcc0f25e6ac29f9d57acd9bdca4e",
+      "editing": "Whole creator-defined chapter, original dynamics and timing; no looping fragment, pitch shift or normalization."
+    },
+    {
+      "chapter": {
+        "start_time": 1495,
+        "title": "seven",
+        "end_time": 1695
+      },
+      "output": "07-seven.ogg",
+      "sha256": "c5077a05ac25cab68bdd54cef5f8131423ef9339708f1d7e8025a5a188a5c28e",
+      "editing": "Whole creator-defined chapter, original dynamics and timing; no looping fragment, pitch shift or normalization."
+    }
+  ]
+}

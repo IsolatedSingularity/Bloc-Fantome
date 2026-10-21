@@ -1,0 +1,7 @@
+{
+  "path": ".qa/pass1-complete/package/BlocFantome.exe",
+  "bytes": 270208531,
+  "sha256": "5d919ccbb50243958899f4f46d65cb99f59abe93864156d38f0f0910e4bbbb01",
+  "assets": "Workspace Assets junction; no standalone installer produced",
+  "installed": "Unchanged, intentionally not promoted"
+}

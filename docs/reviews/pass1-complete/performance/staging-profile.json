@@ -1,0 +1,38 @@
+[
+  {
+    "scene": "ancient_city_121.json.gz",
+    "trial": 0,
+    "read_prepare_ms": 1249.606299912557,
+    "blocks": 153520
+  },
+  {
+    "scene": "ancient_city_121.json.gz",
+    "trial": 1,
+    "read_prepare_ms": 1466.089199995622,
+    "blocks": 153520
+  },
+  {
+    "scene": "ancient_city_121.json.gz",
+    "trial": 2,
+    "read_prepare_ms": 1340.6544998288155,
+    "blocks": 153520
+  },
+  {
+    "scene": "trial_chamber_121.json.gz",
+    "trial": 0,
+    "read_prepare_ms": 1663.4515998885036,
+    "blocks": 181697
+  },
+  {
+    "scene": "trial_chamber_121.json.gz",
+    "trial": 1,
+    "read_prepare_ms": 1708.6447000037879,
+    "blocks": 181697
+  },
+  {
+    "scene": "trial_chamber_121.json.gz",
+    "trial": 2,
+    "read_prepare_ms": 1873.841700144112,
+    "blocks": 181697
+  }
+]

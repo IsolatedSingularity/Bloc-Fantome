@@ -1,0 +1,12 @@
+{
+  "order": [
+    "open",
+    "select",
+    "focus",
+    "success",
+    "cancel",
+    "failure"
+  ],
+  "gain": 0.48,
+  "gap_seconds": 1
+}

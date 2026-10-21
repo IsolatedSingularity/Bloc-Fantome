@@ -1,0 +1,1025 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="463" time="572.663" timestamp="2026-10-20T20:08:12.828167-07:00" hostname="cathedral"><testcase classname="tests.test_anvil" name="test_nbt_reader_decodes_named_root_compound" time="0.020" /><testcase classname="tests.test_anvil" name="test_palette_indices_use_padded_values_per_long_layout" time="0.002" /><testcase classname="tests.test_anvil" name="test_region_reader_locates_and_decompresses_chunk" time="0.032" /><testcase classname="tests.test_anvil" name="test_gzip_chunk_payload_is_supported" time="0.025" /><testcase classname="tests.test_anvil" name="test_external_chunk_payload_is_supported" time="0.033" /><testcase classname="tests.test_anvil" name="test_dimension_folder_names_accept_app_dimension_values" time="0.013" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_all_toggle_effect_styles_cover_button_and_keep_preview_foreground" time="11.034" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_app_uses_modular_world_and_renderer" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_basic_tutorial_restores_the_existing_build_and_editor_state" time="1.482" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_biome_cards_filter_and_need_explicit_open" time="0.082" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_block_and_toggle_submenus_share_rows_and_preview_icons" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_build_load_is_transactional" time="0.054" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_camera_w_never_steals_normal_block_placement" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_canvas_growth_is_centered_and_preserves_relative_world_state" time="0.012" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_canvas_resize_reports_clipping_and_extends_the_floor" time="0.014" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_clicking_active_dimension_does_not_reset_canvas" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_comparator_mode_and_vertical_piston_survive_save_load" time="0.048" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_complete_world_catalog_uses_supported_placeable_palette" time="29.296" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_connected_clear_glass_culls_internal_faces_and_reuses_variants" time="0.013" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_contextual_shortcuts_reach_the_intended_app_actions" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_copper_stage_round_trips_and_nearby_sculk_sensor_pulses" time="0.047" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_curated_ancient_city_opens_on_256_canvas" time="6.142" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_dimension_change_from_world_resets_minimum_canvas" time="19.220" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_dimension_music_playlists_do_not_leak_between_dimensions" time="0.005" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_dimension_music_replacement_starts_immediately" time="1.693" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_dimension_weather_configs_and_particles" time="0.024" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_directional_redstone_models_use_source_positions_and_facing" time="0.015" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_door_uses_two_synchronized_cells_and_undo" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_each_world_map_objective_has_exact_completable_state" time="1.225" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_empty_overworld_does_not_enable_hidden_horror_audio" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_end_city_world_structure_sits_above_terrain" time="0.283" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_end_gateway_effect_uses_java_1161_layer_math" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_end_portal_frame_and_effects_have_source_heights" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_escape_cancels_editor_modes_before_quitting" time="0.005" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_every_palette_block_has_loaded_place_and_break_sounds" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_every_world_map_route_opens_with_a_valid_nine_slot_hotbar" time="7.642" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_exposed_blocks_receive_brighter_skylight_than_enclosed_blocks" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_finished_doors_and_stairs_use_model_icons_and_regular_categories" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_finished_special_blocks_use_regular_categories_and_model_sprites" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_fire_ambient_pool_never_contains_ignition" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_fire_and_chest_models_have_depth_and_inset_geometry" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_first_lit_frame_after_glowstone_stays_interactive" time="0.035" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_fit_world_button_label_has_no_percentage" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_fit_world_uses_precomputed_occupied_bounds" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_guided_exit_restores_tools_clipboard_and_saved_path" time="0.005" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_horror_is_an_explicit_optional_detour" time="0.006" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_identical_regular_blocks_share_sprite_and_mipmaps" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_java_import_preserves_supported_models_and_material_fallbacks" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_json_structures_are_cursor_placeable" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_lab_cached_signal_frames_match_the_full_painter_pixel_for_pixel" time="3.675" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_lab_counter_pulse_drives_source_clock_and_ignores_double_clicks" time="0.762" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_lab_interact_isolates_editor_tools_and_blocks_editing_shortcuts" time="0.022" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_lab_pause_step_reset_and_cutaway_use_real_simulation" time="0.120" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_lab_preferences_and_map_return_preserve_both_builder_hotbars" time="1.545" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_large_json_structure_places_at_cursor_without_clipping" time="0.020" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_large_rotation_keeps_complete_frame_while_exact_surface_rebuilds" time="0.360" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_large_world_accepts_an_edit_and_keeps_rotations_prepared" time="15.566" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_large_zoom_uses_complete_fallback_then_finishes_exact_surface" time="0.799" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_legacy_single_cell_door_migrates_on_load" time="0.053" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_linear_tour_next_back_and_direct_jump_always_replace_example" time="35.486" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_linear_tour_starts_immediately_and_restores_original" time="0.925" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_local_terrain_noise_protects_build_columns_and_is_undoable" time="0.020" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_locked_repeater_keeps_the_output_torch_under_the_lock_bar" time="0.011" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_magic_wand_delete_is_one_undoable_bulk_edit" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_magic_wand_overlay_uses_display_size" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_middle_drag_is_direct_at_close_zoom_even_over_hotbar" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_mouse_redstone_edits_recalculate_network_without_navigation" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_moving_directional_models_are_not_mirrored_after_camera_rotation" time="0.011" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_music_starts_lower_while_ambient_and_effects_retain_headroom" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_nearby_zoom_values_share_a_cached_variant" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_nether_and_end_weather_reuse_particle_surfaces" time="0.018" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_new_dimension_worlds_expose_source_backed_scene_contracts" time="7.485" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_occlusion_uses_camera_facing_neighbors_in_every_view" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_ocean_world_map_is_a_locked_preview_without_objective_entry" time="2.213" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_open_library_buttons_play_click_audio" time="0.013" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_optional_native_sort_matches_python_painter_order" time="0.039" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_overlapping_depth_tie_picks_the_last_visible_model" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_overworld_map_uses_source_surface_without_synthetic_skirt" time="1.942" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_panel_preview_icons_stay_stable_while_world_icons_animate" time="1.039" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_panel_wheel_scroll_eases_toward_target" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_persistent_tome_starts_the_advanced_tutorial" time="0.006" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_piston_head_rods_extend_into_the_adjacent_cell_for_all_facings" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_piston_models_use_bottom_texture_and_cache_stable_states" time="0.036" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_quick_swap_uses_transactional_door_state" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_rain_button_animation_covers_button_and_keeps_icon_on_top" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_rain_extinguishes_only_dimension_appropriate_fire_and_undoes" time="0.015" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_dust_mask_rotates_into_camera_space" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_dust_up_connections_use_vanilla_vertical_sheets" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_click_without_motion_hits_the_rendered_control" time="0.013" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_is_editable_and_restores_the_live_build" time="0.849" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_panel_fits_the_minimum_window_without_footer_overlap" time="0.005" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_switch_has_the_flat_inventory_item_sprite" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_test_cursor_ignores_unanchored_zero_pointer" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_uses_fixed_preview_facing_until_r_rotates_it" time="0.011" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_lab_world_map_round_trip_does_not_leak_lab_hotbar_or_grid" time="0.893" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_particle_rates_match_source_component_rules" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_redstone_particles_only_use_source_backed_powered_emitters" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_replace_all_is_one_undoable_bulk_edit" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_responsive_minimum_reflows_controls_and_preserves_camera_center" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_rotation_preserves_cursor_world_anchor_in_all_views" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_runtime_and_packaged_icons_have_padding_and_multiple_sizes" time="0.107" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_settings_controls_share_one_bounded_minecraft_panel" time="0.003"><failure message="AssertionError: True == True">self = &lt;test_app_integration.AppIntegrationTests testMethod=test_settings_controls_share_one_bounded_minecraft_panel&gt;
+
+    def test_settings_controls_share_one_bounded_minecraft_panel(self):
+        panel = self.app._settingsMenuRect()
+        self.assertTrue(pygame.Rect(0, 0, app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT).contains(panel))
+        slider = pygame.Rect(panel.x + 28, panel.y + 68 + 22, panel.width - 56, 12)
+        self.assertTrue(panel.contains(slider))
+        last_toggle = pygame.Rect(panel.x + 28, panel.y + 242 + 5 * 36, panel.width - 56, 30)
+        self.assertTrue(panel.contains(last_toggle))
+    
+        old_value = self.app.showBlockTooltip
+        self.app.settingsMenuOpen = True
+        self.app._handleSettingsClick(last_toggle.centerx, last_toggle.centery)
+&gt;       self.assertNotEqual(self.app.showBlockTooltip, old_value)
+E       AssertionError: True == True
+
+tests\test_app_integration.py:362: AssertionError</failure></testcase><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_side_targets_work_at_every_zoom_and_rotation" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_small_app_icon_preserves_respawn_anchor_aspect_ratio" time="0.080" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_small_canvas_resets_camera_after_large_world" time="5.921" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_special_detail_models_use_source_shaped_geometry" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_stair_variants_are_connected_transforms_of_canonical_volume" time="0.003" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_stairs_derive_outer_corner_and_render_distinct_model" time="0.020" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_stamp_is_one_undoable_bulk_edit" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_structure_door_generation_is_part_of_the_same_undo" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_structures_use_verified_reference_circuits_not_invented_doors" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_terrain_hover_preview_holds_the_seed_used_on_click" time="0.018" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_toggle_effect_motion_advances_between_60_fps_frames" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_has_no_required_tasks_or_deferred_redstone_chapters" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_reset_restores_page_after_optional_edits" time="17.990" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tour_zoom_then_next_reframes_and_leaves_special_modes" time="7.145" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_transparent_sprite_variants_are_cached" time="0.001" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_treasure_bastion_surface_does_not_vanish_at_overview_zoom" time="15.487" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_trial_chamber_exterior_masonry_uses_visual_glass_without_data_changes" time="8.511" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_can_open_nether_and_end_biomes_and_restore" time="10.535" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_rooms_match_the_supplied_open_builds" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_tutorial_window_drags_minimizes_and_restores" time="0.017" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_v5_save_round_trips_large_bounds_and_provenance" time="0.087" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_volume_controls_fit_panel_and_muted_button_keeps_speaker" time="0.005" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_water_and_lava_interpolate_at_sixty_fps_without_speeding_cycles" time="0.060" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_weather_impacts_and_sounds_run_in_every_dimension" time="0.020" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_weather_surface_candidates_refresh_only_after_world_edit" time="0.004" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_centered_rotation_preserves_world_axis_in_all_views" time="0.002" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_map_controls_switch_tabs_start_and_return" time="7.541" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_map_hub_camera_pans_zooms_and_resets_without_editing" time="2.486" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_map_progress_save_keeps_the_users_persistent_hotbar" time="2.025" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_map_session_restores_live_build_exactly" time="2.094" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_world_scene_preserves_nested_java_state_and_structure_role" time="0.042" /><testcase classname="tests.test_app_integration.AppIntegrationTests" name="test_zoom_keeps_projected_world_point_under_cursor" time="0.002" /><testcase classname="tests.test_audio" name="test_group_mute_updates_active_loop_and_restores_pan" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_busy_pool_drops_overlap_unless_replacement_is_requested" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_controller_poll_keeps_sequence_primed_without_end_events" time="0.002" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_gain_is_clamped_with_headroom" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_groups_do_not_steal_each_others_channels" time="0.002" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_preloaded_explicit_stop_restores_but_does_not_use_end_event" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_preloaded_music_backend_decodes_one_track_on_reserved_channel" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_preloaded_sequence_queues_each_fragment_without_restarting_channel" time="0.001" /><testcase classname="tests.test_audio.AudioRouterTests" name="test_worldbuilder_intro_plays_once_then_only_score_fragments_loop" time="0.002" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_expected_stop_event_does_not_skip_new_dimension_track" time="0.002" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_immediate_dimension_replacement_has_no_silent_pending_state" time="0.001" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_music_headroom_applies_during_fade_and_steady_playback" time="0.001" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_music_volume_is_clamped" time="0.001" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_natural_end_event_advances_playlist" time="0.002" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_persisted_last_track_is_not_repeated_first" time="0.002" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_playlist_reshuffles_after_a_complete_cycle" time="0.001" /><testcase classname="tests.test_audio.MusicControllerTests" name="test_sequence_falls_back_to_normal_playlist_for_streaming_backend" time="0.001" /><testcase classname="tests.test_benchmark_large_world" name="test_small_sample_p95_uses_nearest_rank_not_second_largest" time="0.002" /><testcase classname="tests.test_benchmark_large_world" name="test_measure_runs_sample_setup_before_each_timed_operation" time="0.001" /><testcase classname="tests.test_biomes" name="test_catalog_matches_local_1161_registry_exactly" time="0.007" /><testcase classname="tests.test_biomes" name="test_every_biome_is_bounded_unique_and_uses_editable_blocks" time="19.206" /><testcase classname="tests.test_biomes" name="test_rebuilding_evicted_biome_is_deterministic" time="0.147" /><testcase classname="tests.test_biomes" name="test_capture_manifest_complete_and_all_render_angles_packaged" time="0.929" /><testcase classname="tests.test_biomes" name="test_biome_familiarity_order_and_void_special_case" time="0.006" /><testcase classname="tests.test_biomes" name="test_distinctive_materials_match_biome_families" time="1.089" /><testcase classname="tests.test_build_catalog.BuildCatalogTests" name="test_bundled_files_are_not_duplicated_as_user_builds_in_source_mode" time="0.038" /><testcase classname="tests.test_build_catalog.BuildCatalogTests" name="test_catalog_separates_user_tutorial_nether_and_end_content" time="0.062" /><testcase classname="tests.test_build_io" name="test_read_build_returns_snapshot_with_nested_state_and_roles" time="0.032" /><testcase classname="tests.test_build_io" name="test_read_build_rejects_invalid_payload_without_live_world" time="0.015" /><testcase classname="tests.test_build_io" name="test_write_build_is_atomic_v5_and_round_trips_state" time="0.029" /><testcase classname="tests.test_build_io" name="test_captured_source_palette_round_trips_on_ordinary_blocks" time="0.029" /><testcase classname="tests.test_build_io" name="test_redstone_component_state_round_trips" time="0.026" /><testcase classname="tests.test_build_io" name="test_shared_painter_sort_preserves_each_modes_exact_total_order" time="0.022" /><testcase classname="tests.test_capture_records" name="test_compact_records_preserve_coordinates_palette_and_sequence_access" time="0.002" /><testcase classname="tests.test_capture_records" name="test_packing_preserves_metadata_and_changed_source_never_uses_stale_cells" time="0.108" /><testcase classname="tests.test_capture_records" name="test_damaged_derived_capture_uses_exact_source_and_can_be_repacked[same_length]" time="0.079" /><testcase classname="tests.test_capture_records" name="test_damaged_derived_capture_uses_exact_source_and_can_be_repacked[missing]" time="0.057" /><testcase classname="tests.test_capture_records" name="test_damaged_derived_capture_uses_exact_source_and_can_be_repacked[truncated]" time="0.046" /><testcase classname="tests.test_capture_records" name="test_damaged_derived_capture_uses_exact_source_and_can_be_repacked[metadata]" time="0.053" /><testcase classname="tests.test_cleanup_tool" name="test_cleanup_handles_source_only_checkout_and_preserves_tracked_files" time="4.839" /><testcase classname="tests.test_engine.SpriteCacheTests" name="test_approximate_memory_counts_surface_pixel_storage" time="0.001" /><testcase classname="tests.test_engine.SpriteCacheTests" name="test_byte_budget_evicts_least_recently_used_surfaces" time="0.002" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_falling_water_is_not_a_source" time="0.005" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_flow_retracts_after_source_is_removed" time="0.042" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_lava_decay_is_dimension_specific" time="0.008" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_multiple_waterfalls_settle_without_queue_churn" time="0.105" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_still_lava_next_to_water_becomes_obsidian" time="0.005" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_surface_index_excludes_buried_cells_and_tracks_edits" time="0.002" /><testcase classname="tests.test_engine.WorldFluidTests" name="test_water_prefers_and_descends_into_nearby_hole" time="0.026" /><testcase classname="tests.test_engine.RendererPickingTests" name="test_depth_key_changes_with_rotation" time="0.002" /><testcase classname="tests.test_engine.RendererPickingTests" name="test_face_picking_matches_scaled_geometry_at_every_view" time="0.004" /><testcase classname="tests.test_engine.RendererPickingTests" name="test_overview_projection_remains_invertible" time="0.001" /><testcase classname="tests.test_engine.RendererPickingTests" name="test_projection_metrics_are_owned_by_each_renderer" time="0.001" /><testcase classname="tests.test_fonts" name="test_semibold_ui_fonts_use_native_face_with_matching_metrics" time="0.010" /><testcase classname="tests.test_fonts" name="test_text_scale_rerasterizes_existing_fonts" time="0.011" /><testcase classname="tests.test_input_commands" name="test_f_flips_half_only_for_selected_stairs_or_slabs" time="0.001" /><testcase classname="tests.test_input_commands" name="test_measurement_and_mirror_chords_are_distinct" time="0.001" /><testcase classname="tests.test_input_commands" name="test_selection_and_blueprint_chords_are_distinct" time="0.002" /><testcase classname="tests.test_input_commands" name="test_hollow_requires_an_active_confirmed_selection" time="0.002" /><testcase classname="tests.test_input_commands" name="test_replace_and_home_chords_are_distinct" time="0.001" /><testcase classname="tests.test_input_commands" name="test_escape_closes_only_the_highest_priority_context" time="0.001" /><testcase classname="tests.test_lighting.LightingTests" name="test_shading_preserves_alpha_and_dims_rgb" time="0.007" /><testcase classname="tests.test_maintenance" name="test_backup_roundtrip_and_failed_replacement_retains_history" time="0.053" /><testcase classname="tests.test_maintenance" name="test_failed_autosave_does_not_claim_success" time="0.015" /><testcase classname="tests.test_maintenance" name="test_invalid_build_preserves_live_world[payload0]" time="0.051"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">self = &lt;blocFantome.BlocFantome object at 0x000001EC1E0A8AD0&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_invalid_build_preserves_l0\\bad.json'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_invalid_build_preserves_l0/bad.json')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (gzip.BadGzipFile, OSError):
+            with path.open("r", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (EOFError, zlib.error) as error:
+            raise ValueError("Truncated or corrupt compressed build") from error
+        if not isinstance(save_data, dict) or not isinstance(save_data.get("blocks"), list):
+            raise ValueError("Invalid build file format")
+    
+        try:
+            save_version = int(save_data.get("version", 1))
+        except (TypeError, ValueError) as error:
+            raise ValueError("Invalid build version") from error
+        if save_version not in range(1, 6):
+&gt;           raise ValueError(f"Unsupported build version: {save_version}")
+E           ValueError: Unsupported build version: 999
+
+Code\engine\build_io.py:383: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_invalid_build_preserves_l0')
+payload = {'blocks': [], 'version': 999}
+
+    @pytest.mark.parametrize('payload',[{'version':999,'blocks':[]},{'version':5,'blocks':[{'type':'bad'}]}])
+    def test_invalid_build_preserves_live_world(tmp_path,payload):
+        app=app_stub();app.world.setBlock(1,1,1,module.BlockType.STONE)
+        path=tmp_path/'bad.json';path.write_text(json.dumps(payload))
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC1E0A8AD0&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_invalid_build_preserves_l0\\bad.json'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_invalid_build_preserves_live_world[payload1]" time="0.040"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">self = &lt;blocFantome.BlocFantome object at 0x000001EC5CCA4CE0&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_invalid_build_preserves_l1\\bad.json'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_invalid_build_preserves_l1/bad.json')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (gzip.BadGzipFile, OSError):
+            with path.open("r", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (EOFError, zlib.error) as error:
+            raise ValueError("Truncated or corrupt compressed build") from error
+        if not isinstance(save_data, dict) or not isinstance(save_data.get("blocks"), list):
+            raise ValueError("Invalid build file format")
+    
+        try:
+            save_version = int(save_data.get("version", 1))
+        except (TypeError, ValueError) as error:
+            raise ValueError("Invalid build version") from error
+        if save_version not in range(1, 6):
+            raise ValueError(f"Unsupported build version: {save_version}")
+        dimension = save_data.get("dimension", DIMENSION_OVERWORLD)
+        if dimension not in (DIMENSION_OVERWORLD, DIMENSION_NETHER, DIMENSION_END):
+            raise ValueError(f"Unknown dimension: {dimension}")
+        bounds_data = save_data.get("bounds") if save_version &gt;= 5 else None
+        if bounds_data is None:
+            bounds = cache_policy.default_bounds
+        else:
+            if not isinstance(bounds_data, dict):
+                raise ValueError("Invalid build bounds")
+            default_width, default_depth, default_height, _ = cache_policy.default_bounds
+            bounds = (
+                int(bounds_data.get("width", default_width)),
+                int(bounds_data.get("depth", default_depth)),
+                int(bounds_data.get("height", default_height)),
+                int(bounds_data.get("min_y", 0)),
+            )
+            width, depth, height, min_y = bounds
+            if not (1 &lt;= width &lt;= 512 and 1 &lt;= depth &lt;= 512 and 1 &lt;= height &lt;= 512):
+                raise ValueError("Build bounds exceed the supported 512 x 512 x 512 canvas")
+            if min_y &lt; -128 or min_y + height &gt; 512:
+                raise ValueError("Build vertical bounds are unsupported")
+    
+        width, depth, height, min_y = bounds
+        max_y = min_y + height
+        scene = save_data.get("scene", {})
+        if not isinstance(scene, dict):
+            scene = {}
+        scene = dict(scene)
+        staged = {}
+        structure_positions = set()
+        skipped_count = 0
+        for block_data in save_data["blocks"]:
+            try:
+                if not all(key in block_data for key in ("x", "y", "z", "type")):
+                    raise ValueError("missing block field")
+                parsed_type = block_type[block_data["type"]]
+                x = int(block_data["x"])
+                y = int(block_data["y"])
+                z = int(block_data["z"])
+                if not (0 &lt;= x &lt; width and 0 &lt;= y &lt; depth and min_y &lt;= z &lt; max_y):
+                    raise ValueError("block outside build bounds")
+                state_data = block_data.get("state", {})
+                if not isinstance(state_data, dict):
+                    state_data = {}
+                state_data = dict(state_data)
+                for key in (
+                    "facing", "isOpen", "slabPosition", "stairShape", "doorHalf", "doorHinge",
+                    "oxidationStage", "powered", "redstonePower", "repeaterDelay",
+                    "repeaterLocked", "pistonExtended", "sticky", "comparatorSubtract",
+                    "sourceCapture", "sourcePalette",
+                ):
+                    if key in block_data:
+                        state_data[key] = block_data[key]
+                block_properties = _properties(parsed_type, state_data, definitions)
+                liquid_state = None
+                if parsed_type in (block_catalog.water, block_catalog.lava):
+                    liquid_state = (
+                        max(1, min(8, int(block_data.get("liquidLevel", 8)))),
+                        bool(block_data.get("liquidSource", True)),
+                        bool(block_data.get("liquidFalling", False)),
+                    )
+                # Last valid row wins, including removal of earlier state and role.
+                staged[(x, y, z)] = (x, y, z, parsed_type, block_properties, liquid_state)
+                structure_positions.discard((x, y, z))
+                if block_data.get("role") == "structure":
+                    structure_positions.add((x, y, z))
+            except (KeyError, TypeError, ValueError):
+                skipped_count += 1
+    
+        if save_data["blocks"] and not staged:
+&gt;           raise ValueError("Build contains no valid blocks")
+E           ValueError: Build contains no valid blocks
+
+Code\engine\build_io.py:454: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_invalid_build_preserves_l1')
+payload = {'blocks': [{'type': 'bad'}], 'version': 5}
+
+    @pytest.mark.parametrize('payload',[{'version':999,'blocks':[]},{'version':5,'blocks':[{'type':'bad'}]}])
+    def test_invalid_build_preserves_live_world(tmp_path,payload):
+        app=app_stub();app.world.setBlock(1,1,1,module.BlockType.STONE)
+        path=tmp_path/'bad.json';path.write_text(json.dumps(payload))
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC5CCA4CE0&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_invalid_build_preserves_l1\\bad.json'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_corrupt_build_preserves_live_world[\x1f\x8b\x08\x00\x9e,\xd8j\x02\xff\xabVJ\xca\xc9O\xce.V\xb2\x8a\x8e\xad\x05\x00\xf0\x0e]" time="0.060"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l0/bad.json.gz')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+&gt;               save_data = json.load(handle)
+                            ^^^^^^^^^^^^^^^^^
+
+Code\engine\build_io.py:369: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:293: in load
+    return loads(fp.read(),
+                 ^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:338: in read
+    return self._buffer.read(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\_compression.py:118: in readall
+    while data := self.read(sys.maxsize):
+                  ^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:535: in read
+    self._read_eof()
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:577: in _read_eof
+    crc32, isize = struct.unpack("&lt;II", _read_exact(self._fp, 8))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fp = &lt;gzip._PaddedFile object at 0x000001EC5CCA69C0&gt;, n = 8
+
+    def _read_exact(fp, n):
+        '''Read exactly *n* bytes from `fp`
+    
+        This method is required because fp may be unbuffered,
+        i.e. return short reads.
+        '''
+        data = fp.read(n)
+        while len(data) &lt; n:
+            b = fp.read(n - len(data))
+            if not b:
+&gt;               raise EOFError("Compressed file ended before the "
+                               "end-of-stream marker was reached")
+E               EOFError: Compressed file ended before the end-of-stream marker was reached
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:457: EOFError
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC628D9490&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l0\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l0/bad.json.gz')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (gzip.BadGzipFile, OSError):
+            with path.open("r", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (EOFError, zlib.error) as error:
+&gt;           raise ValueError("Truncated or corrupt compressed build") from error
+E           ValueError: Truncated or corrupt compressed build
+
+Code\engine\build_io.py:374: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l0')
+data = b'\x1f\x8b\x08\x00\x9e,\xd8j\x02\xff\xabVJ\xca\xc9O\xce.V\xb2\x8a\x8e\xad\x05\x00\xf0\x0e'
+
+    @pytest.mark.parametrize('data',[gzip.compress(b'{"blocks":[]}')[:-6],b'\xff\xfe',b'{"blocks":'])
+    def test_corrupt_build_preserves_live_world(tmp_path,data):
+        app=app_stub();before=app.world
+        path=tmp_path/'bad.json.gz';path.write_bytes(data)
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC628D9490&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l0\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_corrupt_build_preserves_live_world[\xff\xfe]" time="0.040"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l1/bad.json.gz')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+&gt;               save_data = json.load(handle)
+                            ^^^^^^^^^^^^^^^^^
+
+Code\engine\build_io.py:369: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:293: in load
+    return loads(fp.read(),
+                 ^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:338: in read
+    return self._buffer.read(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\_compression.py:118: in readall
+    while data := self.read(sys.maxsize):
+                  ^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:544: in read
+    if not self._read_gzip_header():
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:513: in _read_gzip_header
+    last_mtime = _read_gzip_header(self._fp)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fp = &lt;gzip._PaddedFile object at 0x000001EC1E0AB020&gt;
+
+    def _read_gzip_header(fp):
+        '''Read a gzip header from `fp` and progress to the end of the header.
+    
+        Returns last mtime if header was present or None otherwise.
+        '''
+        magic = fp.read(2)
+        if magic == b'':
+            return None
+    
+        if magic != b'\037\213':
+&gt;           raise BadGzipFile('Not a gzipped file (%r)' % magic)
+E           gzip.BadGzipFile: Not a gzipped file (b'\xff\xfe')
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:473: BadGzipFile
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC1E0B0590&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l1\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+Code\engine\build_io.py:372: in read_build
+    save_data = json.load(handle)
+                ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fp = &lt;_io.TextIOWrapper name='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l1\\bad.json.gz' mode='r' encoding='utf-8'&gt;
+cls = None, object_hook = None, parse_float = None, parse_int = None
+parse_constant = None, object_pairs_hook = None, kw = {}
+
+    def load(fp, *, cls=None, object_hook=None, parse_float=None,
+            parse_int=None, parse_constant=None, object_pairs_hook=None, **kw):
+        """Deserialize ``fp`` (a ``.read()``-supporting file-like object containing
+        a JSON document) to a Python object.
+    
+        ``object_hook`` is an optional function that will be called with the
+        result of any object literal decode (a ``dict``). The return value of
+        ``object_hook`` will be used instead of the ``dict``. This feature
+        can be used to implement custom decoders (e.g. JSON-RPC class hinting).
+    
+        ``object_pairs_hook`` is an optional function that will be called with the
+        result of any object literal decoded with an ordered list of pairs.  The
+        return value of ``object_pairs_hook`` will be used instead of the ``dict``.
+        This feature can be used to implement custom decoders.  If ``object_hook``
+        is also defined, the ``object_pairs_hook`` takes priority.
+    
+        To use a custom ``JSONDecoder`` subclass, specify it with the ``cls``
+        kwarg; otherwise ``JSONDecoder`` is used.
+        """
+&gt;       return loads(fp.read(),
+                     ^^^^^^^^^
+            cls=cls, object_hook=object_hook,
+            parse_float=parse_float, parse_int=parse_int,
+            parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+E       UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:293: UnicodeDecodeError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l1')
+data = b'\xff\xfe'
+
+    @pytest.mark.parametrize('data',[gzip.compress(b'{"blocks":[]}')[:-6],b'\xff\xfe',b'{"blocks":'])
+    def test_corrupt_build_preserves_live_world(tmp_path,data):
+        app=app_stub();before=app.world
+        path=tmp_path/'bad.json.gz';path.write_bytes(data)
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC1E0B0590&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l1\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_corrupt_build_preserves_live_world[{&quot;blocks&quot;:]" time="0.037"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">self = &lt;blocFantome.BlocFantome object at 0x000001EC20041640&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l2\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+Code\engine\build_io.py:372: in read_build
+    save_data = json.load(handle)
+                ^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:293: in load
+    return loads(fp.read(),
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;json.decoder.JSONDecoder object at 0x000001EC6B37A360&gt;, s = '{"blocks":'
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 11 (char 10)
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py:356: JSONDecodeError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_build_preserves_l2')
+data = b'{"blocks":'
+
+    @pytest.mark.parametrize('data',[gzip.compress(b'{"blocks":[]}')[:-6],b'\xff\xfe',b'{"blocks":'])
+    def test_corrupt_build_preserves_live_world(tmp_path,data):
+        app=app_stub();before=app.world
+        path=tmp_path/'bad.json.gz';path.write_bytes(data)
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC20041640&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_build_preserves_l2\\bad.json.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_duplicate_last_row_replaces_entire_cell_and_empty_is_valid" time="0.030" /><testcase classname="tests.test_maintenance" name="test_cache_preserves_modern_properties_and_large_bounds" time="0.104" /><testcase classname="tests.test_maintenance" name="test_batch_failure_rolls_back_and_leaves_history_unchanged[False]" time="0.003" /><testcase classname="tests.test_maintenance" name="test_batch_failure_rolls_back_and_leaves_history_unchanged[True]" time="0.002" /><testcase classname="tests.test_maintenance" name="test_stale_load_cannot_replace_later_edit" time="0.002" /><testcase classname="tests.test_maintenance" name="test_pending_load_blocks_input_and_escape_detaches_running_future" time="0.002" /><testcase classname="tests.test_maintenance" name="test_failed_batch_undo_restores_edits_and_history" time="0.003" /><testcase classname="tests.test_maintenance" name="test_corrupt_deflate_preserves_live_world" time="0.043"><failure message="AttributeError: 'BlocFantome' object has no attribute 'workshop'">path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_deflate_preserves0/corrupt.gz')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+&gt;               save_data = json.load(handle)
+                            ^^^^^^^^^^^^^^^^^
+
+Code\engine\build_io.py:369: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py:293: in load
+    return loads(fp.read(),
+                 ^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:338: in read
+    return self._buffer.read(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\_compression.py:118: in readall
+    while data := self.read(sys.maxsize):
+                  ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;gzip._GzipReader object at 0x000001EC986A83A0&gt;
+size = 9223372036854775807
+
+    def read(self, size=-1):
+        if size &lt; 0:
+            return self.readall()
+        # size=0 is special because decompress(max_length=0) is not supported
+        if not size:
+            return b""
+    
+        # For certain input data, a single
+        # call to decompress() may not return
+        # any data. In this case, retry until we get some data or reach EOF.
+        while True:
+            if self._decompressor.eof:
+                # Ending case: we've come to the end of a member in the file,
+                # so finish up this member, and read a new gzip header.
+                # Check the CRC and file size, and set the flag so we read
+                # a new member
+                self._read_eof()
+                self._new_member = True
+                self._decompressor = self._decomp_factory(
+                    **self._decomp_args)
+    
+            if self._new_member:
+                # If the _new_member flag is set, we have to
+                # jump to the next member, if there is one.
+                self._init_read()
+                if not self._read_gzip_header():
+                    self._size = self._pos
+                    return b""
+                self._new_member = False
+    
+            # Read a chunk of data from the file
+            if self._decompressor.needs_input:
+                buf = self._fp.read(READ_BUFFER_SIZE)
+&gt;               uncompress = self._decompressor.decompress(buf, size)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               zlib.error: Error -3 while decompressing data: invalid block type
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\gzip.py:552: error
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC986A8B90&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_deflate_preserves0\\corrupt.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+&gt;           dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+
+Code\blocFantome.py:15792: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Code\blocFantome.py:15364: in _readBuildFile
+    result = read_build(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_deflate_preserves0/corrupt.gz')
+block_catalog = WorldCatalog(block_type=&lt;enum 'BlockType'&gt;, air=&lt;BlockType.AIR: 0&gt;, water=&lt;BlockType.WATER: 95&gt;, lava=&lt;BlockType.LAVA:...id=False, isStair=False, isSlab=False, isPortal=False, lightLevel=0, lightColor=(255, 200, 150), modelKind='source')}))
+cache_policy = BuildReadPolicy(default_bounds=(12, 12, 12, 0), bundled_worlds_dir='C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Blo...sers\\hunkb\\AppData\\Local\\Packages\\sandbox.{242dbaa7-8777-4885-b912-541853e4cb0f}\\AC\\BlocFantome\\Cache\\worlds')
+
+    def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -&gt; BuildReadResult:
+        """Read one gzip/plain build without changing application or world state."""
+        path = Path(path)
+        block_type = block_catalog.block_type
+        definitions = block_catalog.definitions
+        cache_digest = None
+        cache_path = None
+        if _is_bundled(path, cache_policy.bundled_worlds_dir) and cache_policy.derived_cache_dir:
+            cache_digest = scene_cache.source_digest(str(path))
+            cache_path = scene_cache.cache_path(
+                str(cache_policy.derived_cache_dir), str(path), cache_digest
+            )
+            try:
+                cached = scene_cache.load(cache_path, cache_digest, block_type)
+                dimension, bounds, scene, staged, skipped_count = cached
+                print(f"World cache hit: {path.name}")
+                return _snapshot_from_staged(
+                    dimension, bounds, dict(scene), staged, skipped_count, True, definitions
+                )
+            except (OSError, ValueError, KeyError, IndexError, struct.error):
+                pass
+    
+        try:
+            with gzip.open(path, "rt", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (gzip.BadGzipFile, OSError):
+            with path.open("r", encoding="utf-8") as handle:
+                save_data = json.load(handle)
+        except (EOFError, zlib.error) as error:
+&gt;           raise ValueError("Truncated or corrupt compressed build") from error
+E           ValueError: Truncated or corrupt compressed build
+
+Code\engine\build_io.py:374: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_corrupt_deflate_preserves0')
+
+    def test_corrupt_deflate_preserves_live_world(tmp_path):
+        app=app_stub();before=app.world
+        data=bytearray(gzip.compress(b'{"version":5,"blocks":[]}'))
+        data[10]=7  # Reserved DEFLATE block type, not merely a bad checksum.
+        path=tmp_path/'corrupt.gz';path.write_bytes(data)
+&gt;       assert not app._loadBuildingFromPath(str(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_maintenance.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;blocFantome.BlocFantome object at 0x000001EC986A8B90&gt;
+filepath = 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass1-complete\\pytest-final2\\test_corrupt_deflate_preserves0\\corrupt.gz'
+silent = False
+
+    def _loadBuildingFromPath(self, filepath: str, silent: bool = False):
+        if not os.path.isfile(filepath):
+            if not silent:
+                self.tooltipText = "Build file not found"
+                self.tooltipTimer = 2500
+            return False
+        try:
+            dimension, bounds, sceneMetadata, snapshot, skippedCount = self._readBuildFile(
+                filepath
+            )
+            if skippedCount and not silent:
+                print(
+                    f"Skipped {skippedCount} invalid block entries "
+                    f"while opening {filepath}"
+                )
+            return self._applyStagedBuild(
+                dimension,
+                bounds,
+                sceneMetadata,
+                snapshot,
+                filepath,
+                silent,
+            )
+        except (OSError, ValueError, EOFError) as error:
+            if not silent:
+                print(f"Could not open build: {error}")
+                self.tooltipText = f"Open failed: {error}"
+&gt;               self.workshop.error=self.tooltipText+". Your current build stays open."
+                ^^^^^^^^^^^^^
+E               AttributeError: 'BlocFantome' object has no attribute 'workshop'
+
+Code\blocFantome.py:15812: AttributeError</failure></testcase><testcase classname="tests.test_maintenance" name="test_visibility_classification_matches_catalog_for_every_block" time="0.002" /><testcase classname="tests.test_maintenance" name="test_autosave_reports_backup_failure_even_when_main_save_succeeds" time="0.002" /><testcase classname="tests.test_maintenance" name="test_history_survives_command_exception[undo]" time="0.002" /><testcase classname="tests.test_maintenance" name="test_history_survives_command_exception[redo]" time="0.002" /><testcase classname="tests.test_maintenance" name="test_stale_biome_load_cannot_replace_newer_canvas[edit]" time="0.003" /><testcase classname="tests.test_maintenance" name="test_stale_biome_load_cannot_replace_newer_canvas[canvas]" time="0.003" /><testcase classname="tests.test_maintenance" name="test_stale_biome_load_cannot_replace_newer_canvas[mode]" time="0.003" /><testcase classname="tests.test_maintenance" name="test_cancelled_load_does_not_retain_replaced_world[Biome]" time="0.145" /><testcase classname="tests.test_maintenance" name="test_cancelled_load_does_not_retain_replaced_world[World]" time="0.133" /><testcase classname="tests.test_natural_scenes" name="test_visible_biomes_are_larger_and_end_pillars_clear_capture_edges" time="0.610" /><testcase classname="tests.test_natural_scenes" name="test_each_new_world_retains_its_complete_natural_landmarks" time="26.276" /><testcase classname="tests.test_natural_scenes" name="test_splash_retains_owner_image_and_native_regular_title" time="0.281" /><testcase classname="tests.test_opening_audio" name="test_opening_never_claims_or_stops_paused_editor_channels" time="0.359" /><testcase classname="tests.test_opening_audio" name="test_missing_cues_are_diagnosable_without_aborting" time="0.015" /><testcase classname="tests.test_opening_creature" name="test_contacts_are_real_exposed_architectural_surfaces" time="0.063" /><testcase classname="tests.test_opening_creature" name="test_planted_hands_do_not_slide_during_weight_transfer_or_contortion" time="0.496" /><testcase classname="tests.test_opening_creature" name="test_bone_lengths_and_finite_geometry_over_entire_sequence" time="0.664" /><testcase classname="tests.test_opening_creature" name="test_held_pose_is_still_and_seeking_has_no_state" time="0.008" /><testcase classname="tests.test_opening_creature" name="test_eye_reveal_is_brief_and_body_pull_releases_only_one_support" time="0.006" /><testcase classname="tests.test_opening_creature" name="test_sampled_creature_surfaces_clear_architecture_through_motion" time="6.025" /><testcase classname="tests.test_opening_encounter" name="test_source_rig_has_real_skin_weights_and_nontrivial_motion" time="4.386" /><testcase classname="tests.test_opening_encounter" name="test_source_pose_rotation_preserves_rigid_bones" time="0.049" /><testcase classname="tests.test_opening_encounter" name="test_import_keeps_late_source_motion_instead_of_freezing" time="0.001" /><testcase classname="tests.test_opening_encounter" name="test_planted_palms_and_feet_hold_the_arcade" time="0.180" /><testcase classname="tests.test_opening_encounter" name="test_three_skull_contacts_hit_the_stone_before_recoil" time="0.131" /><testcase classname="tests.test_opening_encounter" name="test_distant_monument_is_pulled_in_before_disappearing" time="0.051" /><testcase classname="tests.test_opening_encounter" name="test_prior_monument_never_retracts_during_camera_travel" time="0.001" /><testcase classname="tests.test_opening_encounter" name="test_consumption_moves_masonry_before_removing_it" time="0.076" /><testcase classname="tests.test_opening_encounter" name="test_ground_is_connected_and_continuously_animated" time="0.013" /><testcase classname="tests.test_opening_encounter" name="test_encounter_finishes_without_input_and_ignores_skip" time="0.001" /><testcase classname="tests.test_opening_encounter" name="test_muted_score_still_runs_and_releases_channel" time="0.328" /><testcase classname="tests.test_opening_piano" name="test_whole_chapters_queue_without_repeating_and_encounter_stops" time="0.001" /><testcase classname="tests.test_opening_piano" name="test_reopening_does_not_immediately_repeat_last_selected_chapter" time="0.002" /><testcase classname="tests.test_opening_scene" name="test_opening_isolated_from_world_undo_and_editor_input" time="19.684" /><testcase classname="tests.test_opening_scene" name="test_native_close_remains_available_during_encounter" time="5.059" /><testcase classname="tests.test_opening_scene" name="test_rigid_sections_frame_rate_independent_and_exact_final_pose" time="6.037" /><testcase classname="tests.test_opening_scene" name="test_visible_ghost_is_clickable_at_every_supported_size[size0]" time="2.225" /><testcase classname="tests.test_opening_scene" name="test_visible_ghost_is_clickable_at_every_supported_size[size1]" time="2.537" /><testcase classname="tests.test_opening_scene" name="test_visible_ghost_is_clickable_at_every_supported_size[size2]" time="2.097" /><testcase classname="tests.test_opening_scene" name="test_skip_preference_persists_and_corrupt_config_is_safe" time="0.016"><failure message="assert False&#10; +  where False = skip_on_launch()">app = &lt;blocFantome.BlocFantome object at 0x000001EC3102AF00&gt;
+tmp_path = WindowsPath('C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/.qa/pass1-complete/pytest-final2/test_skip_preference_persists_0')
+
+    def test_skip_preference_persists_and_corrupt_config_is_safe(app,tmp_path):
+        target=tmp_path/'opening.json'
+        with patch('ui.opening_scene.CONFIG_PATH',str(target)):
+            assert not skip_on_launch()
+            app.settingsMenuOpen=True
+            panel=app._settingsMenuRect()
+            app._handleSettingsClick(panel.centerx,panel.y+242+8*36+15)
+            app.settingsMenuOpen=False
+&gt;           assert skip_on_launch()
+E           assert False
+E            +  where False = skip_on_launch()
+
+tests\test_opening_scene.py:129: AssertionError</failure></testcase><testcase classname="tests.test_opening_scene" name="test_settings_opening_button_matches_rendered_row" time="0.014"><failure message="assert False&#10; +  where False = &lt;built-in method contains of pygame.rect.Rect object at 0x000001EC357C58F0&gt;(&lt;rect(328, 646, 544, 30)&gt;)&#10; +    where &lt;built-in method contains of pygame.rect.Rect object at 0x000001EC357C58F0&gt; = &lt;rect(300, 152, 600, 495)&gt;.contains">app = &lt;blocFantome.BlocFantome object at 0x000001EC3102AF00&gt;
+
+    def test_settings_opening_button_matches_rendered_row(app):
+        app.settingsMenuOpen=True
+        app._renderSettingsMenu()
+        panel=app._settingsMenuRect()
+        button=pygame.Rect(panel.x+28,panel.y+242+7*36,panel.width-56,30)
+&gt;       assert panel.contains(button)
+E       assert False
+E        +  where False = &lt;built-in method contains of pygame.rect.Rect object at 0x000001EC357C58F0&gt;(&lt;rect(328, 646, 544, 30)&gt;)
+E        +    where &lt;built-in method contains of pygame.rect.Rect object at 0x000001EC357C58F0&gt; = &lt;rect(300, 152, 600, 495)&gt;.contains
+
+tests\test_opening_scene.py:139: AssertionError</failure></testcase><testcase classname="tests.test_opening_scene" name="test_idle_hint_does_not_move_camera_and_held_keys_orbit_continuously" time="2.018" /><testcase classname="tests.test_opening_scene" name="test_two_scene_visible_click_path_and_return[size0]" time="2.210" /><testcase classname="tests.test_opening_scene" name="test_two_scene_visible_click_path_and_return[size1]" time="2.415" /><testcase classname="tests.test_opening_scene" name="test_two_scene_visible_click_path_and_return[size2]" time="2.053" /><testcase classname="tests.test_opening_scene" name="test_camera_projection_ray_round_trip_and_opaque_occlusion" time="2.233" /><testcase classname="tests.test_opening_scene" name="test_orbit_frame_rate_independent_and_hover_sound_sparse" time="4.411" /><testcase classname="tests.test_opening_scene" name="test_precise_wheel_zoom_is_smooth_bounded_and_pickable" time="1.948" /><testcase classname="tests.test_opening_scene" name="test_controls_fade_and_return_on_bottom_hover_and_completion" time="2.302" /><testcase classname="tests.test_opening_scene" name="test_orbit_audio_uses_one_loop_until_motion_stops" time="0.374" /><testcase classname="tests.test_opening_scene" name="test_camera_handoffs_preserve_orbit_zoom_and_ease_without_a_cut" time="2.119" /><testcase classname="tests.test_opening_scene" name="test_vault_ribs_connect_bay_corners_and_keep_terminal_cross" time="0.189" /><testcase classname="tests.test_public_contract" name="test_required_public_exports_remain_available" time="0.001" /><testcase classname="tests.test_public_contract" name="test_dead_duplicate_types_are_not_exported" time="0.001" /><testcase classname="tests.test_public_contract" name="test_block_enum_name_and_value_contract" time="0.003" /><testcase classname="tests.test_public_contract" name="test_block_catalog_and_sound_contract" time="0.007" /><testcase classname="tests.test_public_contract" name="test_category_order_and_membership_contract" time="0.003" /><testcase classname="tests.test_public_contract" name="test_structure_tutorial_and_weather_summary_contract" time="0.003" /><testcase classname="tests.test_public_contract" name="test_runtime_paths_are_absolute_and_keep_assets_external" time="0.002" /><testcase classname="tests.test_public_contract" name="test_visible_product_name_is_accented_while_executable_name_stays_compatible" time="0.014" /><testcase classname="tests.test_public_contract" name="test_structure_registry_composition_does_not_mutate_builtin_mapping" time="0.003" /><testcase classname="tests.test_public_contract" name="test_biome_palette_additions_have_stable_ids_and_complete_catalogs" time="0.002" /><testcase classname="tests.test_redstone" name="test_dust_propagates_full_strength_then_decays_to_zero" time="0.005" /><testcase classname="tests.test_redstone" name="test_repeater_strongly_powers_through_solid_block" time="0.003" /><testcase classname="tests.test_redstone" name="test_repeater_facing_is_input_side_and_emits_from_the_opposite_side" time="0.003" /><testcase classname="tests.test_redstone" name="test_repeater_reads_loaded_wire_power_after_directional_output_fallback" time="0.002" /><testcase classname="tests.test_redstone" name="test_repeater_uses_selected_two_game_tick_delay" time="0.004" /><testcase classname="tests.test_redstone" name="test_repeater_extends_an_input_pulse_shorter_than_its_delay" time="0.003" /><testcase classname="tests.test_redstone" name="test_dust_climbs_one_block_and_continues_decaying" time="0.003" /><testcase classname="tests.test_redstone" name="test_powered_side_repeater_locks_main_repeater" time="0.005" /><testcase classname="tests.test_redstone" name="test_repeater_lock_state_change_reports_dirty_component" time="0.003" /><testcase classname="tests.test_redstone" name="test_redstone_torch_inverts_power_on_supporting_block" time="0.003" /><testcase classname="tests.test_redstone" name="test_redstone_torch_does_not_count_its_own_support_as_input" time="0.004" /><testcase classname="tests.test_redstone" name="test_redstone_torch_only_checks_power_emitted_by_its_support_face" time="0.002" /><testcase classname="tests.test_redstone" name="test_torch_inverter_chain_converges_when_downstream_is_visited_first" time="0.003" /><testcase classname="tests.test_redstone" name="test_sticky_piston_pushes_and_pulls_one_block" time="0.006" /><testcase classname="tests.test_redstone" name="test_piston_extension_and_retraction_emit_their_real_sound_routes" time="0.004" /><testcase classname="tests.test_redstone" name="test_piston_accepts_java_quasi_power_around_block_above" time="0.002" /><testcase classname="tests.test_redstone" name="test_slime_moves_side_neighbors_but_does_not_stick_to_honey" time="0.006" /><testcase classname="tests.test_redstone" name="test_piston_motion_is_time_based_and_completes_after_six_sixty_fps_frames" time="0.003" /><testcase classname="tests.test_redstone" name="test_piston_breaks_fragile_redstone_instead_of_moving_it" time="0.003" /><testcase classname="tests.test_redstone" name="test_sticky_retraction_does_not_pull_fragile_block_at_initial_cell" time="0.004" /><testcase classname="tests.test_redstone" name="test_piston_world_writes_trigger_a_follow_up_topology_pass" time="0.004" /><testcase classname="tests.test_redstone" name="test_piston_breaks_both_fragile_door_cells_and_cannot_move_block_entities" time="0.006" /><testcase classname="tests.test_redstone" name="test_redstone_lamp_uses_four_game_tick_off_delay" time="0.003" /><testcase classname="tests.test_redstone" name="test_component_tick_reports_lamp_powered_by_repeater_transition" time="0.003" /><testcase classname="tests.test_redstone" name="test_wire_connection_mask_encodes_north_east_south_west" time="0.004" /><testcase classname="tests.test_redstone" name="test_wire_connection_mask_requires_vanilla_step_geometry" time="0.003" /><testcase classname="tests.test_redstone" name="test_wire_up_mask_marks_only_supported_step_connections" time="0.003" /><testcase classname="tests.test_redstone" name="test_piston_base_is_solid_for_redstone_support_and_wire_climb" time="0.004" /><testcase classname="tests.test_redstone" name="test_slime_and_honey_remain_solid_redstone_supports_even_with_translucent_art" time="0.003" /><testcase classname="tests.test_redstone" name="test_sticky_piston_leaves_immovable_side_branch_blocks_in_place" time="0.003" /><testcase classname="tests.test_redstone" name="test_sticky_side_chain_skips_immovable_block_behind_the_branch" time="0.004" /><testcase classname="tests.test_redstone" name="test_repeater_can_strong_power_through_a_piston_base" time="0.003" /><testcase classname="tests.test_redstone" name="test_wire_strongly_powers_a_solid_block_and_relays_to_a_lamp" time="0.003" /><testcase classname="tests.test_redstone" name="test_dust_recalculation_does_not_seed_through_a_wire_only_solid_relay" time="0.004" /><testcase classname="tests.test_redstone" name="test_strong_power_respects_floor_lever_mount_when_crossing_a_solid" time="0.004" /><testcase classname="tests.test_redstone" name="test_wire_does_not_connect_visually_to_consumers_that_cannot_emit_power" time="0.002" /><testcase classname="tests.test_redstone" name="test_isolated_dust_does_not_emit_side_power_to_a_lamp" time="0.003" /><testcase classname="tests.test_redstone" name="test_local_dirty_update_recalculates_only_the_touched_wire_component" time="0.006" /><testcase classname="tests.test_redstone" name="test_stone_button_powers_for_twenty_game_ticks_then_releases" time="0.004" /><testcase classname="tests.test_redstone" name="test_piston_chain_limit_is_twelve_blocks" time="0.008" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[piston_door]" time="0.345" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[hidden_entrance]" time="0.369" /><testcase classname="tests.test_redstone_lab" name="test_mechanism_completes_twenty_cycles_without_qc[staircase]" time="0.635" /><testcase classname="tests.test_redstone_lab" name="test_clock_runs_stops_and_restarts_without_burnout[clock]" time="0.215" /><testcase classname="tests.test_redstone_lab" name="test_clock_runs_stops_and_restarts_without_burnout[slow_clock]" time="0.103" /><testcase classname="tests.test_redstone_lab" name="test_feed_tape_moves_marker_and_conserves_every_block" time="0.067" /><testcase classname="tests.test_redstone_lab" name="test_vertical_sticky_piston_pushes_and_pulls[Facing.UP-1]" time="0.005" /><testcase classname="tests.test_redstone_lab" name="test_vertical_sticky_piston_pushes_and_pulls[Facing.DOWN--1]" time="0.004" /><testcase classname="tests.test_redstone_lab" name="test_reset_discards_pending_clock_and_button_work" time="0.011" /><testcase classname="tests.test_redstone_lab" name="test_torch_waits_two_game_ticks_before_inverting" time="0.003" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[0]" time="18.699" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[1]" time="16.332" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[2]" time="17.866" /><testcase classname="tests.test_redstone_lab" name="test_source_counter_counts_through_overflow_in_all_rotations[3]" time="18.097" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-piston_door]" time="0.044" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-staircase]" time="0.077" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-clock]" time="0.136" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[1-slow_clock]" time="0.075" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-piston_door]" time="0.056" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-staircase]" time="0.082" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-clock]" time="0.113" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[2-slow_clock]" time="0.056" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-piston_door]" time="0.052" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-staircase]" time="0.089" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-clock]" time="0.139" /><testcase classname="tests.test_redstone_lab" name="test_exhibits_keep_operating_after_physical_rotation[3-slow_clock]" time="0.067" /><testcase classname="tests.test_redstone_lab" name="test_comparator_compare_subtract_delay_and_strong_output" time="0.004" /><testcase classname="tests.test_redstone_lab" name="test_staircase_forms_two_adjacent_treads_at_each_rise" time="0.037" /><testcase classname="tests.test_redstone_lab" name="test_bundled_models_and_counter_match_local_reference_cells" time="0.056" /><testcase classname="tests.test_scene_cache.SceneCacheTests" name="test_fixed_record_cache_round_trips_roles_states_and_liquids" time="0.018" /><testcase classname="tests.test_settings_io" name="test_failed_app_config_write_retains_previous_json[serialize]" time="0.270" /><testcase classname="tests.test_settings_io" name="test_failed_app_config_write_retains_previous_json[replace]" time="0.204" /><testcase classname="tests.test_skybox" name="test_all_supplied_cubemap_atlases_are_unique_and_available" time="0.006" /><testcase classname="tests.test_skybox" name="test_renderer_builds_native_cubemap_views_with_bounded_drifting_views" time="1.678" /><testcase classname="tests.test_skybox" name="test_projection_samples_the_ceiling_floor_and_four_walls" time="0.011" /><testcase classname="tests.test_skybox" name="test_sky_drift_is_time_based_and_independent_of_canvas_orientation" time="0.002" /><testcase classname="tests.test_skybox" name="test_manual_selection_wraps_crossfades_and_1080p_is_native_size" time="0.302" /><testcase classname="tests.test_skybox" name="test_native_projection_matches_numpy_fallback_at_all_quarter_turns" time="0.065" /><testcase classname="tests.test_skybox" name="test_drift_prefetch_and_view_caches_stay_bounded" time="0.256" /><testcase classname="tests.test_source_fidelity" name="test_constant_source_illuminates_neighbor_and_undo_removes_light[BlockType.ENDER_CHEST-7]" time="0.005" /><testcase classname="tests.test_source_fidelity" name="test_constant_source_illuminates_neighbor_and_undo_removes_light[BlockType.FIRE-15]" time="0.028" /><testcase classname="tests.test_source_fidelity" name="test_constant_source_illuminates_neighbor_and_undo_removes_light[BlockType.SOUL_FIRE-10]" time="0.017" /><testcase classname="tests.test_source_fidelity" name="test_constant_source_illuminates_neighbor_and_undo_removes_light[BlockType.END_PORTAL-15]" time="0.028" /><testcase classname="tests.test_source_fidelity" name="test_final_resolved_sound_groups_match_local_java_events" time="0.001" /><testcase classname="tests.test_source_fidelity" name="test_rendered_neighbor_changes_with_source_and_restores_after_undo[BlockType.ENDER_CHEST]" time="0.009" /><testcase classname="tests.test_source_fidelity" name="test_rendered_neighbor_changes_with_source_and_restores_after_undo[BlockType.FIRE]" time="0.026" /><testcase classname="tests.test_source_fidelity" name="test_rendered_neighbor_changes_with_source_and_restores_after_undo[BlockType.SOUL_FIRE]" time="0.014" /><testcase classname="tests.test_source_fidelity" name="test_rendered_neighbor_changes_with_source_and_restores_after_undo[BlockType.END_PORTAL]" time="0.032" /><testcase classname="tests.test_terrain" name="test_overworld_terrain_is_deterministic_and_has_rivers" time="0.119" /><testcase classname="tests.test_terrain" name="test_nether_terrain_contains_distinct_biome_surfaces" time="0.553" /><testcase classname="tests.test_terrain" name="test_end_terrain_keeps_void_outside_island" time="2.101" /><testcase classname="tests.test_terrain" name="test_local_height_offsets_are_bounded_smooth_and_deterministic" time="0.002" /><testcase classname="tests.test_tour_preview" name="test_late_import_cannot_replace_next_page_or_restored_editor" time="15.706" /><testcase classname="tests.test_tour_preview" name="test_map_excursion_returns_to_same_tutorial_and_original_canvas" time="4.503" /><testcase classname="tests.test_tour_preview" name="test_city_keeps_every_source_cell_and_four_atlases" time="2.504" /><testcase classname="tests.test_tour_preview" name="test_preview_shelves_use_displayed_hitboxes_and_explicit_open" time="0.268" /><testcase classname="tests.test_tour_preview" name="test_every_world_has_a_real_preview_and_catalogs_do_not_mix_tutorials" time="0.489" /><testcase classname="tests.test_tour_preview" name="test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize" time="0.015"><failure message="AssertionError: assert [] == ['TUTORIAL  1 / 16', '-', 'Back', 'Next', 'Leave']&#10;  &#10;  Right contains 5 more items, first extra item: 'TUTORIAL  1 / 16'&#10;  &#10;  Full diff:&#10;  + []&#10;  - [&#10;  -     'TUTORIAL  1 / 16',&#10;  -     '-',&#10;  -     'Back',&#10;  -     'Next',&#10;  -     'Leave',&#10;  - ]">app = &lt;blocFantome.BlocFantome object at 0x000001EC357C5A90&gt;
+
+    def test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize(app):
+        app._beginTutorial(advanced=False)
+        with patch.object(app.assetManager,'drawButton',wraps=app.assetManager.drawButton) as draw:
+            app.tutorialScreen.render(app.screen)
+            labels=[call.args[2] for call in draw.call_args_list]
+&gt;       assert labels==['TUTORIAL  1 / 16','-','Back','Next','Leave']
+E       AssertionError: assert [] == ['TUTORIAL  1 / 16', '-', 'Back', 'Next', 'Leave']
+E         
+E         Right contains 5 more items, first extra item: 'TUTORIAL  1 / 16'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'TUTORIAL  1 / 16',
+E         -     '-',
+E         -     'Back',
+E         -     'Next',
+E         -     'Leave',
+E         - ]
+
+tests\test_tour_preview.py:126: AssertionError</failure></testcase><testcase classname="tests.test_tour_preview" name="test_tutorial_lab_returns_to_page_and_preserves_original_editor" time="1.687" /><testcase classname="tests.test_tour_preview" name="test_legacy_question_mark_and_centered_controls" time="0.005" /><testcase classname="tests.test_tour_preview" name="test_tour_excursions_never_save_demo_preferences_or_autosave[tutorial]" time="0.169" /><testcase classname="tests.test_tour_preview" name="test_tour_excursions_never_save_demo_preferences_or_autosave[worldmap]" time="0.172" /><testcase classname="tests.test_tour_preview" name="test_tour_excursions_never_save_demo_preferences_or_autosave[redstone]" time="1.083" /><testcase classname="tests.test_tour_preview" name="test_hidden_source_water_does_not_intercept_monument_clicks" time="0.002" /><testcase classname="tests.test_tour_preview" name="test_cold_tutorial_render_finishes_while_animation_frames_advance" time="0.766" /><testcase classname="tests.test_tour_preview" name="test_small_tutorial_subject_fills_and_centers_against_background[welcome]" time="0.002" /><testcase classname="tests.test_tour_preview" name="test_small_tutorial_subject_fills_and_centers_against_background[blocks]" time="0.002" /><testcase classname="tests.test_tour_preview" name="test_small_tutorial_subject_fills_and_centers_against_background[camera]" time="0.001" /><testcase classname="tests.test_tour_preview" name="test_small_tutorial_subject_fills_and_centers_against_background[skies]" time="0.002" /><testcase classname="tests.test_tutorial_bundle_core" name="test_loaded_states_are_independent_and_transfer_once" time="0.509" /><testcase classname="tests.test_tutorial_bundle_core" name="test_partial_rebake_keeps_other_valid_lessons" time="0.540" /><testcase classname="tests.test_tutorial_bundle_core" name="test_damaged_bundle_falls_back_but_release_validation_fails[bytes]" time="0.348" /><testcase classname="tests.test_tutorial_bundle_core" name="test_damaged_bundle_falls_back_but_release_validation_fails[manifest]" time="0.396" /><testcase classname="tests.test_tutorial_bundle_core" name="test_damaged_bundle_falls_back_but_release_validation_fails[path]" time="0.357" /><testcase classname="tests.test_tutorial_bundle_core" name="test_damaged_bundle_falls_back_but_release_validation_fails[python]" time="0.371" /><testcase classname="tests.test_tutorial_bundle_core" name="test_damaged_bundle_falls_back_but_release_validation_fails[cells]" time="0.363" /><testcase classname="tests.test_tutorial_bundle_core" name="test_fingerprint_includes_worlds_and_compact_cell_records" time="0.110" /><testcase classname="tests.test_tutorial_prepared" name="test_prepared_lesson_matches_source_and_never_reuses_live_state" time="3.345" /><testcase classname="tests.test_tutorial_prepared" name="test_prepared_lighting_matches_live_calculation_and_invalidates_after_edit" time="16.159" /><testcase classname="tests.test_ui_consistency" name="test_native_chrome_never_inherits_block_or_atlas_pixels" time="0.001" /><testcase classname="tests.test_ui_consistency" name="test_curated_roster_retains_distinct_families_and_source_catalog" time="0.001" /><testcase classname="tests.test_ui_consistency" name="test_capture_is_settled_and_actual_keyboard_events_rotate_without_losing_scene" time="17.177" /><testcase classname="tests.test_ui_consistency" name="test_cancelled_biome_future_does_not_replace_live_build" time="0.043" /><testcase classname="tests.test_ui_consistency" name="test_library_close_and_blank_clicks_do_not_edit_canvas" time="0.264" /><testcase classname="tests.test_ui_consistency" name="test_settings_slider_and_mute_use_displayed_hitboxes" time="0.116" /><testcase classname="tests.test_ui_consistency" name="test_tutorial_blank_panel_click_is_silent" time="0.016" /><testcase classname="tests.test_ui_consistency" name="test_invisible_expensive_animations_are_skipped_and_resume_on_demand" time="0.015" /><testcase classname="tests.test_ui_consistency" name="test_queued_capture_prepares_four_views_then_releases_input" time="3.165" /><testcase classname="tests.test_undo" name="test_remove_undo_restores_properties_and_liquid_state" time="0.001" /><testcase classname="tests.test_undo" name="test_batch_execute_and_undo_each_increment_world_revision_once" time="0.002" /><testcase classname="tests.test_visibility_contract" name="test_every_side_combination_and_transparent_neighbor" time="0.058" /><testcase classname="tests.test_workshop" name="test_context_fade_is_time_based_and_occupied_controls_never_hide" time="0.002" /><testcase classname="tests.test_workshop" name="test_ui_press_consumes_release_after_fade_without_world_edit" time="0.005" /><testcase classname="tests.test_workshop" name="test_save_failure_stays_visible_and_has_no_saved_revision" time="0.004" /><testcase classname="tests.test_workshop" name="test_blank_chrome_consumes_whole_gesture" time="0.005" /><testcase classname="tests.test_workshop" name="test_ui_navigation_preserves_minimap_and_original_hud_route" time="0.004" /><testcase classname="tests.test_workshop" name="test_search_retains_keyboard_ownership_after_shell_focus" time="0.004" /><testcase classname="tests.test_workshop" name="test_leaving_partial_preview_cannot_starve_new_selection" time="0.012" /><testcase classname="tests.test_workshop" name="test_preview_cache_is_byte_bounded_and_content_namespaced" time="0.012" /><testcase classname="tests.test_workshop" name="test_preview_bounds_prepared_without_display_work" time="0.001" /><testcase classname="tests.test_workshop" name="test_shelf_selection_previews_before_explicit_placement" time="0.005" /><testcase classname="tests.test_workshop_production" name="test_full_catalog_search_categories_and_favorites" time="12.866" /><testcase classname="tests.test_workshop_production" name="test_copy_and_radial_use_real_handlers_without_clear_or_tree" time="0.021" /><testcase classname="tests.test_workshop_production" name="test_fill_mirror_half_and_undo_reach_original_state" time="0.017" /><testcase classname="tests.test_workshop_production" name="test_every_method_destination_exists" time="0.006" /><testcase classname="tests.test_workshop_production" name="test_drag_assigns_hotbar_then_consumes_release" time="0.014" /><testcase classname="tests.test_workshop_production" name="test_hidden_hotbar_has_no_hits_and_outside_mouse_does_not_reveal" time="0.011" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1-size0]" time="0.017" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1-size1]" time="0.020" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1-size2]" time="0.027" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.25-size0]" time="0.022" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.25-size1]" time="0.021" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.25-size2]" time="0.034" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.5-size0]" time="0.023" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.5-size1]" time="0.029" /><testcase classname="tests.test_workshop_production" name="test_settings_controls_and_drawer_hits_stay_inside_native_canvas[1.5-size2]" time="0.031" /><testcase classname="tests.test_workshop_production" name="test_modern_resize_preserves_center_world_anchor" time="0.007" /><testcase classname="tests.test_workshop_production" name="test_textinput_commits_unicode_once_and_retains_editing_keys" time="0.006" /><testcase classname="tests.test_workshop_production" name="test_fullscreen_requests_desktop_instead_of_window_resolution" time="0.007" /><testcase classname="tests.test_workshop_production" name="test_fullscreen_round_trip_does_not_reduce_zoom_on_each_visit" time="0.021" /><testcase classname="tests.test_workshop_production" name="test_clear_confirmation_owns_keyboard_and_escape_keeps_build" time="0.005" /><testcase classname="tests.test_world_indexes" name="test_worker_prepared_replacement_keeps_source_and_revisit_independent" time="0.003" /><testcase classname="tests.test_world_indexes" name="test_single_edits_keep_type_bounds_height_chunk_and_surface_indexes_current" time="0.001" /><testcase classname="tests.test_world_indexes" name="test_water_cutaway_exposes_submerged_cells_without_deleting_water" time="0.004" /><testcase classname="tests.test_world_indexes" name="test_bulk_replace_matches_reference_interactive_indexes" time="0.002" /><testcase classname="tests.test_world_map_scenes" name="test_nether_regions_preserve_full_vanilla_assemblies_and_all_five_biomes" time="3.655" /><testcase classname="tests.test_world_map_scenes" name="test_end_capture_contains_central_island_and_complete_natural_city_ship" time="1.471" /><testcase classname="tests.test_world_map_scenes" name="test_captured_palette_states_are_retained_without_material_aliases" time="0.476" /><testcase classname="tests.test_world_map_scenes" name="test_ocean_hub_has_full_58_block_monument_without_decorative_water_blocks" time="1.146" /><testcase classname="tests.test_world_map_scenes" name="test_overworld_has_snowy_taiga_and_larger_mushroom_islands" time="1.957" /><testcase classname="tests.test_world_map_scenes" name="test_every_region_has_two_named_nonplayable_landmarks" time="12.273" /><testcase classname="tests.test_world_map_scenes" name="test_biome_selection_and_portal_provenance" time="1.804" /><testcase classname="tests.test_world_map_scenes" name="test_outer_islands_have_no_end_stone_at_capture_boundaries" time="0.629" /><testcase classname="tests.test_world_map_ui" name="test_director_edge_key_restores_transparency_and_visible_arrows" time="0.241" /><testcase classname="tests.test_world_map_ui" name="test_question_marker_composes_the_exact_recovered_worldbuilder_layers" time="0.132" /><testcase classname="tests.test_world_map_ui" name="test_question_marker_uses_director_registration_idle_orbit_and_hover_clock" time="0.131" /><testcase classname="tests.test_world_map_ui" name="test_displayed_question_marker_is_25_percent_larger_without_changing_source_cast" time="0.121" /><testcase classname="tests.test_world_map_ui" name="test_dimension_tabs_are_real_hit_targets" time="0.116" /><testcase classname="tests.test_world_map_ui" name="test_region_controls_and_original_route_indices_remain_distinct" time="0.127" /><testcase classname="tests.test_world_map_ui" name="test_close_zoom_pan_translates_cached_source_geometry" time="1.514" /><testcase classname="tests.test_world_map_ui" name="test_source_preview_markers_never_launch_objectives" time="0.122" /><testcase classname="tests.test_world_map_ui" name="test_obsidian_pillar_has_no_internal_alpha_gaps_at_fractional_zooms" time="0.475" /><testcase classname="tests.test_world_map_ui" name="test_dimension_ambience_moves_with_time_without_covering_large_areas" time="0.162" /><testcase classname="tests.test_world_map_ui" name="test_map_markers_cannot_paint_or_click_through_navigation" time="0.132" /><testcase classname="tests.test_world_map_ui" name="test_ocean_locked_map_has_no_clickable_level_node" time="0.130" /><testcase classname="tests.test_world_map_ui" name="test_hover_sound_fires_once_per_entry_across_larger_hit_target" time="0.172" /><testcase classname="tests.test_world_map_ui" name="test_ocean_placeholders_hover_but_do_not_open_empty_levels" time="0.152" /><testcase classname="tests.test_world_map_ui" name="test_hover_copy_uses_worldbuilder_mission_language" time="0.147" /><testcase classname="tests.test_world_map_ui" name="test_each_map_uses_the_approved_texture_derived_traveler_pair" time="0.128" /><testcase classname="tests.test_world_map_ui" name="test_open_traveler_routes_reverse_continuously_instead_of_teleporting" time="0.004" /></testsuite></testsuites>

@@ -1,0 +1,24 @@
+{
+  "ground": {
+    "peak": 0.360309362411499,
+    "type": "Offline synchronized audition, not loopback",
+    "rise_at": 13,
+    "piano_gain": 0.32,
+    "ambient_gain": 0.08,
+    "rise_gain": 0.704,
+    "place_at": 5,
+    "settle_at": 23,
+    "omitted": "Orbit and contact hover depend on real input; not reconstructed here"
+  },
+  "chamber": {
+    "peak": 0.3473769426345825,
+    "type": "Offline synchronized audition, not loopback",
+    "rise_at": 13,
+    "piano_gain": 0.32,
+    "ambient_gain": 0.08,
+    "rise_gain": 0.704,
+    "place_at": 5,
+    "settle_at": 23,
+    "omitted": "Orbit and contact hover depend on real input; not reconstructed here"
+  }
+}
