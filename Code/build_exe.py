@@ -130,6 +130,13 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
         path = os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub', 'opening', cue)
         if not os.path.isfile(path):
             raise FileNotFoundError(f'Required SuperCollider opening cue is missing: {path}')
+    pass1_audio=('opening/sanctuary-rise-b4.ogg',
+        'opening/piano-chapters/01-one.ogg','opening/piano-chapters/03-three.ogg',
+        'opening/piano-chapters/07-seven.ogg',
+        *(f'ui/workshop/{name}.ogg' for name in ('focus','select','open','cancel','success','failure')))
+    for relative in pass1_audio:
+        path=os.path.join(PROJECT_ROOT,'Assets','Sound Hub',relative)
+        if not os.path.isfile(path):raise FileNotFoundError(f'Required Pass 1 audio is missing: {path}')
     for name in ('rig.npz',*(f'{i}.png' for i in range(7))):
         path=os.path.join(PROJECT_ROOT,'Assets','Opening','Creature','Thorn',name)
         if not os.path.isfile(path):raise FileNotFoundError(f'Required opening rig asset is missing: {path}')

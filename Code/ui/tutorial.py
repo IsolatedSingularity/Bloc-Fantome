@@ -49,12 +49,26 @@ class GuidedTutorialMixin:
         self.panelY=max(8,min(height-self.panelHeight-8,self.panelY))
         self._lastScreenHeight=height
         self._layoutPanelControls()
+    def _reflowText(self):
+        from ui.fonts import TEXT_SCALE
+        key=(TEXT_SCALE,self.screenWidth,self.screenHeight,self.currentStep)
+        if getattr(self,'_textLayout',None)==key:return
+        self._textLayout=key
+        bottom=self.panelY+self.panelHeight
+        self.panelWidth=min(self.screenWidth-32,round(352*TEXT_SCALE))
+        base=344 if self.lesson['id']=='dimensions' else 332 if self.lesson['id']=='saving' else 310
+        self.panelHeight=min(self.screenHeight-102,round(base*TEXT_SCALE))
+        self.panelY=max(78,min(self.screenHeight-84,bottom)-self.panelHeight)
+        self.panelX=max(16,min(self.screenWidth-self.panelWidth-16,self.panelX))
+        self._layoutPanelControls()
     def _layoutPanelControls(self):
         super()._layoutPanelControls()
-        x=self.panelX+14;y=self.panelY+self.panelHeight-66
-        self.backButtonRect=pygame.Rect(x,y,102,30)
-        self.nextButtonRect=pygame.Rect(x+111,y,102,30)
-        self.skipButtonRect=pygame.Rect(x+222,y,102,30)
+        height=max(30,self.smallFont.get_height()+8) if hasattr(self,'smallFont') else 30
+        x=self.panelX+14;y=self.panelY+self.panelHeight-height-36
+        width=(self.panelWidth-46)//3
+        self.backButtonRect=pygame.Rect(x,y,width,height)
+        self.nextButtonRect=pygame.Rect(x+width+9,y,width,height)
+        self.skipButtonRect=pygame.Rect(x+2*(width+9),y,width,height)
         self.checkboxRect=pygame.Rect(x,y+44,14,14)
         self.optionalRect=pygame.Rect(x,y-26,308,21)
     def advancedHotbarNames(self,index):return tuple(TOUR[index]['icons'])
@@ -117,20 +131,24 @@ class GuidedTutorialMixin:
         else:return True
         self._playClickSound();return True
     def _button(self,screen,rect,label,active=False):
-        if self.assetManager:self.assetManager.drawButton(screen,rect,label,self.smallFont,rect.collidepoint(pygame.mouse.get_pos()),active)
-        else:
-            pygame.draw.rect(screen,(95,95,95),rect)
-            screen.blit(self.smallFont.render(label,True,TEXT),rect.move(8,5))
+        from ui.chrome import button
+        button(screen,rect,label,self.smallFont,rect.collidepoint(pygame.mouse.get_pos()),active,quiet=True)
     def render(self,screen):
         if not self.visible:return
-        if self.minimized:return
+        self._reflowText()
+        if self.minimized:
+            self._renderMinimizedTile(screen);return
         if self.highlightRect:
             pygame.draw.rect(screen,(215,202,145),self.highlightRect.clip(screen.get_rect()).inflate(4,4),2)
         x,y=self.panelX,self.panelY;w=self.panelWidth
         panel(screen,(x,y,w,self.panelHeight),self.assetManager)
         label='OPTIONAL DETOUR' if self.optional else f'TUTORIAL  {self.currentStep+1} / {len(TOUR)}'
         self._button(screen,pygame.Rect(x+8,y+8,w-46,30),label)
-        self._button(screen,self.minimizeButtonRect,'-')
+        self._button(screen,self.minimizeButtonRect,'')
+        # An icon, not a scaled font glyph: keep the affordance visible at
+        # every text size without changing the established drag hit region.
+        cx,cy=self.minimizeButtonRect.center
+        pygame.draw.line(screen,TEXT,(cx-5,cy),(cx+5,cy),2)
         if self.loading:
             # Immediate, quiet feedback while a worker prepares the next world.
             phase=(pygame.time.get_ticks()%1200)/1200
@@ -138,7 +156,8 @@ class GuidedTutorialMixin:
         area=pygame.Rect(x+16,y+47,w-32,self.backButtonRect.top-y-53)
         old=screen.get_clip();screen.set_clip(area)
         yy=wrapped(screen,self.lesson['title'],self.titleFont,area)
-        yy=wrapped(screen,self.lesson['content'][0],self.contentFont,(area.x,yy+6,area.width,100))
+        from ui.fonts import TEXT_SCALE
+        yy=wrapped(screen,self.lesson['content'][0],self.contentFont,(area.x,yy+6,area.width,round(100*TEXT_SCALE)))
         pygame.draw.line(screen,(95,86,72),(area.x,yy+4),(area.right,yy+4))
         yy=wrapped(screen,self.lesson['hint'],self.smallFont,(area.x,yy+10,area.width,area.bottom-yy-10),MUTED)
         screen.set_clip(old)

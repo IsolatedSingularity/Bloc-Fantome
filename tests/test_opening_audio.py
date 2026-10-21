@@ -23,6 +23,10 @@ def test_opening_never_claims_or_stops_paused_editor_channels():
         assert pygame.mixer.Channel(OPENING_CHANNELS['ambience']).get_sound() is opening.sounds['ambience']
         opening.start_encounter()
         opening.close()
+        automatic=pygame.mixer.Sound(buffer=bytes(44100*4))
+        assert automatic.play() is not None
+        assert any(pygame.mixer.Channel(i).get_sound() is automatic
+                   for i in range(37,pygame.mixer.get_num_channels()))
         assert all(pygame.mixer.Channel(i).get_sound() is sentinel for i in (25,26))
         assert not any(pygame.mixer.Channel(i).get_busy() for i in OPENING_CHANNELS.values())
     finally:

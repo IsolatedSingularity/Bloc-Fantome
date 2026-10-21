@@ -9,7 +9,9 @@ from runtime_paths import SOUNDS_DIR
 # Paused channels remain busy in SDL_mixer, so sharing 25/26 can suppress the
 # opening bed and destroy the editor's suspended portal/horror loops on exit.
 OPENING_CHANNELS = dict(orbit=32, ambience=33, score=34, hover=35, contact=36)
-MIXER_CHANNEL_COUNT = 37
+RESERVED_CHANNEL_COUNT = 37
+# Automatic Sound.play() callers retain their own bounded unreserved pool.
+MIXER_CHANNEL_COUNT = RESERVED_CHANNEL_COUNT + 8
 
 
 class OpeningAudio:
@@ -23,12 +25,14 @@ class OpeningAudio:
         if not pygame.mixer.get_init():return
         if pygame.mixer.get_num_channels() < MIXER_CHANNEL_COUNT:
             pygame.mixer.set_num_channels(MIXER_CHANNEL_COUNT)
-        pygame.mixer.set_reserved(MIXER_CHANNEL_COUNT)
+        pygame.mixer.set_reserved(RESERVED_CHANNEL_COUNT)
         for name,path in {'hover':'note/harp.ogg','orbit':'opening/orbit-bed.wav',
                           'rise':'opening/sanctuary-rise.wav',
                           'ambience':'opening/abyss-bed.wav','encounter':'opening/encounter.wav',
                           'touch':'note/icechime.ogg','settle':'block/lodestone/place1.ogg',
                           'place':'dig/stone1.ogg','move':'opening/monument-move.wav'}.items():
+            if name=='rise' and os.path.isfile(os.path.join(SOUNDS_DIR,'opening','sanctuary-rise-b4.ogg')):
+                path='opening/sanctuary-rise-b4.ogg'
             try:self.sounds[name]=pygame.mixer.Sound(os.path.join(SOUNDS_DIR,path))
             except (OSError,pygame.error) as error:
                 self.load_errors[name]=str(error)

@@ -416,7 +416,8 @@ class World:
         size = self.chunkStorage.chunk_size
         chunks = defaultdict(set)
         for pos in self.viewSurfacePositionsByView[rotation]:
-            chunks[tuple(value // size for value in pos)].add(pos)
+            x, y, z = pos
+            chunks[(x // size, y // size, z // size)].add(pos)
         self.viewSurfaceChunksByView[rotation] = dict(chunks)
         self._viewSurfaceChunksReady.add(rotation)
 

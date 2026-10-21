@@ -65,8 +65,7 @@ class SplashScreen:
     def _load_title_font(self) -> pygame.font.Font:
         """Rasterize the understated title at its final display size."""
         size = max(22, min(32, round(self.window_height * .035)))
-        path = pygame.font.match_font('segoeui')
-        return pygame.font.Font(path, size) if path else load_ui_font(size, fonts_dir=self.fonts_dir)
+        return load_ui_font(size, fonts_dir=self.fonts_dir)
 
     def _load_title_artwork(self) -> pygame.Surface:
         return self.title_font.render('Bloc Fantôme', True, (236, 232, 219))

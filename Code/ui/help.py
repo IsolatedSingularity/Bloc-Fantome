@@ -25,23 +25,42 @@ SHORTCUTS = (
 )
 
 
+def handle_event(event,app):
+    if not app.showShortcutsPanel:return False
+    if event.type==pygame.KEYDOWN:
+        if event.key in (pygame.K_ESCAPE,pygame.K_SLASH):app.showShortcutsPanel=False
+        elif event.key in (pygame.K_RIGHT,pygame.K_PAGEDOWN):app.helpPage=min(getattr(app,'helpPages',1)-1,getattr(app,'helpPage',0)+1)
+        elif event.key in (pygame.K_LEFT,pygame.K_PAGEUP):app.helpPage=max(0,getattr(app,'helpPage',0)-1)
+    elif event.type==pygame.MOUSEBUTTONDOWN and event.button==1:
+        if getattr(app,'helpCloseRect',pygame.Rect(0,0,0,0)).collidepoint(event.pos):app.showShortcutsPanel=False
+        for direction,rect in getattr(app,'helpPageRects',[]):
+            if rect.collidepoint(event.pos):app.helpPage=max(0,min(app.helpPages-1,getattr(app,'helpPage',0)+direction))
+    return event.type in (pygame.KEYDOWN,pygame.KEYUP,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.MOUSEMOTION,pygame.MOUSEWHEEL)
+
+
 def render(app):
     if not app.showShortcutsPanel:return
-    screen=app.screen
-    overlay=pygame.Surface(screen.get_size(),pygame.SRCALPHA);overlay.fill((0,0,0,180));screen.blit(overlay,(0,0))
-    box=pygame.Rect(0,0,min(920,screen.get_width()-32),min(700,screen.get_height()-32));box.center=screen.get_rect().center
-    panel(screen,box,app.assetManager)
-    from ui.chrome import heading
-    heading(screen,(box.x+14,box.y+12,box.width-76,34),'Help / Shortcuts',app.assetManager,app.sectionFont)
-    app.helpCloseRect=pygame.Rect(box.right-48,box.y+14,30,30)
-    app.assetManager.drawButton(screen,app.helpCloseRect,'X',app.smallFont,app.helpCloseRect.collidepoint(pygame.mouse.get_pos()))
-    font=load_ui_font(14)
-    rows=(len(SHORTCUTS)+1)//2
-    stride=(box.height-100)//rows
-    cw=(box.width-40)//2
-    for i,(key,action) in enumerate(SHORTCUTS):
-        x=box.x+20+(i//rows)*cw;y=box.y+65+(i%rows)*stride
-        screen.blit(font.render(key,True,(177,205,142)),(x,y))
-        screen.blit(font.render(action,True,TEXT),(x+166,y))
-    text=font.render('Esc closes this panel. Your build stays active underneath.',True,MUTED)
-    screen.blit(text,text.get_rect(midbottom=(box.centerx,box.bottom-15)))
+    from ui.chrome import button,wrapped,ACCENT
+    screen=app.screen;mouse=pygame.mouse.get_pos()
+    overlay=pygame.Surface(screen.get_size(),pygame.SRCALPHA);overlay.fill((0,0,0,150));screen.blit(overlay,(0,0))
+    box=pygame.Rect(0,0,min(1060,screen.get_width()-48),min(760,screen.get_height()-48));box.center=screen.get_rect().center
+    panel(screen,box)
+    screen.blit(app.sectionFont.render('Controls',True,TEXT),(box.x+24,box.y+18))
+    app.helpCloseRect=pygame.Rect(box.right-112,box.y+18,88,36)
+    button(screen,app.helpCloseRect,'Close',app.smallFont,app.helpCloseRect.collidepoint(mouse),quiet=True)
+    font=load_ui_font(14);line=font.get_linesize();stride=line*2+14
+    rows=max(1,(box.height-136)//stride);per_page=rows*2
+    entries=SHORTCUTS+(('F1 / Ctrl+Tab','Reveal / focus controls'),)
+    app.helpPages=(len(entries)+per_page-1)//per_page
+    app.helpPage=min(getattr(app,'helpPage',0),app.helpPages-1)
+    cw=(box.width-64)//2
+    for i,(key,action) in enumerate(entries[app.helpPage*per_page:(app.helpPage+1)*per_page]):
+        x=box.x+24+(i//rows)*(cw+16);y=box.y+72+(i%rows)*stride
+        wrapped(screen,key,font,(x,y,cw,line+2),ACCENT)
+        wrapped(screen,action,font,(x,y+line+2,cw,line+2),TEXT)
+    app.helpPageRects=[]
+    for direction,label,x in ((-1,'Previous',box.x+24),(1,'Next',box.right-124)):
+        rect=pygame.Rect(x,box.bottom-49,100,32);app.helpPageRects.append((direction,rect))
+        button(screen,rect,label,font,rect.collidepoint(mouse),enabled=0<=app.helpPage+direction<app.helpPages)
+    text=font.render(f'{app.helpPage+1} / {app.helpPages}   ·   Esc closes',True,MUTED)
+    screen.blit(text,text.get_rect(center=(box.centerx,box.bottom-33)))

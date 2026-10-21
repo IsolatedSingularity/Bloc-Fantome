@@ -120,10 +120,12 @@ def test_every_world_has_a_real_preview_and_catalogs_do_not_mix_tutorials(app):
 
 def test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize(app):
     app._beginTutorial(advanced=False)
-    with patch.object(app.assetManager,'drawButton',wraps=app.assetManager.drawButton) as draw:
+    with patch.object(app.tutorialScreen,'_button',wraps=app.tutorialScreen._button) as draw:
         app.tutorialScreen.render(app.screen)
         labels=[call.args[2] for call in draw.call_args_list]
-    assert labels==['TUTORIAL  1 / 16','-','Back','Next','Leave']
+    assert labels==['TUTORIAL  1 / 16','','Back','Next','Leave']
+    from ui.chrome import TEXT
+    assert app.screen.get_at(app.tutorialScreen.minimizeButtonRect.center)[:3]==TEXT
     app.tutorialScreen.hide()
 
 
@@ -141,7 +143,8 @@ def test_tutorial_lab_returns_to_page_and_preserves_original_editor(app):
     assert dict(app.world.blocks)==original
 
 
-def test_persistent_question_mark_and_centered_controls(app):
+def test_legacy_question_mark_and_centered_controls(app, monkeypatch):
+    monkeypatch.setattr(app.workshop,"legacy",True)
     app.tutorialScreen.visible=False
     app._renderPanel();app._layoutWindowControls()
     assert app.tutorialTomeRect.right+6==app.settingsGearRect.left

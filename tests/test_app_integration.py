@@ -218,6 +218,8 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertFalse(self.app.redstoneLabActive)
 
     def test_responsive_minimum_reflows_controls_and_preserves_camera_center(self):
+        self.app.workshop.legacy=True
+        self.addCleanup(setattr,self.app.workshop,"legacy",False)
         old_size = (app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT)
         old_zoom = self.app.zoomLevel
         old_canvas_width = old_size[0] - app_module.PANEL_WIDTH
@@ -327,6 +329,8 @@ class AppIntegrationTests(unittest.TestCase):
         )
 
     def test_panel_wheel_scroll_eases_toward_target(self):
+        self.app.workshop.legacy=True
+        self.addCleanup(setattr,self.app.workshop,"legacy",False)
         self.app.maxScroll = 600
         self.app.inventoryScroll = 0.0
         self.app.inventoryScrollTarget = 0.0
@@ -344,26 +348,23 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._updatePanelScroll(1000)
         self.assertAlmostEqual(self.app.inventoryScroll, 72.0, delta=0.1)
 
-    def test_settings_controls_share_one_bounded_minecraft_panel(self):
+    def test_settings_controls_share_one_bounded_native_panel(self):
         panel = self.app._settingsMenuRect()
         self.assertTrue(pygame.Rect(0, 0, app_module.WINDOW_WIDTH, app_module.WINDOW_HEIGHT).contains(panel))
-        slider = pygame.Rect(panel.x + 28, panel.y + 68 + 22, panel.width - 56, 12)
+        _,sliders,controls=self.app._settingsLayout()
+        slider = sliders[0][1]
         self.assertTrue(panel.contains(slider))
-        last_toggle = pygame.Rect(panel.x + 28, panel.y + 242 + 5 * 36, panel.width - 56, 30)
+        last_toggle = next(rect for _,action,rect in controls if action=='showBlockTooltip')
         self.assertTrue(panel.contains(last_toggle))
 
         old_value = self.app.showBlockTooltip
         self.app.settingsMenuOpen = True
+        self.app._renderSettingsMenu()
         self.app._handleSettingsClick(last_toggle.centerx, last_toggle.centery)
         self.assertNotEqual(self.app.showBlockTooltip, old_value)
         self.app.showBlockTooltip = old_value
 
-        world_rotation_toggle = pygame.Rect(
-            panel.x + 28,
-            panel.y + 242 + 6 * 36,
-            panel.width - 56,
-            30,
-        )
+        world_rotation_toggle = next(rect for _,action,rect in controls if action=='worldCenteredRotation')
         self.assertTrue(panel.contains(world_rotation_toggle))
         self.app.worldCenteredRotation = False
         self.app._handleSettingsClick(*world_rotation_toggle.center)

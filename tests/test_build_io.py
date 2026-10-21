@@ -149,3 +149,24 @@ def test_redstone_component_state_round_trips(tmp_path):
     assert restored.facing is Facing.NORTH
     assert restored.powered and restored.redstonePower == 15
     assert restored.repeaterDelay == 4 and restored.repeaterLocked
+
+
+def test_shared_painter_sort_preserves_each_modes_exact_total_order(monkeypatch):
+    import random
+    from engine import build_io, native_acceleration
+    rng=random.Random(731)
+    blocks={(rng.randrange(12),rng.randrange(12),rng.randrange(-3,9)):Block.STONE for _ in range(800)}
+    positions=list(blocks);structures=set(positions[::3])
+    surfaces={r:set(positions[r::5]) & structures for r in range(4)}
+    views={r:set(positions[r::2]) for r in range(4)}
+    tops={}
+    for x,y,z in blocks:tops[x,y]=max(z,tops.get((x,y),-10000))
+    terrain={(x,y,z) for (x,y),z in tops.items()}-structures
+    expected={mode:{} for mode in ('all','transparent','hidden')}
+    for r in range(4):
+        for mode,cells in (('all',views[r]),('transparent',terrain|surfaces[r]),('hidden',surfaces[r])):
+            ordered=sorted(cells,key=lambda p:(build_io._depth_key(r,p),p[2],p[0],p[1]))
+            expected[mode][r]=tuple((build_io._depth_key(r,p),*p,blocks[p]) for p in ordered)
+    assert build_io._draw_orders(blocks,structures,surfaces,views)==expected
+    monkeypatch.setattr(native_acceleration,'sort_positions',lambda *args:None)
+    assert build_io._draw_orders(blocks,structures,surfaces,views)==expected

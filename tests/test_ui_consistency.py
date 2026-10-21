@@ -26,15 +26,15 @@ def app():
     pygame.display.quit()
 
 
-def test_button_edges_survive_small_and_square_sizes():
+def test_native_chrome_never_inherits_block_or_atlas_pixels():
     pygame.init()
     source=pygame.Surface((200,20))
     source.fill((90,90,90));pygame.draw.rect(source,(255,255,255),source.get_rect(),2)
     for size in ((28,28),(96,27),(235,35)):
         result=button_surface(source,size)
         for pos in ((0,0),(size[0]-1,0),(0,size[1]-1),(size[0]-1,size[1]-1)):
-            assert result.get_at(pos)[:3]==(255,255,255)
-        assert result.get_at((size[0]//2,size[1]//2))[:3]==(90,90,90)
+            assert result.get_at(pos).a==0
+        assert result.get_at((size[0]//2,size[1]//2))[:3]==(32,43,46)
 
 
 def test_curated_roster_retains_distinct_families_and_source_catalog():

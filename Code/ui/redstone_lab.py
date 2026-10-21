@@ -3,12 +3,8 @@ import pygame
 from domain.blocks import BlockType as B, BlockProperties, Facing
 from engine.redstone_lab import LAB_CIRCUITS
 
-INK=(20,23,28)
-PANEL=(27,31,37)
-EDGE=(65,71,79)
-TEXT=(236,232,222)
-MUTED=(159,166,174)
-ACCENT=(226,94,78)
+from ui.chrome import SURFACE as INK, CONTROL as PANEL, MUTED as EDGE, TEXT, MUTED, ACCENT
+
 
 
 def label(app,text,pos,color=TEXT,font=None):
@@ -28,7 +24,7 @@ def wrapped(app,text,x,y,width,max_lines=3):
             lines.append(line);line=word
         else:line=trial
     if line:lines.append(line)
-    for line in lines[:max_lines]:label(app,line,(x,y),MUTED);y+=17
+    for line in lines[:max_lines]:label(app,line,(x,y),MUTED);y+=app.labSmallFont.get_linesize()+3
     return y
 
 
@@ -47,7 +43,7 @@ def thumbnail(app,circuit,size=(48,32)):
     surface=pygame.Surface((right-left,bottom-top),pygame.SRCALPHA)
     for x,y,sprite in cells:surface.blit(sprite,(x-left,y-top))
     ratio=min(size[0]/surface.get_width(),size[1]/surface.get_height())
-    result=pygame.transform.smoothscale(surface,(max(1,int(surface.get_width()*ratio)),max(1,int(surface.get_height()*ratio))))
+    result=pygame.transform.scale(surface,(max(1,int(surface.get_width()*ratio)),max(1,int(surface.get_height()*ratio))))
     cache[circuit.key]=result
     return result
 
@@ -57,19 +53,26 @@ def panel(app):
     from ui.chrome import panel as draw_panel
     draw_panel(app.screen,(x,0,w,height),app.assetManager,ACCENT)
     from ui.chrome import heading
-    heading(app.screen,(x+8,8,w-16,32),'Redstone Lab',app.assetManager,app.sectionFont)
-    label(app,'Java 1.16.1  /  ordinary power',(x+14,43),MUTED)
-    app.redstoneLabModeRects={key:pygame.Rect(x+12+i*(w-20)//2,69,(w-28)//2,30) for i,key in enumerate(('test','build'))}
+    line=app.labSmallFont.get_linesize();row=max(30,line+12)
+    heading_height=max(32,app.sectionFont.get_linesize()+4)
+    heading(app.screen,(x+8,8,w-16,heading_height),'Redstone Lab',app.assetManager,app.sectionFont)
+    label(app,'Java 1.16.1 / ordinary power',(x+14,12+heading_height),MUTED)
+    mode_y=heading_height+line+24
+    app.redstoneLabModeRects={key:pygame.Rect(x+12+i*(w-20)//2,mode_y,(w-28)//2,row) for i,key in enumerate(('test','build'))}
     for key,rect in app.redstoneLabModeRects.items():button(app,rect,'INTERACT' if key=='test' else 'BUILD',(key=='test')==app.interactionMode)
-    app.redstoneLabActionRects={key:pygame.Rect(x+12+i*(w-20)//3,108,(w-32)//3,28) for i,key in enumerate(('pause','step','reset'))}
+    action_y=mode_y+row+8
+    app.redstoneLabActionRects={key:pygame.Rect(x+12+i*(w-20)//3,action_y,(w-32)//3,row) for i,key in enumerate(('pause','step','reset'))}
     for key,rect in app.redstoneLabActionRects.items():
         button(app,rect,('RESUME' if app.redstoneLabPaused else 'PAUSE') if key=='pause' else key.upper(),key=='pause' and app.redstoneLabPaused)
+    content=pygame.Rect(x+8,action_y+row+12,w-16,max(40,height-100-(action_y+row+12)))
+    scroll=getattr(app,'redstoneLabScroll',0)
+    old_clip=app.screen.get_clip();app.screen.set_clip(content)
     app.redstoneLabCircuitRects={};app.redstoneLabComponentRects={};app.redstoneLabControlRects={}
     c=LAB_CIRCUITS.get(app.redstoneLabCircuitKey)
-    y=149
+    y=content.y-scroll
     if app.interactionMode:
-        label(app,'CIRCUIT COLLECTION',(x+14,y),MUTED);y+=23
-        row=28 if height<760 else 42
+        label(app,'CIRCUIT COLLECTION',(x+14,y),MUTED);y+=line+10
+        row=max(42,line+14)
         for key,circuit in LAB_CIRCUITS.items():
             rect=pygame.Rect(x+12,y,w-24,row-4);app.redstoneLabCircuitRects[key]=rect
             selected=key==app.redstoneLabCircuitKey
@@ -78,19 +81,20 @@ def panel(app):
             if preview:
                 if preview.get_height()>rect.height-4:
                     ratio=(rect.height-4)/preview.get_height()
-                    preview=pygame.transform.smoothscale(preview,(max(1,int(preview.get_width()*ratio)),rect.height-4))
+                    preview=pygame.transform.scale(preview,(max(1,int(preview.get_width()*ratio)),rect.height-4))
                 app.screen.blit(preview,preview.get_rect(center=(x+40,rect.centery)))
-            label(app,circuit.name,(x+69,rect.centery-7))
+            from ui.chrome import wrapped as native_wrapped
+            native_wrapped(app.screen,circuit.name,app.labSmallFont,(x+69,rect.y+5,w-84,rect.height-8))
             y+=row
         y+=5
         if c:
             y=wrapped(app,c.description,x+14,y,w-28,3)+8
             for title,pos in (() if c.key=='counter' else c.controls):
-                rect=pygame.Rect(x+12,y,w-24,25);app.redstoneLabControlRects[pos]=rect
+                rect=pygame.Rect(x+12,y,w-24,max(30,line+12));app.redstoneLabControlRects[pos]=rect
                 props=app.world.getBlockProperties(*pos)
                 valid=app.world.getBlock(*pos) in (B.LEVER,B.STONE_BUTTON)
                 button(app,rect,title+('  ON' if props and props.powered else ''),bool(valid and props and props.powered))
-                y+=30
+                y+=rect.height+6
             if c.key=='counter':
                 bits=[int(bool((app.world.getBlockProperties(*pos) or BlockProperties()).redstonePower)) for pos in c.outputs]
                 value=sum(bit<<i for i,bit in enumerate(bits))
@@ -101,23 +105,33 @@ def panel(app):
                 button(app,pulse,'PULSE +1' if app.redstoneLabPulseStart is None else 'CLOCK CYCLE IN PROGRESS',app.redstoneLabPulseStart is not None)
                 y+=34
     else:
-        label(app,'COMPONENTS',(x+14,y),MUTED);y+=24
+        label(app,'COMPONENTS',(x+14,y),MUTED);y+=line+10
+        stride=max(58,line+40)
         components=((B.REDSTONE_DUST,'Dust'),(B.REDSTONE_TORCH,'Torch'),(B.REDSTONE_WALL_TORCH,'Wall torch'),
                     (B.LEVER,'Lever'),(B.STONE_BUTTON,'Button'),(B.REPEATER,'Repeater'),
                     (B.PISTON,'Piston'),(B.STICKY_PISTON,'Sticky'),(B.REDSTONE_LAMP,'Lamp'),
                     (B.REDSTONE_BLOCK,'Power'),(B.SLIME_BLOCK,'Slime'),(B.HONEY_BLOCK,'Honey'),
                     (B.SMOOTH_STONE,'Support'),(B.QUARTZ_BLOCK,'Quartz'),(B.COMPARATOR,'Compare'))
         for i,(block,name) in enumerate(components):
-            rect=pygame.Rect(x+12+(i%3)*(w-20)//3,y+(i//3)*58,(w-32)//3,53)
+            rect=pygame.Rect(x+12+(i%3)*(w-20)//3,y+(i//3)*stride,(w-32)//3,stride-5)
             app.redstoneLabComponentRects[block]=rect
             button(app,rect,'',block==app.selectedBlock)
             sprite=app.assetManager.getPanelPreviewIcon(block)
             if sprite:
                 sprite=pygame.transform.scale(sprite,(28,28));app.screen.blit(sprite,sprite.get_rect(midtop=(rect.centerx,rect.top+2)))
             text=app.labSmallFont.render(name,True,TEXT);app.screen.blit(text,text.get_rect(midbottom=(rect.centerx,rect.bottom-4)))
-        y+=5*58+10
-        label(app,'Facing: '+app.previewFacing.name,(x+14,y),ACCENT);y+=24
+        y+=5*stride+10
+        label(app,'Facing: '+app.previewFacing.name,(x+14,y),ACCENT);y+=line+8
         y=wrapped(app,'R rotates the preview. Shift+R rotates a placed component. Ctrl+Z undoes edits.',x+14,y,w-28,3)
+    app.redstoneLabMaxScroll=max(0,y+scroll+8-content.bottom)
+    app.redstoneLabScroll=min(scroll,app.redstoneLabMaxScroll)
+    for mapping in (app.redstoneLabCircuitRects,app.redstoneLabComponentRects,app.redstoneLabControlRects):
+        for key,rect in mapping.items():mapping[key]=rect.clip(content)
+    if 'pulse' in app.redstoneLabActionRects:app.redstoneLabActionRects['pulse']=app.redstoneLabActionRects['pulse'].clip(content)
+    app.screen.set_clip(old_clip)
+    if app.redstoneLabMaxScroll:
+        thumb=max(20,round(content.height**2/(content.height+app.redstoneLabMaxScroll)))
+        pygame.draw.rect(app.screen,MUTED,(width-6,content.y+round((content.height-thumb)*app.redstoneLabScroll/app.redstoneLabMaxScroll),3,thumb),border_radius=1)
     app.redstoneLabRulesRect=pygame.Rect(x+12,min(y+6,height-106),w-24,24)
     cut=pygame.Rect(x+12,height-80,w-24,28)
     app.redstoneLabActionRects['cutaway']=cut

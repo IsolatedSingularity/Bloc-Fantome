@@ -11,14 +11,44 @@ from runtime_paths import FONTS_DIR
 
 
 ZEKTON_RELATIVE_PATH = os.path.join("Zekton", "Zekton-Regular.otf")
+TEXT_SCALE = 1.0
+
+
+def set_text_scale(scale):
+    """Change native rasterization size, never rescale rendered glyphs."""
+    global TEXT_SCALE
+    TEXT_SCALE = max(1.0, min(2.0, float(scale)))
+
+
+def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None):
+    # SDL can resolve the family name to Segoe UI Light. Choose the installed
+    # regular/semibold face explicitly. Never distribute Microsoft font files.
+    installed = os.path.join(os.environ.get('WINDIR', 'C:/Windows'), 'Fonts',
+                             'seguisb.ttf' if bold else 'segoeui.ttf')
+    if os.path.isfile(installed): return installed
+    matched = pygame.font.match_font('segoeuisemibold' if bold else 'segoeui')
+    if matched: return matched
+    licensed = zekton_path(fonts_dir)
+    return licensed if os.path.isfile(licensed) else fallback
 
 
 class UIFont:
     """Delegate to a native Pygame font while tracking bold text consistently."""
 
-    def __init__(self, font: pygame.font.Font, *, letter_spacing: int = 0):
-        self._font = font
+    def __init__(self, font: pygame.font.Font, *, letter_spacing: int = 0,
+                 path=None, base_size=None):
+        self._native = font
+        self.path = path
+        self.base_size = base_size
+        self._scale = TEXT_SCALE
         self.letter_spacing = max(0, int(letter_spacing))
+
+    @property
+    def _font(self):
+        if self.base_size is not None and self._scale != TEXT_SCALE:
+            self._native = pygame.font.Font(self.path, round(self.base_size * TEXT_SCALE))
+            self._scale = TEXT_SCALE
+        return self._native
 
     def render(self, text, antialias, color, background=None, wraplength=0):
         text = str(text)
@@ -73,14 +103,14 @@ def load_ui_font(
     fallback: Optional[str] = None,
     bold: bool = False,
 ) -> UIFont:
-    """Load Zekton at native size, falling back without scaling rendered text."""
-    path = zekton_path(fonts_dir)
+    """Resolve OS Segoe UI, with the existing licensed local font as fallback."""
+    path = font_source(bold, fonts_dir, fallback)
     try:
-        font = pygame.font.Font(path if os.path.isfile(path) else fallback, int(size))
+        font = pygame.font.Font(path, round(size * TEXT_SCALE))
     except (OSError, pygame.error):
-        font = pygame.font.Font(fallback, int(size))
-    font.set_bold(bool(bold))
-    return UIFont(font, letter_spacing=1 if bold else 0)
+        path = fallback
+        font = pygame.font.Font(path, round(size * TEXT_SCALE))
+    return UIFont(font, path=path, base_size=size)
 
 
 def render_tracked_text(

@@ -89,20 +89,8 @@ class WorldLibraryModal:
         return ("handled", None)
 
     def _tile_panel(self, screen: pygame.Surface, panel: pygame.Rect) -> None:
-        texture = self.assets.textures.get("stone_bricks")
-        if texture is None:
-            pygame.draw.rect(screen, (45, 45, 45), panel)
-            return
-        tile = pygame.transform.scale(texture, (64, 64))
-        old_clip = screen.get_clip()
-        screen.set_clip(panel)
-        for y in range(panel.y, panel.bottom, tile.get_height()):
-            for x in range(panel.x, panel.right, tile.get_width()):
-                screen.blit(tile, (x, y))
-        shade = pygame.Surface(panel.size, pygame.SRCALPHA)
-        shade.fill((18, 14, 12, 160))
-        screen.blit(shade, panel)
-        screen.set_clip(old_clip)
+        from ui.chrome import panel as draw_panel
+        draw_panel(screen, panel)
 
     def render(self, screen: pygame.Surface) -> None:
         if not self.visible:
@@ -118,15 +106,8 @@ class WorldLibraryModal:
             self.HEIGHT,
         )
         self._tile_panel(screen, panel)
-        pygame.draw.rect(screen, (26, 26, 26), panel, 4)
-        pygame.draw.line(screen, (150, 150, 150), panel.topleft, panel.topright, 2)
-        pygame.draw.line(screen, (150, 150, 150), panel.topleft, panel.bottomleft, 2)
-        pygame.draw.line(screen, (38, 38, 38), panel.bottomleft, panel.bottomright, 2)
-        pygame.draw.line(screen, (38, 38, 38), panel.topright, panel.bottomright, 2)
-
         shadow = self.font.render("Worlds", True, (55, 55, 55))
         title = self.font.render("Worlds", True, (255, 255, 255))
-        screen.blit(shadow, (panel.x + 27, panel.y + 22))
         screen.blit(title, (panel.x + 25, panel.y + 20))
         subtitle = self.small_font.render(
             "Large editable scenes use render-distance culling. Select a habitat to replace the canvas.",
@@ -149,7 +130,6 @@ class WorldLibraryModal:
 
         self._list_rect = pygame.Rect(panel.x + 25, tabs_y + 44, panel.width - 50, 374)
         pygame.draw.rect(screen, (18, 18, 18), self._list_rect)
-        pygame.draw.rect(screen, (92, 92, 92), self._list_rect, 2)
         old_clip = screen.get_clip()
         screen.set_clip(self._list_rect.inflate(-4, -4))
         self._entry_rects = []

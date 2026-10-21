@@ -51,6 +51,7 @@ class WorldLoadingAppMixin:
             self._biomeLoadOwner = None
             self.tooltipText = f"Could not open biome: {error}"
             self.tooltipTimer = 5000
+            if getattr(self,'workshop',None):self.workshop.error=self.tooltipText
 
 
     def _handleWorldLibraryAction(self, action) -> None:
@@ -113,3 +114,4 @@ class WorldLoadingAppMixin:
         else:
             self.tooltipText = f"Could not open {entry.name}"
             self.tooltipTimer = 3000
+            if getattr(self,'workshop',None):self.workshop.error=self.tooltipText+'. Your current build stays open.'

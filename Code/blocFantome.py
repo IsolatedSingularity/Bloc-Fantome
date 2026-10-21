@@ -70,7 +70,9 @@ pygame.mixer.pre_init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 pygame.init()
 if pygame.mixer.get_init() is None:
     pygame.mixer.init(44100, -16, 2, AUDIO_BUFFER_SIZE)
-pygame.mixer.set_num_channels(32)  # Increase for ambient, rain, horror, block sounds
+from ui.opening_audio import MIXER_CHANNEL_COUNT, RESERVED_CHANNEL_COUNT
+pygame.mixer.set_num_channels(MIXER_CHANNEL_COUNT)
+pygame.mixer.set_reserved(RESERVED_CHANNEL_COUNT)
 
 # ============================================================================
 # CONSTANTS AND CONFIGURATION
@@ -3188,18 +3190,9 @@ class _LegacyTutorialScreen:
             darkOverlay.fill((0, 0, 0, 180))  # Darker overlay for horror effect
             screen.blit(darkOverlay, (0, 0))
         
-        # Panel background (dark with border, darker for horror)
-        panelColor = (15, 10, 20) if is_horror else (30, 30, 35)
-        borderColor = (80, 20, 30) if is_horror else (80, 80, 90)
+        from ui.chrome import panel as draw_panel
         panelRect = pygame.Rect(self.panelX, self.panelY, self.panelWidth, self.panelHeight)
-        pygame.draw.rect(screen, panelColor, panelRect)
-        pygame.draw.rect(screen, borderColor, panelRect, 3)
-        
-        # Inner border for depth effect
-        innerColor = (30, 15, 25) if is_horror else (50, 50, 55)
-        innerRect = pygame.Rect(self.panelX + 5, self.panelY + 5, 
-                                 self.panelWidth - 10, self.panelHeight - 10)
-        pygame.draw.rect(screen, innerColor, innerRect, 1)
+        draw_panel(screen, panelRect)
 
         # Subtle OS-window affordance: a grip on the draggable header and a
         # compact Minecraft-grey minimize control.
@@ -3281,7 +3274,7 @@ class _LegacyTutorialScreen:
                             newW = int(spriteW * scale)
                             newH = int(spriteH * scale)
                             # Use smoothscale for high-quality tutorial icons
-                            scaledSprite = pygame.transform.smoothscale(blockSprite, (newW, newH))
+                            scaledSprite = pygame.transform.scale(blockSprite, (newW, newH))
                             offsetX = (iconSize - newW) // 2
                             offsetY = (iconSize - newH) // 2
                             screen.blit(scaledSprite, (iconX + offsetX, iconY + offsetY))
@@ -3470,53 +3463,9 @@ class _LegacyTutorialScreen:
         mark = self.smallFont.render("!", True, (255, 255, 255))
         screen.blit(mark, mark.get_rect(center=(badgeCenter[0], badgeCenter[1] - 1)))
     
-    def _drawButton(self, screen: pygame.Surface, rect: pygame.Rect, 
-                    text: str, hovered: bool, disabled: bool):
-        """
-        Draw a Minecraft-style button.
-        
-        Args:
-            screen: Surface to draw on
-            rect: Button rectangle
-            text: Button label
-            hovered: Whether button is being hovered
-            disabled: Whether button is disabled
-        """
-        # Choose texture based on state
-        if disabled:
-            # Disabled state - darker and grayed out
-            color = (50, 50, 55)
-            textColor = (100, 100, 100)
-        elif hovered:
-            texture = self.buttonHover if self.buttonHover else None
-            textColor = (255, 255, 160)  # Bright yellow on hover
-        else:
-            texture = self.buttonNormal if self.buttonNormal else None
-            textColor = (255, 255, 255)
-        
-        if disabled:
-            pygame.draw.rect(screen, color, rect)
-            pygame.draw.rect(screen, (40, 40, 45), rect, 2)
-        elif hovered and self.buttonHover:
-            scaledBtn = pygame.transform.scale(self.buttonHover, (rect.width, rect.height))
-            screen.blit(scaledBtn, rect.topleft)
-        elif self.buttonNormal:
-            scaledBtn = pygame.transform.scale(self.buttonNormal, (rect.width, rect.height))
-            screen.blit(scaledBtn, rect.topleft)
-        else:
-            # Fallback rendering
-            color = (90, 90, 100) if hovered else (70, 70, 80)
-            pygame.draw.rect(screen, color, rect)
-            pygame.draw.rect(screen, (50, 50, 60), rect, 2)
-        
-        # Text with shadow
-        shadowSurf = self.smallFont.render(text, True, (30, 30, 30))
-        shadowRect = shadowSurf.get_rect(center=(rect.centerx + 1, rect.centery + 1))
-        screen.blit(shadowSurf, shadowRect)
-        
-        textSurf = self.smallFont.render(text, True, textColor)
-        textRect = textSurf.get_rect(center=rect.center)
-        screen.blit(textSurf, textRect)
+    def _drawButton(self, screen, rect, text, hovered, disabled):
+        from ui.chrome import button
+        button(screen, rect, text, self.smallFont, hovered, enabled=not disabled)
     
     def _drawCheckbox(self, screen: pygame.Surface):
         """Draw the 'Show on startup' checkbox"""
@@ -7289,83 +7238,9 @@ class AssetManager:
                    hovered: bool = False, selected: bool = False,
                    bgTexture: str = None, bgTint: Tuple[int, int, int] = None,
                    letterSpacing: int = 0):
-        """Draw a Minecraft-style button with optional block texture background and tint"""
-        # Choose texture based on state
-        if selected:
-            texture = self.buttonHover if self.buttonHover else self.buttonNormal
-        elif hovered:
-            texture = self.buttonHover if self.buttonHover else self.buttonNormal
-        else:
-            texture = self.buttonNormal
-        
-        if bgTexture and bgTexture in self.textures:
-            # Use block texture as repeating/stretched background
-            blockTex = self.textures[bgTexture]
-            # Apply tint if provided (for grayscale textures like grass_block_top)
-            if bgTint:
-                blockTex = self._tintTexture(blockTex, bgTint)
-            bgSurf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-            
-            # Tile the texture to fill the button
-            texW, texH = blockTex.get_size()
-            for ty in range(0, rect.height, texH):
-                for tx in range(0, rect.width, texW):
-                    bgSurf.blit(blockTex, (tx, ty))
-            
-            # Darken slightly for better text visibility
-            darkOverlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-            darkOverlay.fill((0, 0, 0, 60))
-            bgSurf.blit(darkOverlay, (0, 0))
-            
-            # Brighten on hover
-            if hovered or selected:
-                brightOverlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-                brightOverlay.fill((255, 255, 255, 40))
-                bgSurf.blit(brightOverlay, (0, 0))
-            
-            screen.blit(bgSurf, rect.topleft)
-            
-            # Draw border
-            borderColor = (255, 200, 50) if selected else ((180, 180, 180) if hovered else (80, 80, 80))
-            pygame.draw.rect(screen, borderColor, rect, 2)
-        elif texture:
-            key = (id(texture), rect.width, rect.height)
-            scaledBtn = self.uiScaleCache.get(key)
-            if scaledBtn is None:
-                from ui.chrome import button_surface
-                scaledBtn = button_surface(texture, rect.size)
-                self.uiScaleCache[key] = scaledBtn
-            screen.blit(scaledBtn, rect.topleft)
-        else:
-            # Fallback to simple rectangle
-            baseColor = (100, 100, 100) if hovered else (80, 80, 80)
-            borderColor = (60, 60, 60)
-            pygame.draw.rect(screen, baseColor, rect)
-            pygame.draw.rect(screen, borderColor, rect, 2)
-        
-        if selected:
-            pygame.draw.rect(screen, (177, 205, 142), rect.inflate(-4, -4), 1)
-
-        # Draw text with shadow
-        shadowKey = (id(font), text, (30, 30, 30), int(letterSpacing))
-        shadowSurf = self.uiTextCache.get(shadowKey)
-        if shadowSurf is None:
-            shadowSurf = render_tracked_text(
-                font, text, (30, 30, 30), letterSpacing
-            )
-            self.uiTextCache[shadowKey] = shadowSurf
-        shadowRect = shadowSurf.get_rect(center=(rect.centerx + 1, rect.centery + 1))
-        screen.blit(shadowSurf, shadowRect)
-        
-        textKey = (id(font), text, (255, 255, 255), int(letterSpacing))
-        textSurf = self.uiTextCache.get(textKey)
-        if textSurf is None:
-            textSurf = render_tracked_text(
-                font, text, (255, 255, 255), letterSpacing
-            )
-            self.uiTextCache[textKey] = textSurf
-        textRect = textSurf.get_rect(center=rect.center)
-        screen.blit(textSurf, textRect)
+        """Shared native-resolution control; block art belongs in thumbnails."""
+        from ui.chrome import button
+        button(screen, rect, text, font, hovered, selected)
 
     def drawPanelRow(
         self,
@@ -7383,19 +7258,9 @@ class AssetManager:
         effectTint: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Draw one consistent Minecraft-style submenu row."""
-        texture = self.buttonHover if hovered else self.buttonNormal
+        from ui.chrome import button
+        button(screen, rect, '', font, hovered, active)
         tint = tuple(effectTint[:3]) if active and effectTint else None
-        cacheKey = ("panel-row", id(texture), rect.width, rect.height)
-        row = self.uiScaleCache.get(cacheKey)
-        if row is None:
-            if texture:
-                row = pygame.transform.scale(texture, rect.size)
-            else:
-                row = pygame.Surface(rect.size)
-                row.fill((92, 92, 92) if hovered else (74, 74, 74))
-                pygame.draw.rect(row, (32, 32, 32), row.get_rect(), 2)
-            self.uiScaleCache[cacheKey] = row
-        screen.blit(row, rect.topleft)
 
         iconRect = None
         if icon is not None:
@@ -7521,21 +7386,9 @@ class AssetManager:
             screen.blit(fittedIcon, iconRect)
     
     def drawSlot(self, screen: pygame.Surface, rect: pygame.Rect, selected: bool = False):
-        """Draw a Minecraft-style inventory slot"""
-        if self.slotFrame:
-            key = (id(self.slotFrame), rect.width, rect.height)
-            scaledSlot = self.uiScaleCache.get(key)
-            if scaledSlot is None:
-                scaledSlot = pygame.transform.scale(self.slotFrame, (rect.width, rect.height))
-                self.uiScaleCache[key] = scaledSlot
-            screen.blit(scaledSlot, rect.topleft)
-        else:
-            # Fallback
-            pygame.draw.rect(screen, (60, 60, 60), rect)
-            pygame.draw.rect(screen, (40, 40, 40), rect, 2)
-        
-        if selected:
-            pygame.draw.rect(screen, SELECTED_COLOR, rect, 3)
+        from ui.chrome import button
+        if not hasattr(self,'_slotFont'):self._slotFont=load_ui_font(14)
+        button(screen,rect,'',self._slotFont,selected=selected)
 
     def playSound(self, soundCategory: str, worldPos: Tuple[int, int, int] = None, effectsVolume: float = 1.0):
         """
@@ -7565,8 +7418,9 @@ class AssetManager:
             if worldPos is not None and hasattr(self, 'renderer'):
                 # Get screen position of sound source
                 screenX, screenY = self.renderer.worldToScreen(*worldPos)
-                # Get center of screen (excluding panel)
-                centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
+                # Use the same visible canvas as drawing and picking.
+                screenWidth = self.viewport_width() if hasattr(self, 'viewport_width') else WINDOW_WIDTH
+                centerX = screenWidth // 2
                 centerY = WINDOW_HEIGHT // 2
                 
                 # Calculate distance for volume falloff
@@ -7579,7 +7433,6 @@ class AssetManager:
                 
                 # Calculate stereo panning based on horizontal position
                 # Pan ranges from -1 (full left) to +1 (full right)
-                screenWidth = WINDOW_WIDTH - PANEL_WIDTH
                 pan = (screenX - centerX) / (screenWidth / 2) if screenWidth > 0 else 0
                 pan = max(-1.0, min(1.0, pan))  # Clamp to [-1, 1]
                 
@@ -7606,6 +7459,8 @@ class AssetManager:
     
     def playClickSound(self):
         """Play the UI click sound"""
+        from ui.feedback import play
+        if play(self,'select') is not None:return
         if self.clickSound:
             self.audioRouter.play(self.clickSound, group="ui", volume=1.0)
 
@@ -8058,7 +7913,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.sceneTerrainMode = "all"
         
         # Calculate center offset for rendering
-        centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
+        centerX = WINDOW_WIDTH // 2
         centerY = WINDOW_HEIGHT // 3
         self.renderer = IsometricRenderer(
             centerX,
@@ -8067,6 +7922,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         )
         # Enables the existing positional falloff path for redstone and block sounds.
         self.assetManager.renderer = self.renderer
+        self.assetManager.viewport_width = self._worldViewportRight
         from engine.performance import PerformanceMonitor
         self.performanceMonitor = PerformanceMonitor(window_size=120)
         self.renderDistanceChunks = 4
@@ -8293,10 +8149,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.library = Library()
         from ui.preview_browser import PreviewBrowser, PreviewImages
         self.previewBrowser = PreviewBrowser()
-        self.workshop = None
-        if os.environ.get('BLOC_WORKSHOP_PREVIEW') in ('stone', 'glass'):
-            from ui.workshop import Workshop
-            self.workshop = Workshop(os.environ['BLOC_WORKSHOP_PREVIEW'])
+        from ui.workshop import Workshop
+        self.workshop = Workshop(categories=BLOCK_CATEGORIES)
+        self.workshop.legacy = os.environ.get('BLOC_WORKSHOP_PREVIEW') == 'legacy'
         self.previewImages = PreviewImages()
         self.structureDefinitions = PREMADE_STRUCTURES
         self.pendingBiomeLoad = None
@@ -8521,7 +8376,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Settings menu
         self.settingsMenuOpen = False
         self.openingScene = None
-        self._openingMusic = None
+        self._openingPiano = None
         # Q/E follows the cursor by default. The gear setting switches to the
         # fixed vertical axis through the editable world's X/Y center.
         self.worldCenteredRotation = False
@@ -8909,6 +8764,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if os.path.exists(APP_CONFIG_FILE):
                 with open(APP_CONFIG_FILE, 'r') as f:
                     config = json.load(f)
+                    self.workshop.restore_preferences(config.get('workshop', {}))
                     
                     # NOTE: Menu state (expanded categories, etc.) is NOT restored on launch
                     # This ensures a clean slate each session per user request
@@ -8991,6 +8847,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 else self.musicController.last_track
             )
             config = {
+                "workshop": self.workshop.preferences(),
                 "expandedCategories": self.expandedCategories,
                 "blocksExpanded": self.blocksExpanded,
                 "problemsExpanded": self.problemsExpanded,
@@ -9245,16 +9102,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _worldViewportRight(self) -> int:
         """Return the live canvas edge; every World Map surface owns the window."""
-        if getattr(self, "worldMapActive", False):
+        if getattr(self, 'redstoneLabActive', False):
+            from ui.fonts import TEXT_SCALE
+            return WINDOW_WIDTH-min(WINDOW_WIDTH//2,round(PANEL_WIDTH*TEXT_SCALE))
+        if (getattr(self, "worldMapActive", False) or
+                (getattr(self, 'workshop', None) and self.workshop.active(self))):
             return WINDOW_WIDTH
         return WINDOW_WIDTH - PANEL_WIDTH
 
-    def _applyWindowSize(self, width: int, height: int, *, recreate: bool = True) -> None:
+    def _applyWindowSize(self, width: int, height: int, *, recreate: bool = True, zoom_scale=None) -> None:
         """Apply a crisp native-size window and preserve the camera's visual center."""
         global WINDOW_WIDTH, WINDOW_HEIGHT
         old_width, old_height = WINDOW_WIDTH, WINDOW_HEIGHT
-        map_canvas = bool(getattr(self, "worldMapActive", False))
-        old_canvas_width = old_width if map_canvas else old_width - PANEL_WIDTH
+        old_canvas_width = self._worldViewportRight()
         old_center = self.renderer._screenToWorldPoint(
             old_canvas_width // 2, old_height // 2, self.cameraFocusZ
         )
@@ -9267,13 +9127,25 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             width, height = int(width), int(height)
         if recreate:
             flags = pygame.FULLSCREEN if self.fullscreen else pygame.RESIZABLE
-            self.screen = pygame.display.set_mode((width, height), flags)
+            try:
+                self.screen = pygame.display.set_mode((width, height), flags)
+                self._fullscreenBorderless=False
+            except pygame.error:
+                if not self.fullscreen:raise
+                # Some Windows drivers reject exclusive mode. A native-size
+                # borderless desktop window preserves the same pixel geometry.
+                self.screen=pygame.display.set_mode((width,height),pygame.NOFRAME)
+                from pygame._sdl2 import Window
+                self._displayWindow=Window.from_display_module()
+                self._displayWindow.position=(0,0)
+                self._fullscreenBorderless=True
         WINDOW_WIDTH, WINDOW_HEIGHT = width, height
-        new_canvas_width = width if map_canvas else width - PANEL_WIDTH
+        new_canvas_width = self._worldViewportRight()
         native_scale = min(
             new_canvas_width / max(1, old_canvas_width),
             height / max(1, old_height),
         )
+        if zoom_scale is not None:native_scale=zoom_scale
         self.zoomLevel = round(
             max(self.zoomMin, min(self.zoomMax, old_zoom * native_scale)), 3
         )
@@ -9286,6 +9158,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
         self._layoutWindowControls()
+        if getattr(self, 'workshop', None):
+            self.workshop.hits.clear()
+            self.workshop.panels.clear()
+            self.workshop.captured.clear()
+            self.workshop.reveal()
         self.tutorialScreen.resize(width, height)
         self.skyboxRenderer.resize((width, height))
         self.assetManager._createBackground(self.currentDimension)
@@ -9305,12 +9182,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         """Toggle native desktop fullscreen while retaining the last window size."""
         if self.fullscreen:
             self.fullscreen = False
-            self._applyWindowSize(*self.windowedSize)
+            self._applyWindowSize(*self.windowedSize,zoom_scale=1/getattr(self,'_fullscreenScale',1))
         else:
             self.windowedSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
-            info = pygame.display.Info()
+            # Info.current_w/h describe the current *window* after set_mode.
+            # They are not necessarily a supported exclusive display mode.
+            desktop = pygame.display.get_desktop_sizes()[0]
+            previous_zoom=self.zoomLevel
             self.fullscreen = True
-            self._applyWindowSize(info.current_w, info.current_h)
+            self._applyWindowSize(*desktop)
+            self._fullscreenScale=self.zoomLevel/max(previous_zoom,1e-9)
+        pygame.event.clear((pygame.VIDEORESIZE,pygame.WINDOWRESIZED,pygame.WINDOWSIZECHANGED))
 
     def _afterWorldEdit(self, affectedPositions=()) -> None:
         """Invalidate derived application state after one logical world edit."""
@@ -9335,7 +9217,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _centerOnCell(self, worldX: int, worldY: int, worldZ: int):
         """Center the view on a specific world cell"""
         self.cameraFocusZ = worldZ
-        centerX = (WINDOW_WIDTH - PANEL_WIDTH) // 2
+        centerX = (self._worldViewportRight()) // 2
         centerY = WINDOW_HEIGHT // 2
         
         # Get current screen position of the target cell
@@ -9785,6 +9667,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         for name, value in tool_defaults.items():
             setattr(self, name, value)
         self.redstoneLabActive = True
+        self.redstoneLabScroll = 0
         self._setInteractionMode(True)
         self.redstoneLabPaused = False
         self.redstoneLabCutaway = False
@@ -10986,6 +10869,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             ):
                 self._toggleFullscreen()
                 continue
+            # A drawer opener owns its release, even when it opens a modal.
+            shell = getattr(self, 'workshop', None)
+            if shell and ((event.type == pygame.MOUSEBUTTONUP and event.button in shell.captured)
+                          or event.type in (pygame.WINDOWFOCUSLOST, pygame.WINDOWFOCUSGAINED)):
+                if shell.handle_event(event, self):
+                    continue
             if self.pendingWorldLoad is not None:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.pendingWorldLoad[0].cancel()
@@ -11043,12 +10932,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 continue
 
             if self.showShortcutsPanel:
-                if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_SLASH):
-                    self.showShortcutsPanel = False
-                elif event.type == pygame.MOUSEBUTTONDOWN and getattr(self,'helpCloseRect',pygame.Rect(0,0,0,0)).collidepoint(event.pos):
-                    self.showShortcutsPanel = False
-                    self.assetManager.playClickSound()
-                if event.type in (pygame.KEYDOWN,pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP,pygame.MOUSEWHEEL):continue
+                from ui.help import handle_event
+                if handle_event(event,self):continue
+            if self.historyPanelOpen:
+                if event.type==pygame.KEYDOWN:
+                    if event.key==pygame.K_ESCAPE:self.historyPanelOpen=False
+                    continue
+                if event.type==pygame.MOUSEBUTTONDOWN:
+                    self._handleMouseDown(event);continue
+                if event.type==pygame.MOUSEWHEEL:
+                    self.historyPanelScroll=max(0,self.historyPanelScroll-event.y);continue
+                if event.type in (pygame.MOUSEMOTION,pygame.MOUSEBUTTONUP):continue
             if self.settingsMenuOpen:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE or (event.key == pygame.K_COMMA and pygame.key.get_mods() & pygame.KMOD_CTRL):self.settingsMenuOpen = False
@@ -11057,6 +10951,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     if event.button == 1:self._handleSettingsClick(*event.pos)
                     continue
                 if event.type == pygame.MOUSEWHEEL:continue
+                if event.type == pygame.MOUSEMOTION:
+                    if self.draggingSlider:self._handleMouseMotion(event)
+                    continue
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self._handleMouseUp(event)
+                    continue
             # Let tutorial handle events first if visible
             if self.tutorialScreen.handleEvent(event):
                 continue
@@ -11088,6 +10988,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.worldMapActive and self.worldMapMode == "hub":
             return
         mouseX, mouseY = pygame.mouse.get_pos()
+        if self.redstoneLabActive and mouseX >= self._worldViewportRight():
+            self.redstoneLabScroll=max(0,min(getattr(self,'redstoneLabMaxScroll',0),
+                getattr(self,'redstoneLabScroll',0)-event.y*60))
+            return
         
         # Check if mouse is over the panel - scroll inventory
         if mouseX > self._worldViewportRight():
@@ -11329,7 +11233,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _handleKeyDown(self, event):
         """Handle keyboard input"""
-        mods = pygame.key.get_mods()
+        mods = getattr(event, 'mod', pygame.key.get_mods())
 
         if self.worldMapActive and event.key == pygame.K_ESCAPE:
             if self.worldMapMode == "level":
@@ -11559,7 +11463,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.selectedStructure = "house"
             print("House placement mode - click to place")
         
-        elif event.key == pygame.K_t:
+        elif event.key == pygame.K_t and not (mods & pygame.KMOD_CTRL):
             # If tutorial is visible and on Structures panel, place a demo structure
             if self.tutorialScreen.visible:
                 step = TutorialScreen.TUTORIAL_STEPS[self.tutorialScreen.currentStep]
@@ -11587,7 +11491,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.selectedStructure = "tree"
             print("Tree placement mode - click to place")
         
-        elif event.key == pygame.K_c:
+        elif event.key == pygame.K_c and not (mods & pygame.KMOD_CTRL):
             if not (mods & pygame.KMOD_CTRL):  # Plain C to clear
                 self.world.clear()
                 self.liquidLevelSpriteCache.clear()
@@ -11650,8 +11554,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if mods & pygame.KMOD_SHIFT:
                 self._openSaveAsDialog()
             else:
-                self._saveBuilding()
-            self.assetManager.playClickSound()
+                if self._saveBuilding():self.assetManager.playClickSound()
         
         elif event.key == pygame.K_o and mods & pygame.KMOD_CTRL:
             self._openLoadDialog()
@@ -13176,6 +13079,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         """Update game state"""
         if self.openingScene is not None:
             self.openingScene.update(self.clock.get_time()/1000.0)
+            if self._openingPiano is not None:
+                self._openingPiano.update(0 if self.musicMuted else self.musicVolume*.8,
+                    encounter=self.openingScene.phase=='encounter')
             if self.openingScene.closed:self._closeOpeningScene()
             return
         self._pollWorldLoad()
@@ -13681,7 +13587,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if not self.horrorRainEnabled:
             return
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         dtSec = dt / 1000.0
         
         # Update existing rain drops (just for visuals, no terrain collision)
@@ -13791,7 +13697,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.horrorLightningBolts = []
         self.horrorLightningFlash = 150  # Bright red flash
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Create 3 red lightning bolts
         for _ in range(3):
@@ -13830,7 +13736,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if not self.horrorRainEnabled:
             return
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Draw fog effect across the terrain (3 block height layers)
         self._renderHorrorFog()
@@ -13916,7 +13822,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _renderHorrorFog(self):
         """Render semi-transparent fog blocks across the terrain during horror rain"""
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Get all unique x,y positions in the world
         uniquePositions = set()
@@ -14053,7 +13959,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         config = self._getDimensionWeatherConfig()[kind]
         destination = self.rainSplashes if kind == "rain" else self.snowImpacts
         requested = random.randint(minimum, maximum)
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         spawned = 0
         firstWorldPos = None
         for _ in range(requested * 6):
@@ -14103,7 +14009,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Calculate bounding box with some padding
         padding = 30
         self.platformMinX = min(backCorner[0], leftCorner[0], frontCorner[0], rightCorner[0]) - padding
-        self.platformMaxX = min(max(backCorner[0], leftCorner[0], frontCorner[0], rightCorner[0]) + padding, WINDOW_WIDTH - PANEL_WIDTH)
+        self.platformMaxX = min(max(backCorner[0], leftCorner[0], frontCorner[0], rightCorner[0]) + padding, self._worldViewportRight())
         self.platformMinY = min(backCorner[1], leftCorner[1], frontCorner[1], rightCorner[1]) - padding
         self.platformMaxY = max(backCorner[1], leftCorner[1], frontCorner[1], rightCorner[1]) + padding
     
@@ -14143,11 +14049,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         """Get a random X position within the platform bounds"""
         config = self._getDimensionWeatherConfig()["snow"]
         if config.get("screenwide"):
-            return random.randint(0, WINDOW_WIDTH - PANEL_WIDTH)
+            return random.randint(0, self._worldViewportRight())
         if hasattr(self, 'platformMinX') and hasattr(self, 'platformMaxX'):
             return random.randint(int(self.platformMinX), int(self.platformMaxX))
         else:
-            return random.randint(0, WINDOW_WIDTH - PANEL_WIDTH)
+            return random.randint(0, self._worldViewportRight())
     
     def _stopSnow(self):
         """Stop snow effects and clear accumulated snow"""
@@ -14182,7 +14088,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.snowSkyDarkness < darknessTarget:
             self.snowSkyDarkness = min(darknessTarget, self.snowSkyDarkness + 1)
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Update snowflakes with gentle drifting motion
         for flake in self.snowFlakes:
@@ -14258,14 +14164,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.snowLayers[snowPos] = min(8, currentHeight + random.randint(1, 2))
     
     def _weatherParticleLayer(self) -> pygame.Surface:
-        size = (WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT)
+        size = (self._worldViewportRight(), WINDOW_HEIGHT)
         if self._weatherParticleSurface is None or self._weatherParticleSurface.get_size() != size:
             self._weatherParticleSurface = pygame.Surface(size, pygame.SRCALPHA)
         self._weatherParticleSurface.fill((0, 0, 0, 0))
         return self._weatherParticleSurface
 
     def _weatherDarkOverlay(self, color, alpha: int) -> pygame.Surface:
-        key = (WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT, tuple(color), int(alpha))
+        key = (self._worldViewportRight(), WINDOW_HEIGHT, tuple(color), int(alpha))
         if self._weatherDarkOverlaySurface is None or self._weatherDarkOverlaySurface.get_size() != key[:2]:
             self._weatherDarkOverlaySurface = pygame.Surface(key[:2], pygame.SRCALPHA)
             self._weatherDarkOverlayKey = None
@@ -14277,7 +14183,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _renderSnow(self) -> None:
         """Render all snow-family particles through one reusable overlay."""
         config = self._getDimensionWeatherConfig()["snow"]
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         layer = self._weatherParticleLayer()
         if self.snowSkyDarkness > 0:
             self.screen.blit(self._weatherDarkOverlay(config["overlay"], self.snowSkyDarkness), (0, 0))
@@ -14350,7 +14256,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _generateStars(self):
         """Generate random star positions for night sky"""
         self.stars = []
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         for _ in range(300):  # 300 stars for denser sky
             self.stars.append({
                 "x": random.randint(0, panelLeft),
@@ -14379,7 +14285,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         else:
             starAlpha = 1.0
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         currentTime = pygame.time.get_ticks() / 1000.0
         
         for star in self.stars:
@@ -14444,7 +14350,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.clouds = []
         self._loadCloudTexture()
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Generate 10-15 cloud formations (was 4-6)
         for i in range(random.randint(10, 15)):
@@ -14509,7 +14415,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if not self.cloudsEnabled:
             return
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         for cloud in self.clouds:
             cloud["x"] += cloud["speed"]
             # Wrap around when cloud goes off screen
@@ -14523,7 +14429,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if not self.cloudsEnabled:
             return
         
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         for cloud in self.clouds:
             if cloud["x"] < -400 or cloud["x"] > panelLeft + 200:
@@ -14838,6 +14744,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 structure_positions=self.sceneStructurePositions,
             )
             result = write_build(filepath, snapshot, BLOCK_DEFINITIONS)
+            if getattr(self,'workshop',None):
+                self.workshop.saved_revision=self.world.revision
+                self.workshop.error=''
             if not silent:
                 if trackCurrentPath:
                     self.currentBuildPath = str(result.path)
@@ -14849,6 +14758,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         except Exception as e:
             if not silent:
                 print(f"Error saving build: {e}")
+                if getattr(self,'workshop',None):
+                    self.workshop.error=f"Save failed: {e}. Your build is still open."
                 self.tooltipText = f"Save failed: {e}"
                 self.tooltipTimer = 3000
             return False
@@ -15261,6 +15172,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         except Exception as error:
             print(f"Java world import failed: {error}")
             self.tooltipText = f"Java import failed: {error}"
+            self.workshop.error=self.tooltipText+". Your current build stays open."
             self.tooltipTimer = 4000
         finally:
             if root is not None:
@@ -15342,6 +15254,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         except Exception as error:
             print(f"Error opening save dialog: {error}")
             self.tooltipText = f"Save As failed: {error}"
+            self.workshop.error=self.tooltipText+". Your current build stays open."
             self.tooltipTimer = 3000
         finally:
             if root is not None:
@@ -15806,6 +15719,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             )
             blockCount = len(stagedBlocks)
         self.world.replace(snapshot)
+        if getattr(self,'workshop',None):
+            self.workshop.saved_revision=self.world.revision
+            self.workshop.error=""
         retired=self.world.__dict__.pop('_retiredState',None)
         if retired:
             from engine.world_snapshot import release_world_state
@@ -15894,6 +15810,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if not silent:
                 print(f"Could not open build: {error}")
                 self.tooltipText = f"Open failed: {error}"
+                if getattr(self,'workshop',None):
+                    self.workshop.error=self.tooltipText+". Your current build stays open."
                 self.tooltipTimer = 3000
             return False
 
@@ -16093,6 +16011,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _renderBlockTooltip(self) -> None:
         """Render tooltip showing block name when hovering over a placed block"""
+        if self.workshop.active(self) and self.workshop.clean:return
         if self.redstoneLabActive or not self.showBlockTooltip or self.panelHovered:
             return
         
@@ -16142,14 +16061,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if tooltipY < 0:
             tooltipY = mouseY + 20
         
-        # Draw background
-        tooltipBg = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
-        tooltipBg.fill((30, 30, 40, 230))
-        self.screen.blit(tooltipBg, (tooltipX, tooltipY))
-        
-        # Border
-        pygame.draw.rect(self.screen, (100, 100, 120),
-                        (tooltipX, tooltipY, tooltipWidth, tooltipHeight), 1)
+        from ui.chrome import panel
+        panel(self.screen,(tooltipX,tooltipY,tooltipWidth,tooltipHeight),alpha=238)
         
         # Text
         self.screen.blit(text, (tooltipX + padding, tooltipY + padding))
@@ -16169,6 +16082,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         padding = 4
         badgeX = 10
         badgeY = 38
+        if getattr(self,"workshop",None) and self.workshop.active(self):
+            if self.workshop.clean:return
+            badgeX=WINDOW_WIDTH-bgWidth-24;badgeY=78
         bgRect = pygame.Rect(badgeX - padding, badgeY - padding,
                             textSurf.get_width() + padding * 2,
                             textSurf.get_height() + padding * 2)
@@ -17094,9 +17010,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if edge == "left":
             self.herobrinePos = (30, random.randint(200, WINDOW_HEIGHT - 200))
         elif edge == "right":
-            self.herobrinePos = (WINDOW_WIDTH - PANEL_WIDTH - 50, random.randint(200, WINDOW_HEIGHT - 200))
+            self.herobrinePos = (self._worldViewportRight() - 50, random.randint(200, WINDOW_HEIGHT - 200))
         else:  # top
-            self.herobrinePos = (random.randint(100, WINDOW_WIDTH - PANEL_WIDTH - 100), 50)
+            self.herobrinePos = (random.randint(100, self._worldViewportRight() - 100), 50)
         
         self.herobrineFadeTimer = 150  # About 2.5 seconds at 60fps (but despawns if camera moves)
 
@@ -17157,7 +17073,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if edge == "left":
                 self.shadowFigurePos = (20, random.randint(100, WINDOW_HEIGHT - 200))
             else:
-                self.shadowFigurePos = (WINDOW_WIDTH - PANEL_WIDTH - 50, random.randint(100, WINDOW_HEIGHT - 200))
+                self.shadowFigurePos = (self._worldViewportRight() - 50, random.randint(100, WINDOW_HEIGHT - 200))
             self.shadowFigureFadeTimer = 150  # Very brief appearance
     
     def _loadAutoSave(self):
@@ -17365,6 +17281,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _handleHotbarClick(self, mouseX: int, mouseY: int, button: int) -> bool:
         """Handle clicks on the hotbar. Returns True if click was on hotbar."""
+        if getattr(self,'workshop',None) and self.workshop.active(self):
+            # The visible shell owns geometry and gestures, including fading.
+            return False
         if button not in (1, 3):
             return False
         slotSize = 50
@@ -17397,7 +17316,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         return False
     
     def _openOpeningScene(self):
-        from ui.opening_scene import OpeningScene, skip_on_launch, MUSIC_PATH
+        from ui.opening_scene import OpeningScene, skip_on_launch
         # Display changes belong to this presentation, never to editor camera sizing.
         from pygame._sdl2 import Window
         # Pygame 2.6.1 stores a borrowed Python Window pointer in SDL user data.
@@ -17414,15 +17333,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # existing sound channels; the presentation owns an otherwise unused one.
         pygame.mixer.pause()
         self.musicController.pause()
-        if os.path.isfile(MUSIC_PATH):
-            try:
-                if self._openingMusic is None:
-                    self._openingMusic = pygame.mixer.Sound(MUSIC_PATH)
-                channel=pygame.mixer.Channel(30)
-                channel.set_volume(0 if self.musicMuted else self.musicVolume*.8)
-                channel.play(self._openingMusic,loops=-1,fade_ms=1800)
-            except pygame.error as error:
-                print(f'Opening music unavailable: {error}')
+        from ui.opening_piano import OpeningPiano
+        if self._openingPiano is None:self._openingPiano=OpeningPiano()
+        try:self._openingPiano.start(0 if self.musicMuted else self.musicVolume*.8)
+        except (OSError,pygame.error) as error:print(f'Opening music unavailable: {error}')
 
     def _setOpeningDisplay(self, windowed):
         from ui.presentation_renderer import PresentationRenderer
@@ -17455,6 +17369,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _closeOpeningScene(self):
         from pygame._sdl2 import Window
+        if self._openingPiano is not None:self._openingPiano.close()
         pygame.mixer.Channel(30).stop()
         if self.openingScene:self.openingScene.close()
         self.openingScene = None
@@ -17469,81 +17384,52 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         pygame.mixer.unpause()
         self.musicController.unpause()
 
-    def _handleSettingsClick(self, mouseX: int, mouseY: int):
-        """Handle clicks on the settings menu"""
-        menuRect = self._settingsMenuRect()
-        menuX, menuY, menuWidth, menuHeight = menuRect
-        
-        # Close button (top right)
-        closeRect = pygame.Rect(menuRect.right - 40, menuRect.y + 12, 28, 28)
-        if closeRect.collidepoint(mouseX, mouseY):
-            self.settingsMenuOpen = False
-            self.assetManager.playClickSound()
-            return
-        
-        # Check if click is outside menu (close it)
-        if not menuRect.collidepoint(mouseX, mouseY):
-            self.settingsMenuOpen = False
-            return
-        
-        for volumeType, control in self.volumeControlRects.items():
-            if control['mute'].collidepoint(mouseX, mouseY):
-                setattr(self,volumeType+'Muted',not getattr(self,volumeType+'Muted'))
-                self._setVolume(volumeType,getattr(self,volumeType+'Volume'))
-                self.assetManager.playClickSound()
-                return
+    def _settingsLayout(self):
+        """One native layout for draw, hit testing and text-scale reflow."""
+        from ui.fonts import TEXT_SCALE
+        rect=self._settingsMenuRect();x,y,w,h=rect
+        line=self.smallFont.get_linesize();gap=max(54,line+30)
+        sliders=[(name,pygame.Rect(x+24,y+66+i*gap,w-48,gap-10))
+                 for i,name in enumerate(('music','ambient','effects'))]
+        top=sliders[-1][1].bottom+26;row=max(34,line+12);cw=(w-56)//2
+        fields=(('Auto-save (5 min)','autoSaveEnabled'),('Smooth camera','smoothCameraEnabled'),
+                ('Coordinates','showCoordinates'),('Grid','showGrid'),
+                ('Block outline','showBlockOutline'),('Block tooltip','showBlockTooltip'),
+                ('World-centered rotation','worldCenteredRotation'),('Opening scene','opening'),
+                ('Skip opening on launch','skip'))
+        controls=[(label,attr,pygame.Rect(x+24+(i%2)*(cw+8),top+(i//2)*(row+7),cw,row))
+                  for i,(label,attr) in enumerate(fields)]
+        return rect,sliders,controls
+
+    def _handleSettingsClick(self, mouseX, mouseY):
+        rect,sliders,controls=self._settingsLayout()
+        close=pygame.Rect(rect.right-112,rect.y+18,88,max(32,self.smallFont.get_height()+6))
+        if close.collidepoint(mouseX,mouseY) or not rect.collidepoint(mouseX,mouseY):
+            self.settingsMenuOpen=False;return
+        for kind,control in self.volumeControlRects.items():
+            if control['mute'].collidepoint(mouseX,mouseY):
+                setattr(self,kind+'Muted',not getattr(self,kind+'Muted'))
+                self._setVolume(kind,getattr(self,kind+'Volume'));self.assetManager.playClickSound();return
             if control['track'].inflate(0,12).collidepoint(mouseX,mouseY):
-                self.draggingSlider=volumeType
-                self._setVolume(volumeType,(mouseX-control['track'].left)/control['track'].width)
-                return
-        sliderX = menuX + 28
-        sliderWidth = menuWidth - 56
+                self.draggingSlider=kind
+                self._setVolume(kind,(mouseX-control['track'].left)/control['track'].width);return
+        for label,attr,control in controls:
+            if not control.collidepoint(mouseX,mouseY):continue
+            if attr=='opening':self._openOpeningScene()
+            elif attr=='skip':
+                from ui.opening_scene import save_skip,skip_on_launch
+                try:save_skip(not skip_on_launch())
+                except OSError as error:self.workshop.error=f'Opening preference was not saved: {error}'
+            else:setattr(self,attr,not getattr(self,attr))
+            self.assetManager.playClickSound();return
 
-        # Full-width Minecraft buttons are easier to hit than small generic
-        # checkboxes and remain inside the panel at every supported window size.
-        y = menuY + 242
-        
-        # Toggle attributes in order
-        toggles = [
-            "autoSaveEnabled",
-            "smoothCameraEnabled", 
-            "showCoordinates",
-            "showGrid",
-            "showBlockOutline",
-            "showBlockTooltip",
-            "worldCenteredRotation",
-        ]
-        
-        for attr in toggles:
-            toggleRect = pygame.Rect(sliderX, y, sliderWidth, 30)
-            if toggleRect.collidepoint(mouseX, mouseY):
-                currentVal = getattr(self, attr)
-                setattr(self, attr, not currentVal)
-                self.assetManager.playClickSound()
-                return
-            y += 36
+    def _settingsMenuRect(self):
+        from ui.fonts import TEXT_SCALE
+        width=min(WINDOW_WIDTH-48,round(600*TEXT_SCALE))
+        line=self.smallFont.get_linesize()
+        height=min(WINDOW_HEIGHT-32,66+3*max(54,line+30)+20+5*(max(34,line+12)+7)+42)
+        return pygame.Rect((WINDOW_WIDTH-width)//2,(WINDOW_HEIGHT-height)//2,width,height)
 
-        if pygame.Rect(sliderX,y,sliderWidth,30).collidepoint(mouseX,mouseY):
-            self._openOpeningScene()
-        elif pygame.Rect(sliderX,y+36,sliderWidth,30).collidepoint(mouseX,mouseY):
-            from ui.opening_scene import save_skip, skip_on_launch
-            try:
-                save_skip(not skip_on_launch())
-                self.assetManager.playClickSound()
-            except OSError as exc:
-                self.tooltipText = f"Could not save opening preference: {exc}"
-                self.tooltipTimer = 4000
-
-    def _settingsMenuRect(self) -> pygame.Rect:
-        """Return the single geometry source used by Settings input/rendering."""
-        width, height = 460, 608
-        return pygame.Rect(
-            (WINDOW_WIDTH - width) // 2,
-            (WINDOW_HEIGHT - height) // 2,
-            width,
-            height,
-        )
-    
     def _handleFillToolClick(self, mouseX: int, mouseY: int):
         """Handle clicks when fill tool is active"""
         if not self.hoveredCell:
@@ -17626,7 +17512,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         boxWidth = 300
         boxHeight = 30
-        boxX = (WINDOW_WIDTH - PANEL_WIDTH - boxWidth) // 2
+        boxX = (self._worldViewportRight() - boxWidth) // 2
         boxY = 50
         
         # Background
@@ -17695,6 +17581,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         bgSurf.fill((30, 30, 40, 180))
         badgeX = 10
         badgeY = 38
+        if getattr(self,"workshop",None) and self.workshop.active(self):
+            if self.workshop.clean:return
+            badgeX=WINDOW_WIDTH-bgWidth-24;badgeY=78
         self.screen.blit(bgSurf, (badgeX - padding, badgeY - padding))
         self.screen.blit(textSurf, (badgeX, badgeY))
     
@@ -17846,6 +17735,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Position in bottom-left corner
         mapX = self.minimapMargin
         mapY = WINDOW_HEIGHT - self.minimapSize - self.minimapMargin - 30  # Above stats
+        if getattr(self,'workshop',None) and self.workshop.active(self):
+            if self.workshop.clean:return
+            mapX=WINDOW_WIDTH-self.minimapSize-24
+            mapY=WINDOW_HEIGHT-self.minimapSize-135
         
         # Calculate scale (grid to minimap)
         scaleX = self.minimapSize / self.world.width
@@ -17938,82 +17831,26 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.screen.blit(textSurf, (x, y))
     
     def _renderSettingsMenu(self):
-        """Render settings menu overlay"""
-        if not self.settingsMenuOpen:
-            return
-
-        menuRect = self._settingsMenuRect()
-        menuX, menuY, menuWidth, menuHeight = menuRect
-        
-        # Overlay
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
-        self.screen.blit(overlay, (0, 0))
-        
-        from ui.chrome import panel as draw_panel
-        draw_panel(self.screen, menuRect, self.assetManager)
-
-        from ui.chrome import heading
-        heading(self.screen,(menuX+14,menuY+12,menuWidth-68,34),'Settings',self.assetManager,self.sectionFont)
-
-        mousePos = pygame.mouse.get_pos()
-        closeRect = pygame.Rect(menuRect.right - 40, menuRect.y + 12, 28, 28)
-        self.assetManager.drawButton(
-            self.screen, closeRect, "X", self.smallFont,
-            closeRect.collidepoint(mousePos), False,
-        )
-
-        y = menuY + 68
-        
-        # Volume controls
-        sliderX = menuX + 28
-        sliderWidth = menuWidth - 56
-        self._renderSettingsVolumeSlider("Music Volume", self.musicVolume, sliderX, y, sliderWidth)
-        y += 54
-        self._renderSettingsVolumeSlider("Ambient Volume", self.ambientVolume, sliderX, y, sliderWidth)
-        y += 54
-        self._renderSettingsVolumeSlider("Effects Volume", self.effectsVolume, sliderX, y, sliderWidth)
-        y = menuY + 242
-        
-        # Toggle options
-        toggles = [
-            ("Auto-Save (5 min)", self.autoSaveEnabled, "autoSaveEnabled"),
-            ("Smooth Camera", self.smoothCameraEnabled, "smoothCameraEnabled"),
-            ("Show Coordinates", self.showCoordinates, "showCoordinates"),
-            ("Show Grid", self.showGrid, "showGrid"),
-            ("Show Block Outline", self.showBlockOutline, "showBlockOutline"),
-            ("Show Block Tooltip", self.showBlockTooltip, "showBlockTooltip"),
-            (
-                "World-Centered Rotation",
-                self.worldCenteredRotation,
-                "worldCenteredRotation",
-            ),
-        ]
-        
-        for label, value, attr in toggles:
-            toggleRect = pygame.Rect(sliderX, y, sliderWidth, 30)
-            self.assetManager.drawButton(
-                self.screen, toggleRect,
-                f"{label}: {'ON' if value else 'OFF'}",
-                self.smallFont, toggleRect.collidepoint(mousePos), value,
-            )
-            y += 36
-
-        openingRect=pygame.Rect(sliderX,y,sliderWidth,30)
-        self.assetManager.drawButton(self.screen,openingRect,'Opening scene',
-            self.smallFont,openingRect.collidepoint(mousePos),False)
+        if not self.settingsMenuOpen:return
+        from ui.chrome import panel,button,TEXT,MUTED
+        rect,sliders,controls=self._settingsLayout();mouse=pygame.mouse.get_pos()
+        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA);shade.fill((0,0,0,150));self.screen.blit(shade,(0,0))
+        panel(self.screen,rect)
+        self.screen.blit(self.sectionFont.render('Settings',True,TEXT),(rect.x+24,rect.y+18))
+        close=pygame.Rect(rect.right-112,rect.y+18,88,max(32,self.smallFont.get_height()+6))
+        button(self.screen,close,'Close',self.smallFont,close.collidepoint(mouse),quiet=True)
+        self.volumeControlRects.clear()
+        for kind,area in sliders:
+            self._renderSettingsVolumeSlider(kind.title()+' Volume',getattr(self,kind+'Volume'),area.x,area.y,area.width)
         from ui.opening_scene import skip_on_launch
-        skip=skip_on_launch()
-        skipRect=pygame.Rect(sliderX,y+36,sliderWidth,30)
-        self.assetManager.drawButton(self.screen,skipRect,
-            f"Skip opening on launch: {'ON' if skip else 'OFF'}",
-            self.smallFont,skipRect.collidepoint(mousePos),skip)
-        
-        version = self.smallFont.render(f"Bloc Fantôme {APP_VERSION}", True, (215, 215, 215))
-        self.screen.blit(version, (menuRect.left + 18, menuRect.bottom - 24))
-        hint = self.smallFont.render("Ctrl+, or Esc to close", True, (190, 190, 190))
-        self.screen.blit(hint, hint.get_rect(midright=(menuRect.right - 18, menuRect.bottom - 15)))
-    
+        for label,attr,area in controls:
+            value=skip_on_launch() if attr=='skip' else getattr(self,attr,False)
+            if attr!='opening':label+=': '+('On' if value else 'Off')
+            button(self.screen,area,label,self.smallFont,area.collidepoint(mouse),value)
+        self.screen.blit(self.smallFont.render(f'Bloc Fantôme {APP_VERSION}',True,MUTED),(rect.x+24,rect.bottom-30))
+        hint=self.smallFont.render('Esc closes',True,MUTED)
+        self.screen.blit(hint,hint.get_rect(topright=(rect.right-24,rect.bottom-30)))
+
     def _drawRotationArrow(self, rect: pygame.Rect, clockwise: bool, centered: bool = False):
         """Draw a clean curved rotation arrow icon on a button"""
         import math
@@ -18104,14 +17941,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.screen.blit(valueText, valueText.get_rect(topright=(mute.left-10, y)))
         width -= 42
 
-        track = pygame.Rect(x, y + 22, width, 12)
+        track = pygame.Rect(x, y + max(22,self.smallFont.get_height()+5), width, 8)
         self.volumeControlRects[volumeType] = {"track":track,"mute":mute}
         pygame.draw.rect(self.screen, (12, 12, 12), track)
         pygame.draw.rect(self.screen, (70, 70, 70), track.inflate(-4, -4))
         fillWidth = max(0, int((width - 4) * value))
         if fillWidth:
             pygame.draw.rect(
-                self.screen, (92, 168, 76),
+                self.screen, (208, 194, 153),
                 (track.x + 2, track.y + 2, fillWidth, track.height - 4),
             )
         handleX = track.x + 5 + round((track.width-10) * value)
@@ -18140,129 +17977,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         pygame.draw.rect(self.screen, (100, 100, 120), (boxX, y, boxSize, boxSize), 1)
     
     def _renderHistoryPanel(self):
-        """Render the undo/redo history panel overlay"""
-        if not self.historyPanelOpen:
-            return
-        
-        panelWidth = 320
-        panelHeight = 450
-        panelX = (WINDOW_WIDTH - panelWidth) // 2
-        panelY = (WINDOW_HEIGHT - panelHeight) // 2
-        
-        # Overlay
-        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
-        self.screen.blit(overlay, (0, 0))
-        
-        # Panel background
-        pygame.draw.rect(self.screen, (40, 40, 50), (panelX, panelY, panelWidth, panelHeight))
-        pygame.draw.rect(self.screen, (100, 100, 120), (panelX, panelY, panelWidth, panelHeight), 3)
-        
-        # Title
-        title = self.font.render("Undo History", True, (255, 255, 255))
-        self.screen.blit(title, (panelX + panelWidth // 2 - title.get_width() // 2, panelY + 15))
-        
-        # Counts
-        undoCount, redoCount = self.undoManager.get_history_count()
-        countText = self.smallFont.render(f"Undo: {undoCount}  |  Redo: {redoCount}", True, (150, 150, 150))
-        self.screen.blit(countText, (panelX + panelWidth // 2 - countText.get_width() // 2, panelY + 45))
-        
-        mouseX, mouseY = pygame.mouse.get_pos()
-        y = panelY + 75
-        itemHeight = 28
-        maxVisible = 12
-        
-        # Get history
-        undoHistory = self.undoManager.get_undo_history(max_items=50)
-        redoHistory = self.undoManager.get_redo_history(max_items=50)
-        
-        # Reset hover
-        self.historyHoveredIndex = -1
-        
-        # Draw undo section header
-        undoHeader = self.smallFont.render("v UNDO STACK (click to jump)", True, (100, 180, 100))
-        self.screen.blit(undoHeader, (panelX + 15, y))
-        y += 25
-        
-        # Draw undo items (scrollable)
-        visibleUndoStart = min(self.historyPanelScroll, max(0, len(undoHistory) - maxVisible // 2))
-        visibleUndo = undoHistory[visibleUndoStart:visibleUndoStart + maxVisible // 2]
-        
-        for idx, (cmdIndex, desc) in enumerate(visibleUndo):
-            itemRect = pygame.Rect(panelX + 10, y, panelWidth - 20, itemHeight - 2)
-            isHovered = itemRect.collidepoint(mouseX, mouseY)
-            
-            if isHovered:
-                self.historyHoveredIndex = cmdIndex
-                self.historyHoveredIsRedo = False
-                pygame.draw.rect(self.screen, (70, 100, 70), itemRect)
-            else:
-                pygame.draw.rect(self.screen, (50, 55, 60), itemRect)
-            
-            # Truncate description if too long
-            displayDesc = desc if len(desc) < 35 else desc[:32] + "..."
-            
-            # Index badge
-            indexText = self.smallFont.render(f"#{cmdIndex + 1}", True, (120, 120, 130))
-            self.screen.blit(indexText, (panelX + 15, y + 5))
-            
-            # Description
-            descText = self.smallFont.render(displayDesc, True, (200, 200, 200))
-            self.screen.blit(descText, (panelX + 55, y + 5))
-            
-            y += itemHeight
-        
-        # Separator
-        y += 10
-        pygame.draw.line(self.screen, (80, 80, 90), (panelX + 20, y), (panelX + panelWidth - 20, y), 1)
-        y += 15
-        
-        # Draw redo section header
-        redoHeader = self.smallFont.render("^ REDO STACK (click to jump)", True, (180, 130, 100))
-        self.screen.blit(redoHeader, (panelX + 15, y))
-        y += 25
-        
-        # Draw redo items
-        visibleRedo = redoHistory[:maxVisible // 2]
-        
-        for idx, (cmdIndex, desc) in enumerate(visibleRedo):
-            itemRect = pygame.Rect(panelX + 10, y, panelWidth - 20, itemHeight - 2)
-            isHovered = itemRect.collidepoint(mouseX, mouseY)
-            
-            if isHovered:
-                self.historyHoveredIndex = cmdIndex
-                self.historyHoveredIsRedo = True
-                pygame.draw.rect(self.screen, (100, 70, 60), itemRect)
-            else:
-                pygame.draw.rect(self.screen, (55, 50, 50), itemRect)
-            
-            # Truncate description if too long
-            displayDesc = desc if len(desc) < 35 else desc[:32] + "..."
-            
-            # Index badge
-            indexText = self.smallFont.render(f"#{cmdIndex + 1}", True, (130, 120, 120))
-            self.screen.blit(indexText, (panelX + 15, y + 5))
-            
-            # Description
-            descText = self.smallFont.render(displayDesc, True, (200, 200, 200))
-            self.screen.blit(descText, (panelX + 55, y + 5))
-            
-            y += itemHeight
-        
-        # If both lists are empty
-        if not undoHistory and not redoHistory:
-            emptyText = self.smallFont.render("No history yet - start building!", True, (120, 120, 130))
-            self.screen.blit(emptyText, (panelX + panelWidth // 2 - emptyText.get_width() // 2, panelY + 180))
-        
-        # Close hint
-        hint = self.smallFont.render("Press H or ESC to close  |  Click item to jump", True, (150, 150, 150))
-        self.screen.blit(hint, (panelX + panelWidth // 2 - hint.get_width() // 2, panelY + panelHeight - 30))
-        
-        # Store panel rect for click detection
-        self.historyPanelRect = pygame.Rect(panelX, panelY, panelWidth, panelHeight)
-    
+        from ui.history import render
+        render(self)
+
     def _handleHistoryPanelClick(self, mouseX: int, mouseY: int):
         """Handle click on the history panel"""
+        if getattr(self,'historyCloseRect',pygame.Rect(0,0,0,0)).collidepoint(mouseX,mouseY):
+            self.historyPanelOpen=False;return
+        hit=next(((index,redo) for rect,index,redo in getattr(self,'historyHitRects',[]) if rect.collidepoint(mouseX,mouseY)),None)
+        if hit is None:return
+        self.historyHoveredIndex,self.historyHoveredIsRedo=hit
         if self.historyHoveredIndex >= 0:
             if self.historyHoveredIsRedo:
                 # Redo to this index
@@ -18386,7 +18110,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Subliminal red pixel (extremely rare, single frame)
         if random.random() < 0.0001:  # 1/10000 chance per frame
-            redX = random.randint(100, WINDOW_WIDTH - PANEL_WIDTH - 100)
+            redX = random.randint(100, self._worldViewportRight() - 100)
             redY = random.randint(100, WINDOW_HEIGHT - 100)
             self.screen.set_at((redX, redY), (255, 0, 0))
         
@@ -18397,7 +18121,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _drawHiddenNetherEyes(self):
         """Draw barely-visible eyes somewhere in the nether scene for 1 frame"""
         # Pick a random position in the world area (not panel)
-        eyeX = random.randint(50, WINDOW_WIDTH - PANEL_WIDTH - 50)
+        eyeX = random.randint(50, self._worldViewportRight() - 50)
         eyeY = random.randint(100, WINDOW_HEIGHT - 100)
         
         # Create very faint eyes
@@ -18431,7 +18155,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         text = f"Placed: {blocksPlaced} | Total: {totalBlocks} | Time: {minutes}:{seconds:02d}"
         textSurf = self.smallFont.render(text, True, (150, 150, 150))
         
-        x = WINDOW_WIDTH - PANEL_WIDTH - textSurf.get_width() - 10
+        x = self._worldViewportRight() - textSurf.get_width() - 10
         y = WINDOW_HEIGHT - 25
         self.screen.blit(textSurf, (x, y))
     
@@ -18454,7 +18178,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         textSurf.set_alpha(alpha)
         
         # Position at top right (above panel)
-        x = WINDOW_WIDTH - PANEL_WIDTH - textSurf.get_width() - 10
+        x = self._worldViewportRight() - textSurf.get_width() - 10
         y = 10
         
         # Semi-transparent background
@@ -18466,30 +18190,18 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _renderTooltipNotification(self):
         """Render tooltip notification message at top of screen"""
+        if self.workshop.active(self) and self.workshop.clean:return
         if self.tooltipTimer <= 0 or not self.tooltipText:
             return
         
-        # Calculate alpha based on remaining time (fade out in last 500ms)
-        alpha = min(255, int(255 * self.tooltipTimer / 500)) if self.tooltipTimer < 500 else 255
-        
-        textSurf = self.font.render(self.tooltipText, True, (255, 255, 255))
-        padding = 10
-        bgWidth = textSurf.get_width() + padding * 2
-        bgHeight = textSurf.get_height() + padding * 2
-        
-        x = (WINDOW_WIDTH - PANEL_WIDTH - bgWidth) // 2
-        y = 80
-        
-        # Background
-        bgSurf = pygame.Surface((bgWidth, bgHeight), pygame.SRCALPHA)
-        bgSurf.fill((40, 40, 50, int(alpha * 0.8)))
-        self.screen.blit(bgSurf, (x, y))
-        pygame.draw.rect(self.screen, (100, 100, 120, alpha), (x, y, bgWidth, bgHeight), 2)
-        
-        # Text with alpha
-        textWithAlpha = textSurf.copy()
-        textWithAlpha.set_alpha(alpha)
-        self.screen.blit(textWithAlpha, (x + padding, y + padding))
+        from ui.chrome import panel, wrapped
+        alpha=min(255,int(255*self.tooltipTimer/500))
+        width=min(self._worldViewportRight()-48,self.smallFont.size(self.tooltipText)[0]+28)
+        height=max(40,2*self.smallFont.get_linesize()+18)
+        y=130 if self.workshop.active(self) and self.workshop.operation(self) else 80
+        rect=pygame.Rect((self._worldViewportRight()-width)//2,y,width,height)
+        panel(self.screen,rect,alpha=round(alpha*.94))
+        wrapped(self.screen,self.tooltipText,self.smallFont,rect.inflate(-24,-12))
 
     def _prepareZoomFallback(self) -> None:
         """Uniformly transform the complete cached viewport while exact tiles rebuild.
@@ -18587,7 +18299,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             (minZ + maxZ) / 2.0,
         )
         screenX, screenY = self.renderer.worldToScreen(*centerWorld)
-        targetX = (WINDOW_WIDTH - PANEL_WIDTH) / 2.0
+        targetX = (self._worldViewportRight()) / 2.0
         targetY = WINDOW_HEIGHT / 2.0 + 18
         self.renderer.offsetX += targetX - screenX
         self.renderer.offsetY += targetY - screenY
@@ -19428,7 +19140,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         
         # Calculate panel boundary
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Calculate center of the grass plane (roughly center of playable area)
         centerX = (panelLeft) // 2
@@ -19710,7 +19422,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.lightningFlash = 100  # Moderate flash that will fade out
         
         # Find a random block on the platform to strike
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         
         # Get all top blocks to choose a target
         topBlocks = self.world.heightIndex
@@ -19783,7 +19495,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         
         # Calculate panel boundary (don't render rain on UI panel)
-        panelLeft = WINDOW_WIDTH - PANEL_WIDTH
+        panelLeft = self._worldViewportRight()
         config = self._getDimensionWeatherConfig()["rain"]
         layer = self._weatherParticleLayer()
         
@@ -19886,7 +19598,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Draw lightning flash overlay
         if self.lightningFlash > 0:
-            flashOverlay = pygame.Surface((WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+            flashOverlay = pygame.Surface((self._worldViewportRight(), WINDOW_HEIGHT), pygame.SRCALPHA)
             flashColor = {
                 DIMENSION_OVERWORLD: (255, 255, 255),
                 DIMENSION_NETHER: (255, 95, 20),
@@ -20046,22 +19758,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Draw UI panel
         if getattr(self,'workshop',None) and self.workshop.active(self):
-            # Review slice: keep the entire established palette and modal owners.
-            # Its visibility never changes the world viewport or camera anchor.
             for name in ('fitWorldButtonRect','terrainNoiseButtonRect','growCanvasButtonRect',
                          'shrinkCanvasButtonRect','terrainViewButtonRect','worldMapButtonRect'):
                 setattr(self,name,pygame.Rect(0,0,0,0))
-            self._renderPanel()
-            self._renderHotbar()
+            self._renderMinimap()
+            self._renderCoordinates()
             self.workshop.render(self)
-            self._renderPanelBlockTooltip()
-            self._renderStructureTooltip()
-            self.previewBrowser.render_hover(self)
-            self._renderSearchBox()
+            self._renderTooltipNotification()
+            self.tutorialScreen.render(self.screen)
             self._renderSettingsMenu()
             self._renderHistoryPanel()
             self._renderShortcutsPanel()
-            self._renderTooltipNotification()
             self.biomePanel.render_browser(self)
             self.buildLibrary.render(self.screen)
             self.worldLibrary.render(self.screen)
@@ -20152,36 +19859,22 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         pygame.display.flip()
 
     def _renderWorldLoadingOverlay(self) -> None:
+        from ui.chrome import panel, wrapped, TEXT, MUTED
         if self.pendingBiomeLoad is not None:
-            from ui.chrome import panel as draw_panel
-            # Keep preparatory camera turns behind a stable opaque loading view.
-            if self.pendingBiomeWarmup is not None:
-                self.screen.fill((25,25,25))
-            box = pygame.Rect(0,0,400,100)
-            box.center = self.screen.get_rect().center
-            draw_panel(self.screen,box,self.assetManager)
-            text = self.smallFont.render('Preparing '+self.pendingBiomeLoad[1].replace('_',' ')+'...',True,(238,238,230))
-            self.screen.blit(text,text.get_rect(center=(box.centerx,box.centery-12)))
-            message = ('Preparing view '+str(self.pendingBiomeWarmup+1)+' of 4') if self.pendingBiomeWarmup is not None else 'Esc cancels; your build stays intact.'
-            text = self.smallFont.render(message,True,(190,190,180))
-            self.screen.blit(text,text.get_rect(center=(box.centerx,box.centery+18)))
-            return
-        if self.pendingWorldLoad is None:
-            return
-        _future, entry, _path = self.pendingWorldLoad
-        panel = pygame.Rect(0, 0, 360, 92)
-        panel.center = ((WINDOW_WIDTH - PANEL_WIDTH) // 2, WINDOW_HEIGHT // 2)
-        shade = pygame.Surface(panel.size, pygame.SRCALPHA)
-        shade.fill((18, 18, 22, 232))
-        self.screen.blit(shade, panel)
-        pygame.draw.rect(self.screen, (138, 138, 148), panel, 2)
-        title = self.font.render(f"Loading {entry.name}", True, (255, 255, 255))
-        detail = self.smallFont.render(
-            "Opening world... Press Esc to cancel", True, (205, 205, 215)
-        )
-        self.screen.blit(title, title.get_rect(center=(panel.centerx, panel.y + 30)))
-        self.screen.blit(detail, detail.get_rect(center=(panel.centerx, panel.y + 62)))
-    
+            if self.pendingBiomeWarmup is not None:self.screen.fill((19,28,31))
+            title='Preparing '+self.pendingBiomeLoad[1].replace('_',' ')
+            detail=('Preparing view '+str(self.pendingBiomeWarmup+1)+' of 4') if self.pendingBiomeWarmup is not None else 'Esc cancels; your build stays intact.'
+        elif self.pendingWorldLoad is not None:
+            title='Loading '+self.pendingWorldLoad[1].name
+            detail='Opening world… Press Esc to cancel.'
+        else:return
+        width=min(self.screen.get_width()-48,max(400,self.smallFont.size(detail)[0]+48))
+        height=self.font.get_linesize()*2+self.smallFont.get_linesize()+48
+        box=pygame.Rect(0,0,width,height);box.center=self.screen.get_rect().center
+        panel(self.screen,box)
+        wrapped(self.screen,title,self.font,(box.x+24,box.y+20,width-48,self.font.get_linesize()*2+6),TEXT)
+        wrapped(self.screen,detail,self.smallFont,(box.x+24,box.bottom-self.smallFont.get_linesize()-20,width-48,self.smallFont.get_linesize()+4),MUTED)
+
     def _applyLighting(self, sprite: pygame.Surface, x: int, y: int, z: int, blockType: BlockType) -> pygame.Surface:
         """
         Apply Minecraft-style lighting to a sprite.
@@ -20566,7 +20259,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             "Preview: sculpt untouched flat terrain", True, (245, 245, 245)
         )
         box = text.get_rect(midtop=(rect.centerx, rect.bottom + 5)).inflate(12, 8)
-        box.clamp_ip(pygame.Rect(4, 4, WINDOW_WIDTH - PANEL_WIDTH - 8, WINDOW_HEIGHT - 8))
+        box.clamp_ip(pygame.Rect(4, 4, self._worldViewportRight() - 8, WINDOW_HEIGHT - 8))
         backdrop = pygame.Surface(box.size, pygame.SRCALPHA)
         backdrop.fill((24, 24, 28, 220))
         self.screen.blit(backdrop, box)
@@ -20588,7 +20281,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         halfHeight = max(1, round(TILE_HEIGHT * self.zoomLevel / 2))
         tileHeight = halfHeight * 2
         blockHeight = max(2, round(BLOCK_HEIGHT * self.zoomLevel))
-        viewport = pygame.Rect(0, 0, WINDOW_WIDTH - PANEL_WIDTH, WINDOW_HEIGHT)
+        viewport = pygame.Rect(0, 0, self._worldViewportRight(), WINDOW_HEIGHT)
         topColor = (128, 224, 255, 72)
         leftColor = (72, 168, 225, 62)
         rightColor = (93, 191, 240, 68)
@@ -20653,7 +20346,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             (self.shrinkCanvasButtonRect.left + self.growCanvasButtonRect.right) // 2,
             self.growCanvasButtonRect.bottom + 6,
         )).inflate(14, 10)
-        box.clamp_ip(pygame.Rect(4, 4, WINDOW_WIDTH - PANEL_WIDTH - 8, WINDOW_HEIGHT - 8))
+        box.clamp_ip(pygame.Rect(4, 4, self._worldViewportRight() - 8, WINDOW_HEIGHT - 8))
         backdrop = pygame.Surface(box.size, pygame.SRCALPHA)
         backdrop.fill((25, 18, 14, 205 if clipped else 178))
         self.screen.blit(backdrop, box)
@@ -22372,11 +22065,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         tooltipText = self.smallFont.render(displayName, True, (255, 255, 255))
         preview = self.structurePreviews.get(self.hoveredStructure)
         padding = 10
-        previewWidth = min(360, WINDOW_WIDTH - PANEL_WIDTH - 40)
+        previewWidth = min(360, self._worldViewportRight() - 40)
         previewHeight = 240
         tooltipWidth = previewWidth + padding * 2
         tooltipHeight = previewHeight + tooltipText.get_height() + padding * 3
-        tooltipX = max(10, WINDOW_WIDTH - PANEL_WIDTH - tooltipWidth - 12)
+        tooltipX = max(10, self._worldViewportRight() - tooltipWidth - 12)
         tooltipY = max(10, min(WINDOW_HEIGHT - tooltipHeight - 10, mouseY - tooltipHeight // 2))
         tooltipRect = pygame.Rect(tooltipX, tooltipY, tooltipWidth, tooltipHeight)
         tooltipBg = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)

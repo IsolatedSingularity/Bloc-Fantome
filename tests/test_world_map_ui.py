@@ -77,7 +77,8 @@ def test_question_marker_composes_the_exact_recovered_worldbuilder_layers():
     )
     assert view.worldbuilder_font is not None
     title = view._text("WORLD MAP?", (255, 255, 255), scale=2)
-    assert title.get_height() == 10
+    from ui.fonts import load_ui_font
+    assert title.get_size() == load_ui_font(15).size("WORLD MAP?")
 
 
 def test_question_marker_uses_director_registration_idle_orbit_and_hover_clock(monkeypatch):

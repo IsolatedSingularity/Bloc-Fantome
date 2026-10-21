@@ -235,36 +235,23 @@ def _draw_orders(blocks, structure_positions, structure_surfaces, view_surfaces)
     modes = {"all": {}, "transparent": {}, "hidden": {}}
     for rotation in range(4):
         mode_positions = {
-            "all": view_surfaces.get(rotation, ()),
+            "all": set(view_surfaces.get(rotation, ())),
             "transparent": terrain_top_positions | set(structure_surfaces.get(rotation, ())),
-            "hidden": structure_surfaces.get(rotation, ()),
+            "hidden": set(structure_surfaces.get(rotation, ())),
         }
-        for mode, positions in mode_positions.items():
-            native_order = native_acceleration.sort_positions(positions, rotation)
-            if native_order is not None:
-                native_positions, native_indices, native_depths = native_order
-                modes[mode][rotation] = tuple(
-                    (
-                        native_depths[output],
-                        *native_positions[index],
-                        blocks[native_positions[index]],
-                    )
-                    for output, index in enumerate(native_indices)
-                )
-            else:
-                ordered = sorted(
-                    positions,
-                    key=lambda position: (
-                        _depth_key(rotation, position),
-                        position[2],
-                        position[0],
-                        position[1],
-                    ),
-                )
-                modes[mode][rotation] = tuple(
-                    (_depth_key(rotation, position), *position, blocks[position])
-                    for position in ordered
-                )
+        # Every mode uses the same total painter order. Sort their union once,
+        # retaining exact membership and sharing immutable rows between modes.
+        positions = set().union(*mode_positions.values())
+        native_order = native_acceleration.sort_positions(positions, rotation)
+        if native_order is not None:
+            source, indices, depths = native_order
+            ordered = [source[index] for index in indices]
+        else:
+            ordered = sorted(positions, key=lambda p: (_depth_key(rotation, p), p[2], p[0], p[1]))
+            depths = [_depth_key(rotation, p) for p in ordered]
+        rows = [(depth, *position, blocks[position]) for depth, position in zip(depths, ordered)]
+        for mode, members in mode_positions.items():
+            modes[mode][rotation] = tuple(row for position, row in zip(ordered, rows) if position in members)
     return modes
 
 

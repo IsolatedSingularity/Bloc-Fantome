@@ -1178,49 +1178,77 @@ def render_opening(output_dir: Path):
 
 
 def render_workshop(output_dir: Path):
-    """Review-only shell on real editor geometry, with isolated preferences."""
-    from ui.workshop import Workshop
+    """Production UI matrix; set SDL_VIDEODRIVER=windows for native captures.
+
+    Scripted rendering evidence is deliberately separate from OS input checks.
+    Preferences and saves are isolated; no installation or owner media changes.
+    """
+    import json
+    import runtime_paths
+    from ui.fonts import set_text_scale,font_source
     output_dir.mkdir(parents=True,exist_ok=True)
-    with patch.object(app_module.BlocFantome,'_saveAppConfig'), \
-         patch.object(app_module.TutorialScreen,'_saveConfig'), \
-         patch.object(app_module,'APP_CONFIG_FILE',str(output_dir/'isolated-config.json')):
-        app=app_module.BlocFantome()
+    save_dir=output_dir/'saves';save_dir.mkdir(exist_ok=True)
+    with patch.object(app_module.BlocFantome,'_saveAppConfig'),patch.object(app_module.TutorialScreen,'_saveConfig'), \
+         patch.object(app_module,'APP_CONFIG_FILE',str(output_dir/'isolated-config.json')), \
+         patch.object(app_module,'SAVES_DIR',str(save_dir)),patch.object(runtime_paths,'SAVES_DIR',str(save_dir)), \
+         patch.object(app_module,'DERIVED_WORLD_CACHE_DIR',str(output_dir/'cache')):
+        app=app_module.BlocFantome();report=[]
         try:
             app.autoSaveEnabled=False;app.tutorialScreen.visible=False
             assert app.assetManager.loadAllAssets()
             app._generateStructurePreviews();app._createInitialFloor()
-            block=app_module.BlockType
-            app.selectedBlock=block.OAK_STAIRS
+            block=app_module.BlockType;app.selectedBlock=block.OAK_STAIRS
             for x in range(3,9):
                 for y in range(3,9):app.world.setBlock(x,y,1,block.STONE_BRICKS)
             for x,y in ((3,3),(3,8),(8,3),(8,8)):
                 for z in range(2,6):app.world.setBlock(x,y,z,block.QUARTZ_PILLAR)
             for x in range(3,9):
                 for y in (3,8):app.world.setBlock(x,y,6,block.SMOOTH_QUARTZ)
-            app.blocksExpanded=app.experimentalExpanded=False
-            for variant in ('stone','glass'):
-                for size in ((960,640),(1200,800),(1920,1080)):
-                    app._applyWindowSize(*size);app._fitWorldToViewport();app.tooltipTimer=0
-                    app.workshop=Workshop(variant);app.workshop.visibility.pinned=True
-                    for _ in range(40):app._render();pygame.event.pump()
-                    save_capture(app.screen,output_dir/f'{variant}-{size[0]}.png')
-                    if size==(960,640):
-                        app.workshop=Workshop(variant,text_scale=1.25)
-                        app.workshop.visibility.pinned=True;app._render()
-                        save_capture(app.screen,output_dir/f'{variant}-960-text125.png')
-                app.library.open(app,'Structures');app.library.pending=app.library.entries[0]
-                app._render();save_capture(app.screen,output_dir/f'{variant}-library.png')
-                app.library.visible=False
-            app._applyWindowSize(1200,800);app._fitWorldToViewport();app.tooltipTimer=0
-            app.workshop=Workshop('stone');app.workshop.visibility.pinned=True
-            app.workshop.focus='half';app._render()
-            save_capture(app.screen,output_dir/'stone-focus.png')
-            app.workshop.focus=None;app.workshop.visibility.pinned=False
-            app.workshop.visibility.last_activity=-100;app.workshop.visibility.alpha=0
-            with patch('pygame.mouse.get_pos',return_value=(500,400)):app._render()
-            save_capture(app.screen,output_dir/'stone-hidden.png')
+            def capture(name,frames=8):
+                app.tooltipTimer=0
+                for _ in range(frames):app._update();app._render();pygame.event.pump()
+                save_capture(app.screen,output_dir/(name+'.png'))
+                report.append(dict(name=name,size=app.screen.get_size(),drawable=pygame.display.get_window_size(),driver=pygame.display.get_driver(),text_scale=app.workshop.text_scale,viewport=app._worldViewportRight()))
+            for size in ((960,640),(1200,800),(1920,1080)):
+                app._applyWindowSize(*size);app._fitWorldToViewport();app.workshop.visibility.pinned=True
+                capture(f'editor-{size[0]}',40)
+                app.workshop.page='build';app.workshop.query='oxidized copper';capture(f'catalog-{size[0]}')
+                app.workshop.query='';app.workshop.page='tools';capture(f'tools-{size[0]}')
+                app.workshop.page=''
+            app._applyWindowSize(1200,800);app._fitWorldToViewport()
+            app.workshop.focus='half';capture('focus');app.workshop.focus=None
+            app.workshop.visibility.pinned=False;app.workshop.visibility.last_activity=-100;app.workshop.visibility.alpha=0
+            with patch('pygame.mouse.get_pos',return_value=(500,400)),patch('pygame.mouse.get_pressed',return_value=(False,False,False)):capture('quiet')
+            app.workshop.clean=True;capture('clean');app.workshop.clean=False
+            app.workshop.visibility.pinned=True
+            for tab in app.library.TABS:
+                app.library.open(app,tab)
+                if app.library.entries:app.library.pending=app.library.entries[0]
+                capture('library-'+tab.lower().replace(' ','-'),40)
+            app.library.visible=False
+            for scale in (1,1.25,1.5):
+                set_text_scale(scale);app.workshop.text_scale=scale;app._applyWindowSize(960,640)
+                app.settingsMenuOpen=True;capture(f'settings-960-text{round(scale*100)}');app.settingsMenuOpen=False
+                app.showShortcutsPanel=True;capture(f'help-960-text{round(scale*100)}');app.showShortcutsPanel=False
+                app.workshop.page='build';capture(f'build-960-text{round(scale*100)}');app.workshop.page=''
+            app.workshop.error='Save failed: the destination is unavailable. Your build stays open. Retry Save.';capture('save-failure-text150');app.workshop.error=''
+            app.tutorialScreen.visible=True;capture('tutorial-text150');app.tutorialScreen.minimized=True;capture('tutorial-minimized-text150');app.tutorialScreen.visible=False
+            for scale in (1,1.5):
+                set_text_scale(scale);app.workshop.text_scale=scale
+                app._openWorldMap();capture(f'world-map-text{round(scale*100)}',30);app._exitWorldMap()
+                app._toggleRedstoneLab();capture(f'lab-text{round(scale*100)}',30)
+                app.redstoneLabScroll=app.redstoneLabMaxScroll;capture(f'lab-scrolled-text{round(scale*100)}');app._toggleRedstoneLab()
+            set_text_scale(1);app.workshop.text_scale=1;app._applyWindowSize(1200,800)
+            if pygame.display.get_driver()=='windows':
+                before=(app.renderer.offsetX,app.renderer.offsetY,app.zoomLevel)
+                app._toggleFullscreen();capture('fullscreen',30)
+                app._toggleFullscreen();capture('windowed-return',30)
+                import ctypes
+                hwnd=pygame.display.get_wm_info()['window']
+                report.append(dict(windows_dpi=ctypes.windll.user32.GetDpiForWindow(hwnd),font=str(font_source()),camera_before=before,camera_after=(app.renderer.offsetX,app.renderer.offsetY,app.zoomLevel)))
+            (output_dir/'matrix.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         finally:
-            app.worldLoadExecutor.shutdown(wait=True,cancel_futures=True);pygame.quit()
+            set_text_scale(1);app.worldLoadExecutor.shutdown(wait=True,cancel_futures=True);pygame.quit()
 
 
 if __name__ == "__main__":

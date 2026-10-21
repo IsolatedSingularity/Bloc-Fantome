@@ -123,8 +123,9 @@ def test_skip_preference_persists_and_corrupt_config_is_safe(app,tmp_path):
     with patch('ui.opening_scene.CONFIG_PATH',str(target)):
         assert not skip_on_launch()
         app.settingsMenuOpen=True
-        panel=app._settingsMenuRect()
-        app._handleSettingsClick(panel.centerx,panel.y+242+8*36+15)
+        app._renderSettingsMenu()
+        control=next(rect for _,action,rect in app._settingsLayout()[2] if action=='skip')
+        app._handleSettingsClick(*control.center)
         app.settingsMenuOpen=False
         assert skip_on_launch()
         target.write_text('[]')
@@ -135,7 +136,7 @@ def test_settings_opening_button_matches_rendered_row(app):
     app.settingsMenuOpen=True
     app._renderSettingsMenu()
     panel=app._settingsMenuRect()
-    button=pygame.Rect(panel.x+28,panel.y+242+7*36,panel.width-56,30)
+    button=next(rect for _,action,rect in app._settingsLayout()[2] if action=='opening')
     assert panel.contains(button)
     app._handleSettingsClick(*button.center)
     try:
