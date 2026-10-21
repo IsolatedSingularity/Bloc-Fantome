@@ -2,6 +2,9 @@
 
 This file is a **standalone implementation prompt**, prepared by the browser-side reviewer on 2026-10-20. It is not evidence of implementation or approval.
 
+> **Continuation notice (post-f63db3ab UI review, 2026-10-20):** This original prompt documents the scope of the first development slice. The owner has since approved the compact modern drawer direction and the app-wide Segoe UI/native-resolution redesign. For work already in progress, follow the [single authoritative Pass 1 continuation](ASTRA_PASS1_CONTINUATION_DESIGN_SYSTEM_2026-10-20.md), using the actual latest Codex working tree rather than resetting to the older `ef6dae62` starting commit. The creature remains deferred.
+
+
 Work in `C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome`. Repo `IsolatedSingularity/Bloc-Fantome`. Read the local `AGENTS.md`, status/HEAD and owner changes first. **Implementation base: `codex/engineering-consolidation@ef6dae62a86a148bdf77d508e4e2422fe2ba5e02`**, a tested review branch, not the older research baseline. Recheck ref heads; do not reset a dirty tree. Read `docs/ENGINEERING_AUDIT_2026-10-20.md` and `docs/QA_ARCHIVE.md`. From the separate `docs/builder-ux-research-20261020` branch read:
 - `docs/research/BUILDER_UX_PERFORMANCE_2026-10-20.md`;
 - `docs/research/BUILDER_FIDELITY_AUDIO_MOTION_2026-10-20.md`;
