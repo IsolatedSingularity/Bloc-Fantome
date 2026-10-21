@@ -1,0 +1,16 @@
+{
+  "BlocFantome.exe": {
+    "sha256": "b90eeba07012c3e1818aafcd4e275673fa66e3e59d0d3cd5221a12337da040c7",
+    "modified": "2026-10-20T12:37:10"
+  },
+  ".app_config.json": {
+    "sha256": "e4f30e2546af47986c40cffeb4d4025a85d425b42eb13b1c39e4692ebd6ea785",
+    "modified": "2026-10-20T15:52:26.242556"
+  },
+  ".tutorial_config.json": {
+    "sha256": "bd68b1b89b1419ef8afd4437be965e2d13c2151cced0ca37ce93abad32efb069",
+    "modified": "2026-09-08T13:48:45.964541"
+  },
+  "matches_preserved_root_executable": true,
+  "note": "Installed settings timestamps predate this QA session. The mistakenly launched installed process appended its diagnostic log; no installed binary or settings replacement occurred."
+}

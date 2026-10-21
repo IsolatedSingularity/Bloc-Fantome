@@ -1214,6 +1214,7 @@ def render_workshop(output_dir: Path):
                 capture(f'editor-{size[0]}',40)
                 app.workshop.page='build';app.workshop.query='oxidized copper';capture(f'catalog-{size[0]}')
                 app.workshop.query='';app.workshop.page='tools';capture(f'tools-{size[0]}')
+                app.workshop.page='world';capture(f'world-{size[0]}')
                 app.workshop.page=''
             app._applyWindowSize(1200,800);app._fitWorldToViewport()
             app.workshop.focus='half';capture('focus');app.workshop.focus=None
@@ -1231,6 +1232,10 @@ def render_workshop(output_dir: Path):
                 app.settingsMenuOpen=True;capture(f'settings-960-text{round(scale*100)}');app.settingsMenuOpen=False
                 app.showShortcutsPanel=True;capture(f'help-960-text{round(scale*100)}');app.showShortcutsPanel=False
                 app.workshop.page='build';capture(f'build-960-text{round(scale*100)}');app.workshop.page=''
+                for page in ('tools','world'):
+                    app.workshop.page=page;capture(f'{page}-960-text{round(scale*100)}')
+                app.workshop.page=''
+                app.library.open(app,'Structures');capture(f'library-960-text{round(scale*100)}');app.library.visible=False
             app.workshop.error='Save failed: the destination is unavailable. Your build stays open. Retry Save.';capture('save-failure-text150');app.workshop.error=''
             app.tutorialScreen.visible=True;capture('tutorial-text150');app.tutorialScreen.minimized=True;capture('tutorial-minimized-text150');app.tutorialScreen.visible=False
             for scale in (1,1.5):

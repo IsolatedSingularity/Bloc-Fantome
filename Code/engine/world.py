@@ -15,7 +15,7 @@ Features:
 
 from collections import defaultdict, deque
 from contextlib import contextmanager
-import heapq
+from engine.draw_order import DrawOrder
 from typing import Any, Deque, Dict, List, Optional, Set, Tuple
 
 from domain.world_catalog import WorldCatalog
@@ -137,6 +137,7 @@ class World:
             return False
         x, y, z = pos
         column = (x, y)
+        oldTop = self.heightIndex.get(column)
         levels = self._columnLevels.get(column)
         if oldBlock != BlockType.AIR:
             self.blocks.pop(pos, None)
@@ -162,7 +163,7 @@ class World:
             self._bulkChanged = True
         else:
             self._refreshSurfaceNeighborhood(pos)
-            self._refreshPreparedDrawOrders(pos)
+            self._refreshPreparedDrawOrders(pos, oldTop)
             self.revision += 1
             self.dirtyRegions.mark_block_and_neighbors(x, y, z)
         return True
@@ -291,67 +292,34 @@ class World:
             ):
                 self.sceneStructureSurfacesByView[rotation].add(pos)
 
-    def _refreshPreparedDrawOrders(self, editedPos) -> None:
-        """Patch staged painter orders locally after an ordinary block edit."""
+    def _refreshPreparedDrawOrders(self, editedPos, oldTop=None) -> None:
+        """Patch only edited cells, exposed neighbors and changed terrain tops."""
         if not self.drawOrdersByMode or self.drawOrdersRevision != self.revision:
             return
         affected = {editedPos, *self._neighborPositions(editedPos)}
-        changedColumns = {(position[0], position[1]) for position in affected}
         for position in affected:
             self._refreshSceneStructureSurfacePosition(position)
-
-        def key(item):
-            return item[0], item[3], item[1], item[2]
-
-        def item(rotation, position):
-            block = self.blocks.get(position)
-            if block is None:
-                return None
-            return (self._drawDepth(rotation, position), *position, block)
-
+        column = editedPos[:2]
+        terrain = set()
+        top = self.heightIndex.get(column)
+        if top is not None: terrain.add((*column, top))
+        removed = affected | terrain
+        if oldTop is not None: removed.add((*column, oldTop))
         for mode, views in self.drawOrdersByMode.items():
-            for rotation, oldOrder in tuple(views.items()):
-                if mode == "transparent":
-                    base = tuple(
-                        value for value in oldOrder
-                        if (value[1], value[2], value[3]) not in affected
-                        and not (
-                            (value[1], value[2]) in changedColumns
-                            and (value[1], value[2], value[3])
-                            not in self.sceneStructurePositions
-                        )
-                    )
-                    positions = set()
-                    for column in changedColumns:
-                        top = self.heightIndex.get(column)
-                        if top is not None:
-                            position = (column[0], column[1], top)
-                            if position not in self.sceneStructurePositions:
-                                positions.add(position)
-                    positions.update(
-                        position for position in affected
-                        if position in self.sceneStructureSurfacesByView[rotation]
-                    )
-                elif mode == "hidden":
-                    base = tuple(
-                        value for value in oldOrder
-                        if (value[1], value[2], value[3]) not in affected
-                    )
-                    positions = {
-                        position for position in affected
-                        if position in self.sceneStructureSurfacesByView[rotation]
-                    }
+            for rotation, order in tuple(views.items()):
+                if mode == 'all':
+                    positions = removed & self.viewSurfacePositionsByView[rotation]
                 else:
-                    base = tuple(
-                        value for value in oldOrder
-                        if (value[1], value[2], value[3]) not in affected
-                    )
-                    positions = affected & self.viewSurfacePositionsByView[rotation]
-                additions = sorted(
-                    (value for position in positions if (value := item(rotation, position))),
-                    key=key,
-                )
-                views[rotation] = tuple(heapq.merge(base, additions, key=key))
+                    positions = removed & self.sceneStructureSurfacesByView[rotation]
+                    if mode == 'transparent':
+                        # Reinsert terrain neighbors only when still column tops.
+                        positions |= {p for p in removed if p not in self.sceneStructurePositions
+                                      and self.heightIndex.get(p[:2]) == p[2]}
+                additions = [(self._drawDepth(rotation,p), *p, self.blocks[p])
+                             for p in positions if p in self.blocks
+                             and self.blocks[p] not in self._surfaceTransparentTypes]
+                keys = [(self._drawDepth(rotation,p), p[2], p[0], p[1]) for p in removed]
+                views[rotation] = order.patched(keys, additions)
         self.drawOrdersRevision = self.revision + 1
 
     def _surfaceViewsForPosition(self, pos: Tuple[int, int, int]):
@@ -623,7 +591,8 @@ class World:
         self._bulkDepth = 0
         self._bulkChanged = False
         self.revision += 1
-        self.drawOrdersByMode = dict(snapshot.draw_orders_by_mode)
+        self.drawOrdersByMode = {mode: {rotation: DrawOrder(order) for rotation, order in views.items()}
+                                 for mode, views in snapshot.draw_orders_by_mode.items()}
         self.drawOrdersRevision = self.revision if self.drawOrdersByMode else -1
         self.dirtyRegions.request_full_redraw()
 

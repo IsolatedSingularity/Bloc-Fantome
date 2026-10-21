@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 import pygame
+from ui.scroll import SmoothScroll
 
 from domain.blocks import BlockType
 from engine.biome_catalog import BIOMES, BY_ID
@@ -71,6 +72,7 @@ class BiomePanel:
         self.font = load_ui_font(15)
         self.small = load_ui_font(12)
         self.scroll=0
+        self.scroller=SmoothScroll()
         self.browser=pygame.Rect(0,0,0,0)
         self.close=pygame.Rect(0,0,0,0)
 
@@ -85,7 +87,7 @@ class BiomePanel:
         if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
             self.expanded=False;return True
         if event.type==pygame.MOUSEWHEEL and self.browser.collidepoint(pygame.mouse.get_pos()):
-            self.scroll=max(0,min(self.max_scroll,self.scroll-event.y*70));return True
+            self.scroller.wheel(event,self.max_scroll,70);return True
         if event.type==pygame.MOUSEBUTTONDOWN and self.browser.collidepoint(event.pos):
             if event.button==1:
                 if self.close.collidepoint(event.pos):self.expanded=False
@@ -137,7 +139,7 @@ class BiomePanel:
         if self.dimension!=app.currentDimension:
             self.dimension=app.currentDimension
             self.pending=None
-            self.scroll=0
+            self.scroll=0;self.scroller.reset()
         self.header=pygame.Rect(x+8,y,width-16,35)
         app.assetManager.drawButton(app.screen,self.header,'Biomes',app.font,self.header.collidepoint(pygame.mouse.get_pos()),self.expanded,letterSpacing=1)
         return y+40
@@ -158,7 +160,7 @@ class BiomePanel:
         if self.dimension != app.currentDimension:
             self.dimension = app.currentDimension
             self.pending = None
-            self.scroll=0
+            self.scroll=0;self.scroller.reset()
         self.cards=[]
         self.confirm=pygame.Rect(0,0,0,0)
         self.cancel=pygame.Rect(0,0,0,0)
@@ -174,7 +176,7 @@ class BiomePanel:
         screen.set_clip(viewport)
         entries=self.entries(app.currentDimension)
         self.max_scroll=max(0,((len(entries)+1)//2)*self.STRIDE-viewport.height)
-        self.scroll=min(self.scroll,self.max_scroll)
+        self.scroll=self.scroller.update(self.max_scroll,getattr(app.workshop.visibility,"reduced_motion",False))
         y-=self.scroll
         made_preview = False
         card_width=(width-27)//2

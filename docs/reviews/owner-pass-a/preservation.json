@@ -1,0 +1,338 @@
+[
+  {
+    "path": ".app_config.json",
+    "reviewed_sha256": "26ff228185365ac9d1ec38b5798e0df954d35ac1a050ade6450faa650e9492ab",
+    "current_sha256": "26ff228185365ac9d1ec38b5798e0df954d35ac1a050ade6450faa650e9492ab",
+    "unchanged": true
+  },
+  {
+    "path": ".qa/tutorial-294/panoir-source.info.json",
+    "reviewed_sha256": "6076a892044d6c802ffe9b78eb8461ad222e02213999e11c0d9ced7040f0f82c",
+    "current_sha256": "6076a892044d6c802ffe9b78eb8461ad222e02213999e11c0d9ced7040f0f82c",
+    "unchanged": true
+  },
+  {
+    "path": ".qa/tutorial-294/panoir-source.webm",
+    "reviewed_sha256": "97b2c3cc7abbd7bf0fe50c22a7d2137ca3765485558a7ecbf5298340906cc2d2",
+    "current_sha256": "97b2c3cc7abbd7bf0fe50c22a7d2137ca3765485558a7ecbf5298340906cc2d2",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/abyss-bed.wav",
+    "reviewed_sha256": "1db8d09689534596f0aeb879d208810968c2e3aeb252854a2f7d60e4a66a3acb",
+    "current_sha256": "1db8d09689534596f0aeb879d208810968c2e3aeb252854a2f7d60e4a66a3acb",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/CREDITS.txt",
+    "reviewed_sha256": "0f9239873ac4adaea6db4914741ce2782ed922604426526c82ad4d16ab4b74b7",
+    "current_sha256": "0f9239873ac4adaea6db4914741ce2782ed922604426526c82ad4d16ab4b74b7",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/encounter-sources.json",
+    "reviewed_sha256": "e130337747a1172ec88bb8eab9569740277df9083b16fd624055884640be650e",
+    "current_sha256": "e130337747a1172ec88bb8eab9569740277df9083b16fd624055884640be650e",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/encounter.wav",
+    "reviewed_sha256": "bf7824c0fa8328354fcedde73faf9c2a33523901af3aa3296c3e735837066157",
+    "current_sha256": "bf7824c0fa8328354fcedde73faf9c2a33523901af3aa3296c3e735837066157",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/monument-move.wav",
+    "reviewed_sha256": "b25edb3be6b342286352cd4376902112740ffdfc8089ad224aa251abcecab999",
+    "current_sha256": "b25edb3be6b342286352cd4376902112740ffdfc8089ad224aa251abcecab999",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/orbit-bed.wav",
+    "reviewed_sha256": "7c93f89fbc5e15ded4beef676a7681237f4021713b48594efdecc125e5682f3d",
+    "current_sha256": "7c93f89fbc5e15ded4beef676a7681237f4021713b48594efdecc125e5682f3d",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/panoir-you-have-time.ogg",
+    "reviewed_sha256": "c50cbbe9a48214d6053892120e4af80d8365861f3da29a9d7c90d17cee343a33",
+    "current_sha256": "c50cbbe9a48214d6053892120e4af80d8365861f3da29a9d7c90d17cee343a33",
+    "unchanged": true
+  },
+  {
+    "path": "Assets/Sound Hub/opening/sanctuary-rise.wav",
+    "reviewed_sha256": "0059f08bae15fec0e59f94a7344a05d1e8c52e4d1bb50036f1cb5cf670d59870",
+    "current_sha256": "0059f08bae15fec0e59f94a7344a05d1e8c52e4d1bb50036f1cb5cf670d59870",
+    "unchanged": true
+  },
+  {
+    "path": "BlocFantome-Diagnostic.exe",
+    "reviewed_sha256": "8d5f3dbeba2649c842462546c118ffc3dc0299cb2f2f0cf9cefd6ce1685b6ca3",
+    "current_sha256": "8d5f3dbeba2649c842462546c118ffc3dc0299cb2f2f0cf9cefd6ce1685b6ca3",
+    "unchanged": true
+  },
+  {
+    "path": "BlocFantome.exe",
+    "reviewed_sha256": "b90eeba07012c3e1818aafcd4e275673fa66e3e59d0d3cd5221a12337da040c7",
+    "current_sha256": "b90eeba07012c3e1818aafcd4e275673fa66e3e59d0d3cd5221a12337da040c7",
+    "unchanged": true
+  },
+  {
+    "path": "Code/.app_config.json",
+    "reviewed_sha256": "97ec5cfab2302d85afda7f2f76c373c85ec1ff3643512508641c8d007b187d74",
+    "current_sha256": "97ec5cfab2302d85afda7f2f76c373c85ec1ff3643512508641c8d007b187d74",
+    "unchanged": true
+  },
+  {
+    "path": "Code/build/installer/BlocFantome_Setup_2.9.7.exe",
+    "reviewed_sha256": "ce4bce33bf365ef46e5f1d62b922bd27d5ba5e09f78de721c33419202c8ed295",
+    "current_sha256": "ce4bce33bf365ef46e5f1d62b922bd27d5ba5e09f78de721c33419202c8ed295",
+    "unchanged": true
+  },
+  {
+    "path": "Code/build/installer/BlocFantome_Setup_2.9.8.exe",
+    "reviewed_sha256": "8a8a4bc38d9feeba52ea3a8882725b203f8419cb56245cf183c3a333284eee0e",
+    "current_sha256": "8a8a4bc38d9feeba52ea3a8882725b203f8419cb56245cf183c3a333284eee0e",
+    "unchanged": true
+  },
+  {
+    "path": "Code/config.json",
+    "reviewed_sha256": "242fec454f2ad813a235f4732fdf35fbc4476b6b4f93bdcf562d6021345edc8e",
+    "current_sha256": "242fec454f2ad813a235f4732fdf35fbc4476b6b4f93bdcf562d6021345edc8e",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_autosave.json.gz",
+    "reviewed_sha256": "8d14d38f93b8df40f05ae144e9e38df8bdd73a2c28c66a594e51c1edee3d00d5",
+    "current_sha256": "8d14d38f93b8df40f05ae144e9e38df8bdd73a2c28c66a594e51c1edee3d00d5",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260124_135248.json.gz",
+    "reviewed_sha256": "26c1de2ce4e757d52295609c1de093e32c573ef6241e07c0e78535687949c275",
+    "current_sha256": "26c1de2ce4e757d52295609c1de093e32c573ef6241e07c0e78535687949c275",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260124_135748.json.gz",
+    "reviewed_sha256": "11d6ef35353a6264689fe562537ad7d6d376eef6f9ca4cc36fab9d4ca603c37d",
+    "current_sha256": "11d6ef35353a6264689fe562537ad7d6d376eef6f9ca4cc36fab9d4ca603c37d",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260124_140248.json.gz",
+    "reviewed_sha256": "ee8e5f2c00fd8582ee81c544f2e2649e04d4f0859cae441250f4bae87b4f7289",
+    "current_sha256": "ee8e5f2c00fd8582ee81c544f2e2649e04d4f0859cae441250f4bae87b4f7289",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260124_140748.json.gz",
+    "reviewed_sha256": "ac87a43a6fb6b14b9e58c3f59ca7525b701cd4ad57c0c784fde51b8c5d17ecdb",
+    "current_sha256": "ac87a43a6fb6b14b9e58c3f59ca7525b701cd4ad57c0c784fde51b8c5d17ecdb",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260125_202102.json.gz",
+    "reviewed_sha256": "b745ea80dc6c70c6fcb4b29fbee9db4ca9655b668601daf66716cb0471e89ab7",
+    "current_sha256": "b745ea80dc6c70c6fcb4b29fbee9db4ca9655b668601daf66716cb0471e89ab7",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260907_020637.json.gz",
+    "reviewed_sha256": "994344314dca5ed77f5b95c922367d6c3ce543298bde61fdc2abfa1705236226",
+    "current_sha256": "994344314dca5ed77f5b95c922367d6c3ce543298bde61fdc2abfa1705236226",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260907_020716.json.gz",
+    "reviewed_sha256": "462f87c0a8fa5c8aa8bf2920954cb5628c0f35a67f1bc0bc252aa4cf48310748",
+    "current_sha256": "462f87c0a8fa5c8aa8bf2920954cb5628c0f35a67f1bc0bc252aa4cf48310748",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260907_021137.json.gz",
+    "reviewed_sha256": "6139e4afbc683ac9957108d0bda592aa1f46dfc824ca7940ed8e627c5f5333ad",
+    "current_sha256": "6139e4afbc683ac9957108d0bda592aa1f46dfc824ca7940ed8e627c5f5333ad",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260907_021216.json.gz",
+    "reviewed_sha256": "2a1af607466c7359a878dbb9a19d3d009df23582e7d303104511f0e38241feee",
+    "current_sha256": "2a1af607466c7359a878dbb9a19d3d009df23582e7d303104511f0e38241feee",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/_backups/backup_20260913_131609.json.gz",
+    "reviewed_sha256": "4ce7c5938827c0e3791f18b57337aa3eaa4eba820ce1e19b2b54badd1ded2539",
+    "current_sha256": "4ce7c5938827c0e3791f18b57337aa3eaa4eba820ce1e19b2b54badd1ded2539",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/bastion_bridge_edge.json",
+    "reviewed_sha256": "22ff2c97d0a1b223abe454ce27bdca259c83efc2ac96293bc13b4d3c7bcc3566",
+    "current_sha256": "22ff2c97d0a1b223abe454ce27bdca259c83efc2ac96293bc13b4d3c7bcc3566",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/bastion_remnant_no_lava.json",
+    "reviewed_sha256": "740cb6e4c30d26775bd3eb148d79797102980962d021d383fe3e61af36a51237",
+    "current_sha256": "740cb6e4c30d26775bd3eb148d79797102980962d021d383fe3e61af36a51237",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/bastion_remnant_with_lava.json",
+    "reviewed_sha256": "1eec9673d45b8a0087a9519b8f59ddf0d29d396da2a5e735cf5158c23da705cc",
+    "current_sha256": "1eec9673d45b8a0087a9519b8f59ddf0d29d396da2a5e735cf5158c23da705cc",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/build_20260119_232929.json.gz",
+    "reviewed_sha256": "ece04c56a3b5e46c2400607cef45c73ff9a93202cab776b80c1839c97ef93264",
+    "current_sha256": "ece04c56a3b5e46c2400607cef45c73ff9a93202cab776b80c1839c97ef93264",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/build_20260122_223948.json.gz",
+    "reviewed_sha256": "19ae8302c1e77067176738af49ddc97be34292d84fb70bd149c69aca2a46a79d",
+    "current_sha256": "19ae8302c1e77067176738af49ddc97be34292d84fb70bd149c69aca2a46a79d",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/build_20260124_140009.json.gz",
+    "reviewed_sha256": "ff89e4ce4a4a647710310bb79253d03575b6f6e951007d25c31ee4869fdcb3cd",
+    "current_sha256": "ff89e4ce4a4a647710310bb79253d03575b6f6e951007d25c31ee4869fdcb3cd",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/build_20260124_140645.json.gz",
+    "reviewed_sha256": "94941ff51f7ee291e49b35b5815d1366fe19a1ebab40b2487135cde26b4620eb",
+    "current_sha256": "94941ff51f7ee291e49b35b5815d1366fe19a1ebab40b2487135cde26b4620eb",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/custom_music/README.txt",
+    "reviewed_sha256": "cbcc22a2ee35533d1f7d0bd1c04bfa20d56cdcc927bc8f2971c1511268c4e8c0",
+    "current_sha256": "cbcc22a2ee35533d1f7d0bd1c04bfa20d56cdcc927bc8f2971c1511268c4e8c0",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/end_city_tower.json",
+    "reviewed_sha256": "12ce5088ca22e6eb854e9c465f67d0db530acc483c0f6885922e503cfa6793e8",
+    "current_sha256": "12ce5088ca22e6eb854e9c465f67d0db530acc483c0f6885922e503cfa6793e8",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/end_tutorial_legacy.json",
+    "reviewed_sha256": "bee57d44994bb7ba7c59d291b4f88ca4ed58bab8a4c76adf25b68529af59f900",
+    "current_sha256": "bee57d44994bb7ba7c59d291b4f88ca4ed58bab8a4c76adf25b68529af59f900",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/redstone_ring_riser.json",
+    "reviewed_sha256": "3080fe91c7f827654f1a1da22f5c6ca4c2dd7214d1c855bbcd13055a0afb2981",
+    "current_sha256": "3080fe91c7f827654f1a1da22f5c6ca4c2dd7214d1c855bbcd13055a0afb2981",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/redstone_signal_line.json",
+    "reviewed_sha256": "0651813facf0f323b829d21f1db3bcdc273bffb9f7c24f800d366b0f1dfc45aa",
+    "current_sha256": "0651813facf0f323b829d21f1db3bcdc273bffb9f7c24f800d366b0f1dfc45aa",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/ruined_portal.json",
+    "reviewed_sha256": "9924051d128f87588a7729cc5fdc05b6398f0401e3cf6bab69848eb6405042b3",
+    "current_sha256": "9924051d128f87588a7729cc5fdc05b6398f0401e3cf6bab69848eb6405042b3",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/ruined_portal_accurate.json",
+    "reviewed_sha256": "3bcddf4e82c6606c771d14129211d1199d5a274700511d8a051e65a3868f480d",
+    "current_sha256": "3bcddf4e82c6606c771d14129211d1199d5a274700511d8a051e65a3868f480d",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/warped_forest.json",
+    "reviewed_sha256": "edbab3246591f110a55c5f0d0e09e4b7b699c490442873dbf737366124a9bdfe",
+    "current_sha256": "edbab3246591f110a55c5f0d0e09e4b7b699c490442873dbf737366124a9bdfe",
+    "unchanged": true
+  },
+  {
+    "path": "Code/saves/warped_forest_accurate.json",
+    "reviewed_sha256": "92b534386dbfca916156bd7decece57e1391f383a74e05febc7ea6c4cdc6b397",
+    "current_sha256": "92b534386dbfca916156bd7decece57e1391f383a74e05febc7ea6c4cdc6b397",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_autosave.json.gz",
+    "reviewed_sha256": "89c545e60b0919fafda9ed123a4c51790d3568ffc187deeb1b21f1c5c8b01bfe",
+    "current_sha256": "89c545e60b0919fafda9ed123a4c51790d3568ffc187deeb1b21f1c5c8b01bfe",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260820_050939.json.gz",
+    "reviewed_sha256": "2bfd7c4c4060df6faf8079b1f9c21ed15c36dede2fee9d41a0bcae5453338d53",
+    "current_sha256": "2bfd7c4c4060df6faf8079b1f9c21ed15c36dede2fee9d41a0bcae5453338d53",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260820_051439.json.gz",
+    "reviewed_sha256": "6cd4139a95e546340052bfacd281175e565de4f838aede40e33a969a44b01272",
+    "current_sha256": "6cd4139a95e546340052bfacd281175e565de4f838aede40e33a969a44b01272",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260820_084149.json.gz",
+    "reviewed_sha256": "df7ef256b150ae619781227c357b1e6a0b069ad0134e1715cf9727c6d9cf6595",
+    "current_sha256": "df7ef256b150ae619781227c357b1e6a0b069ad0134e1715cf9727c6d9cf6595",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260820_133620.json.gz",
+    "reviewed_sha256": "ba961ad62d79cdc664d0bb00ab046fdcc986da908f1939069d15aeda9c2e7c04",
+    "current_sha256": "ba961ad62d79cdc664d0bb00ab046fdcc986da908f1939069d15aeda9c2e7c04",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260820_171040.json.gz",
+    "reviewed_sha256": "41e3ccaf18de598464f7313810e34f8c94adf9e4406ec197fa1185ac358d8ba3",
+    "current_sha256": "41e3ccaf18de598464f7313810e34f8c94adf9e4406ec197fa1185ac358d8ba3",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260831_232227.json.gz",
+    "reviewed_sha256": "0c9f4938d47cf5ea64a38d491b31c5375954ef12684fcd6e33a04dea413fd4af",
+    "current_sha256": "0c9f4938d47cf5ea64a38d491b31c5375954ef12684fcd6e33a04dea413fd4af",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260831_232534.json.gz",
+    "reviewed_sha256": "98789466c27ebef822cc178b25e062d9828f2298a4fb2098cb4599d0e214500f",
+    "current_sha256": "98789466c27ebef822cc178b25e062d9828f2298a4fb2098cb4599d0e214500f",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260831_232628.json.gz",
+    "reviewed_sha256": "05723f43a3d11d4134268c0b77581961eed15fb663a70638353d9e74d8828a5f",
+    "current_sha256": "05723f43a3d11d4134268c0b77581961eed15fb663a70638353d9e74d8828a5f",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260831_232727.json.gz",
+    "reviewed_sha256": "2bd342ffb9d4da85efc981d527c2ffec3beca576a78b8cbed07b6371d04670c5",
+    "current_sha256": "2bd342ffb9d4da85efc981d527c2ffec3beca576a78b8cbed07b6371d04670c5",
+    "unchanged": true
+  },
+  {
+    "path": "saves/_backups/backup_20260912_120702.json.gz",
+    "reviewed_sha256": "9aef76334455d01dce2ce654fd92e96fb57941aec7d05dd36c187afa04aa3bed",
+    "current_sha256": "9aef76334455d01dce2ce654fd92e96fb57941aec7d05dd36c187afa04aa3bed",
+    "unchanged": true
+  },
+  {
+    "path": "saves/build_20260817_164555.json.gz",
+    "reviewed_sha256": "7a5c9b2c268cef4353e1df332b681c4e6a1adc737363ec0b02a0ad014496c398",
+    "current_sha256": "7a5c9b2c268cef4353e1df332b681c4e6a1adc737363ec0b02a0ad014496c398",
+    "unchanged": true
+  }
+]

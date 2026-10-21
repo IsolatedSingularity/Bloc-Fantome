@@ -19,7 +19,7 @@ ROOT=Path(BUNDLED_DATA_DIR)/'tutorial_prepared'
 SCHEMA=2
 SOURCES=('blocFantome.py','engine/world.py','engine/world_snapshot.py',
          'engine/tutorial_runtime.py','engine/tutorial_lessons.py','engine/tutorial_scenes.py',
-         'engine/tutorial_prepared.py','engine/block_state.py','domain/blocks.py',
+         'engine/tutorial_prepared.py','engine/draw_order.py','engine/block_state.py','domain/blocks.py',
          'domain/block_catalog.py','domain/world_catalog.py','domain/structures.py',
          'engine/biome_capture.py','engine/capture_records.py','engine/build_io.py',
          'engine/capture_materials.py','engine/scene_cache.py','engine/native_acceleration.py')

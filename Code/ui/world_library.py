@@ -3,6 +3,7 @@
 from typing import List, Optional, Tuple
 
 import pygame
+from ui.scroll import SmoothScroll
 
 from engine.world_catalog import WorldEntry
 
@@ -22,6 +23,7 @@ class WorldLibraryModal:
         self.pending: Optional[WorldEntry] = None
         self.category = self.CATEGORIES[0]
         self.scroll = 0
+        self.scroller = SmoothScroll()
         self._entry_rects: List[Tuple[pygame.Rect, WorldEntry]] = []
         self._tab_rects = {}
         self._list_rect = pygame.Rect(0, 0, 0, 0)
@@ -34,6 +36,7 @@ class WorldLibraryModal:
         self.pending = None
         self.category = self.CATEGORIES[0]
         self.scroll = 0
+        self.scroller.reset()
         self.visible = True
 
     def close(self) -> None:
@@ -57,7 +60,7 @@ class WorldLibraryModal:
         if event.type == pygame.MOUSEWHEEL:
             total = len(self._visible_entries()) * self.ROW_HEIGHT
             maximum = max(0, total - max(1, self._list_rect.height - 12))
-            self.scroll = max(0, min(maximum, self.scroll - event.y * self.ROW_HEIGHT))
+            if self._list_rect.collidepoint(pygame.mouse.get_pos()):self.scroller.wheel(event,maximum,self.ROW_HEIGHT)
             return ("handled", None)
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
             return ("handled", None)
@@ -79,6 +82,7 @@ class WorldLibraryModal:
                 self.category = category
                 self.pending = None
                 self.scroll = 0
+                self.scroller.reset()
                 return ("handled", None)
         if self._list_rect.collidepoint(event.pos):
             for rect, entry in self._entry_rects:
@@ -134,11 +138,12 @@ class WorldLibraryModal:
         screen.set_clip(self._list_rect.inflate(-4, -4))
         self._entry_rects = []
         entries = self._visible_entries()
+        self.scroll=self.scroller.update(max(0,len(entries)*self.ROW_HEIGHT-self._list_rect.height+12))
         for index, entry in enumerate(entries):
             rect = pygame.Rect(self._list_rect.x + 8,
                                self._list_rect.y + 8 + index * self.ROW_HEIGHT - self.scroll,
                                self._list_rect.width - 16, self.ROW_HEIGHT - 8)
-            self._entry_rects.append((rect, entry))
+            self._entry_rects.append((rect.clip(self._list_rect.inflate(-4,-4)), entry))
             if rect.bottom < self._list_rect.top or rect.top > self._list_rect.bottom:
                 continue
             self.assets.drawSlot(screen, rect, entry == self.pending)

@@ -123,7 +123,7 @@ def test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize(a
     with patch.object(app.tutorialScreen,'_button',wraps=app.tutorialScreen._button) as draw:
         app.tutorialScreen.render(app.screen)
         labels=[call.args[2] for call in draw.call_args_list]
-    assert labels==['TUTORIAL  1 / 16','','Back','Next','Leave']
+    assert labels==['TUTORIAL  1 / 15','','Back','Next','Leave']
     from ui.chrome import TEXT
     assert app.screen.get_at(app.tutorialScreen.minimizeButtonRect.center)[:3]==TEXT
     app.tutorialScreen.hide()
@@ -132,13 +132,12 @@ def test_tutorial_draws_only_three_navigation_buttons_plus_header_and_minimize(a
 def test_tutorial_lab_returns_to_page_and_preserves_original_editor(app):
     original=dict(app.world.blocks)
     app._beginTutorial(advanced=False)
-    app.tutorialScreen.currentStep=next(i for i,p in enumerate(TOUR) if p['id']=='redstone')
-    step=app.tutorialScreen.lesson
-    app._applyTourScene(app._stageTourScene(step),step)
-    assert app.redstoneLabActive and app.redstoneLabCircuitKey=='counter'
+    assert all(p['id']!='redstone' for p in TOUR)
+    app._toggleRedstoneLab()
+    assert app.redstoneLabActive
     assert not app.tutorialScreen.visible
     app._toggleRedstoneLab()
-    assert app.tutorialScreen.visible and app.tutorialScreen.lesson['id']=='redstone'
+    assert app.tutorialScreen.visible and app.tutorialScreen.lesson['id']=='welcome'
     app.tutorialScreen.hide()
     assert dict(app.world.blocks)==original
 

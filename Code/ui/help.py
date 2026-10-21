@@ -4,6 +4,7 @@ from ui.chrome import panel, TEXT, MUTED
 from ui.fonts import load_ui_font
 
 SHORTCUTS = (
+    ('Ctrl+Z / Ctrl+Y', 'Undo / redo'),
     ('Left click', 'Place block'), ('Right click', 'Remove / interact'),
     ('Middle drag', 'Pan view'), ('Wheel', 'Zoom canvas / scroll panel'),
     ('Q / E', 'Rotate view'), ('Home', 'Fit world'),
@@ -20,7 +21,7 @@ SHORTCUTS = (
     ('Ctrl+F / Ctrl+D', 'Search / favorite block'), ('Tab', 'Minimap'),
     ('/  .  ,', 'Layer view / up / down'), ('L / K', 'Liquid flow / clear liquids'),
     ('Ctrl+S / Ctrl+Shift+S', 'Save / Save As'), ('Ctrl+O', 'Open Library'),
-    ('Ctrl+Z / Ctrl+Y', 'Undo / redo'), ('Delete / C', 'Delete selection / clear world'),
+    ('Delete / C', 'Delete selection / clear world'),
     ('F11 / Alt+Enter', 'Fullscreen'), ('Ctrl+,', 'Settings'),
 )
 

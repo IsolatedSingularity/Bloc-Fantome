@@ -691,7 +691,8 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertIsNotNone(self.app._worldZoomFallback)
         self.assertEqual(self.app._worldZoomFallback.get_size(), exactSize)
         self.app._renderWorld()
-        self.assertGreater(self.app._worldSurfaceBuildIndex, 0)
+        self.assertIsNone(self.app._worldSurfaceBuild)
+        self.assertIsNone(self.app._worldZoomFallback)
 
         for _ in range(8):
             self.app._renderWorld()
@@ -722,7 +723,8 @@ class AppIntegrationTests(unittest.TestCase):
             self.app._rotateViewAndRecenter(1)
         self.assertIsNotNone(self.app._worldZoomFallback)
         self.app._renderWorld()
-        self.assertGreater(self.app._worldSurfaceBuildIndex, 0)
+        self.assertIsNone(self.app._worldSurfaceBuild)
+        self.assertIsNone(self.app._worldZoomFallback)
 
         for _ in range(8):
             self.app._renderWorld()
@@ -1215,7 +1217,7 @@ class AppIntegrationTests(unittest.TestCase):
             self.assertTrue(tutorial.visible)
             self.assertTrue(self.app.tutorialAdvancedMode)
             self.assertEqual(tutorial.currentStep, 0)
-            self.assertEqual(len(tutorial.TUTORIAL_STEPS), 16)
+            self.assertEqual(len(tutorial.TUTORIAL_STEPS), 15)
             self.assertFalse(tutorial.menuOpen)
         finally:
             tutorial.onStepChange = old_callback
@@ -1310,7 +1312,7 @@ class AppIntegrationTests(unittest.TestCase):
             tour.selectLesson(1,retry=True)
             self._settle_tutorial_load()
             self.assertEqual(camera,(self.app.zoomLevel,self.app.renderer.offsetX,self.app.renderer.offsetY))
-            for page in ('worldmap','redstone'):
+            for page in ('worldmap',):
                 tour.selectLesson(next(i for i,p in enumerate(tour.TUTORIAL_STEPS) if p['id']==page))
                 self._settle_tutorial_load()
                 self.assertTrue(self.app.worldMapActive if page=='worldmap' else self.app.redstoneLabActive)
@@ -1336,7 +1338,7 @@ class AppIntegrationTests(unittest.TestCase):
         from engine.tutorial_lessons import TOUR
         self.assertTrue(all(not p['goals'] for p in TOUR))
         self.assertFalse(any(p['id']=='horror' for p in TOUR))
-        self.assertIn('redstone',{p['id'] for p in TOUR})
+        self.assertNotIn('redstone',{p['id'] for p in TOUR})
         self.assertIn('worldmap',{p['id'] for p in TOUR})
 
     def test_horror_is_an_explicit_optional_detour(self):

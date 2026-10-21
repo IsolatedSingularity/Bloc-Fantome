@@ -3,6 +3,7 @@
 from typing import List, Optional, Tuple
 
 import pygame
+from ui.scroll import SmoothScroll
 
 from engine.build_catalog import BuildEntry, CATEGORIES
 
@@ -22,6 +23,7 @@ class BuildLibraryModal:
         self.entries: List[BuildEntry] = []
         self.category = CATEGORIES[0]
         self.scroll = 0
+        self.scroller = SmoothScroll()
         self._tab_rects = {}
         self._entry_rects: List[Tuple[pygame.Rect, BuildEntry]] = []
         self._list_rect = pygame.Rect(0, 0, 0, 0)
@@ -32,6 +34,7 @@ class BuildLibraryModal:
         self.entries = entries
         self.category = CATEGORIES[0]
         self.scroll = 0
+        self.scroller.reset()
         self.visible = True
 
     def close(self) -> None:
@@ -57,7 +60,7 @@ class BuildLibraryModal:
                 len(self._visible_entries()) * self.ROW_HEIGHT
                 - max(1, self._list_rect.height - 12),
             )
-            self.scroll = max(0, min(maximum, self.scroll - event.y * self.ROW_HEIGHT))
+            if self._list_rect.collidepoint(pygame.mouse.get_pos()):self.scroller.wheel(event,maximum,self.ROW_HEIGHT)
             return ("handled", None)
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
             return ("handled", None)
@@ -73,6 +76,7 @@ class BuildLibraryModal:
                 self._play_click()
                 self.category = category
                 self.scroll = 0
+                self.scroller.reset()
                 return ("handled", None)
         if self._list_rect.collidepoint(event.pos):
             for rect, entry in self._entry_rects:
@@ -133,6 +137,7 @@ class BuildLibraryModal:
         screen.set_clip(self._list_rect.inflate(-4, -4))
         self._entry_rects = []
         entries = self._visible_entries()
+        self.scroll=self.scroller.update(max(0,len(entries)*self.ROW_HEIGHT-self._list_rect.height+12))
         for index, entry in enumerate(entries):
             rect = pygame.Rect(
                 self._list_rect.x + 8,
@@ -140,7 +145,7 @@ class BuildLibraryModal:
                 self._list_rect.width - 16,
                 self.ROW_HEIGHT - 7,
             )
-            self._entry_rects.append((rect, entry))
+            self._entry_rects.append((rect.clip(self._list_rect.inflate(-4,-4)), entry))
             if rect.bottom < self._list_rect.top or rect.top > self._list_rect.bottom:
                 continue
             self.assets.drawSlot(screen, rect, False)

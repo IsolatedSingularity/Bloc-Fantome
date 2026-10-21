@@ -65,7 +65,8 @@ def panel(app):
     for key,rect in app.redstoneLabActionRects.items():
         button(app,rect,('RESUME' if app.redstoneLabPaused else 'PAUSE') if key=='pause' else key.upper(),key=='pause' and app.redstoneLabPaused)
     content=pygame.Rect(x+8,action_y+row+12,w-16,max(40,height-100-(action_y+row+12)))
-    scroll=getattr(app,'redstoneLabScroll',0)
+    from ui.scroll import update_field
+    scroll=update_field(app,'redstoneLabScroll',getattr(app,'redstoneLabMaxScroll',0),app.workshop.visibility.reduced_motion)
     old_clip=app.screen.get_clip();app.screen.set_clip(content)
     app.redstoneLabCircuitRects={};app.redstoneLabComponentRects={};app.redstoneLabControlRects={}
     c=LAB_CIRCUITS.get(app.redstoneLabCircuitKey)

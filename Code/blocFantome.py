@@ -7776,20 +7776,9 @@ class AssetManager:
         if cached is not None:
             return cached
         transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
-        # Use mipmap if available: pick closest pre-rendered level then scale the remainder
-        source = transformed
-        mipmapLevels = self._mipmaps.get(sprite)
-        if mipmapLevels and zoom < 0.9 and max(mipmapLevels) >= zoom:
-            bestScale = min((level for level in mipmapLevels if level >= zoom), default=max(mipmapLevels))
-            mmSurface = mipmapLevels[bestScale]
-            if flipped:
-                mmSurface = pygame.transform.flip(mmSurface, True, False)
-            source = mmSurface
-        size = targetSize
-        # Preserve vanilla pixel edges at every zoom.  Filtering tiny Nether
-        # and End structures made their dark palettes look lower-resolution
-        # than equally sized Overworld scenes.
-        scaled = pygame.transform.scale(source, size)
+        # Area averaging only for minification; enlarged pixels stay crisp.
+        transform = pygame.transform.smoothscale if zoom < 1 else pygame.transform.scale
+        scaled = transform(transformed, targetSize)
         self.zoomSpriteCache.set(key, scaled)
         return scaled
 
@@ -8305,7 +8294,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.blockUsageStats: Dict[BlockType, int] = {}  # Track most used blocks
         
         # Coordinate display
-        self.showCoordinates = True
+        self.showCoordinates = False
         
         # Grid toggle
         self.showGrid = False
@@ -8337,7 +8326,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.measurePoint2: Optional[Tuple[int, int, int]] = None
         
         # Minimap
-        self.showMinimap = True
+        self.showMinimap = False
         self.minimapSize = 100  # Size of minimap in pixels
         self._minimapCacheKey = None
         self._minimapCache = None
@@ -8780,6 +8769,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     
                     # Restore other preferences (these are useful to persist)
                     self.showGrid = config.get("showGrid", True)
+                    self.showMinimap = bool(config.get("showMinimap", False))
+                    self.showCoordinates = bool(config.get("showCoordinates", False))
                     self.lightingEnabled = config.get("lightingEnabled", False)
                     self.showBlockTooltip = config.get("showBlockTooltip", True)
                     self.worldCenteredRotation = config.get(
@@ -8848,6 +8839,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             )
             config = {
                 "workshop": self.workshop.preferences(),
+                "showMinimap": self.showMinimap,
+                "showCoordinates": self.showCoordinates,
                 "expandedCategories": self.expandedCategories,
                 "blocksExpanded": self.blocksExpanded,
                 "problemsExpanded": self.problemsExpanded,
@@ -9073,6 +9066,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         """Invalidate projection-dependent plans while preserving sprite mips."""
         if not keepWorldOrder:
             self._visibleOrderCacheKey = None
+        self._localWorldPatch = None
         self._screenPlanCacheKey = None
         self._worldSurfaceCacheKey = None
         self._worldSurfaceCache = None
@@ -9204,7 +9198,15 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.lightingDirty = True
         self._minimapCacheKey = None
         self._visibleOrderCaches.clear()
+        previous = None
+        if (positions and self._worldSurfaceCache is not None and not self.lightingEnabled
+                and self.sceneTerrainMode == 'all' and not self.horrorEnabled
+                and not self.redstone.active_motions and not self.world.dirtyRegions.full_redraw_needed):
+            previous = (self._worldSurfaceCache, self._worldSurfaceCacheOffset,
+                        self.zoomLevel, self.renderer.viewRotation,
+                        tuple(self.world.dirtyRegions.dirty_chunks))
         self._invalidateViewCaches()
+        self._localWorldPatch = previous
         if self.world.heightIndex:
             self.currentBuildHeight = max(self.world.heightIndex.values())
         else:
@@ -10941,7 +10943,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 if event.type==pygame.MOUSEBUTTONDOWN:
                     self._handleMouseDown(event);continue
                 if event.type==pygame.MOUSEWHEEL:
-                    self.historyPanelScroll=max(0,self.historyPanelScroll-event.y);continue
+                    from ui.scroll import for_field
+                    if getattr(self,'historyScrollRect',pygame.Rect(0,0,0,0)).collidepoint(pygame.mouse.get_pos()):
+                        for_field(self,'historyPanelScroll').wheel(event,getattr(self,'historyMaxScroll',0),60)
+                    continue
                 if event.type in (pygame.MOUSEMOTION,pygame.MOUSEBUTTONUP):continue
             if self.settingsMenuOpen:
                 if event.type == pygame.KEYDOWN:
@@ -10989,8 +10994,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         mouseX, mouseY = pygame.mouse.get_pos()
         if self.redstoneLabActive and mouseX >= self._worldViewportRight():
-            self.redstoneLabScroll=max(0,min(getattr(self,'redstoneLabMaxScroll',0),
-                getattr(self,'redstoneLabScroll',0)-event.y*60))
+            from ui.scroll import for_field
+            for_field(self,'redstoneLabScroll').wheel(event,getattr(self,'redstoneLabMaxScroll',0))
             return
         
         # Check if mouse is over the panel - scroll inventory
@@ -11029,6 +11034,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             event.button == 1
             and not self.worldMapActive
             and not self.redstoneLabActive
+            and not (getattr(self,'workshop',None) and self.workshop.active(self))
             and self.worldMapButtonRect.collidepoint(mouseX, mouseY)
         ):
             self.assetManager.playClickSound()
@@ -11038,7 +11044,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # The focused redstone workbench owns the entire editor viewport. Its
         # hidden world-map/fit/resize hitboxes must not steal clicks from a
         # circuit or from the hand cursor.
-        editor_controls = not self.worldMapActive and not self.redstoneLabActive
+        editor_controls = not self.worldMapActive and not self.redstoneLabActive and not (getattr(self,'workshop',None) and self.workshop.active(self))
         if editor_controls and event.button == 1 and self.fitWorldButtonRect.collidepoint(mouseX, mouseY):
             self._fitWorldToViewport()
             self.assetManager.playClickSound()
@@ -11076,7 +11082,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Check if clicking on hotbar. The lab deliberately does not render a
         # hotbar; letting the stale editor hitbox run here made lower circuit
         # bays select invisible slots instead of placing/interacting.
-        if not self.redstoneLabActive and self._handleHotbarClick(mouseX, mouseY, event.button):
+        if not self.redstoneLabActive and not (getattr(self,'workshop',None) and self.workshop.active(self)) and self._handleHotbarClick(mouseX, mouseY, event.button):
             return
         
         # Check if clicking on panel
@@ -13191,17 +13197,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _updatePanelScroll(self, dt: int) -> None:
         """Ease the inventory panel toward its wheel target."""
-        maximum = float(max(0, self.maxScroll))
-        self.inventoryScrollTarget = max(0.0, min(self.inventoryScrollTarget, maximum))
-        self.inventoryScroll = max(0.0, min(self.inventoryScroll, maximum))
-        difference = self.inventoryScrollTarget - self.inventoryScroll
-        if abs(difference) < 0.1:
-            self.inventoryScroll = self.inventoryScrollTarget
-            return
-        # Time-based exponential easing is stable at both 60 Hz and during a
-        # busy renderer frame, so scrolling never changes speed with FPS.
-        blend = 1.0 - math.exp(-max(0, dt) / 70.0)
-        self.inventoryScroll += difference * blend
+        from ui.scroll import for_field
+        scroll=for_field(self,'inventoryScroll')
+        scroll.position=self.inventoryScroll;scroll.target=self.inventoryScrollTarget
+        scroll.advance(max(0,self.maxScroll),max(0,dt)/1000,
+                       getattr(self.workshop.visibility,'reduced_motion',False))
+        self.inventoryScroll=scroll.position;self.inventoryScrollTarget=scroll.target
 
     def _updateSpecialBlocks(self, dt: int) -> None:
         """Advance saved copper stages and transient Sculk Sensor pulses."""
@@ -13922,10 +13923,24 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         return DIMENSION_WEATHER.get(self.currentDimension, DIMENSION_WEATHER[DIMENSION_OVERWORLD])
 
     def _weatherSurfaceCandidates(self):
-        """Cache exposed columns until an actual world edit changes them."""
-        if self._weatherSurfaceRevision != self.world.revision:
-            self._weatherSurfaceRevision = self.world.revision
-            self._weatherSurfaceCache = tuple(self.world.heightIndex.items())
+        """Bounded local height lookups, including tree canopies and roofs."""
+        key=(self.world.revision,self.renderer.viewRotation,self.zoomLevel,
+             round(self.renderer.offsetX/64),round(self.renderer.offsetY/64))
+        if self._weatherSurfaceRevision != key:
+            self._weatherSurfaceRevision=key
+            if len(self.world.heightIndex)<=512:
+                candidates=tuple(self.world.heightIndex.items())
+            else:
+                cx,cy=self._cameraWorldCenter()
+                radius=max(8,math.ceil(max(WINDOW_WIDTH,WINDOW_HEIGHT)/max(1,32*self.zoomLevel)))
+                sampled={}
+                for _ in range(512):
+                    column=(random.randint(min(self.world.width-1,max(0,int(cx)-radius)),min(self.world.width-1,max(0,int(cx)+radius))),
+                            random.randint(min(self.world.depth-1,max(0,int(cy)-radius)),min(self.world.depth-1,max(0,int(cy)+radius))))
+                    z=self.world.heightIndex.get(column)
+                    if z is not None:sampled[column]=z
+                candidates=tuple(sampled.items())
+            self._weatherSurfaceCache=candidates
         return self._weatherSurfaceCache
 
     def _playWeatherImpactSound(self, kind: str, worldPos) -> None:
@@ -14092,6 +14107,22 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Update snowflakes with gentle drifting motion
         for flake in self.snowFlakes:
+            if self.currentDimension == DIMENSION_OVERWORLD:
+                target=flake.get('surface')
+                if target is None or flake.get('altitude',0)<=0 or self.world.heightIndex.get(target[:2]) is None:
+                    candidates=self._weatherSurfaceCandidates()
+                    if not candidates:continue
+                    (x,y),z=random.choice(candidates)
+                    flake['surface']=target=(x,y,z)
+                    flake['altitude']=random.uniform(30,WINDOW_HEIGHT)
+                z=self.world.heightIndex.get(target[:2],target[2])
+                sx,sy=self.renderer.worldToScreen(target[0],target[1],z)
+                flake['altitude']-=flake['speed']*max(0,dt)*.06
+                flake['driftPhase']+=flake['driftSpeed']*max(0,dt)*.06
+                # Drift converges to the real exposed block top at impact.
+                flake['x']=sx+math.sin(flake['driftPhase'])*min(6,flake['altitude']*.1)
+                flake['y']=sy+TILE_HEIGHT*self.zoomLevel/2-max(0,flake['altitude'])
+                continue
             flake["y"] += flake["speed"]
             
             # Sinusoidal horizontal drift (like real snowflakes)
@@ -14131,13 +14162,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             impact for impact in self.snowImpacts if impact["life"] > 0
         ]
         
-        # Snow accumulation on blocks (like Minecraft)
-        if self.currentDimension == DIMENSION_OVERWORLD:
-            self.snowAccumulateTimer += dt
-            if self.snowAccumulateTimer >= 1500:
-                self.snowAccumulateTimer = 0
-                self._accumulateSnowOnBlocks()
-    
+        # Weather is ephemeral. It never modifies the world or retains layers.
+        self.snowLayers.clear()
+
     def _accumulateSnowOnBlocks(self):
         """Add thin snow layer on top of random exposed blocks (only within platform bounds)"""
         # Find all top blocks (exposed to sky) that are within platform bounds
@@ -14209,7 +14236,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         for flake in self.snowFlakes:
             if flake["x"] > panelLeft:
                 continue
-            if not config.get("screenwide") and not self._isPointInPlatformDiamond(flake["x"], flake["y"]):
+            if not config.get("screenwide") and self.currentDimension != DIMENSION_OVERWORLD and not self._isPointInPlatformDiamond(flake["x"], flake["y"]):
                 continue
             size = flake["size"]
             color = flake.get("color", config["colors"][0])
@@ -20976,8 +21003,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         targetSurface = self.screen
         incrementalZoomBuild = bool(
             canCacheSurface
-            and len(blocksToDraw) > (256 if self.tutorialScreen.visible else 4000)
-            and (self._worldZoomFallback is not None or len(blocksToDraw) > 20000)
+            and self._worldTransitionKind == 'load'
+            and len(blocksToDraw) > 4000
         )
         if canCacheSurface:
             cacheSize = (
@@ -20997,6 +21024,31 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 targetSurface = self._worldSurfaceBuild
             else:
                 targetSurface = pygame.Surface(cacheSize, pygame.SRCALPHA)
+        # An ordinary edit replays only pixels intersecting dirty chunk bounds.
+        # Replay all overlapping painter layers, including transparent sprites,
+        # into a cleared clip so removal cannot leave ghosts or compound alpha.
+        patch = getattr(self, '_localWorldPatch', None)
+        self._localWorldPatch = None
+        patchRect = None
+        if (patch and canCacheSurface and not visibleAnimated
+                and patch[2:4] == (self.zoomLevel, viewRot)
+                and patch[1] == (self.renderer.offsetX, self.renderer.offsetY)
+                and patch[0].get_size() == cacheSize):
+            size = self.world.chunkStorage.chunk_size
+            points = [self.renderer.worldToScreen(x*size+dx,y*size+dy,z*size+dz)
+                      for x,y,z in patch[4] for dx in (0,size) for dy in (0,size) for dz in (0,size)]
+            if points:
+                padding = max(4, math.ceil(192*self.zoomLevel))
+                left=min(p[0] for p in points)-padding; top=min(p[1] for p in points)-padding
+                patchRect=pygame.Rect(left,top,max(p[0] for p in points)-left+padding,
+                                      max(p[1] for p in points)-top+padding)
+                blocksToDraw=[item for item in blocksToDraw
+                              if patchRect.inflate(padding*2,padding*2).collidepoint(
+                                  self.renderer.worldToScreen(*item[1:4]))]
+                targetSurface=patch[0].copy()
+                clip=patchRect.move(self._worldSurfaceMargin,self._worldSurfaceMargin).clip(targetSurface.get_rect())
+                targetSurface.set_clip(clip);targetSurface.fill((0,0,0,0),clip)
+                incrementalZoomBuild=False
         startIndex = self._worldSurfaceBuildIndex if incrementalZoomBuild else 0
         transitionBatch = 800 if self._worldTransitionKind == "load" or self._worldZoomFallback is None else 2400 if self._worldTransitionKind == "rotation" else 4200
         endIndex = (
@@ -21235,6 +21287,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._renderSpawnerParticles()
             return
 
+        targetSurface.set_clip(None)
         if canCacheSurface:
             self._worldSurfaceCacheKey = surfaceKey
             self._worldSurfaceCache = targetSurface

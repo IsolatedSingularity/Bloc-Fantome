@@ -94,7 +94,7 @@ def test_structure_tutorial_and_weather_summary_contract():
     assert len(structures) == 40
     assert _digest(structures) == "f1d0dcb0aabb540ae8689118bb7fe235159dcc92869a482a91c4106067e5b2cb"
     from engine.tutorial_lessons import TOUR
-    assert len(tutorial) == len(TOUR) == 16
+    assert len(tutorial) == len(TOUR) == 15
     assert len({step['id'] for step in TOUR}) == len(TOUR)
     assert all(not step['goals'] and step['hint'] for step in TOUR)
     assert sum(bool(step['is_horror']) for step in TOUR) == 0

@@ -87,4 +87,9 @@ def prepare_snapshot(snapshot, catalog, *, reusable=True):
         for views in prepared.drawOrdersByMode.values():
             for rotation,order in views.items():
                 views[rotation]=tuple(item for item in order if item[4].name not in ('WATER','BUBBLE_COLUMN'))
+    from engine.draw_order import DrawOrder
+    prepared.drawOrdersByMode = {
+        mode: {r: order if isinstance(order, DrawOrder) else DrawOrder(order)
+               for r, order in views.items()}
+        for mode, views in prepared.drawOrdersByMode.items()}
     return replace(snapshot, _prepared=[prepared])

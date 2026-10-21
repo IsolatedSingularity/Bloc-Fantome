@@ -1,0 +1,8 @@
+{
+  "path": ".qa/owner-pass-a/package/BlocFantome.exe",
+  "bytes": 270474812,
+  "sha256": "d4281ac129e55fed5073be2e91436100a11e2478755e950c5f50a8744b3f6d5d",
+  "assets": "Workspace Assets junction",
+  "installed": "Preserved; no replacement",
+  "base_commit": "120e619b"
+}

@@ -2,6 +2,7 @@
 import pygame
 from ui.chrome import panel, wrapped, button, TEXT, MUTED, ACCENT
 from ui.fonts import load_ui_font
+from ui.scroll import SmoothScroll
 
 
 class Library:
@@ -12,6 +13,7 @@ class Library:
         self.tab = 'Worlds'
         self.dimension = 'overworld'
         self.scroll = 0
+        self.scroller = SmoothScroll()
         self.pending = None
         self.rows = []
         self.tab_rects = {}
@@ -34,6 +36,7 @@ class Library:
         from engine.build_catalog import build_catalog
         from runtime_paths import WORLDS_DIR, SAVES_DIR, BUILTIN_STRUCTURES_DIR
         self.scroll = 0
+        self.scroller.reset()
         self.pending = None
         if self.tab == 'Biomes':
             self.entries = [dict(key=e['id'], name=e['id'].replace('_', ' ').title(),
@@ -76,11 +79,12 @@ class Library:
                 index = self.entries.index(self.pending) if self.pending in self.entries else -1
                 index = max(0, min(len(self.entries)-1, index+(-1 if event.key==pygame.K_UP else 1)))
                 self.pending = self.entries[index]
-                self.scroll = max(0, min(self.scroll, index*self.row_height))
-                self.scroll = max(self.scroll, (index+1)*self.row_height-self.list_rect.height+8)
+                self.scroll = max(0, min(self.scroll, (index//getattr(self,'columns',2))*self.row_height))
+                self.scroll = max(self.scroll, (index//getattr(self,'columns',2)+1)*self.row_height-self.list_rect.height+8)
+                self.scroller.reset(self.scroll)
             return True
         if event.type == pygame.MOUSEWHEEL:
-            self.scroll = max(0, min(self.max_scroll, self.scroll-event.y*self.row_height))
+            if self.list_rect.collidepoint(pygame.mouse.get_pos()):self.scroller.wheel(event,self.max_scroll,100)
             return True
         if event.type != pygame.MOUSEBUTTONDOWN: return event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION)
         if event.button != 1: return True
@@ -111,7 +115,7 @@ class Library:
         scale=getattr(getattr(app,'workshop',None),'text_scale',1)
         self.row_height=max(64,self.small.get_linesize()*2+16)
         shade=pygame.Surface(screen.get_size(),pygame.SRCALPHA);shade.fill((0,0,0,125));screen.blit(shade,(0,0))
-        self.rect=pygame.Rect(0,0,min(round(960*scale),screen.get_width()-48),min(round(510*scale),screen.get_height()-48))
+        self.rect=pygame.Rect(0,0,min(round(960*scale),screen.get_width()-48),min(round(820*scale),screen.get_height()-48))
         self.rect.center=screen.get_rect().center;panel(screen,self.rect)
         x,y,w,h=self.rect;left=x+22;top=y+18
         screen.blit(app.sectionFont.render('Library',True,TEXT),(left,top))
@@ -128,7 +132,7 @@ class Library:
                 rect=pygame.Rect(left+i*round(140*scale),row_top,round(134*scale),max(30,self.small.get_height()+6));self.dimension_rects[dim]=rect
                 button(screen,rect,label,self.small,rect.collidepoint(mouse),dim==self.dimension,quiet=True)
             row_top+=max(30,self.small.get_height()+6)+12
-        self.list_rect=pygame.Rect(left,row_top,round((w-62)*.37),self.rect.bottom-66-row_top)
+        self.list_rect=pygame.Rect(left,row_top,round((w-62)*.60),self.rect.bottom-66-row_top)
         detail=pygame.Rect(self.list_rect.right+24,row_top,self.rect.right-22-(self.list_rect.right+24),self.list_rect.height)
         entry=self.pending
         # The selected full preview gets the worker before decorative row thumbnails.
@@ -144,17 +148,24 @@ class Library:
                      'Opening replaces the canvas. Save your build first.')
             wrapped(screen,message,self.small,(detail.x,detail.bottom-foot_height,detail.width,foot_height),MUTED)
         else:wrapped(screen,'Select an item to preview it.',self.font,detail,MUTED)
-        self.max_scroll=max(0,len(self.entries)*self.row_height-self.list_rect.height)
-        self.scroll=min(self.scroll,self.max_scroll)
+        self.columns=max(2,self.list_rect.width//250)
+        tile_width=self.list_rect.width//self.columns
+        self.row_height=max(108,self.list_rect.height//4,self.small.get_linesize()*2+66)
+        self.max_scroll=max(0,((len(self.entries)+self.columns-1)//self.columns)*self.row_height-self.list_rect.height)
+        self.scroll=self.scroller.update(self.max_scroll,getattr(app.workshop.visibility,'reduced_motion',False))
         old=screen.get_clip();screen.set_clip(self.list_rect);self.rows=[]
         for i,item in enumerate(self.entries):
-            rect=pygame.Rect(left,row_top+i*self.row_height-self.scroll,self.list_rect.width,self.row_height-6)
+            rect=pygame.Rect(left+(i%self.columns)*tile_width,row_top+(i//self.columns)*self.row_height-self.scroll,tile_width-8,self.row_height-8)
             if not rect.colliderect(self.list_rect):continue
             self.rows.append((rect.clip(self.list_rect),item))
             button(screen,rect,'',self.small,rect.collidepoint(mouse),item==entry,quiet=True)
-            preview=app.previewImages.get(app,item,(72,52))
-            if preview:screen.blit(preview,(rect.x+2,rect.centery-26))
-            wrapped(screen,item['name'],self.small,(rect.x+82,rect.y+8,rect.width-90,rect.height-12))
+            image_height=rect.height-self.small.get_linesize()*2-12
+            preview=app.previewImages.get(app,item,(rect.width-12,image_height))
+            if preview:screen.blit(preview,(rect.x+6,rect.y+4))
+            else:wrapped(screen,'Preparing preview…',self.small,(rect.x+8,rect.y+12,rect.width-16,image_height),MUTED)
+            wrapped(screen,item['name'],self.small,(rect.x+8,rect.y+image_height+4,rect.width-16,self.small.get_linesize()+2))
+            supporting={'structure':'Place in canvas','biome':'Captured landscape','world':'Editable world','build':'Saved build'}[item['kind']]
+            wrapped(screen,supporting,self.small,(rect.x+8,rect.bottom-self.small.get_linesize()-3,rect.width-16,self.small.get_linesize()+2),MUTED)
         screen.set_clip(old)
         if not self.entries:wrapped(screen,'No items here yet. Save a build or browse files.',self.font,self.list_rect,MUTED)
         if self.max_scroll:
