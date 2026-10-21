@@ -167,5 +167,5 @@ class Library:
         if self.browse_rect.width:assets.drawButton(screen,self.browse_rect,'Import Java World...' if self.tab=='Worlds' else 'Browse Files...',self.small,self.browse_rect.collidepoint(mouse))
         self.open_rect=pygame.Rect(self.rect.right-252,self.rect.bottom-54,230,32)
         label='Select an item'
-        if entry:label='Place structure' if entry['kind']=='structure' else 'Open scene' if entry['kind'] in ('world','biome') else 'Start lesson' if entry['value'].kind=='tutorial' else 'Open build'
+        if entry:label='Place structure' if entry['kind']=='structure' else 'Open world' if entry['kind']=='world' else 'Open biome' if entry['kind']=='biome' else 'Start lesson' if entry['value'].kind=='tutorial' else 'Open build'
         assets.drawButton(screen,self.open_rect,label,self.font,bool(entry) and self.open_rect.collidepoint(mouse),bool(entry))

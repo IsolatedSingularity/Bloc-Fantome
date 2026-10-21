@@ -1,0 +1,20 @@
+{
+  "previous_production_sources_unchanged": {
+    "Code\\ui\\workshop.py": true,
+    "Code\\ui\\opening_audio.py": true,
+    "Code\\ui\\preview_browser.py": true,
+    "Code\\blocFantome.py": true
+  },
+  "mixes": {
+    "B2-foundation": {
+      "decoded": true,
+      "peak": 0.45167675614356995,
+      "clipped_samples": 0
+    },
+    "B3-resonant": {
+      "decoded": true,
+      "peak": 0.3779720067977905,
+      "clipped_samples": 0
+    }
+  }
+}

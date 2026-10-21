@@ -582,7 +582,7 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.OXIDIZED_CUT_COPPER: BlockDefinition("Oxidized Cut Copper", "oxidized_cut_copper.png", "oxidized_cut_copper.png", "oxidized_cut_copper.png"),
     # Regular new blocks - Chests will use custom rendering from entity textures
     BlockType.CHEST: BlockDefinition("Chest", "oak_planks.png", "oak_planks.png", "oak_planks.png"),  # Custom chest render
-    BlockType.ENDER_CHEST: BlockDefinition("Ender Chest", "obsidian.png", "obsidian.png", "obsidian.png"),  # Custom chest render
+    BlockType.ENDER_CHEST: BlockDefinition("Ender Chest", "obsidian.png", "obsidian.png", "obsidian.png", lightLevel=7),  # Java 1.16.1 constant emission
     BlockType.BONE_BLOCK: BlockDefinition("Bone Block", "bone_block_top.png", "bone_block_side.png", "bone_block_top.png"),
     BlockType.SCULK: BlockDefinition("Sculk", "sculk.png", "sculk.png", "sculk.png"),  # Regular sculk block
     # Chest variants
@@ -598,10 +598,10 @@ BLOCK_DEFINITIONS: Dict[BlockType, BlockDefinition] = {
     BlockType.MOB_SPAWNER: BlockDefinition("Mob Spawner", "spawner.png", "spawner.png", "spawner.png", transparent=True),
     BlockType.TRIAL_SPAWNER: BlockDefinition("Trial Spawner", "trial_spawner_top_inactive.png", "trial_spawner_side_inactive.png", "trial_spawner_bottom.png", transparent=True),
     BlockType.SCULK_SENSOR: BlockDefinition("Sculk Sensor", "sculk_sensor_top.png", "sculk_sensor_side.png", "sculk_sensor_bottom.png"),
-    BlockType.END_PORTAL: BlockDefinition("End Portal", "black_concrete.png", "black_concrete.png", "black_concrete.png", isPortal=True),  # Animated starfield
+    BlockType.END_PORTAL: BlockDefinition("End Portal", "black_concrete.png", "black_concrete.png", "black_concrete.png", isPortal=True, lightLevel=15),  # Animated starfield
     BlockType.END_GATEWAY: BlockDefinition("End Gateway", "black_concrete.png", "black_concrete.png", "black_concrete.png", isPortal=True),  # Animated starfield
-    BlockType.FIRE: BlockDefinition("Fire", "fire_0.png", "fire_0.png", "fire_0.png", transparent=True),  # Animated
-    BlockType.SOUL_FIRE: BlockDefinition("Soul Fire", "soul_fire_0.png", "soul_fire_0.png", "soul_fire_0.png", transparent=True),  # Animated
+    BlockType.FIRE: BlockDefinition("Fire", "fire_0.png", "fire_0.png", "fire_0.png", transparent=True, lightLevel=15),  # Animated
+    BlockType.SOUL_FIRE: BlockDefinition("Soul Fire", "soul_fire_0.png", "soul_fire_0.png", "soul_fire_0.png", transparent=True, lightLevel=10, lightColor=(90,220,255)),  # Animated
     BlockType.MATRIX: BlockDefinition("Matrix", "mine_crafter_top.png", "mine_crafter_side.png", "mine_crafter_bottom.png"),
 }
 
@@ -1065,7 +1065,7 @@ BLOCK_SOUNDS[BlockType.MYCELIUM] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.PODZOL] = BlockDefinition("Podzol", "podzol_top.png", "podzol_side.png", "dirt.png")
 BLOCK_SOUNDS[BlockType.PODZOL] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.RED_SAND] = BlockDefinition("Red Sand", "red_sand.png", "red_sand.png", "red_sand.png")
-BLOCK_SOUNDS[BlockType.RED_SAND] = SoundDefinition("grass", "grass")
+BLOCK_SOUNDS[BlockType.RED_SAND] = SoundDefinition("sand", "sand")
 BLOCK_DEFINITIONS[BlockType.MUSHROOM_STEM] = BlockDefinition("Mushroom Stem", "mushroom_stem.png", "mushroom_stem.png", "mushroom_stem.png")
 BLOCK_SOUNDS[BlockType.MUSHROOM_STEM] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.RED_MUSHROOM_BLOCK] = BlockDefinition("Red Mushroom Block", "red_mushroom_block.png", "red_mushroom_block.png", "red_mushroom_block.png")
@@ -1073,7 +1073,7 @@ BLOCK_SOUNDS[BlockType.RED_MUSHROOM_BLOCK] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.BROWN_MUSHROOM_BLOCK] = BlockDefinition("Brown Mushroom Block", "brown_mushroom_block.png", "brown_mushroom_block.png", "brown_mushroom_block.png")
 BLOCK_SOUNDS[BlockType.BROWN_MUSHROOM_BLOCK] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.BAMBOO] = BlockDefinition("Bamboo", "bamboo_stalk.png", "bamboo_stalk.png", "bamboo_stalk.png", transparent=True, modelKind="plant")
-BLOCK_SOUNDS[BlockType.BAMBOO] = SoundDefinition("grass", "grass")
+BLOCK_SOUNDS[BlockType.BAMBOO] = SoundDefinition("bamboo_place", "bamboo_place")  # Both Java events resolve to the same six recordings.
 BLOCK_DEFINITIONS[BlockType.POPPY] = BlockDefinition("Poppy", "poppy.png", "poppy.png", "poppy.png", transparent=True, modelKind="plant")
 BLOCK_SOUNDS[BlockType.POPPY] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.DANDELION] = BlockDefinition("Dandelion", "dandelion.png", "dandelion.png", "dandelion.png", transparent=True, modelKind="plant")
@@ -1081,11 +1081,11 @@ BLOCK_SOUNDS[BlockType.DANDELION] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.SUNFLOWER] = BlockDefinition("Sunflower", "sunflower_front.png", "sunflower_front.png", "sunflower_front.png", transparent=True, modelKind="plant")
 BLOCK_SOUNDS[BlockType.SUNFLOWER] = SoundDefinition("grass", "grass")
 BLOCK_DEFINITIONS[BlockType.BRAIN_CORAL_BLOCK] = BlockDefinition("Brain Coral Block", "brain_coral_block.png", "brain_coral_block.png", "brain_coral_block.png")
-BLOCK_SOUNDS[BlockType.BRAIN_CORAL_BLOCK] = SoundDefinition("grass", "grass")
+BLOCK_SOUNDS[BlockType.BRAIN_CORAL_BLOCK] = SoundDefinition("coral", "coral")
 BLOCK_DEFINITIONS[BlockType.FIRE_CORAL_BLOCK] = BlockDefinition("Fire Coral Block", "fire_coral_block.png", "fire_coral_block.png", "fire_coral_block.png")
-BLOCK_SOUNDS[BlockType.FIRE_CORAL_BLOCK] = SoundDefinition("grass", "grass")
+BLOCK_SOUNDS[BlockType.FIRE_CORAL_BLOCK] = SoundDefinition("coral", "coral")
 BLOCK_DEFINITIONS[BlockType.TUBE_CORAL_BLOCK] = BlockDefinition("Tube Coral Block", "tube_coral_block.png", "tube_coral_block.png", "tube_coral_block.png")
-BLOCK_SOUNDS[BlockType.TUBE_CORAL_BLOCK] = SoundDefinition("grass", "grass")
+BLOCK_SOUNDS[BlockType.TUBE_CORAL_BLOCK] = SoundDefinition("coral", "coral")
 BLOCK_DEFINITIONS[BlockType.LILY_PAD] = BlockDefinition("Lily Pad", "lily_pad.png", "lily_pad.png", "lily_pad.png", transparent=True, modelKind="plant")
 BLOCK_SOUNDS[BlockType.LILY_PAD] = SoundDefinition("grass", "grass")
 
@@ -6930,7 +6930,8 @@ class AssetManager:
             categoryDir = os.path.join(blockDir, category)
             self.sounds[category] = self._loadSoundFiles(category, categoryDir, "break{i}.ogg")
             # Also try to load place sounds (some blocks have separate place sounds)
-            placeSounds = self._loadSoundFiles(f"{category}_place", categoryDir, "place{i}.ogg")
+            placeSounds = self._loadSoundFiles(f"{category}_place", categoryDir, "place{i}.ogg",
+                volume=SOUND_VOLUME_DEFAULT*(.8 if category=='bamboo' else 1.0))
             if placeSounds:
                 self.sounds[f"{category}_place"] = placeSounds
         
@@ -8001,6 +8002,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def __init__(self):
         """Initialize the application"""
+        import os
         # Set app icon BEFORE creating display (important for Windows taskbar)
         self._setAppIconEarly()
         
@@ -8291,6 +8293,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.library = Library()
         from ui.preview_browser import PreviewBrowser, PreviewImages
         self.previewBrowser = PreviewBrowser()
+        self.workshop = None
+        if os.environ.get('BLOC_WORKSHOP_PREVIEW') in ('stone', 'glass'):
+            from ui.workshop import Workshop
+            self.workshop = Workshop(os.environ['BLOC_WORKSHOP_PREVIEW'])
         self.previewImages = PreviewImages()
         self.structureDefinitions = PREMADE_STRUCTURES
         self.pendingBiomeLoad = None
@@ -11055,6 +11061,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if self.tutorialScreen.handleEvent(event):
                 continue
             if self.biomePanel.handle_event(event,self):
+                continue
+            if getattr(self,'workshop',None) and self.workshop.handle_event(event,self):
                 continue
             
             if event.type == pygame.USEREVENT + 1:
@@ -20037,6 +20045,30 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         
         # Draw UI panel
+        if getattr(self,'workshop',None) and self.workshop.active(self):
+            # Review slice: keep the entire established palette and modal owners.
+            # Its visibility never changes the world viewport or camera anchor.
+            for name in ('fitWorldButtonRect','terrainNoiseButtonRect','growCanvasButtonRect',
+                         'shrinkCanvasButtonRect','terrainViewButtonRect','worldMapButtonRect'):
+                setattr(self,name,pygame.Rect(0,0,0,0))
+            self._renderPanel()
+            self._renderHotbar()
+            self.workshop.render(self)
+            self._renderPanelBlockTooltip()
+            self._renderStructureTooltip()
+            self.previewBrowser.render_hover(self)
+            self._renderSearchBox()
+            self._renderSettingsMenu()
+            self._renderHistoryPanel()
+            self._renderShortcutsPanel()
+            self._renderTooltipNotification()
+            self.biomePanel.render_browser(self)
+            self.buildLibrary.render(self.screen)
+            self.worldLibrary.render(self.screen)
+            self.library.render(self)
+            self._renderWorldLoadingOverlay()
+            pygame.display.flip()
+            return
         self._renderPanel()
         
         # Draw panel block tooltip (after panel is rendered)

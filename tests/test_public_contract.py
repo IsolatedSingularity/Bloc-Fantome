@@ -59,7 +59,10 @@ def test_block_catalog_and_sound_contract():
         for block, sound in blocFantome.BLOCK_SOUNDS.items() if block.name != "COMPARATOR" and block.value < 560
     ]
     assert len(definitions) == len(sounds) == 339
-    assert _digest(definitions) == "e85e4cb9105c7192f255cf9c1e3fcfc85c5c0be437aa465303a0a02944fddfa2"
+    # Pass 1: four constant emitters corrected against pinned Java 1.16.1;
+    # soul fire retains the builder's stylized colored-light convention.
+    # Stable enum/save identities and every other catalog field stay guarded.
+    assert _digest(definitions) == "d5e4b013441961f5308e8c6650969bf1e35914fe73cf3cd0cf963f7920750b46"
     assert _digest(sounds) == "b58593730d6308e173fb5166ecfe348ebf5c3776db569a00f55eb9bbd6ba5f98"
 
 

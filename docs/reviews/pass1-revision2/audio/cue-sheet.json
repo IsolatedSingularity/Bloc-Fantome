@@ -1,0 +1,381 @@
+{
+  "B2-foundation": [
+    [
+      0.04,
+      "foundation strain",
+      "mechanism",
+      {
+        "start": 13,
+        "rate": 0.24,
+        "dur": 11.8,
+        "attack": 1.3,
+        "release": 2.8,
+        "amp": 5.0,
+        "lo": 28,
+        "hi": 360,
+        "wet": 0.42,
+        "resonance": 0.4
+      }
+    ],
+    [
+      0.3,
+      "moving masonry body",
+      "stone",
+      {
+        "start": 24,
+        "rate": 0.32,
+        "dur": 11.4,
+        "attack": 1.2,
+        "release": 2.4,
+        "amp": 8,
+        "lo": 38,
+        "hi": 950,
+        "wet": 0.42,
+        "pan": -0.12,
+        "resonance": 0.3
+      }
+    ],
+    [
+      1.0,
+      "second load path",
+      "stone",
+      {
+        "start": 48,
+        "rate": 0.43,
+        "dur": 10.5,
+        "attack": 1.7,
+        "release": 2.1,
+        "amp": 5,
+        "lo": 46,
+        "hi": 730,
+        "wet": 0.42,
+        "pan": 0.14,
+        "resonance": 0
+      }
+    ],
+    [
+      0.12,
+      "air displaced through foundations",
+      "drain",
+      {
+        "start": 19,
+        "rate": 0.39,
+        "dur": 12.2,
+        "attack": 2.3,
+        "release": 2.8,
+        "amp": 2.7,
+        "lo": 32,
+        "hi": 260,
+        "wet": 0.22
+      }
+    ],
+    [
+      2,
+      "surface texture",
+      "stone",
+      {
+        "start": 13,
+        "rate": 0.64,
+        "dur": 7.8,
+        "attack": 1.1,
+        "release": 1.5,
+        "amp": 0.65,
+        "lo": 260,
+        "hi": 1900,
+        "wet": 0.3,
+        "pan": -0.25
+      }
+    ],
+    [
+      0.45,
+      "foundation release",
+      "stone",
+      {
+        "start": 24.1,
+        "rate": 0.27,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.42,
+        "pan": 0.12
+      }
+    ],
+    [
+      3.1,
+      "foundation release",
+      "stone",
+      {
+        "start": 16.1,
+        "rate": 0.27,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.42,
+        "pan": -0.12
+      }
+    ],
+    [
+      6.8,
+      "foundation release",
+      "stone",
+      {
+        "start": 56.1,
+        "rate": 0.27,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.42,
+        "pan": 0.12
+      }
+    ],
+    [
+      9.7,
+      "foundation release",
+      "stone",
+      {
+        "start": 25.0,
+        "rate": 0.27,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.42,
+        "pan": -0.12
+      }
+    ],
+    [
+      10.8,
+      "foundation release",
+      "stone",
+      {
+        "start": 43.1,
+        "rate": 0.27,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 0.7,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.42,
+        "pan": 0.12
+      }
+    ],
+    [
+      9.1,
+      "weight settling into place",
+      "stone",
+      {
+        "start": 58,
+        "rate": 0.38,
+        "dur": 3.7,
+        "attack": 0.3,
+        "release": 2.5,
+        "amp": 3.6,
+        "lo": 32,
+        "hi": 1200,
+        "wet": 0.5
+      }
+    ]
+  ],
+  "B3-resonant": [
+    [
+      0.04,
+      "foundation strain",
+      "mechanism",
+      {
+        "start": 13,
+        "rate": 0.24,
+        "dur": 11.8,
+        "attack": 1.3,
+        "release": 2.8,
+        "amp": 5.0,
+        "lo": 28,
+        "hi": 360,
+        "wet": 0.65,
+        "resonance": 2.8
+      }
+    ],
+    [
+      0.3,
+      "moving masonry body",
+      "stone",
+      {
+        "start": 24,
+        "rate": 0.32,
+        "dur": 11.4,
+        "attack": 1.2,
+        "release": 2.4,
+        "amp": 8,
+        "lo": 38,
+        "hi": 950,
+        "wet": 0.65,
+        "pan": -0.12,
+        "resonance": 1.6
+      }
+    ],
+    [
+      1.0,
+      "second load path",
+      "stone",
+      {
+        "start": 48,
+        "rate": 0.43,
+        "dur": 10.5,
+        "attack": 1.7,
+        "release": 2.1,
+        "amp": 5,
+        "lo": 46,
+        "hi": 730,
+        "wet": 0.65,
+        "pan": 0.14,
+        "resonance": 1.2
+      }
+    ],
+    [
+      0.12,
+      "air displaced through foundations",
+      "drain",
+      {
+        "start": 19,
+        "rate": 0.39,
+        "dur": 12.2,
+        "attack": 2.3,
+        "release": 2.8,
+        "amp": 2.7,
+        "lo": 32,
+        "hi": 260,
+        "wet": 0.22
+      }
+    ],
+    [
+      2,
+      "surface texture",
+      "stone",
+      {
+        "start": 13,
+        "rate": 0.64,
+        "dur": 7.8,
+        "attack": 1.1,
+        "release": 1.5,
+        "amp": 0.65,
+        "lo": 260,
+        "hi": 1900,
+        "wet": 0.3,
+        "pan": -0.25
+      }
+    ],
+    [
+      0.45,
+      "foundation release",
+      "stone",
+      {
+        "start": 24.1,
+        "rate": 0.33,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.65,
+        "pan": 0.12
+      }
+    ],
+    [
+      3.1,
+      "foundation release",
+      "stone",
+      {
+        "start": 16.1,
+        "rate": 0.33,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.65,
+        "pan": -0.12
+      }
+    ],
+    [
+      6.8,
+      "foundation release",
+      "stone",
+      {
+        "start": 56.1,
+        "rate": 0.33,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.65,
+        "pan": 0.12
+      }
+    ],
+    [
+      9.7,
+      "foundation release",
+      "stone",
+      {
+        "start": 25.0,
+        "rate": 0.33,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 2.8,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.65,
+        "pan": -0.12
+      }
+    ],
+    [
+      10.8,
+      "foundation release",
+      "stone",
+      {
+        "start": 43.1,
+        "rate": 0.33,
+        "dur": 2.4,
+        "attack": 0.1,
+        "release": 1.75,
+        "amp": 0.7,
+        "lo": 32,
+        "hi": 560,
+        "wet": 0.65,
+        "pan": 0.12
+      }
+    ],
+    [
+      7.7,
+      "vault resonance",
+      "mechanism",
+      {
+        "start": 31,
+        "rate": 0.37,
+        "dur": 5.5,
+        "attack": 1.3,
+        "release": 2.5,
+        "amp": 3.2,
+        "lo": 55,
+        "hi": 480,
+        "wet": 0.85,
+        "resonance": 3
+      }
+    ]
+  ]
+}

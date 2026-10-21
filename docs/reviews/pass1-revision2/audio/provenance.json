@@ -1,0 +1,62 @@
+{
+  "sources": [
+    {
+      "id": "stone",
+      "path": ".qa\\encounter\\audio\\sources\\stone.wav",
+      "sha256": "fd6e7f0a2c4d5c618ce03e815176190d625c3f7a5c9813677270f0f3055c1182"
+    },
+    {
+      "id": "mechanism",
+      "path": ".qa\\encounter\\audio\\sources\\mechanism.wav",
+      "sha256": "bbb6969ddc89c577c15a41d08f0c0cfa19888db89be19b17d76b9b8e713887ea"
+    },
+    {
+      "id": "drain",
+      "path": ".qa\\encounter\\audio\\sources\\drain.wav",
+      "sha256": "1645c12eac60bfa9a55d5f7a6c850e6d5cb552936b614b1e4d39e3129062ea90"
+    },
+    {
+      "id": "chain",
+      "path": ".qa\\encounter\\audio\\sources\\chain.wav",
+      "sha256": "e22386e038105ce79d5608548e893a90c40e8560640e46d9da9621ac6cb7a142"
+    }
+  ],
+  "licenses": [
+    {
+      "id": "stone",
+      "creator": "Pastabra",
+      "url": "https://freesound.org/people/Pastabra/sounds/366160/",
+      "preview": "https://cdn.freesound.org/previews/366/366160_6097925-hq.mp3",
+      "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "title": "Freesound - Pestle and mortar - Stone by Pastabra"
+    },
+    {
+      "id": "mechanism",
+      "creator": "robindouglasjohnson",
+      "url": "https://freesound.org/people/robindouglasjohnson/sounds/698991/",
+      "preview": "https://cdn.freesound.org/previews/698/698991_4452941-hq.mp3",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "title": "Freesound - Clockwork motor by robindouglasjohnson"
+    },
+    {
+      "id": "drain",
+      "creator": "kyles",
+      "url": "https://freesound.org/people/kyles/sounds/452311/",
+      "preview": "https://cdn.freesound.org/previews/452/452311_612689-hq.mp3",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "title": "Freesound - water drain from large metal sink gurgle pipe from underneath.flac by kyles"
+    },
+    {
+      "id": "chain",
+      "creator": "FartMuffin",
+      "url": "https://freesound.org/people/FartMuffin/sounds/571421/",
+      "preview": "https://cdn.freesound.org/previews/571/571421_10643288-hq.mp3",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "title": "Freesound - shaking chain link fence vibration.mp3 by FartMuffin"
+    }
+  ],
+  "quality": "Existing local decoded HQ preview recordings, not newly acquired lossless masters.",
+  "audition": "Objective signal validation completed; owner listening needed. No claim of assistant hearing.",
+  "intent": "B2 sustained physical foundation; B3 longer pitched architectural resonance. No creature vocal source.",
+  "sonniss": "Earlier selective download blocked; no Sonniss media used."
+}

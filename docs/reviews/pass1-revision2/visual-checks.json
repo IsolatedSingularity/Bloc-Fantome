@@ -1,0 +1,224 @@
+{
+  "driver": "windows",
+  "screens": [
+    {
+      "variant": "anchored",
+      "page": "quiet",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "build",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "library",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "tools",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "quiet",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "build",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "library",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "tools",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "quiet",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "build",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "library",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "anchored",
+      "page": "tools",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "quiet",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "build",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "library",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "tools",
+      "size": [
+        960,
+        640
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "quiet",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "build",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "library",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "tools",
+      "size": [
+        1200,
+        800
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "quiet",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "build",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "library",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    },
+    {
+      "variant": "desk",
+      "page": "tools",
+      "size": [
+        1920,
+        1080
+      ],
+      "hitboxes_inside": true
+    }
+  ],
+  "gesture_captured": true,
+  "world_and_camera_unchanged": true,
+  "scope": "Native design study; not a completed feature migration."
+}

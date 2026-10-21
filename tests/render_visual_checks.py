@@ -1177,6 +1177,52 @@ def render_opening(output_dir: Path):
     app.worldLoadExecutor.shutdown(wait=True);pygame.quit()
 
 
+def render_workshop(output_dir: Path):
+    """Review-only shell on real editor geometry, with isolated preferences."""
+    from ui.workshop import Workshop
+    output_dir.mkdir(parents=True,exist_ok=True)
+    with patch.object(app_module.BlocFantome,'_saveAppConfig'), \
+         patch.object(app_module.TutorialScreen,'_saveConfig'), \
+         patch.object(app_module,'APP_CONFIG_FILE',str(output_dir/'isolated-config.json')):
+        app=app_module.BlocFantome()
+        try:
+            app.autoSaveEnabled=False;app.tutorialScreen.visible=False
+            assert app.assetManager.loadAllAssets()
+            app._generateStructurePreviews();app._createInitialFloor()
+            block=app_module.BlockType
+            app.selectedBlock=block.OAK_STAIRS
+            for x in range(3,9):
+                for y in range(3,9):app.world.setBlock(x,y,1,block.STONE_BRICKS)
+            for x,y in ((3,3),(3,8),(8,3),(8,8)):
+                for z in range(2,6):app.world.setBlock(x,y,z,block.QUARTZ_PILLAR)
+            for x in range(3,9):
+                for y in (3,8):app.world.setBlock(x,y,6,block.SMOOTH_QUARTZ)
+            app.blocksExpanded=app.experimentalExpanded=False
+            for variant in ('stone','glass'):
+                for size in ((960,640),(1200,800),(1920,1080)):
+                    app._applyWindowSize(*size);app._fitWorldToViewport();app.tooltipTimer=0
+                    app.workshop=Workshop(variant);app.workshop.visibility.pinned=True
+                    for _ in range(40):app._render();pygame.event.pump()
+                    save_capture(app.screen,output_dir/f'{variant}-{size[0]}.png')
+                    if size==(960,640):
+                        app.workshop=Workshop(variant,text_scale=1.25)
+                        app.workshop.visibility.pinned=True;app._render()
+                        save_capture(app.screen,output_dir/f'{variant}-960-text125.png')
+                app.library.open(app,'Structures');app.library.pending=app.library.entries[0]
+                app._render();save_capture(app.screen,output_dir/f'{variant}-library.png')
+                app.library.visible=False
+            app._applyWindowSize(1200,800);app._fitWorldToViewport();app.tooltipTimer=0
+            app.workshop=Workshop('stone');app.workshop.visibility.pinned=True
+            app.workshop.focus='half';app._render()
+            save_capture(app.screen,output_dir/'stone-focus.png')
+            app.workshop.focus=None;app.workshop.visibility.pinned=False
+            app.workshop.visibility.last_activity=-100;app.workshop.visibility.alpha=0
+            with patch('pygame.mouse.get_pos',return_value=(500,400)):app._render()
+            save_capture(app.screen,output_dir/'stone-hidden.png')
+        finally:
+            app.worldLoadExecutor.shutdown(wait=True,cancel_futures=True);pygame.quit()
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
-    (render_opening if '--opening' in sys.argv else render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)
+    (render_workshop if '--workshop' in sys.argv else render_opening if '--opening' in sys.argv else render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)

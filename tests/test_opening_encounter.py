@@ -122,11 +122,11 @@ def test_encounter_finishes_without_input_and_ignores_skip(scene):
 
 
 def test_muted_score_still_runs_and_releases_channel():
-    from ui.opening_audio import OpeningAudio
+    from ui.opening_audio import OpeningAudio, OPENING_CHANNELS
     pygame.mixer.init();pygame.mixer.set_num_channels(32)
     audio=OpeningAudio(0)
     audio.start_encounter();audio.update_encounter(20,1/60)
-    assert pygame.mixer.Channel(27).get_volume()==0
-    assert pygame.mixer.Channel(27).get_busy()
+    assert pygame.mixer.Channel(OPENING_CHANNELS['score']).get_volume()==0
+    assert pygame.mixer.Channel(OPENING_CHANNELS['score']).get_busy()
     audio.close()
-    assert not pygame.mixer.Channel(27).get_busy()
+    assert not pygame.mixer.Channel(OPENING_CHANNELS['score']).get_busy()

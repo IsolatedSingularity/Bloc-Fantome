@@ -94,6 +94,12 @@ def test_preview_shelves_use_displayed_hitboxes_and_explicit_open(app):
     browser.expand(app,'Structures');app._renderPanel()
     hit=next(h for h in browser.hits if h[1]=='item')
     app._handlePanelClick(*hit[0].center)
+    assert not app.structurePlacementMode
+    assert browser.catalog.pending==hit[2]
+    assert dict(app.world.blocks)==before
+    app._renderPanel()
+    action=next(h for h in browser.hits if h[1]=='open')
+    app._handlePanelClick(*action[0].center)
     assert app.structurePlacementMode and app.selectedStructure==hit[2]['value']
     assert dict(app.world.blocks)==before
     app.structurePlacementMode=False

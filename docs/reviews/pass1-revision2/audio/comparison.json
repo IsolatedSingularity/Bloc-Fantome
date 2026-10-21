@@ -1,0 +1,7 @@
+{
+  "reference_original": ".qa\\pass1\\audio\\rise-B.wav",
+  "reference_processing": "5 ms lookahead peak limiting, then RMS gain. Originals untouched.",
+  "reference_rms": 0.07499999999999998,
+  "candidate_rms": 0.075,
+  "scene": "Offline mix over unchanged native 1080p video, rise starts at 13 seconds. Not runtime loopback."
+}

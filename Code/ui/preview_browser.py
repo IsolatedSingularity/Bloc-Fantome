@@ -10,8 +10,35 @@ from runtime_paths import BUNDLED_DATA_DIR, WORLDS_DIR
 
 
 class PreviewImages:
-    def __init__(self):
+    def __init__(self, byte_budget=32*1024*1024):
         self.images=OrderedDict();self.jobs={};self.failed=set()
+        self.byte_budget=byte_budget
+        self.retained_bytes=0
+
+    def _retain(self,key,surface):
+        old=self.images.pop(key,None)
+        if old is not None:self.retained_bytes-=old.get_pitch()*old.get_height()
+        cost=surface.get_pitch()*surface.get_height()
+        while self.images and self.retained_bytes+cost>self.byte_budget:
+            _,old=self.images.popitem(last=False)
+            self.retained_bytes-=old.get_pitch()*old.get_height()
+        if cost<=self.byte_budget:
+            self.images[key]=surface;self.retained_bytes+=cost
+
+    @staticmethod
+    def _identity(entry):
+        kind,value=entry['kind'],entry['value']
+        identity=(kind,entry['key'])
+        if kind in ('world','build'):
+            path=Path(WORLDS_DIR)/value.filename if kind=='world' else Path(value.path or '')
+            try:
+                stat=path.stat()
+                # Resolve no filesystem links on each draw slice. Absolute
+                # resource path plus size/mtime identifies this preview; alias
+                # paths may occupy separate entries within the byte budget.
+                identity+=(str(path.absolute()),stat.st_size,stat.st_mtime_ns)
+            except OSError:identity+=(str(path),None,None)
+        return identity
 
     @staticmethod
     def _stage(app,path):
@@ -20,13 +47,27 @@ class PreviewImages:
         # Data preparation only; all Pygame work stays on the display thread.
         visible=[(x,y,z,b) for (x,y,z),b in cells.items()
                  if any(p not in cells for p in ((x+1,y,z),(x,y+1,z),(x,y,z+1)))]
-        return sorted(visible,key=lambda row:sum(row[:3]))
+        if not visible:raise ValueError('Empty build')
+        # Bounds are pure data too. Four formerly unbudgeted display-thread
+        # scans made a completed large preview future hitch before drawing.
+        left=top=float('inf');right=bottom=float('-inf')
+        for x,y,z,_ in visible:
+            px=(x-y)*32;py=(x+y)*16-z*32
+            left=min(left,px-32);right=max(right,px+32)
+            top=min(top,py);bottom=max(bottom,py+64)
+        scale=min(580/max(1,right-left),380/max(1,bottom-top))
+        offset=((600-(right-left)*scale)/2-left*scale,(400-(bottom-top)*scale)/2-top*scale)
+        return sorted(visible,key=lambda row:sum(row[:3])),scale,offset
 
     def get(self,app,entry,size=(360,240)):
-        kind=entry['kind'];value=entry['value'];key=(entry['key'],size)
+        kind=entry['kind'];value=entry['value'];identity=self._identity(entry);key=(identity,size)
+        for old in tuple(self.jobs):
+            if old[:2]==identity[:2] and old!=identity:
+                job=self.jobs.pop(old)
+                if hasattr(job,'cancel'):job.cancel()
         if key in self.images:
             self.images.move_to_end(key);return self.images[key]
-        source=self.images.get((entry['key'],(600,400)))
+        source=self.images.get((identity,(600,400)))
         if source is not None:pass
         elif kind=='biome':source=app.biomePanel.preview(value,app.assetManager,(600,400))
         elif kind=='structure':source=app.structurePreviews.get(value)
@@ -36,25 +77,25 @@ class PreviewImages:
         if source is None and kind in ('world','build'):
             path=str(Path(WORLDS_DIR)/value.filename) if kind=='world' else value.path
             if not path:return None
-            jobkey=entry['key']
+            jobkey=identity
             if jobkey in self.failed:return None
             if jobkey not in self.jobs:
                 # One decoded file at a time, leaving the load executor available.
-                if self.jobs:return None
+                if self.jobs:
+                    # A completed off-screen request must not hold the only slot
+                    # forever after a tab change. Running work remains bounded.
+                    for old,job in tuple(self.jobs.items()):
+                        # A partially painted preview has no worker left to
+                        # finish it. Discard it when selection changes too.
+                        if not hasattr(job,'done') or job.done():self.jobs.pop(old)
+                    if self.jobs:return None
                 self.jobs[jobkey]=app.worldLoadExecutor.submit(self._stage,app,path)
             job=self.jobs[jobkey]
             if hasattr(job,'done'):
                 if not job.done():return None
                 try:
-                    rows=job.result()
-                    if not rows:raise ValueError('Empty build')
-                    left=min((x-y)*32 for x,y,z,b in rows)-32
-                    top=min((x+y)*16-z*32 for x,y,z,b in rows)
-                    right=max((x-y)*32 for x,y,z,b in rows)+32
-                    bottom=max((x+y)*16-z*32 for x,y,z,b in rows)+64
-                    scale=min(580/max(1,right-left),380/max(1,bottom-top))
+                    rows,scale,offset=job.result()
                     surface=pygame.Surface((600,400),pygame.SRCALPHA)
-                    offset=((600-(right-left)*scale)/2-left*scale,(400-(bottom-top)*scale)/2-top*scale)
                     job=[iter(rows),surface,scale,offset,{}];self.jobs[jobkey]=job
                 except Exception:
                     self.failed.add(jobkey);self.jobs.pop(jobkey,None);return None
@@ -64,7 +105,7 @@ class PreviewImages:
                 row=next(rows,None)
                 if row is None:
                     source=surface;self.jobs.pop(jobkey,None)
-                    self.images[(entry['key'],(600,400))]=surface
+                    self._retain((identity,(600,400)),surface)
                     break
                 x,y,z,b=row
                 if b not in sprites:
@@ -78,8 +119,7 @@ class PreviewImages:
         result=pygame.Surface(size,pygame.SRCALPHA)
         fitted=pygame.transform.scale(source,(max(1,round(source.get_width()*ratio)),max(1,round(source.get_height()*ratio))))
         result.blit(fitted,fitted.get_rect(center=result.get_rect().center))
-        self.images[key]=result
-        while len(self.images)>160:self.images.popitem(last=False)
+        self._retain(key,result)
         return result
 
 
@@ -113,7 +153,6 @@ class PreviewBrowser:
             elif action=='page':self.page+=value
             elif action=='item':
                 self.catalog.pending=value
-                if value['kind']=='structure':self.catalog.activate(app)
             elif action=='open':self.catalog.activate(app)
             return True
         return False
@@ -156,9 +195,8 @@ class PreviewBrowser:
             text=self.small.render(f'{self.page+1} / {pages}',True,MUTED)
             app.screen.blit(text,text.get_rect(center=(x+width//2,y+13)))
             button(pygame.Rect(x+width-40,y,30,26),'>','page',1);y+=30
-            if section!='Structures':
-                button(pygame.Rect(x+10,y,width-20,27),'Open scene' if self.catalog.pending else 'Choose a preview','open',None,bool(self.catalog.pending))
-            else:wrapped(app.screen,'Choose a build, then click to place.',self.small,(x+10,y,width-20,27),MUTED)
+            label={'Worlds':'Open world','Biomes':'Open biome','Structures':'Place structure'}[section]
+            button(pygame.Rect(x+10,y,width-20,27),label if self.catalog.pending else 'Choose a preview','open',None,bool(self.catalog.pending))
             y+=31
         return y
 

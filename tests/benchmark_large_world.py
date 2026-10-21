@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import statistics
@@ -33,7 +34,8 @@ def measure(operation, repetitions=5, warmup=0, sample_setup=None):
     ordered = sorted(samples)
     return {
         "median_ms": statistics.median(ordered),
-        "p95_ms": ordered[max(0, int(len(ordered) * 0.95) - 1)],
+        "p95_ms": ordered[max(0, math.ceil(len(ordered) * 0.95) - 1)],
+        "percentile_method": "nearest rank; use raw cold samples, median and max for small n",
         "max_ms": ordered[-1],
         "samples_ms": samples,
     }
@@ -42,7 +44,7 @@ def measure(operation, repetitions=5, warmup=0, sample_setup=None):
 def surface_bytes(surface):
     if surface is None:
         return 0
-    return surface.get_width() * surface.get_height() * surface.get_bytesize()
+    return surface.get_pitch() * surface.get_height()
 
 
 def benchmark_scene(app, path, repetitions):

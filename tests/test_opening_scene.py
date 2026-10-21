@@ -73,7 +73,8 @@ def test_native_close_remains_available_during_encounter(app):
         pygame.event.clear();pygame.event.post(pygame.event.Event(pygame.QUIT))
         app._handleEvents()
         assert app.openingScene is None and not app.running
-        assert not any(pygame.mixer.Channel(i).get_busy() for i in range(25,31))
+        from ui.opening_audio import OPENING_CHANNELS
+        assert not any(pygame.mixer.Channel(i).get_busy() for i in (*OPENING_CHANNELS.values(),30))
     finally:
         if app.openingScene:app._closeOpeningScene()
         app.running=running
