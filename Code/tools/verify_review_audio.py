@@ -104,10 +104,17 @@ def run_handoff(output, app_module):
             path=app.currentBuildPath
             app._openOpeningScene();scene=app.openingScene
             scene.update(5);scene.place();scene.update(5);scene.activate('door')
-            scene.update(scene.RISE_DURATION);scene.activate('heart');scene.update(12);app._render()
+            scene.update(scene.RISE_DURATION);scene.activate('heart');scene.update(12)
+            # Read the rendered back buffer before swapping it. A post-flip
+            # read can return a cleared buffer even though presentation worked.
+            scene.render(app.screen)
             assert scene.phase=='encounter' and scene.gpu is not None
             result['opengl_renderer']=scene.gpu.gl.glGetString(0x1F01).decode()
-            pygame.image.save(scene.gpu.capture(scene.size),out.parent/'encounter.png')
+            capture=scene.gpu.capture(scene.size)
+            assert pygame.surfarray.array3d(capture).max()>0
+            result['gl_error']=scene.gpu.gl.glGetError();assert result['gl_error']==0
+            pygame.image.save(capture,out.parent/'encounter.png')
+            pygame.display.flip()
             pygame.event.clear();pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
             app._handleEvents()
             assert app.openingScene is None and app.world.blocks==original
