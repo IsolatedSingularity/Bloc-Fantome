@@ -1,0 +1,104 @@
+{
+  "executable": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\owner-pass-ar\\package\\BlocFantome.exe",
+  "sha256": "70af3e2be3d28ccf17939d0af9f37713360ad9f1ab77c51e5096a7d0270946db",
+  "bytes": 270492933,
+  "modules_verified": [
+    "engine.pick_candidates",
+    "engine.draw_order",
+    "ui.workshop_views",
+    "ui.library",
+    "ui.chrome"
+  ],
+  "prepared_files": [
+    "tutorial_prepared\\biomes.prepared",
+    "tutorial_prepared\\blocks.prepared",
+    "tutorial_prepared\\camera.prepared",
+    "tutorial_prepared\\dimensions.prepared",
+    "tutorial_prepared\\history.prepared",
+    "tutorial_prepared\\lighting.prepared",
+    "tutorial_prepared\\liquids.prepared",
+    "tutorial_prepared\\rain.prepared",
+    "tutorial_prepared\\saving.prepared",
+    "tutorial_prepared\\snow.prepared",
+    "tutorial_prepared\\structures.prepared",
+    "tutorial_prepared\\terrain.prepared"
+  ],
+  "native_files": [
+    "native\\bloc_fantome_native.dll"
+  ],
+  "licensed_font_present": true,
+  "microsoft_fonts_bundled": false,
+  "assets_junction": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets",
+  "base_commit": "c9573dcb",
+  "prepared_manifest": {
+    "schema": 2,
+    "python": [
+      3,
+      12
+    ],
+    "code": "6f347b24d40018f2e500c89041fa9d8c562eb51674456915899d829f33ac6d2f",
+    "lessons": {
+      "blocks": {
+        "file": "blocks.prepared",
+        "sha256": "8e4ef526c05f854dc416ae041894f47acf2e515121b3d76e19bb07d4d9dc8473",
+        "cells": 62370
+      },
+      "camera": {
+        "file": "camera.prepared",
+        "sha256": "f47de747b5bd45c133b3743fcfbbbefd3f5d72ba3e048e92a67282b659a67fcb",
+        "cells": 106184
+      },
+      "history": {
+        "file": "history.prepared",
+        "sha256": "3c30e920ef7bed0f254a6e46fa1b4aa151baeb5752a8efb078839556df4f9cd2",
+        "cells": 488992
+      },
+      "structures": {
+        "file": "structures.prepared",
+        "sha256": "1c1ac175a0e6db5926e2fc37442885ba74cacbd81718d7c903e99d0c1e4f5569",
+        "cells": 779588
+      },
+      "terrain": {
+        "file": "terrain.prepared",
+        "sha256": "05b13f72e511e25429de555f9ea49f1078e741cd6f28bc462dbea7f768917758",
+        "cells": 130041
+      },
+      "biomes": {
+        "file": "biomes.prepared",
+        "sha256": "17c0dc97d845685beed4ddfcbd26386a08705784a040401fb53547751f43ad68",
+        "cells": 207886
+      },
+      "dimensions": {
+        "file": "dimensions.prepared",
+        "sha256": "1676b5f26734e88922d3c5ad09faa1bd3763f003bae8167850379e952fe7c1f6",
+        "cells": 99237
+      },
+      "rain": {
+        "file": "rain.prepared",
+        "sha256": "3cfffa158446c3df791a30b6e3f7ca8870020dc296957a7c3edce9edb0791f54",
+        "cells": 134326
+      },
+      "snow": {
+        "file": "snow.prepared",
+        "sha256": "d7fa4fd448197bfd5a26df09c13f2e0aa872d730d1ecb1c01e540c007f969651",
+        "cells": 135256
+      },
+      "liquids": {
+        "file": "liquids.prepared",
+        "sha256": "654b9a6ed246bd2861d392c120a3e2df5f2f840cea28bcfec88fe4ef632ba901",
+        "cells": 989663
+      },
+      "lighting": {
+        "file": "lighting.prepared",
+        "sha256": "83d9c67ef9d881cc2f21a9cfaf3e5f9e16bd1baa3709af046bfe92833aa31a0d",
+        "cells": 325478
+      },
+      "saving": {
+        "file": "saving.prepared",
+        "sha256": "079f846f3e03885f61cb0e9410250d702f0c3bbbd2f527d3c3b3a3fd0f66becc",
+        "cells": 190438
+      }
+    }
+  },
+  "smoke": "Exact-path launch, native Build navigation, close, process exit 0"
+}

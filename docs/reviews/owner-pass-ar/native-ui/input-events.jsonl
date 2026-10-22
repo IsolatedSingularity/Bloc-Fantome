@@ -1,0 +1,21 @@
+{"type": "MouseButtonDown", "pos": [686, 414], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [686, 414], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [312, 210], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [312, 210], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [220, 139], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [220, 139], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [252, 44], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [252, 44], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [849, 185], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [849, 185], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [944, 44], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonUp", "pos": [944, 44], "button": 1, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}
+{"type": "MouseButtonDown", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonUp", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonDown", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonUp", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonDown", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonUp", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonDown", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseButtonUp", "pos": [944, 44], "button": 5, "touch": false, "window": null}
+{"type": "MouseWheel", "flipped": false, "x": 0, "y": -4, "precise_x": 0.0, "precise_y": -4.0, "touch": false, "window": "<pygame._sdl2.video.Window object at 0x000001F783A67EF0>"}

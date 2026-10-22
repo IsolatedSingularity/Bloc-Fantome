@@ -25,6 +25,9 @@ class DrawOrder:
     def __iter__(self):
         return chain.from_iterable(self.pages)
 
+    def __reversed__(self):
+        return chain.from_iterable(reversed(page) for page in reversed(self.pages))
+
     def __eq__(self, other):
         return len(self)==len(other) and all(a==b for a,b in zip(self,other))
 

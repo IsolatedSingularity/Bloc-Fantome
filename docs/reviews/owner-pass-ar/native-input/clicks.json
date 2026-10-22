@@ -1,0 +1,133 @@
+[
+  {
+    "input": "OS mouse",
+    "pos": [
+      591,
+      299
+    ],
+    "button": 1,
+    "source": [
+      83,
+      87,
+      57
+    ],
+    "target": [
+      84,
+      87,
+      57
+    ],
+    "face": "right",
+    "changed": [
+      [
+        [
+          84,
+          87,
+          57
+        ],
+        "WATER",
+        "GOLD_BLOCK"
+      ]
+    ],
+    "handler_ms": 0.9500999003648758,
+    "adjacent": [
+      84,
+      87,
+      57
+    ],
+    "adjacent_type": "GOLD_BLOCK",
+    "visible_ms": 81.63979998789728
+  },
+  {
+    "input": "OS mouse",
+    "pos": [
+      591,
+      299
+    ],
+    "button": 4,
+    "source": [
+      83,
+      87,
+      57
+    ],
+    "target": [
+      84,
+      87,
+      57
+    ],
+    "face": "right",
+    "changed": [],
+    "handler_ms": 0.012800097465515137,
+    "adjacent": [
+      84,
+      87,
+      57
+    ],
+    "adjacent_type": "GOLD_BLOCK"
+  },
+  {
+    "input": "OS mouse",
+    "pos": [
+      591,
+      299
+    ],
+    "button": 4,
+    "source": [
+      83,
+      87,
+      57
+    ],
+    "target": [
+      84,
+      87,
+      57
+    ],
+    "face": "right",
+    "changed": [],
+    "handler_ms": 0.0029001384973526,
+    "adjacent": [
+      84,
+      87,
+      57
+    ],
+    "adjacent_type": "GOLD_BLOCK",
+    "visible_ms": 192.03539984300733
+  },
+  {
+    "input": "OS mouse",
+    "pos": [
+      591,
+      299
+    ],
+    "button": 1,
+    "source": [
+      77,
+      77,
+      49
+    ],
+    "target": [
+      77,
+      78,
+      49
+    ],
+    "face": "left",
+    "changed": [
+      [
+        [
+          77,
+          78,
+          49
+        ],
+        "WATER",
+        "OAK_PLANKS"
+      ]
+    ],
+    "handler_ms": 0.9987999219447374,
+    "adjacent": [
+      77,
+      78,
+      49
+    ],
+    "adjacent_type": "OAK_PLANKS",
+    "visible_ms": 104.97560002841055
+  }
+]

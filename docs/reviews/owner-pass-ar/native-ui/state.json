@@ -1,0 +1,78 @@
+{
+  "size": [
+    1200,
+    800
+  ],
+  "driver": "windows",
+  "viewport": 1200,
+  "selected": "GOLD_BLOCK",
+  "page": "",
+  "query": "",
+  "blocks": 144,
+  "undo": 0,
+  "scroll": 0,
+  "shortcuts": 240.0,
+  "count": 464,
+  "hover": null,
+  "source": null,
+  "metadata": {
+    "kind": "build",
+    "provider": "Bloc Fant\u00f4me",
+    "version": "local"
+  },
+  "revision": 1,
+  "camera": [
+    600.0,
+    138.0,
+    1.49
+  ],
+  "actions": [
+    [
+      [
+        992,
+        736,
+        58,
+        44
+      ],
+      "grow",
+      true
+    ],
+    [
+      [
+        1054,
+        736,
+        58,
+        44
+      ],
+      "shrink",
+      true
+    ],
+    [
+      [
+        1116,
+        736,
+        58,
+        44
+      ],
+      "noise",
+      true
+    ]
+  ],
+  "error": "",
+  "frames": 13920,
+  "visibility": {
+    "last_activity": 185.004,
+    "alpha": 0.0,
+    "pinned": false,
+    "always": false,
+    "reduced_motion": false
+  },
+  "panning": false,
+  "slider": null,
+  "mouse": [
+    1199,
+    698
+  ],
+  "capture": [],
+  "tutorial": false
+}

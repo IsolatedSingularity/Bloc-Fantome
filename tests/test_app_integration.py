@@ -1131,12 +1131,16 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertFalse(self.app._usesExteriorShellGlass(*interior, interiorType))
         self.assertEqual(self.app.world.getBlock(*interior), interiorType)
 
-    def test_canvas_resize_reports_clipping_and_extends_the_floor(self):
+    def test_canvas_resize_refuses_clipping_and_extends_the_floor(self):
         self.app.world.resize(32, 32, 32, preserve=False)
         self.app.world.setBlock(31, 31, 31, app_module.BlockType.DIAMOND_BLOCK)
         dimensions, clipped = self.app._canvasResizeImpact(-16)
         self.assertEqual(dimensions, (16, 16, 16))
         self.assertEqual(clipped, 1)
+        self.app._resizeCanvas(-16)
+        self.assertEqual((self.app.world.width, self.app.world.depth, self.app.world.height), (32, 32, 32))
+        self.assertEqual(self.app.world.getBlock(31, 31, 31), app_module.BlockType.DIAMOND_BLOCK)
+        self.app.world.setBlock(31, 31, 31, app_module.BlockType.AIR)
         self.app._resizeCanvas(-16)
         self.assertEqual((self.app.world.width, self.app.world.depth, self.app.world.height), dimensions)
         self.assertNotIn((31, 31, 31), self.app.world.blocks)

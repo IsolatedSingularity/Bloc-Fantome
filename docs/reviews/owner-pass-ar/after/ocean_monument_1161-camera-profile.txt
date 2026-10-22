@@ -1,0 +1,51 @@
+         1063764 function calls in 0.472 seconds
+
+   Ordered by: cumulative time
+   List reduced from 192 to 45 due to restriction <45>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.453    0.453 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\tests\owner_pass_ar_performance.py:30(settle)
+        1    0.000    0.000    0.453    0.453 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\tests\owner_pass_ar_performance.py:27(frame)
+        1    0.006    0.006    0.453    0.453 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:19650(_render)
+        1    0.150    0.150    0.440    0.440 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20920(_renderWorld)
+   226728    0.092    0.000    0.132    0.000 {method 'get' of 'dict' objects}
+    75553    0.048    0.000    0.083    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\renderer.py:128(worldToScreen)
+    75542    0.017    0.000    0.063    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:115(getBlockProperties)
+   151154    0.026    0.000    0.040    0.000 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\enum.py:1266(__hash__)
+       23    0.030    0.001    0.030    0.001 {method 'blits' of 'pygame.surface.Surface' objects}
+   152216    0.020    0.000    0.020    0.000 {built-in method builtins.round}
+        1    0.001    0.001    0.019    0.019 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:18283(_handleZoom)
+        1    0.002    0.002    0.017    0.017 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:18241(_prepareZoomFallback)
+    75553    0.015    0.000    0.015    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\renderer.py:96(_rotateCoords)
+   151154    0.014    0.000    0.014    0.000 {built-in method builtins.hash}
+    76485    0.012    0.000    0.012    0.000 {method 'append' of 'list' objects}
+    75528    0.010    0.000    0.010    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20797(_usesExteriorShellGlass)
+        2    0.009    0.005    0.009    0.005 {built-in method pygame.transform.scale}
+       65    0.009    0.000    0.009    0.000 {method 'blit' of 'pygame.surface.Surface' objects}
+       41    0.000    0.000    0.002    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:7757(getScaledSprite)
+        1    0.001    0.001    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20082(_renderUnderwaterScene)
+        1    0.001    0.001    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20044(_renderUnderwaterBackdrop)
+       41    0.002    0.000    0.002    0.000 {built-in method pygame.transform.smoothscale}
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:34(__getitem__)
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:16047(_renderBlockTooltip)
+      296    0.001    0.000    0.001    0.000 {method 'extend' of 'list' objects}
+        4    0.000    0.000    0.001    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\ui\fonts.py:53(render)
+        9    0.001    0.000    0.001    0.000 {built-in method pygame.draw.polygon}
+        4    0.001    0.000    0.001    0.000 {method 'render' of 'pygame.font.Font' objects}
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:14218(_renderSnow)
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:12464(_updateHoveredCell)
+       40    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\performance.py:323(set)
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\pick_candidates.py:9(candidates)
+       12    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:12333(_pickRenderedBlockFace)
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:7205(drawBackground)
+       18    0.000    0.000    0.000    0.000 {built-in method pygame.draw.lines}
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\ui\workshop.py:128(render)
+      605    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+       40    0.000    0.000    0.000    0.000 {method 'get_bounding_rect' of 'pygame.surface.Surface' objects}
+      989    0.000    0.000    0.000    0.000 {built-in method math.sin}
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20840(_visibleScreenRenderPlan)
+       10    0.000    0.000    0.000    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+       40    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\performance.py:295(_surface_bytes)
+        3    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\ui\workshop.py:119(_button)
+        2    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:20534(_visibleBlocksInDrawOrder)
+        4    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\ui\chrome.py:24(rounded)

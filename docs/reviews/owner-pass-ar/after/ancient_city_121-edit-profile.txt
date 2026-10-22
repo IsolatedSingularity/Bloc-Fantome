@@ -1,0 +1,31 @@
+         2918 function calls in 0.002 seconds
+
+   Ordered by: cumulative time
+   List reduced from 77 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15897(_placeBlockWithUndo)
+        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:294(execute)
+        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:81(execute)
+        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:617(setBlock)
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:132(_storeBlock)
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:295(_refreshPreparedDrawOrders)
+       12    0.000    0.000    0.001    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:51(patched)
+      124    0.000    0.000    0.001    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:58(_change)
+        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:9192(_afterWorldEdit)
+        5    0.001    0.000    0.001    0.000 {built-in method builtins.max}
+      248    0.000    0.000    0.000    0.000 {built-in method _bisect.bisect_left}
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:224(_refreshSurfaceNeighborhood)
+     1282    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:10(painter_key)
+        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:351(_refreshViewSurfacePosition)
+        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:253(_refreshSceneStructureSurfacePosition)
+        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:216(_isSurfaceBlock)
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:171(_addPositionIndexes)
+      103    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+       24    0.000    0.000    0.000    0.000 {method 'copy' of 'list' objects}
+      374    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+       88    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.any}
+       18    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:220(<genexpr>)
+        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:198(_refreshOccupiedBounds)
+       66    0.000    0.000    0.000    0.000 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\enum.py:1266(__hash__)

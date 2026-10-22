@@ -50,6 +50,8 @@ class Workshop:
         self.scroller=SmoothScroll(); self.shortcut_scroller=SmoothScroll()
         self.shortcuts_rect=pygame.Rect(0,0,0,0); self.shortcut_max=0
         self.category_page=0
+        self.category_scroller=SmoothScroll();self.category_rect=pygame.Rect(0,0,0,0);self.category_max=0
+        self.italic=load_ui_font(14,italic=True)
         self.tile_levels={};self.frame_dt=0
 
     @staticmethod
@@ -147,7 +149,6 @@ class Workshop:
                       or app.tutorialScreen.visible or self.confirm or app.showShortcutsPanel or app.historyPanelOpen
                       or any(pygame.mouse.get_pressed()))
         if 0<=mouse[0]<w and h-16<=mouse[1]<h and not self.clean:self.reveal()
-        if self.context.collidepoint(mouse) and self.visibility.alpha>0:occupied=True
         if self.hotbar_bounds.collidepoint(mouse) and self.visibility.alpha>0:occupied=True
         alpha=self.visibility.update(now,dt,occupied)
         if not self.clean:
@@ -163,7 +164,7 @@ class Workshop:
             for i,(label,action) in enumerate((('+','grow'),('−','shrink'),('Noise','noise'))):
                 rect=pygame.Rect(w-208+i*62,h-64,58,44)
                 self._button(screen,rect,'',action,quiet=False)
-                draw_icon(screen,action,rect.inflate(-14,-8),chrome.ACCENT)
+                draw_icon(screen,action,rect.inflate(-4,-2),chrome.ACCENT)
                 if rect.collidepoint(mouse):
                     text={'grow':'Grow canvas (+)','shrink':'Shrink canvas (−)','noise':'Local terrain noise'}[action]
                     tip=pygame.Rect(w-230,h-98,206,28);chrome.panel(screen,tip)
@@ -171,30 +172,8 @@ class Workshop:
             if alpha>0:
                 layer=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
                 self._hotbar(layer,app)
-                if not self.page and not app.tutorialScreen.visible:
-                    chrome.panel(layer,self.context,alpha=226)
-                    sprite=app.assetManager.getBlockSprite(app.selectedBlock)
-                    if sprite:layer.blit(sprite,(35,self.context.y+13))
-                    definition=app.world.catalog.definitions[app.selectedBlock]
-                    layer.blit(self.small.render(('INTERACT' if app.interactionMode else 'BUILD')+(' · Unsaved' if dirty else ''),True,chrome.MUTED),(110,self.context.y+13))
-                    chrome.wrapped(layer,definition.name,self.font,(110,self.context.y+19+self.small.get_linesize(),self.context.width-100,self.font.get_height()+4))
-                    button_height=max(30,self.small.get_height()+8);button_y=self.context.bottom-button_height-8
-                    button_width=(self.context.width-30)//2
-                    if definition.isStair or definition.isSlab:
-                        self._button(layer,(34,button_y,button_width,button_height),'Half: '+app.previewSlabPosition.name.title(),'half',quiet=True)
-                        self._button(layer,(44+button_width,button_y,button_width,button_height),'Turn: '+app.previewFacing.name.title(),'turn',quiet=True)
-                    elif definition.isDoor or definition.modelKind in ('lever','button','repeater','comparator','piston','piston_head','torch','redstone_torch'):
-                        self._button(layer,(34,button_y,button_width,button_height),'Turn: '+app.previewFacing.name.title(),'turn',quiet=True)
-                        self._button(layer,(44+button_width,button_y,button_width,button_height),'Build / Interact','interact',quiet=True)
-                    else:
-                        self._button(layer,(34,button_y,button_width,button_height),'Fill corners','fill',app.fillToolActive,quiet=True)
-                        self._button(layer,(44+button_width,button_y,button_width,button_height),'More tools','nav:tools',quiet=True)
-                    self.panels.append(self.context)
                 layer.set_alpha(round(alpha*255));screen.blit(layer,(0,0))
             else:self.hotbar_bounds=pygame.Rect(0,0,0,0)
-            if not self.page and not app.tutorialScreen.visible and alpha<=0:
-                identity=pygame.Rect(24,h-115,320,35);self._panel(screen,identity,220)
-                chrome.wrapped(screen,app.world.catalog.definitions[app.selectedBlock].name+(' · Unsaved' if dirty else ''),self.small,identity.inflate(-20,-4))
             if self.page:self._drawer(app)
         if operation:
             rect=self.operation_rect
@@ -237,117 +216,8 @@ class Workshop:
         self.panels.append(self.hotbar_bounds)
 
     def _drawer(self,app):
-        screen=app.screen;w,h=screen.get_size()
-        width=min(w-48,max(356,round(356*self.text_scale)))
-        y=self.operation_rect.bottom+10 if self.operation_rect.height else 82
-        box=pygame.Rect(w-width-24 if self.page in ('tools','world','menu') else 24,y,width,h-y-84);self._panel(screen,box)
-        self.shortcuts_rect=pygame.Rect(0,0,0,0)
-        x=box.x+22;y=box.y+18
-        screen.blit(self.title.render(self.page.title(),True,chrome.TEXT),(x,y))
-        self._button(screen,(box.right-108,y,88,max(32,self.small.get_height()+6)),'Close','close')
-        row_h=max(37,self.small.get_height()+18)
-        if self.page=='build':
-            search=pygame.Rect(x,y+48,width-44,row_h)
-            self._button(screen,search,self.query or 'Search all materials…','search',app.searchActive)
-            names=['All','Favorites',*self.categories]
-            # Two measured icon-and-text tabs plus paging retain all categories
-            # even at 150% text and 960px without a dropdown.
-            tab_width=(width-78)//2
-            count=max(1,(len(names)+1)//2);self.category_page%=count
-            for i,label in enumerate(names[self.category_page*2:self.category_page*2+2]):
-                rect=pygame.Rect(x+i*tab_width,search.bottom+8,tab_width-4,row_h)
-                self._button(screen,rect,'', 'category:'+label,self.category==label)
-                blocks=self.categories.get(label,app.favoriteBlocks if label=='Favorites' else app.hotbar)
-                if blocks:
-                    sprite=app.assetManager.getIconSprite(blocks[0])
-                    if sprite:screen.blit(pygame.transform.smoothscale(sprite,(24,24)),(rect.x+5,rect.centery-12))
-                chrome.wrapped(screen,label,self.small,(rect.x+33,rect.y+8,rect.width-38,row_h-10))
-            self._button(screen,(box.right-52,search.bottom+8,30,row_h),'›','category_next')
-            footer_button=max(24,self.small.get_height()+8)
-            self.list_rect=pygame.Rect(x,search.bottom+row_h+24,width-44,max(30,box.bottom-(search.bottom+row_h+24)-footer_button-14))
-            blocks=self.filtered_blocks(app);cols=max(3,(width-44)//74);cell=(width-44)//cols
-            self.max_scroll=max(0,((len(blocks)+cols-1)//cols)*cell-self.list_rect.height)
-            self.scroll=self.scroller.update(self.max_scroll,self.visibility.reduced_motion)
-            old=screen.get_clip();screen.set_clip(self.list_rect)
-            for i,block in enumerate(blocks):
-                rect=pygame.Rect(x+(i%cols)*cell,self.list_rect.y+(i//cols)*cell-self.scroll,cell-5,cell-5)
-                if not rect.colliderect(self.list_rect):continue
-                chrome.button(screen,rect,'',self.small,rect.collidepoint(pygame.mouse.get_pos()),block==app.selectedBlock,focused=self.focus=='block:'+block.name)
-                sprite=app.assetManager.getIconSprite(block)
-                if sprite:
-                    scale=min((cell-12)/sprite.get_width(),(cell-12)/sprite.get_height(),1)
-                    if scale<1:sprite=pygame.transform.smoothscale(sprite,(round(sprite.get_width()*scale),round(sprite.get_height()*scale)))
-                    screen.blit(sprite,sprite.get_rect(center=rect.center))
-                if block in app.favoriteBlocks:screen.blit(self.small.render('★',True,chrome.ACCENT),(rect.x+4,rect.y+2))
-                self.hits.append((rect.clip(self.list_rect),'block:'+block.name,True))
-            screen.set_clip(old)
-            self._button(screen,(x,box.bottom-footer_button-5,width-44,footer_button),f'{len(blocks)} materials · Favorite / Ctrl+D','favorite',quiet=True)
-        else:
-            rows={'tools':TOOLS,'world':WORLD,'menu':MENU}[self.page]
-            self.list_rect=pygame.Rect(x,y+54,width-44,max(36,box.height-88))
-            if self.page=='tools':
-                full_height=self.list_rect.height
-                self.list_rect.height=max(40,round(full_height*.52))
-                divider=self.list_rect.bottom+10
-                pygame.draw.line(screen,chrome.MUTED,(x,divider),(box.right-22,divider))
-                screen.blit(self.small.render('Controls · Ctrl+Z Undo',True,chrome.ACCENT),(x,divider+8))
-                self.shortcuts_rect=pygame.Rect(x,divider+12+self.small.get_linesize(),width-44,max(20,box.bottom-14-(divider+12+self.small.get_linesize())))
-                stride=self.small.get_linesize()*2+12
-                shortcuts=(('Home / Shift+Home','Fit world / center selection'),('F1 / Ctrl+Tab','Reveal / focus controls'))+SHORTCUTS
-                self.shortcut_max=max(0,len(shortcuts)*stride-self.shortcuts_rect.height)
-                offset=self.shortcut_scroller.update(self.shortcut_max,self.visibility.reduced_motion)
-                old=screen.get_clip();screen.set_clip(self.shortcuts_rect)
-                for i,(keys,label) in enumerate(shortcuts):
-                    sy=self.shortcuts_rect.y+i*stride-offset
-                    screen.blit(self.small.render(keys,True,chrome.ACCENT),(x,sy))
-                    chrome.wrapped(screen,label,self.small,(x,sy+self.small.get_linesize(),width-44,self.small.get_linesize()+2))
-                screen.set_clip(old)
-            if self.page=='world':
-                toggles=[r for r in rows if r[4]]
-                actions=[r for r in rows if not r[4] and r[0] not in ('grow','shrink','noise','map')]
-                tile_h=max(82,self.small.get_linesize()*2+42);tile_w=(width-52)//2
-                toggle_height=((len(toggles)+1)//2)*(tile_h+8)
-                self.max_scroll=max(0,toggle_height+34+len(actions)*(row_h+6)-self.list_rect.height)
-                self.scroll=self.scroller.update(self.max_scroll,self.visibility.reduced_motion)
-                old=screen.get_clip();screen.set_clip(self.list_rect)
-                colors={'rain':(121,177,213),'snow':(190,222,234),'sun':(225,189,107),'lighting':(225,189,107),'clouds':(173,185,195),'sky':(150,170,211),'flow':(113,188,180),'horror_rain':(191,110,114)}
-                for i,(action,label,route,args,field) in enumerate(toggles):
-                    value=bool(getattr(app,field));rect=pygame.Rect(x+(i%2)*(tile_w+8),self.list_rect.y+(i//2)*(tile_h+8)-self.scroll,tile_w,tile_h)
-                    self._button(screen,rect,'',action,value)
-                    previous=self.tile_levels.get(action,float(value))
-                    amount=1 if self.visibility.reduced_motion else min(1,self.frame_dt/.16)
-                    level=previous+(float(value)-previous)*amount;self.tile_levels[action]=level
-                    background=tuple(round(a+(b-a)*level) for a,b in zip(chrome.CONTROL,chrome.HOVER))
-                    pygame.draw.rect(screen,background,rect,border_radius=12)
-                    if self.focus==action:pygame.draw.rect(screen,chrome.FOCUS,rect,2,border_radius=12)
-                    color=colors.get(action,chrome.ACCENT) if value else chrome.MUTED
-                    draw_icon(screen,action,pygame.Rect(rect.x+10,rect.y+8,30,30),color)
-                    chrome.wrapped(screen,label,self.small,(rect.x+10,rect.y+40,rect.width-20,self.small.get_linesize()+2),color)
-                    screen.blit(self.small.render('On' if value else 'Off',True,color),(rect.right-38,rect.y+12))
-                sy=self.list_rect.y+toggle_height-self.scroll
-                screen.blit(self.small.render('World actions',True,chrome.MUTED),(x,sy+4))
-                for i,(action,label,*_) in enumerate(actions):
-                    self._button(screen,(x,sy+34+i*(row_h+6),width-44,row_h),label,action)
-                screen.set_clip(old)
-            else:
-                self.max_scroll=max(0,len(rows)*(row_h+6)-self.list_rect.height)
-                self.scroll=self.scroller.update(self.max_scroll,self.visibility.reduced_motion)
-                old=screen.get_clip();screen.set_clip(self.list_rect)
-                for i,(action,label,route,args,field) in enumerate(rows):
-                    value=getattr(app,field,False) if field else False
-                    if field:label+=': '+('On' if value is True else 'Off' if value is False else str(value))
-                    if route=='preference':
-                        value=getattr(self.visibility,args[0]);label+=': '+('On' if value else 'Off')
-                    if action=='text_scale':label+=f': {self.text_scale:.0%}'
-                    rect=pygame.Rect(x,self.list_rect.y+i*(row_h+6)-self.scroll,width-44,row_h)
-                    self._button(screen,rect,label,action,bool(value))
-                    if self.page=='tools':
-                        pygame.draw.polygon(screen,chrome.HOVER,[(rect.x,rect.y),(rect.x+30,rect.y),(rect.x,rect.y+30)])
-                        draw_icon(screen,action,pygame.Rect(rect.x+1,rect.y+1,22,22),chrome.MUTED)
-                screen.set_clip(old)
-        if self.max_scroll:
-            thumb=max(20,round(self.list_rect.height**2/(self.list_rect.height+self.max_scroll)))
-            pygame.draw.rect(screen,chrome.MUTED,(box.right-10,self.list_rect.y+round((self.list_rect.height-thumb)*self.scroll/self.max_scroll),3,thumb),border_radius=1)
+        from ui.workshop_views import draw_drawer
+        draw_drawer(self,app)
 
     def handle_event(self,event,app):
         ctrl_tab=(event.type==pygame.KEYDOWN and event.key==pygame.K_TAB and getattr(event,'mod',0)&pygame.KMOD_CTRL)
@@ -401,7 +271,8 @@ class Workshop:
             self.reveal()
         if event.type==pygame.MOUSEWHEEL and self.page:
             if any(r.collidepoint(pygame.mouse.get_pos()) for r in self.panels):
-                if self.shortcuts_rect.collidepoint(pygame.mouse.get_pos()):self.shortcut_scroller.wheel(event,self.shortcut_max)
+                if self.category_rect.collidepoint(pygame.mouse.get_pos()):self.category_scroller.wheel(event,self.category_max)
+                elif self.shortcuts_rect.collidepoint(pygame.mouse.get_pos()):self.shortcut_scroller.wheel(event,self.shortcut_max)
                 elif self.list_rect.collidepoint(pygame.mouse.get_pos()):self.scroller.wheel(event,self.max_scroll)
                 return True
         if event.type==pygame.MOUSEBUTTONUP and event.button in self.captured:
@@ -460,11 +331,11 @@ class Workshop:
         if action.startswith('nav:'):
             page=action[4:]
             if page=='map':self.close_drawer(app);app._openWorldMap();return
-            if page=='library':self.close_drawer(app);app.library.open(app,'Structures')
+            if page=='library':self.close_drawer(app);app.library.open(app)
             else:self.open_drawer(page,app)
             return
         if action in ('build','menu'):self.open_drawer(action,app);return
-        if action=='library':self.close_drawer(app);app.library.open(app,'Structures');return
+        if action=='library':self.close_drawer(app);app.library.open(app);return
         if action=='close':self.close_drawer(app);self.cue(app,'cancel');return
         if action=='reveal':self.clean=False;return
         if action=='search':app.searchActive=True;self.focus='search';return
@@ -477,7 +348,7 @@ class Workshop:
         if action=='confirm:clear':
             action=self.confirm;self.confirm=None;self.focus=None
             if action=='shrink':app._resizeCanvas(-16);return
-        elif action=='shrink' and app._canvasResizeImpact(-16)[1]:self.confirm=action;self.focus='confirm:cancel';return
+        elif action=='shrink' and app._canvasResizeImpact(-16)[1]:self.status='Shrink needs an empty border';return
         elif action=='clear_world':self.confirm=action;self.focus='confirm:cancel';return
         if action=='fit':app._executeInputCommand(Command.FIT_WORLD);return
         if action in ('left','right'):app._rotateViewAndRecenter(-1 if action=='left' else 1);return

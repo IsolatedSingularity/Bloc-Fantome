@@ -1,0 +1,22 @@
+{
+  "input": "scripted native app actions",
+  "before": [
+    600.0,
+    138.0,
+    1.49
+  ],
+  "after": [
+    600.0,
+    138.0,
+    1.49
+  ],
+  "fullscreen": [
+    1920,
+    1080
+  ],
+  "returned_size": [
+    1200,
+    800
+  ],
+  "camera_measurement": "periodic state snapshots; no continuous center-drift measurement"
+}

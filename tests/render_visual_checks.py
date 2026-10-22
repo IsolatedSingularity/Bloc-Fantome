@@ -1213,8 +1213,10 @@ def render_workshop(output_dir: Path):
                 app._applyWindowSize(*size);app._fitWorldToViewport();app.workshop.visibility.pinned=True
                 capture(f'editor-{size[0]}',40)
                 app.workshop.page='build';app.workshop.query='oxidized copper';capture(f'catalog-{size[0]}')
-                app.workshop.query='';app.workshop.page='tools';capture(f'tools-{size[0]}')
+                app.workshop.query='';capture(f'build-rail-{size[0]}');app.workshop.page='tools';capture(f'tools-{size[0]}')
                 app.workshop.page='world';capture(f'world-{size[0]}')
+                app.workshop.page='menu';capture(f'menu-{size[0]}')
+                app.library.open(app);capture(f'library-home-{size[0]}');app.library.visible=False
                 app.workshop.page=''
             app._applyWindowSize(1200,800);app._fitWorldToViewport()
             app.workshop.focus='half';capture('focus');app.workshop.focus=None
@@ -1231,8 +1233,10 @@ def render_workshop(output_dir: Path):
                 set_text_scale(scale);app.workshop.text_scale=scale;app._applyWindowSize(960,640)
                 app.settingsMenuOpen=True;capture(f'settings-960-text{round(scale*100)}');app.settingsMenuOpen=False
                 app.showShortcutsPanel=True;capture(f'help-960-text{round(scale*100)}');app.showShortcutsPanel=False
-                app.workshop.page='build';capture(f'build-960-text{round(scale*100)}');app.workshop.page=''
-                for page in ('tools','world'):
+                app.workshop.page='build';capture(f'build-960-text{round(scale*100)}')
+                app.workshop.category_menu=True;capture(f'categories-960-text{round(scale*100)}');app.workshop.category_menu=False;app.workshop.page=''
+                app.library.open(app);capture(f'library-home-960-text{round(scale*100)}');app.library.visible=False
+                for page in ('tools','world','menu'):
                     app.workshop.page=page;capture(f'{page}-960-text{round(scale*100)}')
                 app.workshop.page=''
                 app.library.open(app,'Structures');capture(f'library-960-text{round(scale*100)}');app.library.visible=False

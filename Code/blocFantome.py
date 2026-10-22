@@ -7776,8 +7776,9 @@ class AssetManager:
         if cached is not None:
             return cached
         transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
-        # Area averaging only for minification; enlarged pixels stay crisp.
-        transform = pygame.transform.smoothscale if zoom < 1 else pygame.transform.scale
+        # Area averaging at distant overview scales; preserve source texels
+        # at normal/near views instead of blending their projected edges.
+        transform = pygame.transform.smoothscale if zoom < 0.5 else pygame.transform.scale
         scaled = transform(transformed, targetSize)
         self.zoomSpriteCache.set(key, scaled)
         return scaled
@@ -12319,8 +12320,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             }
             dx, dy = faceDirections[face][viewRot]
             target = (x + dx, y + dy, z)
-        if self.world.isInBounds(*target) and self.world.getBlock(*target) == BlockType.AIR:
-            return target
+        if self.world.isInBounds(*target):
+            block = self.world.getBlock(*target)
+            props = self.world.getBlockProperties(*target)
+            hiddenWater = (self.sceneMetadata.get('water_cutaway')
+                           and block in (BlockType.WATER, BlockType.BUBBLE_COLUMN)
+                           and props and props.sourceCapture)
+            if block == BlockType.AIR or hiddenWater:
+                return target
         return None
 
     def _pickRenderedBlockFace(
@@ -12463,7 +12470,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.hoveredCell = None
             self.hoveredFace = None
             return
-        for _sortKey, x, y, z, blockType in reversed(self._visibleBlocksInDrawOrder()):
+        from engine.pick_candidates import candidates
+        for _sortKey, x, y, z, blockType in candidates(self, mouseX, mouseY):
             face = self._pickRenderedBlockFace(mouseX, mouseY, x, y, z, blockType)
             if face is None:
                 continue
@@ -18550,6 +18558,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _resizeCanvas(self, delta: int) -> None:
         """Grow or shrink symmetrically while preserving relative geometry."""
         dimensions, clipped = self._canvasResizeImpact(delta)
+        if delta < 0 and clipped:
+            self.tooltipText = 'Shrink needs an empty border'
+            self.tooltipTimer = 1800
+            if getattr(self, 'workshop', None):self.workshop.status = self.tooltipText
+            return
         if dimensions == (self.world.width, self.world.depth, self.world.height):
             self.tooltipText = "Canvas is already at the default minimum"
             self.tooltipTimer = 1800
@@ -21069,6 +21082,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Yield cold sprite work between frames without dropping any cells.
         import time
         batchStarted = time.perf_counter()
+        rasterVariants = {}
         for itemIndex, (_, x, y, z, blockType) in enumerate(
             (() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]), startIndex
         ):
@@ -21097,6 +21111,25 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             sprite=None
             sourceDisplay=False
             sourceProps=self.world.getBlockProperties(x,y,z)
+            # Material rasterization is independent of position when lighting
+            # and per-cell effects are absent. Reuse within this repaint only;
+            # revision, camera, animation and property changes cannot go stale.
+            variantKey = None
+            if not self.lightingEnabled and not self.horrorEnabled:
+                if sourceProps and sourceProps.sourceCapture and displayBlockType == blockType:
+                    variantKey = (blockType, sourceProps.sourceCapture, sourceProps.sourcePalette)
+                elif sourceProps is None and self._isOpaqueCubeDefinition(blockDef):
+                    variantKey = (displayBlockType,)
+                if variantKey is not None:
+                    variantKey += (self.sceneTerrainMode == 'transparent'
+                                   and (x,y,z) not in self.sceneStructurePositions,)
+                    cachedRaster = rasterVariants.get(variantKey)
+                    if cachedRaster is not None:
+                        sprite, dx, dy = cachedRaster
+                        margin = self._worldSurfaceMargin if canCacheSurface else 0
+                        blits.append((sprite, (screenX+dx+margin, screenY+dy+margin)))
+                        drawnCount += 1
+                        continue
             if sourceProps and sourceProps.sourceCapture and displayBlockType==blockType:
                 from engine.biome_capture import source_sprite
                 captured=source_sprite(sourceProps.sourceCapture,sourceProps.sourcePalette,viewRot)
@@ -21254,6 +21287,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 if alpha is not None:
                     sprite = self.assetManager.getAlphaSprite(sprite, alpha)
                 
+                if variantKey is not None and labKey is None:
+                    rasterVariants[variantKey] = (sprite, drawX-screenX, drawY-screenY)
                 if labKey is not None:
                     labIndices[(x,y,z)] = len(blits)
                 blits.append((

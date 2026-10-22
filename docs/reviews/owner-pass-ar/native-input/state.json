@@ -1,0 +1,260 @@
+{
+  "size": [
+    1200,
+    800
+  ],
+  "driver": "windows",
+  "viewport": 1200,
+  "selected": "OAK_PLANKS",
+  "page": "",
+  "query": "",
+  "blocks": 989663,
+  "undo": 0,
+  "scroll": 0,
+  "shortcuts": 0.0,
+  "count": 464,
+  "hover": [
+    77,
+    78,
+    49
+  ],
+  "source": [
+    77,
+    77,
+    49
+  ],
+  "metadata": {
+    "kind": "world",
+    "id": "ocean_monument_1161",
+    "name": "Deep Ocean",
+    "version": "Java 1.16.1",
+    "seed": 1,
+    "origin": [
+      -944,
+      -912
+    ],
+    "source_capture": "_scene_ocean_monument_1161",
+    "accuracy": "source seabed section with 4-block geology; complete landmark bounding boxes retained; original water retained",
+    "provider": "Official Java world capture",
+    "default_terrain_view": "all",
+    "fit_context": true,
+    "structure_blocks": 15700,
+    "underwater": true,
+    "water_cutaway": true
+  },
+  "revision": 11,
+  "camera": [
+    838.5714285714284,
+    -832.6190476190477,
+    1.336
+  ],
+  "actions": [
+    [
+      [
+        28,
+        26,
+        89,
+        34
+      ],
+      "nav:build",
+      true
+    ],
+    [
+      [
+        119,
+        26,
+        89,
+        34
+      ],
+      "nav:library",
+      true
+    ],
+    [
+      [
+        210,
+        26,
+        89,
+        34
+      ],
+      "nav:world",
+      true
+    ],
+    [
+      [
+        301,
+        26,
+        89,
+        34
+      ],
+      "nav:map",
+      true
+    ],
+    [
+      [
+        903,
+        26,
+        89,
+        34
+      ],
+      "nav:tools",
+      true
+    ],
+    [
+      [
+        994,
+        26,
+        89,
+        34
+      ],
+      "save",
+      true
+    ],
+    [
+      [
+        1085,
+        26,
+        89,
+        34
+      ],
+      "nav:menu",
+      true
+    ],
+    [
+      [
+        992,
+        736,
+        58,
+        44
+      ],
+      "grow",
+      true
+    ],
+    [
+      [
+        1054,
+        736,
+        58,
+        44
+      ],
+      "shrink",
+      true
+    ],
+    [
+      [
+        1116,
+        736,
+        58,
+        44
+      ],
+      "noise",
+      true
+    ],
+    [
+      [
+        359,
+        736,
+        50,
+        50
+      ],
+      "slot:0",
+      true
+    ],
+    [
+      [
+        413,
+        736,
+        50,
+        50
+      ],
+      "slot:1",
+      true
+    ],
+    [
+      [
+        467,
+        736,
+        50,
+        50
+      ],
+      "slot:2",
+      true
+    ],
+    [
+      [
+        521,
+        736,
+        50,
+        50
+      ],
+      "slot:3",
+      true
+    ],
+    [
+      [
+        575,
+        736,
+        50,
+        50
+      ],
+      "slot:4",
+      true
+    ],
+    [
+      [
+        629,
+        736,
+        50,
+        50
+      ],
+      "slot:5",
+      true
+    ],
+    [
+      [
+        683,
+        736,
+        50,
+        50
+      ],
+      "slot:6",
+      true
+    ],
+    [
+      [
+        737,
+        736,
+        50,
+        50
+      ],
+      "slot:7",
+      true
+    ],
+    [
+      [
+        791,
+        736,
+        50,
+        50
+      ],
+      "slot:8",
+      true
+    ]
+  ],
+  "error": "",
+  "frames": 9225,
+  "visibility": {
+    "last_activity": 209.091,
+    "alpha": 1.0,
+    "pinned": false,
+    "always": false,
+    "reduced_motion": false
+  },
+  "panning": false,
+  "slider": null,
+  "mouse": [
+    591,
+    299
+  ],
+  "capture": [],
+  "tutorial": true
+}

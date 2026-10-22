@@ -1,0 +1,98 @@
+[
+  {
+    "scene": "ocean_monument_1161",
+    "rotation": 0,
+    "rgba_equal": true,
+    "sha256": "54581522e4fe44262f9912ea71ee5b05c337f11c398a54a08e658e9a9aa6bc1a"
+  },
+  {
+    "scene": "ocean_monument_1161",
+    "rotation": 1,
+    "rgba_equal": true,
+    "sha256": "f392d53d016ca8afd0cc0fe33aa194b0f5152551631e99444a0e08524b2ecd60"
+  },
+  {
+    "scene": "ocean_monument_1161",
+    "rotation": 2,
+    "rgba_equal": true,
+    "sha256": "1f192dab07029b5b4f9a7013fc9c1517418534d9fa437581b284a1466258c5c5"
+  },
+  {
+    "scene": "ocean_monument_1161",
+    "rotation": 3,
+    "rgba_equal": true,
+    "sha256": "1b30e4604c5bfce71ba20153be4a5ace53d70c6ea189b576d6dff564f85fe07a"
+  },
+  {
+    "scene": "trial_chamber_121",
+    "rotation": 0,
+    "rgba_equal": true,
+    "sha256": "689b9891563ae390574acc90195819ffa6439153c79957717bb00390c26cd731"
+  },
+  {
+    "scene": "trial_chamber_121",
+    "rotation": 1,
+    "rgba_equal": true,
+    "sha256": "7df1a9d7d569d7626b574b4cedf7730c2383e1d90c7c8b9b5d60a9a1bf68958c"
+  },
+  {
+    "scene": "trial_chamber_121",
+    "rotation": 2,
+    "rgba_equal": true,
+    "sha256": "c917cee5146297cebb0af861a73e6eb6c6e97fa10bebc8b15b82bb7f7ccf5872"
+  },
+  {
+    "scene": "trial_chamber_121",
+    "rotation": 3,
+    "rgba_equal": true,
+    "sha256": "dce7e8bce7d98df34ea4857112e122fe622406b13b7cb774945f3184e18568f1"
+  },
+  {
+    "scene": "village_plains_1161",
+    "rotation": 0,
+    "rgba_equal": true,
+    "sha256": "e3500358e1db93f4d497f4c13ebd39e6fe2079ef6fbc52add989ea648f388a8e"
+  },
+  {
+    "scene": "village_plains_1161",
+    "rotation": 1,
+    "rgba_equal": true,
+    "sha256": "2267f94f43cf7e73adac828341a5e121a3986cc6dc931cff0181f9ea0c796f2b"
+  },
+  {
+    "scene": "village_plains_1161",
+    "rotation": 2,
+    "rgba_equal": true,
+    "sha256": "1eabfe75d1b18bd0cec67dc07ee3b4f1a9ccf3063af5d6521acd550cfb7aab39"
+  },
+  {
+    "scene": "village_plains_1161",
+    "rotation": 3,
+    "rgba_equal": true,
+    "sha256": "b04207aa3ee78ff10a2158c58947391a0ac829aad3f3064f78746cb9b7628641"
+  },
+  {
+    "scene": "ancient_city_121",
+    "rotation": 0,
+    "rgba_equal": true,
+    "sha256": "49000f8bf6feeb2f660453358425cb6a0be7b849cf37cafbba1966ba6b17d125"
+  },
+  {
+    "scene": "ancient_city_121",
+    "rotation": 1,
+    "rgba_equal": true,
+    "sha256": "0c8a2caef582bc24bb53405b06c29322b7a375f9ed0b9b25f03e88d7b910b9fc"
+  },
+  {
+    "scene": "ancient_city_121",
+    "rotation": 2,
+    "rgba_equal": true,
+    "sha256": "9583c0fb22f40304e94f30f7eeb3e82422fcffca0c073208abaf0d4ecf77feaa"
+  },
+  {
+    "scene": "ancient_city_121",
+    "rotation": 3,
+    "rgba_equal": true,
+    "sha256": "f5c8e64b9df0b0ac99ece87fa8b73c15f2e4b06e7fedf57719029b801800c9a1"
+  }
+]

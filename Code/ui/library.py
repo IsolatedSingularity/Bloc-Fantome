@@ -1,6 +1,7 @@
 """One content library with explicit scene-opening and structure-placement actions."""
 import pygame
 from ui.chrome import panel, wrapped, button, TEXT, MUTED, ACCENT
+from ui.tool_icons import draw as icon
 from ui.fonts import load_ui_font
 from ui.scroll import SmoothScroll
 
@@ -10,6 +11,9 @@ class Library:
 
     def __init__(self):
         self.visible = False
+        self.home = True;self.home_focus=None
+        self.back_rect=pygame.Rect(0,0,0,0)
+        self._morph_from=None;self._morph_at=0
         self.tab = 'Worlds'
         self.dimension = 'overworld'
         self.scroll = 0
@@ -25,11 +29,20 @@ class Library:
         self.max_scroll = 0
         self.row_height = 64
 
-    def open(self, app, tab='Worlds'):
+    def open(self, app, tab=None):
+        app.workshop.close_drawer(app)
         self.visible = True
-        self.tab = tab
+        self.home = tab is None
+        self.tab = tab or 'Worlds'
+        self._morph_from=None
         self.dimension = app.currentDimension
-        self.refresh(app)
+        if self.home:self.entries=[];self.pending=None
+        else:self.refresh(app)
+
+    def change_view(self,app,tab=None):
+        self._morph_from=self.rect.copy();self._morph_at=pygame.time.get_ticks()
+        self.home=tab is None;self.pending=None;self.rows=[]
+        if tab:self.tab=tab;self.refresh(app)
 
     def refresh(self, app):
         from engine.world_catalog import world_catalog
@@ -72,7 +85,12 @@ class Library:
     def handle_event(self, event, app):
         if not self.visible: return False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE: self.visible = False
+            if event.key == pygame.K_ESCAPE:self.visible=False
+            elif self.home:
+                if self.home_focus is None:self.home_focus=0
+                if event.key in (pygame.K_RIGHT,pygame.K_DOWN,pygame.K_TAB):self.home_focus=(self.home_focus+1)%4
+                elif event.key in (pygame.K_LEFT,pygame.K_UP):self.home_focus=(self.home_focus-1)%4
+                elif event.key==pygame.K_RETURN:self.change_view(app,self.TABS[self.home_focus])
             elif event.key == pygame.K_RETURN and self.pending:
                 app.assetManager.playClickSound(); self.activate(app)
             elif event.key in (pygame.K_UP, pygame.K_DOWN) and self.entries:
@@ -90,6 +108,7 @@ class Library:
         if event.button != 1: return True
         acted = True
         if self.close_rect.collidepoint(event.pos): self.visible = False
+        elif not self.home and self.back_rect.collidepoint(event.pos):self.change_view(app)
         elif self.open_rect.collidepoint(event.pos) and self.pending: self.activate(app)
         elif self.browse_rect.collidepoint(event.pos):
             self.visible = False
@@ -99,7 +118,7 @@ class Library:
             acted = False
             for tab, rect in self.tab_rects.items():
                 if rect.collidepoint(event.pos):
-                    self.tab = tab; self.refresh(app); acted = True; break
+                    self.change_view(app,tab); acted = True; break
             for dim, rect in self.dimension_rects.items():
                 if rect.collidepoint(event.pos):
                     self.dimension = dim; self.refresh(app); acted = True; break
@@ -111,70 +130,79 @@ class Library:
 
     def render(self, app):
         if not self.visible:return
-        screen=app.screen;mouse=pygame.mouse.get_pos()
-        scale=getattr(getattr(app,'workshop',None),'text_scale',1)
-        self.row_height=max(64,self.small.get_linesize()*2+16)
-        shade=pygame.Surface(screen.get_size(),pygame.SRCALPHA);shade.fill((0,0,0,125));screen.blit(shade,(0,0))
-        self.rect=pygame.Rect(0,0,min(round(960*scale),screen.get_width()-48),min(round(820*scale),screen.get_height()-48))
-        self.rect.center=screen.get_rect().center;panel(screen,self.rect)
-        x,y,w,h=self.rect;left=x+22;top=y+18
-        screen.blit(app.sectionFont.render('Library',True,TEXT),(left,top))
-        self.close_rect=pygame.Rect(self.rect.right-110,top,88,max(34,self.small.get_height()+6))
+        screen=app.screen;mouse=pygame.mouse.get_pos();sw,sh=screen.get_size()
+        scale=app.workshop.text_scale;compact=sw<1100 or scale>1.25
+        target=pygame.Rect(0,0,min(sw-48,round((460 if compact else 720)*min(scale,1.25))),
+                           min(sh-100,round((352 if compact else 222)*min(scale,1.25)))) if self.home else pygame.Rect(0,0,min(sw-48,880),min(sh-160,580))
+        target.center=(sw//2,sh//2)
+        progress=min(1,(pygame.time.get_ticks()-self._morph_at)/180)
+        if app.workshop.visibility.reduced_motion:progress=1
+        self._transition_progress=progress
+        if self._morph_from is not None and progress<1:
+            ease=1-(1-progress)**3
+            self.rect=pygame.Rect(*(round(a+(b-a)*ease) for a,b in zip(self._morph_from,target)))
+        else:self.rect=target;self._morph_from=None
+        panel(screen,self.rect,alpha=240)
+        x,y,w,h=self.rect;left=x+16;top=y+12
+        close_width=max(74,self.small.size('Close')[0]+20)
+        self.close_rect=pygame.Rect(self.rect.right-close_width-12,top,close_width,max(30,self.small.get_height()+6))
         button(screen,self.close_rect,'Close',self.small,self.close_rect.collidepoint(mouse),quiet=True)
-        tab_height=max(34,self.font.get_height()+8);tw=(w-44)//4
-        self.tab_rects={}
-        for i,tab in enumerate(self.TABS):
-            rect=pygame.Rect(left+i*tw,top+44,tw-4,tab_height);self.tab_rects[tab]=rect
-            button(screen,rect,tab,self.font,rect.collidepoint(mouse),self.tab==tab,quiet=True)
-        self.dimension_rects={};row_top=top+44+tab_height+16
+        self.tab_rects={};self.dimension_rects={};self.rows=[]
+        self.open_rect=self.browse_rect=self.list_rect=self.back_rect=pygame.Rect(0,0,0,0)
+        if self.home:
+            cols=2 if compact else 4;gap=10;rows=4//cols
+            tile_w=(w-32-gap*(cols-1))//cols;tile_h=max(50,(h-58-gap*(rows-1))//rows)
+            for i,(tab,label,art) in enumerate(zip(self.TABS,('Worlds','Biomes','Structures','Saved'),('worlds','biomes','structures','saved'))):
+                r=pygame.Rect(left+i%cols*(tile_w+gap),y+46+i//cols*(tile_h+gap),tile_w,tile_h)
+                self.tab_rects[tab]=r
+                button(screen,r,'',self.small,r.collidepoint(mouse),focused=i==self.home_focus,quiet=True)
+                art_size=max(24,min(tile_w-12,tile_h-self.font.get_linesize()-8))
+                icon(screen,'library_'+art,pygame.Rect(r.centerx-art_size//2,r.y,art_size,art_size),ACCENT)
+                text=self.font.render(label,True,TEXT);screen.blit(text,text.get_rect(center=(r.centerx,r.bottom-self.font.get_linesize()//2-4)))
+            return
+        self.back_rect=pygame.Rect(left,top,80,max(30,self.small.get_height()+6))
+        button(screen,self.back_rect,'‹ Back',self.small,self.back_rect.collidepoint(mouse),quiet=True)
+        title=self.font.render(self.tab,True,TEXT);screen.blit(title,(left+92,top+4))
+        row_top=top+max(40,self.font.get_linesize()+12)
         if self.tab in ('Worlds','Biomes'):
+            dw=min(160,(w-32)//3)
             for i,(dim,label) in enumerate((('overworld','Overworld'),('nether','Nether'),('end','The End'))):
-                rect=pygame.Rect(left+i*round(140*scale),row_top,round(134*scale),max(30,self.small.get_height()+6));self.dimension_rects[dim]=rect
-                button(screen,rect,label,self.small,rect.collidepoint(mouse),dim==self.dimension,quiet=True)
-            row_top+=max(30,self.small.get_height()+6)+12
-        self.list_rect=pygame.Rect(left,row_top,round((w-62)*.60),self.rect.bottom-66-row_top)
-        detail=pygame.Rect(self.list_rect.right+24,row_top,self.rect.right-22-(self.list_rect.right+24),self.list_rect.height)
-        entry=self.pending
-        # The selected full preview gets the worker before decorative row thumbnails.
+                r=pygame.Rect(left+i*dw,row_top,dw-6,max(30,self.small.get_height()+6));self.dimension_rects[dim]=r
+                button(screen,r,label,self.small,r.collidepoint(mouse),dim==self.dimension,quiet=True)
+            row_top+=max(30,self.small.get_height()+6)+10
+        bottom=self.rect.bottom-max(42,self.small.get_linesize()+18)
+        entry=self.pending;list_width=round((w-48)*.60) if entry else w-32
+        self.list_rect=pygame.Rect(left,row_top,list_width,max(40,bottom-row_top-10))
+        detail=pygame.Rect(self.list_rect.right+16,row_top,self.rect.right-16-(self.list_rect.right+16),self.list_rect.height)
         if entry:
-            title_height=max(30,self.font.get_height()+4)
-            wrapped(screen,entry['name'],self.font,(detail.x,detail.y,detail.width,title_height),ACCENT)
-            foot_height=max(42,self.small.get_linesize()*2+8)
-            preview_height=max(40,detail.height-title_height-foot_height-8)
-            preview=app.previewImages.get(app,entry,(detail.width,preview_height))
-            if preview:screen.blit(preview,(detail.x,detail.y+title_height+4))
-            else:wrapped(screen,'Preparing preview…',self.small,(detail.x,detail.y+title_height+24,detail.width,40),MUTED)
-            message=('Place in your current build. Esc cancels.' if entry['kind']=='structure' else
-                     'Opening replaces the canvas. Save your build first.')
-            wrapped(screen,message,self.small,(detail.x,detail.bottom-foot_height,detail.width,foot_height),MUTED)
-        else:wrapped(screen,'Select an item to preview it.',self.font,detail,MUTED)
-        self.columns=max(2,self.list_rect.width//250)
-        tile_width=self.list_rect.width//self.columns
-        self.row_height=max(108,self.list_rect.height//4,self.small.get_linesize()*2+66)
+            th=self.font.get_linesize()+4
+            wrapped(screen,entry['name'],self.font,(detail.x,detail.y,detail.width,th*2),ACCENT)
+            preview=app.previewImages.get(app,entry,(max(1,detail.width),max(1,min(detail.width,detail.height-th*2-8))))
+            if preview:screen.blit(preview,(detail.x,detail.y+th*2+8))
+            else:wrapped(screen,'Preparing preview…',self.small,(detail.x,detail.y+th*2,detail.width,70),MUTED)
+        self.columns=max(2,self.list_rect.width//240);tw=self.list_rect.width//self.columns
+        self.row_height=max(108,self.list_rect.height//4,self.small.get_linesize()+80)
         self.max_scroll=max(0,((len(self.entries)+self.columns-1)//self.columns)*self.row_height-self.list_rect.height)
-        self.scroll=self.scroller.update(self.max_scroll,getattr(app.workshop.visibility,'reduced_motion',False))
-        old=screen.get_clip();screen.set_clip(self.list_rect);self.rows=[]
+        self.scroll=self.scroller.update(self.max_scroll,app.workshop.visibility.reduced_motion)
+        old=screen.get_clip();screen.set_clip(self.list_rect)
         for i,item in enumerate(self.entries):
-            rect=pygame.Rect(left+(i%self.columns)*tile_width,row_top+(i//self.columns)*self.row_height-self.scroll,tile_width-8,self.row_height-8)
-            if not rect.colliderect(self.list_rect):continue
-            self.rows.append((rect.clip(self.list_rect),item))
-            button(screen,rect,'',self.small,rect.collidepoint(mouse),item==entry,quiet=True)
-            image_height=rect.height-self.small.get_linesize()*2-12
-            preview=app.previewImages.get(app,item,(rect.width-12,image_height))
-            if preview:screen.blit(preview,(rect.x+6,rect.y+4))
-            else:wrapped(screen,'Preparing preview…',self.small,(rect.x+8,rect.y+12,rect.width-16,image_height),MUTED)
-            wrapped(screen,item['name'],self.small,(rect.x+8,rect.y+image_height+4,rect.width-16,self.small.get_linesize()+2))
-            supporting={'structure':'Place in canvas','biome':'Captured landscape','world':'Editable world','build':'Saved build'}[item['kind']]
-            wrapped(screen,supporting,self.small,(rect.x+8,rect.bottom-self.small.get_linesize()-3,rect.width-16,self.small.get_linesize()+2),MUTED)
+            r=pygame.Rect(left+i%self.columns*tw,row_top+i//self.columns*self.row_height-self.scroll,tw-8,self.row_height-8)
+            if not r.colliderect(self.list_rect):continue
+            self.rows.append((r.clip(self.list_rect),item));button(screen,r,'',self.small,r.collidepoint(mouse),item==entry,quiet=True)
+            ih=r.height-self.small.get_linesize()-10
+            preview=app.previewImages.get(app,item,(r.width-10,ih))
+            if preview:screen.blit(preview,(r.x+5,r.y+2))
+            else:wrapped(screen,'Preparing…',self.small,(r.x+8,r.y+12,r.width-16,ih),MUTED)
+            wrapped(screen,item['name'],self.small,(r.x+8,r.bottom-self.small.get_linesize()-3,r.width-16,self.small.get_linesize()+2))
+        if not self.entries:wrapped(screen,'No saved builds yet. Browse files to open one.',self.font,self.list_rect,MUTED)
         screen.set_clip(old)
-        if not self.entries:wrapped(screen,'No items here yet. Save a build or browse files.',self.font,self.list_rect,MUTED)
         if self.max_scroll:
             thumb=max(20,round(self.list_rect.height**2/(self.list_rect.height+self.max_scroll)))
-            pygame.draw.rect(screen,MUTED,(self.list_rect.right+6,self.list_rect.y+round((self.list_rect.height-thumb)*self.scroll/self.max_scroll),3,thumb),border_radius=1)
-        bottom=self.rect.bottom-48;button_height=max(32,self.small.get_height()+6)
-        self.browse_rect=pygame.Rect(left,bottom,self.list_rect.width,button_height) if self.tab in ('Worlds','Saved Builds') else pygame.Rect(0,0,0,0)
-        if self.browse_rect.width:button(screen,self.browse_rect,'Import Java World…' if self.tab=='Worlds' else 'Browse files…',self.small,self.browse_rect.collidepoint(mouse),quiet=True)
-        self.open_rect=pygame.Rect(detail.x,bottom,min(detail.width,round(230*scale)),button_height)
-        label='Select an item'
-        if entry:label='Place structure' if entry['kind']=='structure' else 'Open world' if entry['kind']=='world' else 'Open biome' if entry['kind']=='biome' else 'Start lesson' if entry['value'].kind=='tutorial' else 'Open build'
-        button(screen,self.open_rect,label,self.small,self.open_rect.collidepoint(mouse),bool(entry),enabled=bool(entry))
+            pygame.draw.rect(screen,MUTED,(self.list_rect.right+2,self.list_rect.y+round((self.list_rect.height-thumb)*self.scroll/self.max_scroll),2,thumb))
+        bh=max(32,self.small.get_height()+8)
+        if self.tab in ('Worlds','Saved Builds'):
+            self.browse_rect=pygame.Rect(left,bottom,min(w//2-20,round(235*scale)),bh)
+            button(screen,self.browse_rect,'Import Java World…' if self.tab=='Worlds' else 'Browse files…',self.small,self.browse_rect.collidepoint(mouse),quiet=True)
+        if entry:
+            self.open_rect=pygame.Rect(self.rect.right-176,bottom,160,bh)
+            button(screen,self.open_rect,'Place' if entry['kind']=='structure' else 'Open',self.font,self.open_rect.collidepoint(mouse),True)

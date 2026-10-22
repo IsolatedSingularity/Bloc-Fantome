@@ -10,6 +10,7 @@ os.environ.setdefault('SDL_VIDEODRIVER','dummy')
 os.environ.setdefault('SDL_AUDIODRIVER','dummy')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'Code'))
 import pygame
+from ui.chrome import CONTROL
 from blocFantome import BlocFantome, BlockType
 from ui.chrome import button_surface
 from ui.biomes import BIOME_FAMILIES, CURATED_IDS
@@ -34,7 +35,7 @@ def test_native_chrome_never_inherits_block_or_atlas_pixels():
         result=button_surface(source,size)
         for pos in ((0,0),(size[0]-1,0),(0,size[1]-1),(size[0]-1,size[1]-1)):
             assert result.get_at(pos).a==0
-        assert result.get_at((size[0]//2,size[1]//2))[:3]==(32,43,46)
+        assert result.get_at((size[0]//2,size[1]//2))[:3]==CONTROL
 
 
 def test_curated_roster_retains_distinct_families_and_source_catalog():

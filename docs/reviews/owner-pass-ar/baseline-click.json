@@ -1,0 +1,26 @@
+[
+  {
+    "input": "OS mouse",
+    "pos": [
+      591,
+      299
+    ],
+    "button": 1,
+    "source": [
+      83,
+      87,
+      57
+    ],
+    "target": null,
+    "face": "right",
+    "changed": [],
+    "handler_ms": 474.2725999094546,
+    "adjacent": [
+      84,
+      87,
+      57
+    ],
+    "adjacent_type": "WATER",
+    "visible_ms": 496.599999954924
+  }
+]

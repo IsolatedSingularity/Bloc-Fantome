@@ -20,11 +20,11 @@ def set_text_scale(scale):
     TEXT_SCALE = max(1.0, min(2.0, float(scale)))
 
 
-def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None):
+def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None, italic=False):
     # SDL can resolve the family name to Segoe UI Light. Choose the installed
     # regular/semibold face explicitly. Never distribute Microsoft font files.
     installed = os.path.join(os.environ.get('WINDIR', 'C:/Windows'), 'Fonts',
-                             'seguisb.ttf' if bold else 'segoeui.ttf')
+                             'segoeuii.ttf' if italic else 'seguisb.ttf' if bold else 'segoeui.ttf')
     if os.path.isfile(installed): return installed
     matched = pygame.font.match_font('segoeuisemibold' if bold else 'segoeui')
     if matched: return matched
@@ -102,9 +102,10 @@ def load_ui_font(
     fonts_dir: str = FONTS_DIR,
     fallback: Optional[str] = None,
     bold: bool = False,
+    italic: bool = False,
 ) -> UIFont:
     """Resolve OS Segoe UI, with the existing licensed local font as fallback."""
-    path = font_source(bold, fonts_dir, fallback)
+    path = font_source(bold, fonts_dir, fallback, italic)
     try:
         font = pygame.font.Font(path, round(size * TEXT_SCALE))
     except (OSError, pygame.error):
