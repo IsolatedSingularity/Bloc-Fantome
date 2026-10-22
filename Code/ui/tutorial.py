@@ -16,6 +16,7 @@ class GuidedTutorialMixin:
         self.extraRects={};self.menuRects=[];self.highlightRect=None;self.baseline=None
         self.optional=False;self.anomalyShown=False
         self.loading=False
+        self.dockFont=load_ui_font(18)
         super().__init__(*args,**kwargs)
         self.titleFont=load_ui_font(21,bold=True)
         self.contentFont=load_ui_font(17)
@@ -24,10 +25,11 @@ class GuidedTutorialMixin:
     def _loadConfig(self):
         from runtime_paths import BASE_DIR
         self.configPath=os.path.join(BASE_DIR,'.tutorial_config.json')
-        try:
-            with open(self.configPath,encoding='utf-8') as f:data=json.load(f)
-            self.showOnStartup=bool(data.get('showOnStartup',True))
-        except (OSError,ValueError,TypeError):self.showOnStartup=True
+        # Old auto-launch values stay untouched on disk and cannot revive a lesson.
+        self.showOnStartup=False
+
+    def shouldShowOnStartup(self):
+        return False
     def _saveConfig(self):
         try:
             with open(self.configPath+'.tmp','w',encoding='utf-8') as f:
@@ -64,7 +66,8 @@ class GuidedTutorialMixin:
     def _layoutPanelControls(self):
         super()._layoutPanelControls()
         height=max(30,self.smallFont.get_height()+8) if hasattr(self,'smallFont') else 30
-        x=self.panelX+14;y=self.panelY+self.panelHeight-height-36
+        footer=self.smallFont.get_linesize()+20 if hasattr(self,'smallFont') else 36
+        x=self.panelX+14;y=self.panelY+self.panelHeight-height-footer
         width=(self.panelWidth-46)//3
         self.backButtonRect=pygame.Rect(x,y,width,height)
         self.nextButtonRect=pygame.Rect(x+width+9,y,width,height)
@@ -104,11 +107,13 @@ class GuidedTutorialMixin:
             self.highlightRect=getattr(app,'lessonControlRects',{}).get(focus)
         elif focus=='settings':self.highlightRect=getattr(app,'settingsGearRect',None)
     def _restoreTileRect(self):
+        from ui.chrome import close_size
         preview = getattr(self, 'selectedPreviewRect', pygame.Rect(24, self.screenHeight-88, 190, 78))
         hotbar = getattr(self, 'hotbarBounds', pygame.Rect(self.screenWidth//2-245, self.screenHeight-70, 490, 60))
-        tile = pygame.Rect(preview.right+8, self.screenHeight-42, 32, 32)
+        size=max(36,close_size(self.dockFont))
+        tile = pygame.Rect(preview.right+8, self.screenHeight-10-size, size, size)
         if tile.colliderect(hotbar.inflate(16, 16)) or tile.right > self.screenWidth-16:
-            tile.topleft = (max(16, min(preview.right+8, self.screenWidth-48)), preview.top-40)
+            tile.topleft = (max(16, min(preview.right+8, self.screenWidth-size-16)), preview.top-size-8)
         return tile
 
     def _playClickSound(self):
@@ -129,7 +134,6 @@ class GuidedTutorialMixin:
         if self.minimizeButtonRect.collidepoint(event.pos):self.minimized=True
         elif self.titleBarRect.collidepoint(event.pos):
             self.dragging=True;self.dragOffset=(event.pos[0]-self.panelX,event.pos[1]-self.panelY)
-        elif self.checkboxRect.collidepoint(event.pos):self.showOnStartup=not self.showOnStartup;self._saveConfig()
         elif self.backButtonRect.collidepoint(event.pos):self._onBackClick()
         elif self.nextButtonRect.collidepoint(event.pos):self._onNextClick()
         elif self.skipButtonRect.collidepoint(event.pos):self.hide()
@@ -174,6 +178,10 @@ class GuidedTutorialMixin:
         self._button(screen,self.backButtonRect,'Back')
         self._button(screen,self.nextButtonRect,'Finish' if self.currentStep==len(TOUR)-1 else 'Next',True)
         self._button(screen,self.skipButtonRect,'Leave')
-        pygame.draw.rect(screen,(115,115,115),self.checkboxRect,2)
-        if self.showOnStartup:pygame.draw.rect(screen,(220,210,166),self.checkboxRect.inflate(-6,-6))
-        screen.blit(self.smallFont.render('Show on launch',True,MUTED),(self.checkboxRect.right+8,self.checkboxRect.y-1))
+        screen.blit(self.smallFont.render('Open anytime from the tutorial button',True,MUTED),
+                    (self.panelX+14,self.backButtonRect.bottom+10))
+
+    def _renderMinimizedTile(self, screen):
+        from ui.chrome import icon_button
+        rect=self._restoreTileRect()
+        icon_button(screen,rect,'?',self.dockFont,rect.collidepoint(pygame.mouse.get_pos()))

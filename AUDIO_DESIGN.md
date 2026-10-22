@@ -24,9 +24,12 @@ unchanged in `Sounds/`; full characteristics and hashes are in
 No save cue for opening/cancelling a dialog or background autosaves. Errors are
 not hover warnings; throttle repeats to at most one per 650 ms. No default hover,
 focus, scrolling, typing or idle cue. Extras are catalogued, unassigned proposals.
-Application shutdown has a bounded 1.8-second event-pumped Goodbye, fading over
-the final 300 ms. Escape, Enter, Space, click or window close stops the cue and
+Application shutdown has a bounded 3-second event-pumped Goodbye, fading over
+the final 350 ms. Any key, click or window close stops the cue and
 skips the composition immediately. The original 5.31-second file stays intact.
+Boot decodes only its selected cue before the first artwork flip and requests
+playback immediately afterwards. Goodbye similarly presents its complete frame
+before requesting shutdown audio or draining workers. No new sounds are added.
 
 The close derivative retains 0.040–0.440 seconds of the original, applies gain
 1.25, a 3 ms attack ramp and a 150 ms cosine fade. Duration is 400 ms; measured

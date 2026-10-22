@@ -60,15 +60,43 @@ def rounded(screen, color, rect, radius=RADIUS):
     screen.blit(layer,rect)
 
 
-def panel(screen, rect, assets=None, accent=None, alpha=234):
+def panel(screen, rect, assets=None, accent=None, alpha=246):
     rect=pygame.Rect(rect)
     # Cached fills retain readable navy; only a small top highlight is translucent.
-    alpha=max(215,alpha-12) if alpha<250 else alpha
+    alpha=max(215,alpha)
     rounded(screen,(*SURFACE,alpha),rect)
     if rect.width>24 and rect.height>20:
-        edge=tuple(round(a*.70+b*.30) for a,b in zip(SURFACE,ACCENT))
-        pygame.draw.line(screen,edge,(rect.left+12,rect.top),(rect.right-13,rect.top))
-        pygame.draw.line(screen,(27,40,57),(rect.left+8,rect.bottom-1),(rect.right-9,rect.bottom-1))
+        outline(screen, (57,75,94,100), rect, RADIUS)
+
+
+def _outline(size, color, radius, width):
+    """Subtract concentric coverage masks for a consistent antialiased stroke."""
+    global _rounded_bytes
+    key=('stroke',size,color,radius,width)
+    if key in _rounded_cache:
+        _rounded_cache.move_to_end(key)
+        return _rounded_cache[key]
+    outer=pygame.Surface(size,pygame.SRCALPHA)
+    inner=pygame.Surface(size,pygame.SRCALPHA)
+    rounded(outer,(255,255,255),outer.get_rect(),radius)
+    rounded(inner,(255,255,255),inner.get_rect().inflate(-2*width,-2*width),max(1,radius-width))
+    coverage=pygame.surfarray.array_alpha(outer).astype('int32')-pygame.surfarray.array_alpha(inner)
+    layer=pygame.Surface(size,pygame.SRCALPHA);layer.fill(color)
+    alpha=pygame.surfarray.pixels_alpha(layer)
+    alpha[:]=coverage.clip(0,255)*(color[3] if len(color)==4 else 255)//255
+    del alpha
+    cost=size[0]*size[1]*4
+    while _rounded_cache and _rounded_bytes+cost>12*1024*1024:
+        _,old=_rounded_cache.popitem(last=False);_rounded_bytes-=old.get_width()*old.get_height()*4
+    if cost<=12*1024*1024:
+        _rounded_cache[key]=layer;_rounded_bytes+=cost
+    return layer
+
+
+def outline(screen, color, rect, radius=7, width=1):
+    rect=pygame.Rect(rect)
+    if rect.width>2*width and rect.height>2*width:
+        screen.blit(_outline(rect.size,tuple(color),radius,width),rect)
 
 
 def ellipsize(text, font, width):
@@ -84,9 +112,9 @@ def button(screen, rect, text, font, hovered=False, selected=False,
     if not quiet or hovered or selected:
         rounded(screen, HOVER if hovered and enabled else SELECTED if selected else CONTROL, rect, 7)
     if selected:
-        pygame.draw.rect(screen, ACCENT, rect.inflate(-4,-4), 1, border_radius=5)
+        outline(screen, ACCENT, rect.inflate(-4,-4), 5)
     if focused:
-        pygame.draw.rect(screen, FOCUS, rect.inflate(4, 4), 2, border_radius=6)
+        outline(screen, FOCUS, rect.inflate(4, 4), 9, 2)
     color = ACCENT if selected else TEXT if enabled else MUTED
     if text=='Close':
         # A restrained, rounded X with the same optical weight at every size.
@@ -111,6 +139,17 @@ def _close_glyph(size,color):
 
 def close_size(font):
     return max(32,font.get_height()+10)
+
+
+def icon_button(screen, rect, label, font, hovered=False, focused=False):
+    """Quiet dark utility control with the same stroke and focus geometry."""
+    rect=pygame.Rect(rect)
+    rounded(screen, CONTROL if hovered else SURFACE, rect, 7)
+    outline(screen, ACCENT if hovered else (57,75,94), rect, 7)
+    if focused:outline(screen, FOCUS, rect.inflate(4,4), 9, 2)
+    glyph=font.render(label,True,TEXT if hovered or focused else MUTED)
+    ink=glyph.get_bounding_rect()
+    screen.blit(glyph,(rect.centerx-ink.width//2-ink.x,rect.centery-ink.height//2-ink.y))
 
 
 def wrapped_height(text,font,width):

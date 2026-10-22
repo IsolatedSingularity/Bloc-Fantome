@@ -34,4 +34,6 @@ def shade_sprite(
         )
         if any(additions[:3]):
             result.fill(additions, special_flags=pygame.BLEND_RGBA_ADD)
+    from engine.native_cube import inherit_lighting
+    inherit_lighting(sprite,result,brightness,light_level,light_color)
     return result

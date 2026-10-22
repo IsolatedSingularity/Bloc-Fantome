@@ -56,6 +56,17 @@ class Workshop:
         self.italic=load_ui_font(14,italic=True)
         self.tile_levels={};self.frame_dt=0
         self.menu_group="File";self.menu_slots=False;self.menu_hits=[]
+        self._layers={}
+        from ui.motion import Opacity
+        self._drawer_opacity=Opacity()
+        self._drawer_layer=None;self._drawer_bounds=None
+
+    def _layer(self, name, size):
+        layer=self._layers.get(name)
+        if layer is None or layer.get_size()!=size:
+            layer=self._layers[name]=pygame.Surface(size,pygame.SRCALPHA)
+        layer.set_alpha(255);layer.fill((0,0,0,0))
+        return layer
 
     @staticmethod
     def active(app):
@@ -101,8 +112,16 @@ class Workshop:
         if audible and (self.page or self.menu):self.cue(app,'close')
         self.page=''; self.menu=False; self.category_menu=False
         app.searchActive=False; self.focus=None
+        self._clear_drawer_hits()
+
+    def _clear_drawer_hits(self):
+        # Multiple queued input events may arrive before another render.
+        # A dismissed/replaced drawer must not retain the old action regions.
+        self.hits=self.hits[:getattr(self,'_drawer_hit_start',len(self.hits))]
+        self.menu_hits=[]
 
     def open_drawer(self, page, app):
+        self._clear_drawer_hits()
         self.page='' if self.page==page else page
         self.menu=self.page=='menu'; self.scroll=0; self.scroller.reset(); self.shortcut_scroller.reset(); self.category_menu=False
         app.searchActive=False; self.focus=None; self.reveal()
@@ -220,7 +239,7 @@ class Workshop:
         self._canvas_preview(app,controls,mouse)
         if not self.clean:
             if alpha>0:
-                navigation=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
+                navigation=self._layer('navigation',screen.get_size())
                 for right,items in ((False,tuple((label,'nav:'+label.lower()) for label in ('Build','Library','World','Map'))),
                                     (True,(('Tools','nav:tools'),('Save','save'),('Menu','nav:menu')))):
                     widths=[max(86,self.small.size(label)[0]+24) for label,_ in items]
@@ -241,12 +260,20 @@ class Workshop:
                     tip=label.get_rect().inflate(20,12);tip.bottomright=(w-24,rect.top-8)
                     chrome.panel(screen,tip);screen.blit(label,label.get_rect(center=tip.center))
             if alpha>0:
-                layer=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
+                layer=self._layer('hud',screen.get_size())
                 self._hotbar(layer,app)
                 if self.page!='build':self._held_block(layer,app)
+                if not app.tutorialScreen.visible and self.page!='build':
+                    rect=app.tutorialScreen._restoreTileRect()
+                    chrome.icon_button(layer,rect,'?',app.tutorialScreen.dockFont,rect.collidepoint(mouse),self.focus=='tutorial')
+                    self.hits.append((rect,'tutorial',True))
+                    if rect.collidepoint(mouse):
+                        label=self.small.render('Tutorial',True,chrome.TEXT)
+                        tip=label.get_rect(midbottom=(rect.centerx,rect.top-8)).inflate(16,8)
+                        chrome.panel(layer,tip);layer.blit(label,label.get_rect(center=tip.center))
                 layer.set_alpha(round(alpha*255));screen.blit(layer,(0,0))
             else:self.hotbar_bounds=pygame.Rect(0,0,0,0)
-            if self.page:self._drawer(app)
+            self._animated_drawer(app)
         if operation:
             rect=self.operation_rect
             self._panel(screen,rect)
@@ -277,7 +304,7 @@ class Workshop:
             rect=pygame.Rect(self.hotbar_bounds.x+padding+i*step,h-64,slot,slot)
             self.hotbar_rects.append(rect)
             pygame.draw.rect(screen,chrome.SELECTED if i==app.hotbarSelectedSlot else chrome.CONTROL,rect,border_radius=3)
-            if i==app.hotbarSelectedSlot:pygame.draw.rect(screen,chrome.ACCENT,rect,2,border_radius=3)
+            if i==app.hotbarSelectedSlot:chrome.outline(screen,chrome.ACCENT,rect,3,2)
             sprite=app.assetManager.getIconSprite(block)
             if sprite:
                 scale=min(44/sprite.get_width(),44/sprite.get_height())
@@ -290,6 +317,30 @@ class Workshop:
     def _drawer(self,app):
         from ui.workshop_views import draw_drawer
         draw_drawer(self,app)
+
+    def _animated_drawer(self,app):
+        screen=app.screen
+        alpha=self._drawer_opacity.update(bool(self.page),pygame.time.get_ticks()/1000,
+                                          self.visibility.reduced_motion)
+        if self._drawer_layer is None or self._drawer_layer.get_size()!=screen.get_size():
+            self._drawer_layer=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
+            self._drawer_bounds=None
+        if self.page:
+            # Reuse one transparent viewport buffer, clearing/blitting only the
+            # drawer bounds. Text is rasterized at its native final coordinates.
+            if self._drawer_bounds:self._drawer_layer.fill((0,0,0,0),self._drawer_bounds)
+            start=len(self.panels)
+            self._drawer_hit_start=len(self.hits)
+            app.screen=self._drawer_layer
+            try:self._drawer(app)
+            finally:app.screen=screen
+            self._drawer_bounds=self.panels[start].clip(screen.get_rect())
+        if alpha and self._drawer_bounds:
+            self._drawer_layer.set_alpha(round(255*alpha))
+            screen.blit(self._drawer_layer,self._drawer_bounds,self._drawer_bounds)
+        # A fading closed panel owns no commands, but still blocks click-through
+        # while visible. Reopening reverses opacity from the current value.
+        if not self.page and alpha and self._drawer_bounds:self.panels.append(self._drawer_bounds)
 
     def handle_event(self,event,app):
         ctrl_tab=(event.type==pygame.KEYDOWN and event.key==pygame.K_TAB and getattr(event,'mod',0)&pygame.KMOD_CTRL)

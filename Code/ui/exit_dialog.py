@@ -12,6 +12,7 @@ class ExitDialog:
         self.rects = {}
         self.font = load_ui_font(22)
         self.small = load_ui_font(16)
+        self.shade = None
 
     def handle(self, event):
         if event.type == pygame.KEYDOWN:
@@ -29,9 +30,10 @@ class ExitDialog:
     def render(self, screen, pending=False, error=''):
         screen.fill(chrome.SURFACE)
         screen.blit(self.background, (0, 0))
-        shade = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-        shade.fill((3, 7, 12, 175))
-        screen.blit(shade, (0, 0))
+        if self.shade is None or self.shade.get_size()!=screen.get_size():
+            self.shade = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            self.shade.fill((3, 7, 12, 175))
+        screen.blit(self.shade, (0, 0))
         width = min(screen.get_width() - 32, 620)
         message = ('Saving… Please wait for the confirmed write.' if pending else
                    'Unsaved changes will be lost. Save and Exit keeps your build.' if self.dirty else
@@ -52,7 +54,8 @@ class ExitDialog:
         self.rects = {}
         button_width = (width - 40 - (len(choices)-1)*8)//len(choices)
         for i, (key, label) in enumerate(choices):
-            rect = pygame.Rect(box.x + 20 + i*(button_width+8), box.bottom - 54, button_width, 34)
+            height=max(34,self.small.get_height()+12)
+            rect = pygame.Rect(box.x + 20 + i*(button_width+8), box.bottom - height-20, button_width, height)
             self.rects[key] = rect
             chrome.button(screen, rect, label, self.small, rect.collidepoint(pygame.mouse.get_pos()),
                           key == self.focus)

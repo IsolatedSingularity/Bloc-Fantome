@@ -7,7 +7,7 @@ import pygame
 from tools.verify_review_audio import temporary_attribute
 
 
-def run(output, module, *, polish=False):
+def run(output, module, *, polish=False, acceptance=False):
     from ui import feedback, opening_scene
     import runtime_paths
     out=Path(output).resolve();out.parent.mkdir(parents=True,exist_ok=True)
@@ -21,7 +21,7 @@ def run(output, module, *, polish=False):
         original_flip()
         now=perf_counter()-start
         records.append({'seconds':now,'phase':state['phase'],'visit':state['map_visits']})
-        if now-last_capture.get(state['phase'],-1)>=1/15 and len(frames)<240:
+        if now-last_capture.get(state['phase'],-1)>=1/15 and len(frames)<480:
             frames.append((now,state['phase'],pygame.display.get_surface().copy()))
             last_capture[state['phase']]=now
     original_play=feedback.play
@@ -38,10 +38,11 @@ def run(output, module, *, polish=False):
          temporary_attribute(module,'APP_CONFIG_FILE',str(evidence/'isolated-config.json')), \
          temporary_attribute(module,'SAVES_DIR',str(evidence/'saves')), \
          temporary_attribute(runtime_paths,'SAVES_DIR',str(evidence/'saves')), \
+         temporary_attribute(runtime_paths,'BASE_DIR',str(evidence)), \
          temporary_attribute(opening_scene,'CONFIG_PATH',str(evidence/'opening-config.json')):
         app=module.BlocFantome();app.autoSaveEnabled=False;app.tutorialScreen.visible=False
         display_driver=pygame.display.get_driver();mixer_format=pygame.mixer.get_init();display_flags=app.screen.get_flags()
-        app.tutorialScreen.shouldShowOnStartup=lambda:False
+        assert not app.tutorialScreen.shouldShowOnStartup()
         app.effectsMuted=True;app.musicMuted=True;app.ambientMuted=True
         events=app._handleEvents;phase_start=[0];steps=[0]
         def tick():
@@ -52,6 +53,10 @@ def run(output, module, *, polish=False):
             phase=state['phase']
             if phase=='startup':
                 assert app.openingScene is None
+                assert not app.tutorialScreen.visible
+                import ctypes
+                operations.append({'tutorial_manual':True,'introduction_manual':True,
+                    'os_dpi':ctypes.windll.user32.GetDpiForWindow(pygame.display.get_wm_info()['window'])})
                 if polish:
                     assert app.skyboxesEnabled
                     assert all(block==module.BlockType.GRASS for (x,y,z),block in app.world.blocks.items() if z==0)
@@ -113,7 +118,42 @@ def run(output, module, *, polish=False):
                 steps[0]+=1
                 if steps[0]==12:
                     pygame.image.save(app.screen,str(evidence/'world-controls.png'))
-                    app.workshop.close_drawer(app);state['phase']='button';app.workshop.act('settings',app)
+                    app.workshop.close_drawer(app)
+                    if acceptance:
+                        state['phase']='interaction';phase_start[0]=perf_counter();steps[0]=0
+                    else:state['phase']='button';app.workshop.act('settings',app)
+            elif phase=='interaction':
+                # Real presentation timestamps; deliberately irregular frames
+                # and rapid reversals, with hit regions checked while moving.
+                n=steps[0];steps[0]+=1
+                if n in (0,3,5,18):app.workshop.open_drawer('menu',app)
+                if n==22:app.library.open(app)
+                if n in (28,32):app.library.change_view(app,'Worlds')
+                if n in (30,42):app.library.change_view(app)
+                if n==46:
+                    app._applyWindowSize(960,640)
+                    operations.append({'resized_to':[960,640]})
+                if n==52:
+                    app.library.visible=False;app.workshop.visibility.reduced_motion=True
+                    app.workshop.open_drawer('tools',app)
+                if n==56:
+                    assert app.workshop._drawer_opacity.value==1
+                    operations.append({'reduced_motion_snap':True})
+                    app.workshop.close_drawer(app)
+                if n==60:
+                    app.workshop.visibility.reduced_motion=False
+                    app._applyWindowSize(1200,800)
+                    app.workshop.act('tutorial',app)
+                if n>=66 and app.tutorialScreen.visible and not getattr(app,'_pendingTourLoad',None):
+                    pygame.image.save(app.screen,str(evidence/'tutorial-manual.png'))
+                    app.tutorialScreen.minimized=True
+                    state['phase']='tutorial-dock';phase_start[0]=perf_counter()
+                if n in (6,29,47):pygame.time.wait(45)
+            elif phase=='tutorial-dock' and perf_counter()-phase_start[0]>.3:
+                pygame.image.save(app.screen,str(evidence/'tutorial-dock.png'))
+                app.tutorialScreen.hide()
+                operations.append({'manual_tutorial_open_minimize_leave':True})
+                state['phase']='button';app.workshop.act('settings',app)
             elif phase=='weather':
                 steps[0]+=1
                 if steps[0]==12:
@@ -154,7 +194,7 @@ def run(output, module, *, polish=False):
             result={'display_driver':display_driver,'mixer_format':mixer_format,'frozen':bool(getattr(sys,'frozen',False)),'hidden':True,'physical_input':False,
                 'human_listening':False,'audio_muted':True,
                 'startup_ms':{k:(v-first)*1000 for k,v in metrics.items()},
-                'polish':polish,'display_flags':display_flags,
+                'polish':polish,'acceptance':acceptance,'display_flags':display_flags,
                 'vsync_supported':False,'vsync_reason':'Native software RESIZABLE display; neither SCALED nor OPENGL',
                 'presented_frames':records,'cues':cues,'operations':operations}
             for phase in ('startup','map','weather','shutdown'):

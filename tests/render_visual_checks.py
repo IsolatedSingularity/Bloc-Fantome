@@ -1309,7 +1309,7 @@ def render_workshop(output_dir: Path):
 
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
-    if '--polish' in sys.argv:
+    if '--polish' in sys.argv or '--acceptance' in sys.argv:
         from render_polish import render as render_polish
         render_polish(destination)
         raise SystemExit(0)

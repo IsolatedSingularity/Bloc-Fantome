@@ -113,6 +113,10 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
 
     from engine.selected_audio import validate_selected_audio, validate_presentation_audio
     import hashlib, json
+    night_art=os.path.join(SCRIPT_DIR,'ui','art','goodbye-night.png')
+    with open(night_art,'rb') as handle:
+        if hashlib.sha256(handle.read()).hexdigest()!='687732f6c3083195ef8aefb3c1497bb8b16096e447c4a5ecba390319e7328adf':
+            raise ValueError('Required original nighttime Goodbye artwork is missing or changed')
     derivative=os.path.join(SCRIPT_DIR,'ui','audio','close-short.wav')
     with open(os.path.splitext(derivative)[0]+'.json',encoding='utf-8') as handle:record=json.load(handle)
     with open(derivative,'rb') as handle:

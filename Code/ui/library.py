@@ -48,6 +48,8 @@ class Library:
     def change_view(self,app,tab=None):
         self._morph_from=self.rect.copy();self._morph_at=pygame.time.get_ticks()
         self.home=tab is None;self.pending=None;self.rows=[]
+        self.tab_rects={};self.dimension_rects={}
+        self.open_rect=self.browse_rect=self.list_rect=self.back_rect=pygame.Rect(0,0,0,0)
         if tab:self.tab=tab;self.refresh(app)
         cue(app.assetManager,'button' if tab else 'close')
 
@@ -224,11 +226,11 @@ class Library:
         self.row_height=max(148,self.list_rect.height//2,self.small.get_linesize()+116)
         self.max_scroll=max(0,((len(self.entries)+self.columns-1)//self.columns)*self.row_height-self.list_rect.height)
         self.scroll=self.scroller.update(self.max_scroll,app.workshop.visibility.reduced_motion)
-        old=screen.get_clip();screen.set_clip(self.list_rect)
+        old=screen.get_clip();screen.set_clip(self.list_rect.clip(old))
         for i,item in enumerate(self.entries):
             r=pygame.Rect(gallery_left+i%self.columns*tw,row_top+i//self.columns*self.row_height-self.scroll,tw-8,self.row_height-8)
             if not r.colliderect(self.list_rect):continue
-            self.rows.append((r.clip(self.list_rect),item));button(screen,r,'',self.small,r.collidepoint(mouse),item==entry,quiet=True)
+            self.rows.append((r.clip(screen.get_clip()),item));button(screen,r,'',self.small,r.collidepoint(mouse),item==entry,quiet=True)
             ih=r.height-self.small.get_linesize()-10
             preview=app.previewImages.get(app,item,(r.width-10,ih))
             if preview:screen.blit(preview,(r.x+5,r.y+2))

@@ -26,17 +26,18 @@ def sound_path(filename):
     return Path(SOUNDS_DIR)/'ui'/'selected'/filename
 
 
-def preload(assets):
+def preload(assets, names=None):
     """Decode once; missing optional development files remain diagnosable."""
     if not pygame.mixer.get_init():return {}
     cache = getattr(assets, '_selected_cues', None)
-    if cache is None:
-        cache = assets._selected_cues = {}
-        for name, (filename, *_rest) in CUES.items():
-            try:cache[name] = pygame.mixer.Sound(str(sound_path(filename)))
-            except (OSError, pygame.error) as error:
-                cache[name] = None
-                logging.getLogger(__name__).warning('Selected UI cue %s unavailable: %s', name, error)
+    if cache is None:cache = assets._selected_cues = {}
+    for name in CUES if names is None else names:
+        if name in cache:continue
+        filename = CUES[name][0]
+        try:cache[name] = pygame.mixer.Sound(str(sound_path(filename)))
+        except (OSError, pygame.error) as error:
+            cache[name] = None
+            logging.getLogger(__name__).warning('Selected UI cue %s unavailable: %s', name, error)
     return cache
 
 
@@ -53,7 +54,7 @@ def play(assets, name):
     if state is not None:
         if state[0] is None or CUES[name][3] > CUES[state[0]][3]:state[0] = name
         return None
-    sound = preload(assets).get(name)
+    sound = preload(assets, (name,)).get(name)
     if sound is None:return None
     now = pygame.time.get_ticks() / 1000
     last = getattr(assets, '_feedback_last', None)

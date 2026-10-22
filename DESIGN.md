@@ -15,8 +15,8 @@ to roll back the accepted modern editor. Do not restyle either during Pass B.
 Current modern tokens (RGB): surface 16/24/39, control 30/43/62, hover 47/65/87,
 selected 41/61/84, text 230/236/245, muted 153/170/192, accent 173/203/235,
 focus 174/208/215, error 245/174/150. Base radius 12, gap 8, margin 24 px.
-Modern satin panels generally use alpha 220–234/255 (215 for lighter overlays), with subtle
-upper highlights and lower edges. Text and controls remain opaque. These are implementation facts, not
+Modern satin panels generally use alpha 232–246/255 (225 for lighter HUD overlays), with a subtle
+continuous antialiased edge. Text and controls remain opaque. These are implementation facts, not
 measurements from the Cathedral concept.
 
 Preserve native Segoe UI selection through the shared font loader, the licensed
@@ -41,12 +41,15 @@ decision. Main, installation and shortcuts remain held pending acceptance.
 This pass publishes development and one isolated review EXE only.
 
 The swamp painting presents before bulk assets, with boot audio requested at its
-first visible frame. Three small original geometric forms assemble during actual
-loading, without an added delay; Reduced Motion holds them still. Audio decoding
+first visible frame, with its cue decoded before presentation. Three small original
+geometric blocks jump left, middle, right during actual loading. Each rises, hangs,
+lands and settles before the next starts; no delay is added. Reduced Motion holds them still. Audio decoding
 yields to the display/event thread. The
 cinematic is manual through Settings > Play Introduction; only an explicit
-Autoplay introduction selection enables launch playback. Guided tutorial launch
-preferences remain independent. The welcome lesson uses the existing compact
+Autoplay introduction selection enables launch playback. The guided tutorial opens
+only deliberately, including when an old saved preference requested auto-launch.
+Its quiet question-mark dock remains available; the panel states that it opens manually.
+The welcome lesson uses the existing compact
 sanctuary, closely framed with sky and lighting. Its minimized tile sits 8 px
 right of the selected-block preview, lifting above it when the hotbar needs room.
 
@@ -75,9 +78,14 @@ confirmation as window close. Stay has initial focus; Escape returns to the game
 Only explicit Exit confirms departure. Stay and Exit are
 visible; dirty builds also offer Save and Exit. Pending saves must resolve before
 exit, and failure or dialog cancellation retains the world. Shutdown uses a
-distinct navy Goodbye screen and small disassembling geometry for 1.8 seconds,
-with a 300 ms music fade. Escape, Enter, Space, click or window close skips it
-immediately; already-running SDL jobs still finish safely before SDL teardown.
+full-bleed nighttime Goodbye screen for 3 seconds, with a 350 ms audio fade.
+The original root `night.png` (PNG, 2560×1419) is preserved byte-for-byte in
+`Code/ui/art/goodbye-night.png`. Focal-point cover protects the moon and two figures.
+Eight quiet farewell messages accompany restrained text arrival and the same
+three boot blocks, jumping right, middle, left with softer, slower motion;
+Reduced Motion is static. Any key, click or window close skips it immediately;
+already-running SDL jobs still finish safely before SDL teardown. The boot overlay
+cannot enter exit confirmation, and no editor frame renders after confirmed Exit.
 
 Menu is a compact floating command palette: Save/Open/Settings, then File, Edit,
 View and More. File expands four quick slots with occupancy and separate
@@ -104,6 +112,13 @@ modes and does not guarantee it. No ineffective preference or renderer migration
 is introduced. Pass C may evaluate a renderer change with resize, DPI, coordinate
 and physical refresh verification. See the
 [Pygame display contract](https://www.pygame.org/docs/ref/display.html#pygame.display.set_mode).
+
+Enlarged opaque editor cubes reproject their original face textures at the final
+sprite dimensions above 1× zoom. Texture sampling remains nearest texel; only
+the exterior silhouette uses coverage antialiasing, with one-output-pixel edges.
+Normal and overview views, transparent/modelled blocks and captured Java atlases
+retain the existing pipeline. Fullscreen remains a native desktop surface, with
+no low-resolution viewport enlargement. Original 16×16 texture detail is preserved.
 
 ## 3.0: Cathedral Soft Blue, Variant D
 

@@ -1,6 +1,7 @@
 """Only the requested editor UI matrix; no introductory cinematic rendering."""
 from pathlib import Path
 import json
+import time
 from unittest.mock import patch
 import pygame
 import blocFantome as module
@@ -10,7 +11,8 @@ from ui.tool_icons import draw
 
 def render(output):
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
-    with patch.object(module,'APP_CONFIG_FILE',str(output/'isolated.json')),patch.object(module.BlocFantome,'_saveAppConfig'),patch.object(module.TutorialScreen,'_saveConfig'):
+    import runtime_paths
+    with patch.object(module,'APP_CONFIG_FILE',str(output/'isolated.json')),patch.object(runtime_paths,'BASE_DIR',str(output)),patch.object(module.BlocFantome,'_saveAppConfig'),patch.object(module.TutorialScreen,'_saveConfig'):
         app=module.BlocFantome();app.autoSaveEnabled=False;app.tutorialScreen.visible=False
         rows=[]
         try:
@@ -20,11 +22,18 @@ def render(output):
             assert all(block==module.BlockType.GRASS for (x,y,z),block in app.world.blocks.items() if z==0)
             def capture(name):
                 app.tooltipTimer=0
-                for _ in range(3):app._update();app._render();pygame.event.pump()
+                deadline=time.perf_counter()+.24
+                while time.perf_counter()<deadline:
+                    app._update();app._render();pygame.event.pump();app.clock.tick(60)
                 pygame.image.save(app.screen,str(output/(name+'.png')))
-                rows.append(dict(name=name,size=app.screen.get_size(),scale=app.workshop.text_scale))
+                dpi=None
+                if pygame.display.get_driver()=='windows':
+                    import ctypes
+                    dpi=ctypes.windll.user32.GetDpiForWindow(pygame.display.get_wm_info()['window'])
+                rows.append(dict(name=name,size=app.screen.get_size(),scale=app.workshop.text_scale,
+                                 driver=pygame.display.get_driver(),os_dpi=dpi))
             for size in ((960,640),(1200,800),(1920,1080)):
-                for scale in (1,1.5):
+                for scale in (1,1.25,1.5):
                     set_text_scale(scale);app.workshop.text_scale=scale;app._applyWindowSize(*size)
                     for tone,block in (('bright',module.BlockType.SMOOTH_QUARTZ),('dark',module.BlockType.OBSIDIAN)):
                         for pos in tuple(app.world.blocks):app.world.setBlock(*pos,block)
@@ -33,10 +42,29 @@ def render(output):
                         app.workshop.page='menu';app.workshop.menu_group='File';app.workshop.menu_slots=False
                         capture('menu-'+tag)
                         app.workshop.menu_slots=True;capture('slots-'+tag)
+                        app.workshop.menu_slots=False
+                        for page in ('build','tools','world'):
+                            app.workshop.page=page;capture(page+'-'+tag)
                         app.workshop.page='';app.settingsMenuOpen=True;capture('settings-'+tag);app.settingsMenuOpen=False
                         app._requestExit();capture('exit-'+tag);app._exitAction('stay')
+                        app.tutorialScreen.visible=True;app.tutorialScreen.minimized=False
+                        capture('tutorial-'+tag)
+                        app.tutorialScreen.minimized=True;capture('tutorial-dock-'+tag)
+                        app.tutorialScreen.visible=False;app.tutorialScreen.minimized=False
+                        app.library.open(app);capture('library-home-'+tag)
+                        app.library.change_view(app,'Worlds');capture('library-gallery-'+tag)
+                        app.library.visible=False
+                        app.workshop.page='';capture('hud-'+tag)
                     app.workshop.page='world';capture(f'world-{size[0]}-{round(scale*100)}');app.workshop.page=''
                     app.library.open(app,'Worlds');capture(f'library-{size[0]}-{round(scale*100)}');app.library.visible=False
+            set_text_scale(1);app.workshop.text_scale=1;app._applyWindowSize(1200,800)
+            from ui.lifecycle import GoodbyeScreen
+            for size in ((960,640),(1200,800),(1920,1080)):
+                for scale in (1,1.25,1.5):
+                    set_text_scale(scale);app.workshop.text_scale=scale;app._applyWindowSize(*size)
+                    view=GoodbyeScreen(app.screen,phrase='The fireflies have it from here.')
+                    view.render(1000)
+                    pygame.image.save(app.screen,str(output/f'goodbye-{size[0]}-{round(scale*100)}.png'))
             set_text_scale(1);app.workshop.text_scale=1;app._applyWindowSize(1200,800)
             app.workshop.page='menu'
             for group in ('Edit','View','More'):

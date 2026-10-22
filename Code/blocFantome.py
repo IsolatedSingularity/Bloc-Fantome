@@ -4537,6 +4537,10 @@ class AssetManager:
         pygame.draw.line(surface, outlineColor, topPoints[0], topPoints[3], 1)
         pygame.draw.line(surface, outlineColor, leftPoints[2], leftPoints[3], 1)
         pygame.draw.line(surface, outlineColor, rightPoints[2], rightPoints[3], 1)
+
+        if not transparent:
+            from engine.native_cube import register
+            register(surface,(topTexture,leftTexture,rightTexture))
         
         return surface
     
@@ -7816,6 +7820,13 @@ class AssetManager:
         cached = self.zoomSpriteCache.get(key)
         if cached is not None:
             return cached
+        if zoom>1:
+            from engine.native_cube import enlarged
+            scaled=enlarged(sprite,targetSize,TILE_HEIGHT/(TILE_HEIGHT+BLOCK_HEIGHT))
+            if scaled is not None:
+                if flipped:scaled=pygame.transform.flip(scaled,True,False)
+                self.zoomSpriteCache.set(key,scaled)
+                return scaled
         transformed = pygame.transform.flip(sprite, True, False) if flipped else sprite
         # Area averaging at distant overview scales; preserve source texels
         # at normal/near views instead of blending their projected edges.
@@ -8970,6 +8981,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
             )
             startupSplash.reduced_motion = self.workshop.visibility.reduced_motion
+            from ui import feedback
+            feedback.preload(self.assetManager, ('boot',))
             startupSplash.present()
             self._startupMetrics['splash_presented'] = perf_counter()
             self._playLifecycleCue('boot')
@@ -9068,6 +9081,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         while self.running:
             self.performanceMonitor.frame_start()
             self._handleEvents()
+            if not self.running:break
             self._update()
             self._render()
             self.clock.tick(60)
@@ -9079,12 +9093,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from ui.exit_dialog import ExitDialog
         if getattr(self, '_exitDialog', None):
             return
+        # Early Escape must not capture/re-present the startup painting in the
+        # confirmation snapshot. Its letterbox margins belong only to boot.
+        self._startupOverlay = None
         if self.openingScene is not None:
             self._closeOpeningScene()
         if self.worldMapActive:
             self._exitWorldMap()
         if self.tutorialScreen.visible:
             self.tutorialScreen.hide()
+        self._render()
         dirty = self.workshop.saved_revision != self.world.revision
         self._exitDialog = ExitDialog(self.screen, dirty)
         self._exitAfterSave = False
@@ -9104,15 +9122,28 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _shutdown(self):
         if self.openingScene is not None:self._closeOpeningScene()
-        self._playLifecycleCue('shutdown')
-        shutdown_started = pygame.time.get_ticks()
+        self._startupOverlay = None
         from ui.lifecycle import GoodbyeScreen
-        closing = GoodbyeScreen(self.screen,self.workshop.visibility.reduced_motion)
+        fast_exit=GoodbyeScreen.skip_requested(pygame.event.get((pygame.KEYDOWN,pygame.MOUSEBUTTONDOWN,pygame.QUIT)))
+        window_hidden=False
+        if fast_exit and pygame.display.get_driver()!='dummy':
+            from pygame._sdl2 import Window
+            Window.from_display_module().hide()
+            window_hidden=True
+        closing = None if fast_exit else GoodbyeScreen(self.screen,self.workshop.visibility.reduced_motion)
+        from ui import feedback
+        # Present the complete replacement frame before audio or cleanup work.
+        # Never blend the cached editor/boot surface into Goodbye.
+        if closing:
+            feedback.preload(self.assetManager, ('shutdown',))
+            closing.render(0)
+            pygame.display.flip()
+        shutdown_started = pygame.time.get_ticks()
+        if closing:self._playLifecycleCue('shutdown')
+        else:self.assetManager.audioRouter.stop_group('lifecycle')
         # Save user preferences before quitting
         self._saveAppConfig()
         
-        if hasattr(self, '_saveExecutor'):
-            self._saveExecutor.shutdown(wait=True)
         # Clean up
         self._stopHorrorRain()
         if self.snowEnabled:self._stopSnow()
@@ -9121,20 +9152,42 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.musicController.stop()
         self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
         if hasattr(self, '_mapExecutor'):self._mapExecutor.shutdown(wait=False, cancel_futures=True)
+        # World/tutorial workers can own SDL surfaces too. Drain all executors
+        # while the event thread stays responsive; SDL quits only afterwards.
+        import threading
+        workers_done=threading.Event()
+        def drain_workers():
+            try:
+                self.worldLoadExecutor.shutdown(wait=True)
+                if hasattr(self,'_mapExecutor'):self._mapExecutor.shutdown(wait=True)
+                if hasattr(self,'_saveExecutor'):self._saveExecutor.shutdown(wait=True)
+            finally:workers_done.set()
+        threading.Thread(target=drain_workers,name='shutdown-drain',daemon=True).start()
         # Bound the exit tail; continue pumping OS events, never wait for the
         # selected recording's full multi-second decay or delay failed startup.
         fading=False
-        map_futures = getattr(self, '_mapFutures', ())
-        fast_exit=False
-        while (not fast_exit and pygame.time.get_ticks()-shutdown_started < closing.duration_ms) or any(not future.done() for future in map_futures):
-            if closing.skip_requested(pygame.event.get()):
+        while (not fast_exit and pygame.time.get_ticks()-shutdown_started < GoodbyeScreen.duration_ms) or not workers_done.is_set():
+            events=pygame.event.get()
+            if GoodbyeScreen.skip_requested(events):
                 fast_exit=True
                 if pygame.mixer.get_init():pygame.mixer.Channel(29).stop()
+            for event in events:
+                if event.type==pygame.VIDEORESIZE:
+                    self.screen=pygame.display.set_mode(event.size,pygame.RESIZABLE)
+                    if closing:closing.screen=self.screen
             elapsed = pygame.time.get_ticks() - shutdown_started
-            closing.render(min(elapsed,closing.duration_ms))
-            pygame.display.flip()
-            if not fading and pygame.time.get_ticks()-shutdown_started >= closing.duration_ms-closing.fade_ms:
-                if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(closing.fade_ms)
+            if fast_exit and not window_hidden:
+                # A pending SDL worker may still own surfaces: hide promptly,
+                # then drain it before quitting SDL, never flash old artwork.
+                if pygame.display.get_driver()!='dummy':
+                    from pygame._sdl2 import Window
+                    Window.from_display_module().hide()
+                window_hidden=True
+            if closing and not fast_exit:
+                closing.render(min(elapsed,closing.duration_ms))
+                pygame.display.flip()
+            if not fading and pygame.time.get_ticks()-shutdown_started >= GoodbyeScreen.duration_ms-GoodbyeScreen.fade_ms:
+                if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(GoodbyeScreen.fade_ms)
                 fading=True
             self.clock.tick(60)
         pygame.quit()
@@ -19954,6 +20007,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _render(self) -> None:
         """Render the game"""
         if getattr(self, '_exitDialog', None):
+            if self._exitDialog.background.get_size()!=self.screen.get_size():
+                dialog=self._exitDialog;self._exitDialog=None
+                try:self._render()
+                finally:self._exitDialog=dialog
+                dialog.background=self.screen.copy()
             self._exitDialog.render(self.screen, bool(getattr(self, '_pendingSave', None)), self.workshop.error)
             self._presentFrame()
             return
@@ -22387,7 +22445,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         rect = pygame.Rect(gearRect.x - size - 6, gearRect.y, size, size)
         self.tutorialTomeRect = rect
         hovered = rect.collidepoint(pygame.mouse.get_pos())
-        self.assetManager.drawButton(self.screen, rect, '?', self.smallFont, hovered=hovered)
+        from ui.chrome import icon_button
+        icon_button(self.screen,rect,'?',self.smallFont,hovered)
         if hovered:
             label = self.smallFont.render("Tutorial", True, (245, 245, 245))
             box = label.get_rect(midright=(rect.left - 6, rect.centery)).inflate(10, 6)
@@ -22616,6 +22675,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-acceptance-edges' in sys.argv:
+        from tools.verify_acceptance_edges import run
+        run(sys.argv[sys.argv.index('--verify-acceptance-edges')+1],sys.modules[__name__])
+        return
+    if '--verify-acceptance' in sys.argv:
+        from tools.verify_pass_b_finalization import run
+        run(sys.argv[sys.argv.index('--verify-acceptance')+1],sys.modules[__name__],polish=True,acceptance=True)
+        sys.exit(0)
     if '--verify-pass-b-polish' in sys.argv:
         from tools.verify_pass_b_finalization import run
         run(sys.argv[sys.argv.index('--verify-pass-b-polish')+1],sys.modules[__name__],polish=True)
