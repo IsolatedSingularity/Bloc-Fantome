@@ -1,0 +1,915 @@
+{
+  "version": "2.9.9",
+  "branch": "development",
+  "runtime_source_revision": "e214717948b91ef1d406aeefc65e2a25403f90d3",
+  "baseline_revision": "80df4d745ea3b0b0549bb15893be0247752c45ab",
+  "checkpoint_1": "ad6c2e1f",
+  "checkpoint_2": "2881e2bf",
+  "probe_corrections": [
+    "1dc9f15b",
+    "e2147179"
+  ],
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "tests": {
+    "baseline": "503 passed in 233.82 s",
+    "full": "525 passed in 391.35 s",
+    "application_revision": "2881e2bf",
+    "probe_only_changes_after_suite": true,
+    "first_expanded_run": "524 passed; one intentional fluid-contract expectation corrected",
+    "corrected_focused": "16 passed in 7.38 s",
+    "full_log": ".qa/pass-b/final-green.log",
+    "first_run_log": ".qa/pass-b/final-tests.log"
+  },
+  "review_exe": {
+    "path": ".qa/pass-b/package/BlocFantome.exe",
+    "bytes": 275440829,
+    "sha256": "33360ef46dee4eec9f127017be4eda213f7d7c743a6ea17b982abd0ece22bf62"
+  },
+  "review_installer": {
+    "path": ".qa/pass-b/installer/BlocFantome_Review_2.9.9_PassB.exe",
+    "bytes": 675072047,
+    "sha256": "c7029d6261c30e9e4a41926c6ed662d9b40403ad3ae5adf05d778f335698d60c"
+  },
+  "installed": false,
+  "assets_junction_target": "Assets/",
+  "source_native": {
+    "hidden": true,
+    "physical_input": false,
+    "human_listening": false,
+    "checks": [
+      "boot",
+      "save",
+      "cancel silent",
+      "error",
+      "close",
+      "world_map",
+      "encounter Escape restores editor and releases WGL/audio",
+      "shutdown"
+    ],
+    "map_activation_ms": 338.16369995474815,
+    "opengl_renderer": "AMD Radeon(TM) 860M Graphics",
+    "gl_error": 0,
+    "shutdown_ms": 376.9668999593705
+  },
+  "frozen_native": {
+    "hidden": true,
+    "physical_input": false,
+    "human_listening": false,
+    "checks": [
+      "boot",
+      "save",
+      "cancel silent",
+      "error",
+      "close",
+      "world_map",
+      "encounter Escape restores editor and releases WGL/audio",
+      "shutdown"
+    ],
+    "map_activation_ms": 338.99650000967085,
+    "opengl_renderer": "AMD Radeon(TM) 860M Graphics",
+    "gl_error": 0,
+    "shutdown_ms": 384.58089996129274
+  },
+  "source_audio": {
+    "display_driver": "windows",
+    "mixer": [
+      44100,
+      -16,
+      2
+    ],
+    "mixer_version": [
+      2,
+      6,
+      2
+    ],
+    "selected": [
+      {
+        "role": "button",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\pressButton.wav",
+        "bytes": 131676,
+        "sha256": "8616f2bc95d0a6dd851ec1fb3d4381ec7e942db22201f22f10dc5dc5473ad66d",
+        "decoded_seconds": 0.7453741431236267,
+        "playing": true
+      },
+      {
+        "role": "close",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\close.wav",
+        "bytes": 650244,
+        "sha256": "3130ad44242b5263fde0277edf1467d07c66402ec41bc10aa42b17ac7c8c61c0",
+        "decoded_seconds": 3.6851019859313965,
+        "playing": true
+      },
+      {
+        "role": "world_map",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\worldMap.wav",
+        "bytes": 604310,
+        "sha256": "2a4ff57ff2ab9091c1650c529f6482ccea1023056a915ee892b5102be8018720",
+        "decoded_seconds": 3.4253287315368652,
+        "playing": true
+      },
+      {
+        "role": "save",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\save.wav",
+        "bytes": 529978,
+        "sha256": "79a6b37bc2c0968a43fafbd9348a3457d2b198f6b1fcb217d1ac4559e6812dac",
+        "decoded_seconds": 3.0039455890655518,
+        "playing": true
+      },
+      {
+        "role": "error",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\error.wav",
+        "bytes": 412596,
+        "sha256": "f5c216484737fcb0bfdcf0f726a477c2f55acf69665c5b9696a2128962256303",
+        "decoded_seconds": 2.3387300968170166,
+        "playing": true
+      },
+      {
+        "role": "boot",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\bootUp.wav",
+        "bytes": 741646,
+        "sha256": "f353fa2d4997860b5e2862c24f065e919611b8cac66bc71910dec6451d6dd87a",
+        "decoded_seconds": 4.2038774490356445,
+        "playing": true
+      },
+      {
+        "role": "shutdown",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\shutDown.wav",
+        "bytes": 936430,
+        "sha256": "d323421c7d753a40d3181b0151526bf28ed82423989098f4f33595c95d659aeb",
+        "decoded_seconds": 5.308095455169678,
+        "playing": true
+      }
+    ],
+    "derived": {
+      "voice01": 2.672698497772217,
+      "voice02": 2.2965760231018066,
+      "voice03": 1.8056689500808716,
+      "voice04": 1.8461451530456543,
+      "voice05": 3.0613152980804443,
+      "voice06": 1.7503401041030884,
+      "voice07": 1.7950793504714966,
+      "voice08": 1.5944898128509521,
+      "voice09": 1.815737009048462,
+      "voice10": 1.1769614219665527,
+      "voice11": 0.7194557785987854,
+      "contact": 0.7200000286102295,
+      "fall": 2.0999999046325684,
+      "reflection": 0.6499999761581421
+    },
+    "silent": true,
+    "physical_input": false,
+    "human_listening": false
+  },
+  "frozen_audio": {
+    "display_driver": "windows",
+    "mixer": [
+      44100,
+      -16,
+      2
+    ],
+    "mixer_version": [
+      2,
+      6,
+      2
+    ],
+    "selected": [
+      {
+        "role": "button",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\pressButton.wav",
+        "bytes": 131676,
+        "sha256": "8616f2bc95d0a6dd851ec1fb3d4381ec7e942db22201f22f10dc5dc5473ad66d",
+        "decoded_seconds": 0.7453741431236267,
+        "playing": true
+      },
+      {
+        "role": "close",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\close.wav",
+        "bytes": 650244,
+        "sha256": "3130ad44242b5263fde0277edf1467d07c66402ec41bc10aa42b17ac7c8c61c0",
+        "decoded_seconds": 3.6851019859313965,
+        "playing": true
+      },
+      {
+        "role": "world_map",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\worldMap.wav",
+        "bytes": 604310,
+        "sha256": "2a4ff57ff2ab9091c1650c529f6482ccea1023056a915ee892b5102be8018720",
+        "decoded_seconds": 3.4253287315368652,
+        "playing": true
+      },
+      {
+        "role": "save",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\save.wav",
+        "bytes": 529978,
+        "sha256": "79a6b37bc2c0968a43fafbd9348a3457d2b198f6b1fcb217d1ac4559e6812dac",
+        "decoded_seconds": 3.0039455890655518,
+        "playing": true
+      },
+      {
+        "role": "error",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\error.wav",
+        "bytes": 412596,
+        "sha256": "f5c216484737fcb0bfdcf0f726a477c2f55acf69665c5b9696a2128962256303",
+        "decoded_seconds": 2.3387300968170166,
+        "playing": true
+      },
+      {
+        "role": "boot",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\bootUp.wav",
+        "bytes": 741646,
+        "sha256": "f353fa2d4997860b5e2862c24f065e919611b8cac66bc71910dec6451d6dd87a",
+        "decoded_seconds": 4.2038774490356445,
+        "playing": true
+      },
+      {
+        "role": "shutdown",
+        "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Assets\\Sound Hub\\ui\\selected\\shutDown.wav",
+        "bytes": 936430,
+        "sha256": "d323421c7d753a40d3181b0151526bf28ed82423989098f4f33595c95d659aeb",
+        "decoded_seconds": 5.308095455169678,
+        "playing": true
+      }
+    ],
+    "derived": {
+      "voice01": 2.672698497772217,
+      "voice02": 2.2965760231018066,
+      "voice03": 1.8056689500808716,
+      "voice04": 1.8461451530456543,
+      "voice05": 3.0613152980804443,
+      "voice06": 1.7503401041030884,
+      "voice07": 1.7950793504714966,
+      "voice08": 1.5944898128509521,
+      "voice09": 1.815737009048462,
+      "voice10": 1.1769614219665527,
+      "voice11": 0.7194557785987854,
+      "contact": 0.7200000286102295,
+      "fall": 2.0999999046325684,
+      "reflection": 0.6499999761581421
+    },
+    "silent": true,
+    "physical_input": false,
+    "human_listening": false
+  },
+  "installer_required_media": [
+    "ui\\selected\\bootUp.wav",
+    "ui\\selected\\close.wav",
+    "ui\\selected\\error.wav",
+    "ui\\selected\\pressButton.wav",
+    "ui\\selected\\save.wav",
+    "ui\\selected\\shutDown.wav",
+    "ui\\selected\\worldMap.wav",
+    "opening\\pass-b\\voice01.wav",
+    "opening\\pass-b\\voice02.wav",
+    "opening\\pass-b\\voice03.wav",
+    "opening\\pass-b\\voice04.wav",
+    "opening\\pass-b\\voice05.wav",
+    "opening\\pass-b\\voice06.wav",
+    "opening\\pass-b\\voice07.wav",
+    "opening\\pass-b\\voice08.wav",
+    "opening\\pass-b\\voice09.wav",
+    "opening\\pass-b\\voice10.wav",
+    "opening\\pass-b\\voice11.wav",
+    "opening\\pass-b\\contact.wav",
+    "opening\\pass-b\\fall.wav",
+    "opening\\pass-b\\reflection.wav"
+  ],
+  "installer_execution": "Not installed; compiler inclusion and source hashes verified",
+  "preserved_executables": [
+    {
+      "path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\BlocFantome.exe",
+      "sha256": "68f6cb069801b2bc51a0cd2c427287dda86fbd352d7bec87a31c0a8d46ee5528",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fant\u00f4me\\BlocFantome.exe",
+      "sha256": "68f6cb069801b2bc51a0cd2c427287dda86fbd352d7bec87a31c0a8d46ee5528",
+      "unchanged": true
+    }
+  ],
+  "reference_png": {
+    "path": "docs/design/references/cathedral-soft-blue-variant-d.png",
+    "bytes": 2318249,
+    "sha256": "62a34de6bd3b7aaf9ef9be9d07450c043d0b884264a6b33cb52339e71d72df51"
+  },
+  "source_frozen_frame_sha256": "43bd0adeccc2409a523597d2860b7b9b60e1cd6f1a19cf0b37b82df4c31d2eed",
+  "preserved_main_revision": "175686c21649a8d37826f8a22850c85482a69fd9",
+  "readme_unchanged": true,
+  "local_backups": [
+    {
+      "path": ".qa/pass-b/selected-audio-originals.zip",
+      "bytes": 4026824,
+      "sha256": "f802c19d515c9336040a37e80eb907eb8340418744a125128b377542890bb1fe"
+    },
+    {
+      "path": ".qa/pass-b/presentation-recordings.zip",
+      "bytes": 13325999,
+      "sha256": "464030a2c49e89c2e2966ff3f20d7e39058844736155a11e8f56d83e2391c814"
+    }
+  ],
+  "off_device_backup_verified": false,
+  "private_motion_audio": [
+    {
+      "path": ".qa/pass-b/motion-960/encounter-final.mp4",
+      "bytes": 7891614,
+      "sha256": "e3cb0d38cfeb7ed68fc43709613197419b33319b1540baf60010103c6ef0f085"
+    },
+    {
+      "path": ".qa/pass-b/motion-1920/encounter-final.mp4",
+      "bytes": 15581746,
+      "sha256": "33d6d29865fa6059ab3fb429331247e5a0b8618b51c87d09e29b9b65ab2fcef4"
+    },
+    {
+      "path": ".qa/pass-b/encounter-audition.wav",
+      "bytes": 8448044,
+      "sha256": "d82554cc3d328b2a2658076d0054b91ca2a0874682bd17c29700a09abab50592"
+    }
+  ],
+  "offline_audition": {
+    "kind": "offline audition of recorded cues, no device capture",
+    "effects_volume": 0.8,
+    "peak": 0.15829494357989668,
+    "rms": 0.010686570662039508,
+    "clipped_samples": 0,
+    "events": [
+      {
+        "time": 1.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.3,
+        "seconds": 0.72
+      },
+      {
+        "time": 1.0699708454810495,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.054,
+        "seconds": 0.65
+      },
+      {
+        "time": 1.1486880466472302,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.054,
+        "seconds": 0.65
+      },
+      {
+        "time": 2.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.34,
+        "seconds": 0.72
+      },
+      {
+        "time": 2.0699708454810497,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.061200000000000004,
+        "seconds": 0.65
+      },
+      {
+        "time": 2.1486880466472305,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.061200000000000004,
+        "seconds": 0.65
+      },
+      {
+        "time": 3.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.32,
+        "seconds": 0.72
+      },
+      {
+        "time": 3.0699708454810497,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0576,
+        "seconds": 0.65
+      },
+      {
+        "time": 3.1486880466472305,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0576,
+        "seconds": 0.65
+      },
+      {
+        "time": 3.3,
+        "file": "voice11",
+        "kind": "voice",
+        "base_gain": 0.22,
+        "seconds": 0.7194583333333333
+      },
+      {
+        "time": 4.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.39,
+        "seconds": 0.72
+      },
+      {
+        "time": 4.069970845481049,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0702,
+        "seconds": 0.65
+      },
+      {
+        "time": 4.14868804664723,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0702,
+        "seconds": 0.65
+      },
+      {
+        "time": 5.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.36,
+        "seconds": 0.72
+      },
+      {
+        "time": 5.069970845481049,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0648,
+        "seconds": 0.65
+      },
+      {
+        "time": 5.14868804664723,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.0648,
+        "seconds": 0.65
+      },
+      {
+        "time": 6.0,
+        "file": "contact",
+        "kind": "foot",
+        "base_gain": 0.4,
+        "seconds": 0.72
+      },
+      {
+        "time": 6.069970845481049,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.072,
+        "seconds": 0.65
+      },
+      {
+        "time": 6.14868804664723,
+        "file": "reflection",
+        "kind": "foot",
+        "base_gain": 0.072,
+        "seconds": 0.65
+      },
+      {
+        "time": 6.7,
+        "file": "contact",
+        "kind": "grip",
+        "base_gain": 0.36,
+        "seconds": 0.72
+      },
+      {
+        "time": 6.769970845481049,
+        "file": "reflection",
+        "kind": "grip",
+        "base_gain": 0.0648,
+        "seconds": 0.65
+      },
+      {
+        "time": 6.84868804664723,
+        "file": "reflection",
+        "kind": "grip",
+        "base_gain": 0.0648,
+        "seconds": 0.65
+      },
+      {
+        "time": 7.2,
+        "file": "voice01",
+        "kind": "voice",
+        "base_gain": 0.36,
+        "seconds": 2.6727083333333335
+      },
+      {
+        "time": 8.7,
+        "file": "contact",
+        "kind": "grip",
+        "base_gain": 0.42,
+        "seconds": 0.72
+      },
+      {
+        "time": 8.76997084548105,
+        "file": "reflection",
+        "kind": "grip",
+        "base_gain": 0.0756,
+        "seconds": 0.65
+      },
+      {
+        "time": 8.84868804664723,
+        "file": "reflection",
+        "kind": "grip",
+        "base_gain": 0.0756,
+        "seconds": 0.65
+      },
+      {
+        "time": 10.8,
+        "file": "voice06",
+        "kind": "voice",
+        "base_gain": 0.3,
+        "seconds": 1.7503541666666667
+      },
+      {
+        "time": 14.0,
+        "file": "voice03",
+        "kind": "voice",
+        "base_gain": 0.34,
+        "seconds": 1.8056875
+      },
+      {
+        "time": 17.4,
+        "file": "voice02",
+        "kind": "voice",
+        "base_gain": 0.42,
+        "seconds": 2.2965833333333334
+      },
+      {
+        "time": 20.5,
+        "file": "fall",
+        "kind": "fall",
+        "base_gain": 0.68,
+        "seconds": 2.1
+      },
+      {
+        "time": 20.56997084548105,
+        "file": "reflection",
+        "kind": "fall",
+        "base_gain": 0.12240000000000001,
+        "seconds": 0.65
+      },
+      {
+        "time": 20.64868804664723,
+        "file": "reflection",
+        "kind": "fall",
+        "base_gain": 0.12240000000000001,
+        "seconds": 0.65
+      },
+      {
+        "time": 20.8,
+        "file": "voice08",
+        "kind": "voice",
+        "base_gain": 0.32,
+        "seconds": 1.5945
+      },
+      {
+        "time": 23.1,
+        "file": "voice05",
+        "kind": "voice",
+        "base_gain": 0.4,
+        "seconds": 3.0613333333333332
+      },
+      {
+        "time": 25.45,
+        "file": "voice10",
+        "kind": "voice",
+        "base_gain": 0.34,
+        "seconds": 1.1769791666666667
+      },
+      {
+        "time": 25.45,
+        "file": "contact",
+        "kind": "skull",
+        "base_gain": 0.55,
+        "seconds": 0.72
+      },
+      {
+        "time": 25.519970845481048,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.099,
+        "seconds": 0.65
+      },
+      {
+        "time": 25.59868804664723,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.099,
+        "seconds": 0.65
+      },
+      {
+        "time": 26.55,
+        "file": "contact",
+        "kind": "skull",
+        "base_gain": 0.62,
+        "seconds": 0.72
+      },
+      {
+        "time": 26.61997084548105,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.11159999999999999,
+        "seconds": 0.65
+      },
+      {
+        "time": 26.69868804664723,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.11159999999999999,
+        "seconds": 0.65
+      },
+      {
+        "time": 27.65,
+        "file": "contact",
+        "kind": "skull",
+        "base_gain": 0.72,
+        "seconds": 0.72
+      },
+      {
+        "time": 27.719970845481047,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.1296,
+        "seconds": 0.65
+      },
+      {
+        "time": 27.79868804664723,
+        "file": "reflection",
+        "kind": "skull",
+        "base_gain": 0.1296,
+        "seconds": 0.65
+      },
+      {
+        "time": 28.2,
+        "file": "voice04",
+        "kind": "voice",
+        "base_gain": 0.43,
+        "seconds": 1.8461458333333334
+      },
+      {
+        "time": 31.6,
+        "file": "voice07",
+        "kind": "voice",
+        "base_gain": 0.38,
+        "seconds": 1.7950833333333334
+      },
+      {
+        "time": 32.6,
+        "file": "fall",
+        "kind": "collapse",
+        "base_gain": 0.56,
+        "seconds": 2.1
+      },
+      {
+        "time": 32.66997084548105,
+        "file": "reflection",
+        "kind": "collapse",
+        "base_gain": 0.1008,
+        "seconds": 0.65
+      },
+      {
+        "time": 32.74868804664723,
+        "file": "reflection",
+        "kind": "collapse",
+        "base_gain": 0.1008,
+        "seconds": 0.65
+      },
+      {
+        "time": 35.4,
+        "file": "fall",
+        "kind": "collapse",
+        "base_gain": 0.44,
+        "seconds": 2.1
+      },
+      {
+        "time": 35.46997084548105,
+        "file": "reflection",
+        "kind": "collapse",
+        "base_gain": 0.07919999999999999,
+        "seconds": 0.65
+      },
+      {
+        "time": 35.54868804664723,
+        "file": "reflection",
+        "kind": "collapse",
+        "base_gain": 0.07919999999999999,
+        "seconds": 0.65
+      },
+      {
+        "time": 36.3,
+        "file": "voice09",
+        "kind": "voice",
+        "base_gain": 0.3,
+        "seconds": 1.81575
+      }
+    ]
+  },
+  "visuals": {
+    "editor_pngs": 83,
+    "opening_pngs": 63,
+    "sizes": [
+      [
+        960,
+        640
+      ],
+      [
+        1200,
+        800
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "native_profile": {
+      "frames": 180,
+      "p50_ms": 17.364850034937263,
+      "p95_ms": 29.05340000288561,
+      "max_ms": 40.258599910885096,
+      "gl_error": 0,
+      "renderer": "AMD Radeon(TM) 860M Graphics"
+    },
+    "note": "Representative frames inspected; motion captures exported, not a human listening or physical-input approval"
+  },
+  "matched_projection": [
+    {
+      "scene": "ocean_monument_1161",
+      "cases": 8,
+      "pixel_equal": true,
+      "scalar": {
+        "p50_ms": 148.03320006467402,
+        "p95_ms": 429.4923101784659,
+        "max_ms": 608.7259000632912
+      },
+      "batch": {
+        "p50_ms": 131.9072499172762,
+        "p95_ms": 385.9776749159209,
+        "max_ms": 580.7861001230776
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "cases": 8,
+      "pixel_equal": true,
+      "scalar": {
+        "p50_ms": 306.86890007928014,
+        "p95_ms": 375.92744003050024,
+        "max_ms": 490.68700009956956
+      },
+      "batch": {
+        "p50_ms": 257.84355006180704,
+        "p95_ms": 368.04046010365704,
+        "max_ms": 383.5341997910291
+      }
+    }
+  ],
+  "sea_comparison": {
+    "baseline": {
+      "triangles": 10082,
+      "mesh_ms_p95": 2.854515158105641,
+      "frame_ms_p95": 14.083524979650974
+    },
+    "pass_b": {
+      "triangles": 22472,
+      "mesh_ms_p95": 4.347354918718338,
+      "frame_ms_p95": 16.56539482064545
+    }
+  },
+  "end_to_end_runs": {
+    "current": [
+      {
+        "scene": "ancient_city_121",
+        "pan": {
+          "p50_ms": 1.6223000129684806,
+          "p95_ms": 134.223390056286,
+          "max_ms": 220.1940999366343
+        },
+        "zoom": {
+          "p50_ms": 22.22700009588152,
+          "p95_ms": 24.402945011388493,
+          "max_ms": 137.67550000920892
+        }
+      },
+      {
+        "scene": "trial_chamber_121",
+        "pan": {
+          "p50_ms": 1.2208999833092093,
+          "p95_ms": 202.46582999825475,
+          "max_ms": 277.7799000032246
+        },
+        "zoom": {
+          "p50_ms": 2.7811499312520027,
+          "p95_ms": 3.683835046831518,
+          "max_ms": 203.07500008493662
+        }
+      },
+      {
+        "scene": "village_plains_1161",
+        "pan": {
+          "p50_ms": 1.8297999631613493,
+          "p95_ms": 382.8047148883342,
+          "max_ms": 409.8171000368893
+        },
+        "zoom": {
+          "p50_ms": 2.938650082796812,
+          "p95_ms": 3.312714933417737,
+          "max_ms": 357.69649990834296
+        }
+      },
+      {
+        "scene": "ocean_monument_1161",
+        "pan": {
+          "p50_ms": 4.8545500030741096,
+          "p95_ms": 212.51786506036294,
+          "max_ms": 225.4333000164479
+        },
+        "zoom": {
+          "p50_ms": 201.55714999418706,
+          "p95_ms": 277.25259485887364,
+          "max_ms": 645.6941000651568
+        }
+      }
+    ],
+    "after": [
+      {
+        "scene": "ancient_city_121",
+        "pan": {
+          "p50_ms": 2.396299969404936,
+          "p95_ms": 219.38806003890912,
+          "max_ms": 370.8694002125412
+        },
+        "zoom": {
+          "p50_ms": 32.290350063703954,
+          "p95_ms": 34.91776002338156,
+          "max_ms": 312.7234000712633
+        }
+      },
+      {
+        "scene": "trial_chamber_121",
+        "pan": {
+          "p50_ms": 2.4686999386176467,
+          "p95_ms": 504.5079749193973,
+          "max_ms": 563.9549000188708
+        },
+        "zoom": {
+          "p50_ms": 3.993250080384314,
+          "p95_ms": 4.317405156325549,
+          "max_ms": 392.11739995516837
+        }
+      },
+      {
+        "scene": "village_plains_1161",
+        "pan": {
+          "p50_ms": 2.4219000479206443,
+          "p95_ms": 462.1275448240338,
+          "max_ms": 793.137300061062
+        },
+        "zoom": {
+          "p50_ms": 4.074099822901189,
+          "p95_ms": 5.479615088552236,
+          "max_ms": 776.1653000488877
+        }
+      },
+      {
+        "scene": "ocean_monument_1161",
+        "pan": {
+          "p50_ms": 6.98065001051873,
+          "p95_ms": 322.1656799665652,
+          "max_ms": 686.3123998045921
+        },
+        "zoom": {
+          "p50_ms": 288.26974995899945,
+          "p95_ms": 606.5864051808603,
+          "max_ms": 702.223600121215
+        }
+      }
+    ]
+  },
+  "performance_interpretation": "Matched projection is faster, but end-to-end after run is worse. No general latency/60 FPS pass.",
+  "world_audio_audit": {
+    "entries": 464,
+    "missing": []
+  },
+  "commands": [
+    ".venv/Scripts/python.exe -m pytest -q --basetemp .qa/pytest-pass-b-green",
+    ".venv/Scripts/python.exe Code/tools/bake_tutorial.py",
+    ".venv/Scripts/python.exe tests/render_visual_checks.py .qa/pass-b/visual-workshop --workshop",
+    ".venv/Scripts/python.exe tests/render_visual_checks.py .qa/pass-b/visual-opening --opening",
+    ".venv/Scripts/python.exe tests/profile_pass_b_projection.py",
+    ".venv/Scripts/python.exe tests/profile_pass_b_sea.py",
+    ".venv/Scripts/python.exe tests/owner_pass_ar_performance.py ABSOLUTE_OUTPUT_PATH --hidden",
+    ".venv/Scripts/python.exe Code/tools/prepare_pass_b_audio.py",
+    ".venv/Scripts/python.exe Code/tools/render_pass_b_audition.py",
+    ".venv/Scripts/python.exe Code/tools/render_opening_encounter.py --video --audio .qa/pass-b/encounter-audition.wav --size 1920 1080 --output .qa/pass-b/motion-1920",
+    ".venv/Scripts/python.exe Code/build_exe.py --output-dir .qa/pass-b/package",
+    "BlocFantome.exe --verify-review-audio ABSOLUTE_JSON_PATH",
+    "BlocFantome.exe --verify-review-handoff ABSOLUTE_JSON_PATH --opening-windowed",
+    "ISCC.exe /DAppExeSource=ABSOLUTE_REVIEW_EXE /OABSOLUTE_REVIEW_INSTALLER_DIR /FBlocFantome_Review_2.9.9_PassB Code/installer.iss"
+  ],
+  "failure_provenance": [
+    "Initial full-run fluid-contract mismatch retained in final-tests.log; explicit two-mapping correction followed by 525-pass rerun.",
+    "Initial frozen handoff imported excluded unittest.mock; first-package-warnings.txt retained. Probe uses contextlib temporary attributes now.",
+    "Earlier post-swap WGL probe capture was black and rejected as visual evidence; verified probe captures/asserts back buffer before swap.",
+    "projection/matched-cached-invalid.json is explicitly invalid cached-path timing, not evidence of performance."
+  ]
+}
