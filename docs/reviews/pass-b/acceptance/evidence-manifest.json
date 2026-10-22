@@ -1,0 +1,210 @@
+{
+  "audio-reference.json": {
+    "bytes": 287,
+    "sha256": "7c616638f35dbf719329f8e1f94a01ba9b6057be0aa9c8610117e0a1dc33f06a"
+  },
+  "boot.mp4": {
+    "bytes": 233576,
+    "sha256": "1b9230b0ff63ad8508c9a0cd30287c81ccb087ea41dcfae66b9bfbeaad4db72f"
+  },
+  "build.txt": {
+    "bytes": 10915,
+    "sha256": "03aa9c6df955e22ae8cf4d4b6f16a6033503f37f7adaf784888ae08756ae53ef"
+  },
+  "contact-1200-100-bright.jpg": {
+    "bytes": 324439,
+    "sha256": "9b19cb717ab566f2df98cd1f88855b9fe4c52dba98fd671414fbe94eaaf61fa4"
+  },
+  "contact-1200-125-dark.jpg": {
+    "bytes": 304579,
+    "sha256": "d9f3188015f3cd124d75e05a64c44ec8f599418197477c7cca38f03c0fb81607"
+  },
+  "contact-1200-150-dark.jpg": {
+    "bytes": 305204,
+    "sha256": "3c14bfca07a1190bc9e4189e4d4ce4b6aa0d16604422e3548481255143301611"
+  },
+  "contact-1920-100-bright.jpg": {
+    "bytes": 243211,
+    "sha256": "65ec1bd7bcae050414e1d62f2c924a064c8e9ab5714e65fdc20dbe2993a41720"
+  },
+  "contact-1920-125-bright.jpg": {
+    "bytes": 245678,
+    "sha256": "22999c68066eac3e0c603bffe3230ed63a97b8c6c2f0cae9b77a816996f0a22e"
+  },
+  "contact-1920-150-dark.jpg": {
+    "bytes": 232659,
+    "sha256": "c85140607a1a86dc60803b5fd8465295ea5dd2fde3909fdfbd425c16b51dd115"
+  },
+  "contact-960-100-dark.jpg": {
+    "bytes": 303689,
+    "sha256": "bf3ad1b19a61cb72ad5ec0635b11cc317724b9364702f67203ce2e48218d11ab"
+  },
+  "contact-960-125-dark.jpg": {
+    "bytes": 304192,
+    "sha256": "1c19c88fbcb9f4b3abcb48f3be1df6742757b6f02655a38878fd49948370cffb"
+  },
+  "contact-960-150-bright.jpg": {
+    "bytes": 326824,
+    "sha256": "aec974d4fb48ed31026255499680545027bd5b46cd8e1c1a0fcce8d10fd94004"
+  },
+  "editor.png": {
+    "bytes": 583127,
+    "sha256": "50129b83e0d63df0b626705de847ca153ccb01baebb1eff5389758b59323b478"
+  },
+  "exit-transition-after.png": {
+    "bytes": 364842,
+    "sha256": "1f58e9d244e143fc65e1d3e071358dbaf197eb075b9077184c6ef721294a4862"
+  },
+  "exit-transition-before.png": {
+    "bytes": 790418,
+    "sha256": "a91983ff5cfabb370fd7f05c05a41867fa66e9603913fc960e0bc735c308e42c"
+  },
+  "frozen-edges.json": {
+    "bytes": 1749,
+    "sha256": "b69bebe8fdde3e7a5fcf4ac639c753276e83aa5e514591aa22ba6b37c9139f5f"
+  },
+  "frozen-editor.png": {
+    "bytes": 583146,
+    "sha256": "7b35489a021aade6ea8330e5da0cabfb459d5b40c1b0b5624df3bfb0ea6850f9"
+  },
+  "frozen-goodbye.png": {
+    "bytes": 791932,
+    "sha256": "fcd8f58d919531e689967f6fcdd18fb36cf1e32ace1865679edfdd400032f04d"
+  },
+  "frozen.json": {
+    "bytes": 141508,
+    "sha256": "a0b43a7262e2a93341cf3cdf9aac2ac65d1835df46e2869729f356efc99da54c"
+  },
+  "full-suite.txt": {
+    "bytes": 681,
+    "sha256": "5e161f0cda911d91b2acaf886414f04f164c647dd555faa63effe4dc09733aa8"
+  },
+  "fullscreen-zoom1-after.png": {
+    "bytes": 174944,
+    "sha256": "8b62f205fe7e859b4ec3a40e005df367e2e8e110ac6abd3c3c871e43ab705573"
+  },
+  "fullscreen-zoom1-before.png": {
+    "bytes": 174944,
+    "sha256": "8b62f205fe7e859b4ec3a40e005df367e2e8e110ac6abd3c3c871e43ab705573"
+  },
+  "fullscreen-zoom2-after.png": {
+    "bytes": 313001,
+    "sha256": "a04409692d767f362d7f2031b3b18d474435fe9153de0571e82da5a274cac45c"
+  },
+  "fullscreen-zoom2-before.png": {
+    "bytes": 205947,
+    "sha256": "0ec68fca9f7aac447d186613a0dac58cb1434e23d1a94432404227c3e7608725"
+  },
+  "goodbye-1920-100.png": {
+    "bytes": 1795006,
+    "sha256": "e6e19cf90c40d59964d30eeeb8c7ff3164f49e9a39409f30e3e4418c87b8313e"
+  },
+  "goodbye-960-150.png": {
+    "bytes": 547401,
+    "sha256": "ab4afba34f08148e55ea4c4ac5e9ee03c57200437a3d8cde97b6de4af4751b2c"
+  },
+  "goodbye.mp4": {
+    "bytes": 562655,
+    "sha256": "2987d658622244c563600e8224a1b7e1db68445c1870db65d5b4419861ba94fe"
+  },
+  "interactions.mp4": {
+    "bytes": 1048612,
+    "sha256": "8df75edbbb712d230db1849e90c714e57d2725e77e1427f0ecc9fcdf2f2c1fb2"
+  },
+  "library-gallery-960-150-bright.png": {
+    "bytes": 346323,
+    "sha256": "a809ff614d719bca52d11ac54684ef0e22c1841e27c8013ade1617def6c01446"
+  },
+  "menu-1200-125-dark.png": {
+    "bytes": 191170,
+    "sha256": "74e42ddfe5c3f5006a0baf1fd4fb269533ee65f966bef274012f6f693cf4aac4"
+  },
+  "package.json": {
+    "bytes": 548,
+    "sha256": "2f0a80d852c944520a97a36f8d728b8f118db8194be525e657d23d21200c08cd"
+  },
+  "previous-build-control.json": {
+    "bytes": 128174,
+    "sha256": "5fc547dbe45074b300fc756ff54baa6424029d9a8a290c9d4cae040affaed1b4"
+  },
+  "quality.json": {
+    "bytes": 4773,
+    "sha256": "a6bec5350fe9c101d58862cc3f3d66474d3e1f6259a0da366a94b6a352b3936d"
+  },
+  "recording-timing.json": {
+    "bytes": 471,
+    "sha256": "fbfac11bb3753c247c08dbe070ba27fc7fbe3ddd0a9c1186a0ea3f04fab50aac"
+  },
+  "REVIEW.md": {
+    "bytes": 6176,
+    "sha256": "194e906d5fda294b6c7e01afe98a4990eba2467f57989854fedc57c1ae18204a"
+  },
+  "sampling-comparison.png": {
+    "bytes": 96178,
+    "sha256": "fd52a698d8cfa7dfeba88bff0fdd4f1b1ea8592d8455162b82a08298f7768a03"
+  },
+  "settings-960-150-bright.png": {
+    "bytes": 107224,
+    "sha256": "ba9bbba38bba67f2950f974b5c5d33f90b04ab655742224ef83e5e61a74ea0ad"
+  },
+  "source-edges.json": {
+    "bytes": 1747,
+    "sha256": "b959eea0e1d03cd335d14d635a865436f1fadbef32f7a06535e641ead708b884"
+  },
+  "source.json": {
+    "bytes": 150236,
+    "sha256": "2bcdba231ca507d18a3e03f0396e97b79938d105a424377391128c7e1afec59c"
+  },
+  "startup-profile-current.json": {
+    "bytes": 184,
+    "sha256": "9a6789360a60aaca696204e06d38a2385c19f9d7c007f273a94f1b6bfa410654"
+  },
+  "startup-profile-without-recipes.json": {
+    "bytes": 186,
+    "sha256": "feffe391097c78b0d97c8a83fa3d6919836e46863cdc399188633ada691c43a6"
+  },
+  "transition-reproduction.json": {
+    "bytes": 390,
+    "sha256": "1db4ffe0f063de6d2f3ffad77923d3cb332c9c913abbbca998f3907e63c5bb6f"
+  },
+  "tutorial-960-150-bright.png": {
+    "bytes": 177260,
+    "sha256": "38d6a02a322b7fb388f699c8f80e5dca64a8808890ac399a2d95451891618cf9"
+  },
+  "tutorial-dock.png": {
+    "bytes": 598649,
+    "sha256": "afbef098f9e8cd21d028d5b6c18d9f2bc79ff05003a1a47401619ee9b330b5d4"
+  },
+  "tutorial-manual.png": {
+    "bytes": 579367,
+    "sha256": "abe7e9701db0894b64ce56623f8e4ebb98865929a1bb78e926342adbd44bbf29"
+  },
+  "tutorial-states-native.png": {
+    "bytes": 14137,
+    "sha256": "de6e9f82a3978fc01589f2380401f7809c586d7569d8fd93511a5d635230203b"
+  },
+  "visual-matrix.json": {
+    "bytes": 37887,
+    "sha256": "8d6b5494d7858824c6be8883713ad51076745bef145d5d06f2036d7afbf5a6aa"
+  },
+  "window-zoom1-after.png": {
+    "bytes": 132173,
+    "sha256": "95feb3e3c752348afc18fe5e91090470e58b86cf9dbef323fabaf6c3105ad4a9"
+  },
+  "window-zoom1-before.png": {
+    "bytes": 132173,
+    "sha256": "95feb3e3c752348afc18fe5e91090470e58b86cf9dbef323fabaf6c3105ad4a9"
+  },
+  "window-zoom2-after.png": {
+    "bytes": 246080,
+    "sha256": "aff2da3247553bbb7b147a380d446f24a94d04151284803ca954e0b4baeae6ef"
+  },
+  "window-zoom2-before.png": {
+    "bytes": 155898,
+    "sha256": "dbdffdbe1ec68e19c640189455781aa4380d92b664bedb9f15359a8696ed114b"
+  },
+  "world-1920-150-bright.png": {
+    "bytes": 253315,
+    "sha256": "5758b81c504cb3c87ecfacf62ae25d63a0c0dc067dcc6945d8bedd7c164089c6"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "Offline selected cues aligned to actual source flips, not live speaker loopback",
+  "effects": 0.5,
+  "headroom": 0.72,
+  "seconds": 36.63428571428572,
+  "peak": 0.23071948242187498,
+  "clipped_samples": 0,
+  "shutdown_seconds": 3,
+  "shutdown_fade_seconds": 0.35
+}

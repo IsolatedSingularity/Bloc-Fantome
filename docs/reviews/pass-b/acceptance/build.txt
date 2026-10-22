@@ -1,0 +1,132 @@
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents
+warn: could not canonicalize path C:\Users\hunkb\OneDrive
+warn: could not canonicalize path C:\Users\hunkb
+warn: could not canonicalize path C:\Users
+warn: could not canonicalize path C:\
+    Finished `release` profile [optimized] target(s) in 0.12s
+Native accelerator already matches the compiled build: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\native\bin\bloc_fantome_native.dll
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+986 INFO: PyInstaller: 6.21.0, contrib hooks: 2026.6
+987 INFO: Python: 3.12.10
+1403 INFO: Platform: Windows-11-10.0.26300-SP0
+1403 INFO: Python environment: C:\Users\hunkb\AppData\Local\Programs\Python\Python312
+1406 INFO: wrote C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\BlocFantome.spec
+1425 INFO: Removing temporary files and cleaning cache in C:\Users\hunkb\AppData\Local\Packages\sandbox.{9bf24fcb-6445-47c1-9305-fca2d2746531}\AC\pyinstaller
+1452 INFO: Module search paths (PYTHONPATH):
+['C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\python312.zip',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\DLLs',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages',
+ 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code']
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+3923 INFO: Appending 'binaries' from .spec
+3928 INFO: Appending 'datas' from .spec
+4438 INFO: checking Analysis
+4439 INFO: Building Analysis because Analysis-00.toc is non existent
+4439 INFO: Looking for Python shared library...
+4440 INFO: Using Python shared library: C:\Users\hunkb\AppData\Local\Programs\Python\Python312\python312.dll
+4440 INFO: Running Analysis Analysis-00.toc
+4440 INFO: Target bytecode optimization level: 0
+4440 INFO: Initializing module dependency graph...
+4447 INFO: Initializing module graph hook caches...
+4662 INFO: Analyzing modules for base_library.zip ...
+10378 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+12254 INFO: Processing standard module hook 'hook-math.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+14338 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+16466 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+17248 INFO: Caching module dependency graph...
+17328 INFO: Analyzing C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py
+19377 INFO: Processing standard module hook 'hook-pygame.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pygame\\__pyinstaller'
+20627 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+20646 INFO: SetuptoolsInfo: initializing cached setuptools info...
+24868 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+25163 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+25564 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+27642 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+30444 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+30620 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+30752 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+30870 INFO: Processing standard module hook 'hook-psutil.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+35506 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+39725 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+39753 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+43568 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+43860 INFO: Processing module hooks (post-graph stage)...
+44031 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks'
+44096 INFO: Performing binary vs. data reclassification (2034 entries)
+49351 INFO: Looking for ctypes DLLs
+49952 INFO: Analyzing run-time hooks ...
+49952 INFO: Including custom run-time hook 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code\\pyi_tk_runtime.py'
+49974 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+50000 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+50030 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+50103 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+50288 INFO: Creating base_library.zip...
+50342 INFO: Looking for dynamic libraries
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+54421 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\numpy.libs', 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\pygame']
+54421 INFO: Extra DLL search directories (PATH): []
+64118 INFO: Warnings written to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\warn-BlocFantome.txt
+64228 INFO: Graph cross-reference written to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\xref-BlocFantome.html
+64516 INFO: checking PYZ
+64516 INFO: Building PYZ because PYZ-00.toc is non existent
+64516 INFO: Building PYZ (ZlibArchive) C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\PYZ-00.pyz
+65556 INFO: Building PYZ (ZlibArchive) C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\PYZ-00.pyz completed successfully.
+65663 INFO: checking PKG
+65663 INFO: Building PKG because PKG-00.toc is non existent
+65664 INFO: Building PKG (CArchive) BlocFantome.pkg
+130196 INFO: Building PKG (CArchive) BlocFantome.pkg completed successfully.
+130269 INFO: Bootloader C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+130269 INFO: checking EXE
+130270 INFO: Building EXE because EXE-00.toc is non existent
+130270 INFO: Building EXE from EXE-00.toc
+130272 INFO: Copying bootloader EXE to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\pass-b-acceptance\package\BlocFantome.exe
+130542 INFO: Copying icon to EXE
+130660 INFO: Copying version information to EXE
+130788 INFO: Copying 0 resources to EXE
+130788 INFO: Embedding manifest in EXE
+130912 INFO: Appending PKG archive to EXE
+131259 INFO: Fixing EXE headers
+133656 INFO: Building EXE from EXE-00.toc completed successfully.
+133728 INFO: Build complete! The results are available in: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\pass-b-acceptance\package
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+============================================================
+Building Bloc Fant�me Executable v2.9.9
+============================================================
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Prepacked 0 updated source captures
+
+Running PyInstaller with options:
+  Main script: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py
+  Icon: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Assets\Icons\Respawn_Anchor.ico
+  Output: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\pass-b-acceptance\package
+
+
+============================================================
+BUILD SUCCESSFUL!
+============================================================
+
+Executable created at:
+  C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\pass-b-acceptance\package\BlocFantome.exe
+
+--- Distribution Instructions ---
+To share this application, provide users with:
+  1. C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\pass-b-acceptance\package\BlocFantome.exe
+  2. Instructions to run setup_assets.py first
+  3. config.json (optional, for custom settings)
+
+Note: Users must have Minecraft Java Edition 1.21.1+ installed
+      and run setup_assets.py to extract textures and sounds.
+
+To create an installer, run:
+  iscc installer.iss

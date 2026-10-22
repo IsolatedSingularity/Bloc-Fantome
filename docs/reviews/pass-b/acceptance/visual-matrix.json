@@ -1,0 +1,2372 @@
+[
+  {
+    "name": "menu-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-100",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-960-100",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-125-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-125-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-125",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-960-125",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-960-150",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-960-150",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-100",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1200-100",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-125-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-125-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-125",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1200-125",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1200-150",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1200-150",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-100",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1920-100",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-125-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-125-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-125",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1920-125",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.25,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "slots-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "build-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tools-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "settings-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "exit-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "tutorial-dock-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-home-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-gallery-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "hud-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "world-1920-150",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "library-1920-150",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-edit",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-view",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "menu-more",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  }
+]

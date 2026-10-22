@@ -1,0 +1,19 @@
+{
+  "source_first_flip": 0.31058420008048415,
+  "source_last_flip": 36.92820159997791,
+  "frame_sampling_fps": 15,
+  "video_fps": 30,
+  "boot_clip_seconds": [
+    0,
+    6
+  ],
+  "interaction_clip_seconds": [
+    27.50099359988235,
+    33.50099359988235
+  ],
+  "goodbye_clip_seconds": [
+    32.977883299952374,
+    36.62788329995237
+  ],
+  "note": "Actual capture intervals; 30 fps export repeats sampled frames; resized frames padded without scaling"
+}

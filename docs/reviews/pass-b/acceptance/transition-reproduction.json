@@ -1,0 +1,5 @@
+{
+  "baseline": "d5359724e0d7e380e5bc01cf527f46da55bfdcc3",
+  "reproduced": "Early Escape during the 220 ms boot-to-editor reveal captures and re-presents the swamp artwork and its dark margins in exit confirmation.",
+  "limitation": "The owner-specific full exit sequence is not independently recorded; this is a reproduced transition defect, not a claim that it was the only cause."
+}

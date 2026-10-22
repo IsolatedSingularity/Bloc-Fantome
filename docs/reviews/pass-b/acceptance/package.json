@@ -1,0 +1,12 @@
+{
+  "executable": ".qa\\pass-b-acceptance\\package\\BlocFantome.exe",
+  "sha256": "856d38b26d1fa4f8069319b9ff8cf306d0ffd363386705c31f8fa216329c36af",
+  "bytes": 279999043,
+  "night_art_exact": true,
+  "native_cube_bundled": true,
+  "edge_verifier_bundled": true,
+  "runtime_commit": "0a90d833a5f49a83249ab1f5759bd7c5fe7859d4",
+  "product_version": "2.9.9",
+  "assets_junction": "C:/Users/hunkb/OneDrive/Documents/Embryo/Bloc-Fantome/Assets",
+  "previous_exe_sha256": "75be54287be6efb6e4171937bb372818bbd232538a9f31de3138caf923245c0b"
+}

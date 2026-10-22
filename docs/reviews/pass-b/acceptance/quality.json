@@ -1,0 +1,231 @@
+{
+  "rows": [
+    {
+      "name": "window-zoom1-before",
+      "size": [
+        1200,
+        800
+      ],
+      "window_size": [
+        1200,
+        800
+      ],
+      "fullscreen": false,
+      "flags": 16777232,
+      "zoom": 1,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 1064.9898999836296,
+      "warm_ms": [
+        8.10279999859631,
+        8.357700193300843,
+        7.409800076857209,
+        8.328999858349562,
+        7.423399947583675,
+        8.289000019431114
+      ]
+    },
+    {
+      "name": "window-zoom1-after",
+      "size": [
+        1200,
+        800
+      ],
+      "window_size": [
+        1200,
+        800
+      ],
+      "fullscreen": false,
+      "flags": 16777232,
+      "zoom": 1,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 11.716200038790703,
+      "warm_ms": [
+        8.517200127243996,
+        7.078900001943111,
+        8.019199827685952,
+        7.24230008199811,
+        8.147099986672401,
+        7.330500055104494
+      ]
+    },
+    {
+      "name": "window-zoom2-before",
+      "size": [
+        1200,
+        800
+      ],
+      "window_size": [
+        1200,
+        800
+      ],
+      "fullscreen": false,
+      "flags": 16777232,
+      "zoom": 2,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 14.992000069469213,
+      "warm_ms": [
+        9.128199890255928,
+        7.80520006082952,
+        7.334299851208925,
+        6.805500015616417,
+        7.5622000731527805,
+        7.104500196874142
+      ]
+    },
+    {
+      "name": "window-zoom2-after",
+      "size": [
+        1200,
+        800
+      ],
+      "window_size": [
+        1200,
+        800
+      ],
+      "fullscreen": false,
+      "flags": 16777232,
+      "zoom": 2,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 31.87369997613132,
+      "warm_ms": [
+        6.623900029808283,
+        8.53860005736351,
+        8.511499967426062,
+        8.713299874216318,
+        6.929000141099095,
+        8.812099928036332
+      ]
+    },
+    {
+      "name": "fullscreen-zoom1-before",
+      "size": [
+        1920,
+        1200
+      ],
+      "window_size": [
+        1920,
+        1200
+      ],
+      "fullscreen": true,
+      "flags": 16777248,
+      "zoom": 1,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 30.039400095120072,
+      "warm_ms": [
+        13.507100054994226,
+        14.549799961969256,
+        13.104999903589487,
+        12.579699978232384,
+        16.35219994932413,
+        17.174199922010303
+      ]
+    },
+    {
+      "name": "fullscreen-zoom1-after",
+      "size": [
+        1920,
+        1200
+      ],
+      "window_size": [
+        1920,
+        1200
+      ],
+      "fullscreen": true,
+      "flags": 16777248,
+      "zoom": 1,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 19.771300023421645,
+      "warm_ms": [
+        15.796100022271276,
+        16.24089991673827,
+        15.930100111290812,
+        15.1615000795573,
+        15.973999863490462,
+        15.464199939742684
+      ]
+    },
+    {
+      "name": "fullscreen-zoom2-before",
+      "size": [
+        1920,
+        1200
+      ],
+      "window_size": [
+        1920,
+        1200
+      ],
+      "fullscreen": true,
+      "flags": 16777248,
+      "zoom": 2,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 27.785300044342875,
+      "warm_ms": [
+        16.215199837461114,
+        15.795100014656782,
+        15.964299906045198,
+        16.477399971336126,
+        17.46540004387498,
+        16.730499919503927
+      ]
+    },
+    {
+      "name": "fullscreen-zoom2-after",
+      "size": [
+        1920,
+        1200
+      ],
+      "window_size": [
+        1920,
+        1200
+      ],
+      "fullscreen": true,
+      "flags": 16777248,
+      "zoom": 2,
+      "os_dpi": 120,
+      "driver": "windows",
+      "cold_ms": 43.19830005988479,
+      "warm_ms": [
+        16.97160000912845,
+        13.785700080916286,
+        19.525200128555298,
+        15.577400103211403,
+        16.661500092595816,
+        15.874700155109167
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "block": "GRASS",
+      "source": "grass_block_top.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    {
+      "block": "STONE",
+      "source": "stone.png",
+      "size": [
+        16,
+        16
+      ]
+    },
+    {
+      "block": "BRICKS",
+      "source": "bricks.png",
+      "size": [
+        16,
+        16
+      ]
+    }
+  ],
+  "native_cube_scope": "Opaque registered editor cubes above 1x; other models and source-capture atlases unchanged"
+}
