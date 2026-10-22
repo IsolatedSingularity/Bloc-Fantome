@@ -1,0 +1,36 @@
+{
+  "type": "offline reference, not speaker loopback",
+  "effects": 0.5,
+  "ambient": 0.8,
+  "headroom": 0.72,
+  "rain": "rain1.ogg loop; matched ambience reference, not full live weather",
+  "cue_order": [
+    "boot",
+    "button",
+    "close",
+    "world_map",
+    "save",
+    "error",
+    "shutdown"
+  ],
+  "results": [
+    {
+      "file": "presented-cues-reference.wav",
+      "seconds": 9.70111111111111,
+      "peak": 0.22271748046875,
+      "clipped_samples": 0
+    },
+    {
+      "file": "balance-before.wav",
+      "seconds": 15.0,
+      "peak": 0.136720458984375,
+      "clipped_samples": 0
+    },
+    {
+      "file": "balance-after.wav",
+      "seconds": 15.0,
+      "peak": 0.21058154296875,
+      "clipped_samples": 0
+    }
+  ]
+}
