@@ -226,6 +226,8 @@ DEFAULT_CHANNEL_GROUPS: Dict[str, Sequence[int]] = {
     "effects": tuple(range(8, 24)),
     "horror": (24, 25),
     "portal": (26,),
+    "ui_semantic": (27, 28),
+    "lifecycle": (29,),
 }
 
 

@@ -60,6 +60,7 @@ OPEN_INACCURACIES.md
 # Run setup_assets.py to populate these folders
 Assets/Texture Hub/*
 Assets/Sound Hub/*
+/Sounds/
 !Assets/Texture Hub/README.md
 !Assets/Sound Hub/README.md
 # The Craftmine Mine Crafter does not exist in the normal release asset jar.

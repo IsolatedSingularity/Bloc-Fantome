@@ -319,11 +319,15 @@ class WorldMapView:
         self.play("complete")
 
     def play(self, name: str) -> None:
+        if name == 'click' and self.asset_manager is not None:
+            from ui.feedback import play
+            play(self.asset_manager, 'button')
+            return
         sound = self._sounds.get(name)
         if sound is None:
             return
         if self.audio_router is not None:
-            self.audio_router.play(sound, group="ui", volume=0.75, replace=True)
+            self.audio_router.play(sound, group="ui", volume=0.75, replace=False)
         else:
             sound.play()
 

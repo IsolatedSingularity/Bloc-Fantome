@@ -5,6 +5,7 @@ from ui.chrome import panel, wrapped, button, TEXT, MUTED, ACCENT
 from ui.tool_icons import draw as icon
 from ui.fonts import load_ui_font
 from ui.scroll import SmoothScroll
+from ui.feedback import action as feedback_action, play as cue
 
 
 class Library:
@@ -40,11 +41,13 @@ class Library:
         self.dimension = app.currentDimension
         if self.home:self.entries=[];self.pending=None
         else:self.refresh(app)
+        cue(app.assetManager,'button')
 
     def change_view(self,app,tab=None):
         self._morph_from=self.rect.copy();self._morph_at=pygame.time.get_ticks()
         self.home=tab is None;self.pending=None;self.rows=[]
         if tab:self.tab=tab;self.refresh(app)
+        cue(app.assetManager,'button' if tab else 'close')
 
     def refresh(self, app):
         from engine.world_catalog import world_catalog
@@ -84,10 +87,11 @@ class Library:
             app.tooltipTimer = 4000
         else: app._handleBuildLibraryAction(('open', value))
 
+    @feedback_action
     def handle_event(self, event, app):
         if not self.visible: return False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:self.visible=False
+            if event.key == pygame.K_ESCAPE:self.visible=False;cue(app.assetManager,'close')
             elif self.home:
                 if self.home_focus is None:self.home_focus=0
                 if event.key in (pygame.K_RIGHT,pygame.K_DOWN,pygame.K_TAB):self.home_focus=(self.home_focus+1)%4
@@ -110,10 +114,10 @@ class Library:
         if event.button != 1: return True
         if any(action=='nav:library' and enabled and rect.collidepoint(event.pos)
                for rect,action,enabled in app.workshop.hits):
-            self.visible=False;app.workshop.reveal();return True
+            self.visible=False;app.workshop.reveal();cue(app.assetManager,'close');return True
         if not self.rect.collidepoint(event.pos):return True
         acted = True
-        if self.close_rect.collidepoint(event.pos): self.visible = False
+        if self.close_rect.collidepoint(event.pos): self.visible = False;cue(app.assetManager,'close')
         elif not self.home and self.back_rect.collidepoint(event.pos):self.change_view(app)
         elif self.open_rect.collidepoint(event.pos) and self.pending: self.activate(app)
         elif self.browse_rect.collidepoint(event.pos):

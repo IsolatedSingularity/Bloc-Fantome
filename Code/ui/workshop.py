@@ -9,6 +9,7 @@ from engine.input_commands import Command
 from ui.scroll import SmoothScroll
 from ui.tool_icons import draw as draw_icon
 from ui.help import SHORTCUTS
+from ui.feedback import action as feedback_action
 
 
 @dataclass
@@ -95,7 +96,8 @@ class Workshop:
             from ui.feedback import play
             play(assets,name)
 
-    def close_drawer(self, app):
+    def close_drawer(self, app, *, audible=False):
+        if audible and (self.page or self.menu):self.cue(app,'close')
         self.page=''; self.menu=False; self.category_menu=False
         app.searchActive=False; self.focus=None
 
@@ -316,7 +318,7 @@ class Workshop:
                 self.reveal();return True
             if event.key==pygame.K_ESCAPE:
                 if self.confirm:self.confirm=None;return True
-                if self.page or self.focus:self.close_drawer(app);return True
+                if self.page or self.focus:self.close_drawer(app,audible=True);return True
                 if self.clean:self.clean=False;self.reveal();return True
             if event.key==pygame.K_F1:
                 self.clean=False;self.reveal();return True
@@ -388,8 +390,11 @@ class Workshop:
         if changed:self.cue(app,'select')
         self.reveal()
 
+    @feedback_action
     def act(self,action,app):
         self.reveal()
+        if action not in ('save','save_as'):
+            self.cue(app,'button')
         if action.startswith('slot:'):
             app.hotbarSelectedSlot=int(action[5:])
             self.select(app.hotbar[app.hotbarSelectedSlot],app,close=False);return
@@ -397,9 +402,9 @@ class Workshop:
             self.select(type(app.selectedBlock)[action[6:]],app,close=False);return
         if action.startswith('nav:'):
             page=action[4:]
-            if page=='map':self.close_drawer(app);app._openWorldMap();return
+            if page=='map':self.close_drawer(app);app._requestWorldMap();return
             if page=='library':
-                if app.library.visible:app.library.visible=False
+                if app.library.visible:app.library.visible=False;self.cue(app,'close')
                 else:self.close_drawer(app);app.library.open(app)
             else:self.open_drawer(page,app)
             return
@@ -434,12 +439,12 @@ class Workshop:
                 result=app._saveBuilding() if app.currentBuildPath else app._openSaveAsDialog()
                 if result:
                     from pathlib import Path
-                    self.status='Saved: '+Path(app.currentBuildPath).name;self.error='';self.saved_revision=app.world.revision;self.cue(app,'success')
+                    self.status='Saved: '+Path(app.currentBuildPath).name;self.error='';self.saved_revision=app.world.revision
                 elif result is False:
-                    self.error='Save failed. Your build is still open. Retry Save.';self.cue(app,'failure')
+                    self.error='Save failed. Your build is still open. Retry Save.'
             elif route in ('undo','redo'):
                 result=getattr(app.undoManager,route)()
-                if result:self.status=route.title()+': '+result.get_description();self.cue(app,'cancel' if route=='undo' else 'select')
+                if result:self.status=route.title()+': '+result.get_description();self.cue(app,'button')
             elif route=='library':app.library.open(app,args[0])
             elif route=='settings':app.settingsMenuOpen=True
             elif route=='help':app.showShortcutsPanel=True
@@ -456,3 +461,4 @@ class Workshop:
                 self.close_drawer(app)
         except (OSError,ValueError,pygame.error) as error:
             self.error=f'{label} failed: {error}'
+            self.cue(app,'error')

@@ -7460,9 +7460,7 @@ class AssetManager:
     def playClickSound(self):
         """Play the UI click sound"""
         from ui.feedback import play
-        if play(self,'select') is not None:return
-        if self.clickSound:
-            self.audioRouter.play(self.clickSound, group="ui", volume=1.0)
+        return play(self,'button')
 
     def playOneShot(self, sound, group: str = "effects", volume: float = 1.0, replace: bool = False):
         """Play a loaded sound through the bounded application mixer."""
@@ -8932,6 +8930,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if not self.assetManager.loadAllAssets():
             print("Failed to load assets!")
             return
+
+        self._playLifecycleCue('boot')
         
         # Start music immediately after assets load
         self._playMenuMusic()
@@ -8999,6 +8999,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.clock.tick(60)
             self.performanceMonitor.frame_end()
         
+        self._playLifecycleCue('shutdown')
+        shutdown_started = pygame.time.get_ticks()
         # Save user preferences before quitting
         self._saveAppConfig()
         
@@ -9007,7 +9009,23 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._stopRain()
         self.musicController.stop()
         self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
+        # Bound the exit tail; continue pumping OS events, never wait for the
+        # selected recording's full multi-second decay or delay failed startup.
+        while pygame.time.get_ticks()-shutdown_started < 320:
+            pygame.event.pump()
+            if pygame.time.get_ticks()-shutdown_started >= 220:
+                pygame.mixer.Channel(29).fadeout(100)
+            self.clock.tick(60)
         pygame.quit()
+
+    def _playLifecycleCue(self, name):
+        from ui import feedback
+        played=getattr(self,'_lifecyclePlayed',set())
+        if name in played:return None
+        played.add(name);self._lifecyclePlayed=played
+        if name=='shutdown':self.assetManager.audioRouter.stop_group('lifecycle')
+        feedback.set_volume(self.assetManager, 0 if self.effectsMuted else self.effectsVolume)
+        return feedback.play(self.assetManager, name)
     
     def _rotateViewAndRecenter(self, direction: int):
         """Rotate around the cursor, or the fixed world center when configured."""
@@ -9969,6 +9987,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         else:
             self._playMenuMusic(dimension)
 
+    def _requestWorldMap(self) -> None:
+        if self.worldMapActive or getattr(self,'_mapTransition',None):return
+        from ui.map_transition import MapTransition
+        from ui.feedback import play
+        self._mapTransition=MapTransition(self.screen,self.workshop.visibility.reduced_motion)
+        play(self.assetManager,'world_map')
+
+    def _renderMapTransition(self):
+        transition=getattr(self,'_mapTransition',None)
+        if transition:
+            transition.render(self.screen)
+            if transition.finished:self._mapTransition=None
+
     def _openWorldMap(self) -> None:
         """Enter the map without allowing its temporary worlds to replace the build."""
         if self.worldMapActive:
@@ -10087,6 +10118,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._switchWorldMapHub(self.worldMapDimension)
 
     def _exitWorldMap(self) -> bool:
+        from ui.feedback import play
+        if self.worldMapActive:play(self.assetManager,'close')
         self.panning = False
         state = self._worldMapSessionSnapshot
         if state is None:
@@ -10844,6 +10877,21 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         print("Tutorial ended - returned to Overworld")
     
     def _handleEvents(self) -> None:
+        from ui import feedback
+        if not hasattr(self,'assetManager'):
+            return self._dispatchEvents()
+        feedback.set_volume(self.assetManager, 0 if self.effectsMuted else self.effectsVolume)
+        panels = ('settingsMenuOpen','showShortcutsPanel','historyPanelOpen')
+        before = {name: bool(getattr(self,name,False)) for name in panels}
+        error = self.workshop.error
+        with feedback.event(self.assetManager):
+            self._dispatchEvents()
+            if any(before[name] and not getattr(self,name,False) for name in panels):
+                feedback.play(self.assetManager,'close')
+            if self.workshop.error and self.workshop.error != error:
+                feedback.play(self.assetManager,'error')
+
+    def _dispatchEvents(self) -> None:
         """Handle pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -10865,6 +10913,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 continue
             if event.type == pygame.VIDEORESIZE:
                 self._applyWindowSize(event.w, event.h)
+                continue
+            if getattr(self,'_mapTransition',None):
+                if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
+                    ready=self._mapTransition.ready
+                    self._mapTransition=None
+                    if ready:self._exitWorldMap()
+                    from ui.feedback import play
+                    play(self.assetManager,'close')
                 continue
             if event.type == pygame.KEYDOWN and (
                 event.key == pygame.K_F11
@@ -11039,7 +11095,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             and self.worldMapButtonRect.collidepoint(mouseX, mouseY)
         ):
             self.assetManager.playClickSound()
-            self._openWorldMap()
+            self._requestWorldMap()
             return
 
         # The focused redstone workbench owns the entire editor viewport. Its
@@ -11562,7 +11618,6 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self._openSaveAsDialog()
             else:
                 result=self._saveBuilding() if self.currentBuildPath else self._openSaveAsDialog()
-                if result:self.assetManager.playClickSound()
         
         elif event.key == pygame.K_o and mods & pygame.KMOD_CTRL:
             self._openLoadDialog()
@@ -13093,6 +13148,18 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _update(self):
         """Update game state"""
+        transition=getattr(self,'_mapTransition',None)
+        if transition and not transition.ready:
+            if transition.covered:
+                try:self._openWorldMap()
+                except (OSError,ValueError,pygame.error) as error:
+                    self._mapTransition=None
+                    if self.worldMapActive:self._exitWorldMap()
+                    self.workshop.error=f'World Map failed: {error}'
+                    from ui.feedback import play
+                    play(self.assetManager,'error')
+                else:transition.reveal()
+            return
         if self.openingScene is not None:
             self.openingScene.update(self.clock.get_time()/1000.0)
             if self._openingPiano is not None:
@@ -13103,7 +13170,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._pollWorldLoad()
         self._pollBiomeLoad()
         self._pollTourLoad()
-        self.assetManager.audioRouter.set_group_volume("ui", 0 if self.effectsMuted else self.effectsVolume)
+        from ui.feedback import set_volume
+        set_volume(self.assetManager, 0 if self.effectsMuted else self.effectsVolume)
         self.assetManager.audioRouter.set_group_volume("effects",0 if self.effectsMuted else 1.0)
         self.tutorialScreen.observe(self)
         # Update liquid animations
@@ -14789,6 +14857,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if not silent:
                 if trackCurrentPath:
                     self.currentBuildPath = str(result.path)
+                from ui.feedback import play
+                play(self.assetManager, 'save')
                 self.tutorialScreen.record("save")
                 print(f"Build saved to {result.path} (compressed)")
                 self.tooltipText = "Build saved!"
@@ -14796,6 +14866,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return True
         except Exception as e:
             if not silent:
+                from ui.feedback import play
+                play(self.assetManager, 'error')
                 print(f"Error saving build: {e}")
                 if getattr(self,'workshop',None):
                     self.workshop.error=f"Save failed: {e}. Your build is still open."
@@ -15292,6 +15364,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 return self._saveBuilding(filepath=filepath)
         except Exception as error:
             print(f"Error opening save dialog: {error}")
+            from ui.feedback import play
+            play(self.assetManager, 'error')
             self.tooltipText = f"Save As failed: {error}"
             self.workshop.error=self.tooltipText+". Your current build stays open."
             self.tooltipTimer = 3000
@@ -19071,7 +19145,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             # Update ambient sound volumes (portal, rain, etc.)
         elif volumeType == "effects":
             self.effectsVolume = value
-        self.assetManager.audioRouter.set_group_volume("ui",0 if self.effectsMuted else self.effectsVolume)
+        from ui.feedback import set_volume
+        set_volume(self.assetManager,0 if self.effectsMuted else self.effectsVolume)
         self.assetManager.audioRouter.set_group_volume("effects",0 if self.effectsMuted else 1.0)
         for group in ("ambient","weather","portal"):
             self.assetManager.audioRouter.set_group_volume(group,0 if self.ambientMuted else 1.0)
@@ -19655,6 +19730,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _render(self) -> None:
         """Render the game"""
+        transition=getattr(self,'_mapTransition',None)
+        if transition and not transition.ready:
+            self._renderMapTransition();pygame.display.flip();return
         if self.openingScene is not None:
             self.openingScene.render(self.screen)
             pygame.display.flip()
@@ -19665,6 +19743,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                               "overworld": (24,35,34), "ocean": (9,34,48)}[self.worldMapDimension])
             self.worldMapView.source_map.render(self.screen, self.renderer)
             self.worldMapView.render_hub(self.screen, self.renderer, self.worldMapCompleted)
+            self._renderMapTransition()
             pygame.display.flip()
             return
         # Skyboxes drift independently; opaque underwater scenes cover them.

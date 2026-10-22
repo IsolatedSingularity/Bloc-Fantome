@@ -1,0 +1,97 @@
+# Bloc Fantôme audio specification
+
+The permanent sonic direction is musical, subtle, tactile and piano-oriented,
+with a faint cathedral quality. Silence is part of the design. No generic sci-fi
+chirps, repetitive beeps, gratuitous reverb or invented alien oscillators.
+Version 2.9.9 uses the owner's selected recordings; 3.0 retains this discipline.
+
+## Selected semantic events
+
+All paths below are relative to `Assets/Sound Hub/ui/selected/`. Originals are
+unchanged in `Sounds/`; full characteristics and hashes are in
+[selected-audio.json](docs/design/selected-audio.json).
+
+| Role | File | Trigger | Gain before router |
+| --- | --- | --- | --- |
+| Boot | bootUp.wav | Once assets/audio are ready | 0.48 |
+| Shutdown | shutDown.wav | Normal application exit, distinct from panel close | 0.48 |
+| World Map | worldMap.wav | Request map cover/reveal | 0.52 |
+| Save | save.wav | Confirmed successful manual write, including Ctrl+S | 0.50 |
+| Error | error.wav | Failed operation or explicit rejection | 0.48 |
+| Button | pressButton.wav | Deliberate ordinary UI activation | 0.48 |
+| Close | close.wav | Dismiss/back/collapse by mouse or keyboard | 0.42 |
+
+No save cue for opening/cancelling a dialog or background autosaves. Errors are
+not hover warnings; throttle repeats to at most one per 650 ms. No default hover,
+focus, scrolling, typing or idle cue. Extras are catalogued, unassigned proposals.
+Application shutdown has a bounded 320 ms event-pumped tail, fading after 220 ms;
+the original 5.31 s file is retained intact. This deliberately short exit audition
+requires owner listening review. It does not hold the app open for the full decay.
+
+## Routing and volume
+
+`engine.audio.AudioRouter` owns bounded pools. `ui.feedback` loads the selected
+recordings and coalesces nested input actions to the highest semantic priority:
+error, save, map, close, button. Lifecycle is separate. A dispatch batch never
+adds a generic click underneath a more specific cue. Legacy select/open map to
+button; cancel maps to close; focus stays silent. Audio failures log once and do
+not prevent development startup. Release validation rejects missing/hash-changed
+selected originals, including preserved extras.
+
+Channel allocation: buttons/retained map cues 0–1; weather 2–3; ambient 4–7;
+world effects 8–23; horror 24–25; portal 26; semantic UI 27–28; lifecycle 29;
+opening piano 30; editor music 31; opening-specific pools begin at 32. Reserve
+all named channels from automatic Sound.play. Never steal editor music, paused
+portal/horror loops or other pools for a UI cue. A saturated UI pool drops the
+new cue; deliberately ending the old boot cue on shutdown is lifecycle cleanup.
+
+Selected cues use the existing effects slider/mute, applied to all three UI
+pools. They pass through 0.72 router headroom once. Do not multiply both Sound
+and channel gains by the same slider. Music remains under its existing separate
+controller. There is no new global master control. Respect existing volume
+ownership when adding world sounds, especially callers that already pass effects
+gain. Keep mix headroom; measure recordings and full audition mixes separately.
+
+World Map retains its MP3 score sequence, plan/completion and quiet rollover
+semantics. Ordinary map button activation uses the selected button file. Do not
+layer the old click MP3 with it. Cover/reveal uses accepted editor colors and has
+a reduced-motion alternative; Escape cancels without editing the saved world.
+
+## World and presentation policy
+
+Classify placement, break, interaction and environment events independently.
+Use the existing legitimate material library and source mappings. One actual
+mutation produces one material cue; refused/no-op operations do not pretend to
+place or break. Use dedicated modern recordings when present and explicit,
+documented fallbacks when absent. This pass is not a wholesale block-mechanics audit.
+
+Presentation sound should communicate mass, distance and architecture, not merely
+loudness. Close contact has clear attack; distant sources attenuate and narrow.
+Reflections have delayed onset and lower energy than the direct path. Pan with
+the projected source and camera; keep voices tied to the creature and impacts to
+contact locations. The abyss remains sparse and quiet. Preserve the original
+piano opening and normal editor soundtrack on exit.
+
+Human-derived distress must remain recognizably recorded voices: distinct breath,
+whisper, strain and occasional sharp cries, bounded deep processing, irregular
+phrases, pauses and limited overlap. Preserve source attribution and processing
+recipes. Do not synthesize substitute vocals. Temporary rig and performance stay
+within Pass B; original creature design/Pass C remains paused.
+
+## Listening acceptance and evidence
+
+Automated checks must decode real recordings, route real SDL channels, exercise
+actual save success/failure and mute/ownership, and verify package hashes. Dummy
+SDL playback proves scheduling/decoding, not speakers, native physical input or
+artistic acceptance. Offline waveform limits do not prove the live mix cannot clip.
+
+Owner listening checklist: boot once; ordinary activation without duplicate cue;
+keyboard/mouse close distinct from exit; save/cancel/error correctly distinguished;
+map cue with transition and uninterrupted score; mute and low/default effects
+levels; clear contacts and source position; quiet sea/abyss between phrases;
+human vocal variety and restraint; Skip/exit cleanly release sounds. Repeat with
+headphones and ordinary speakers. Record what was actually heard and keep any
+unverified device/artistic target open.
+
+See [asset preservation](docs/design/ASSETS.md) and
+[reference documentation](docs/design/REFERENCES.md).
