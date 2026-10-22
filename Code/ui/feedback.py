@@ -8,8 +8,8 @@ from runtime_paths import SOUNDS_DIR
 
 # filename, gain before router headroom, cooldown seconds, priority, channel pool
 CUES = {
-    'button': ('pressButton.wav', .80, .075, 1, 'ui'),
-    'close': ('close.wav', .72, .15, 2, 'ui_semantic'),
+    'button': ('pressButton.wav', .90, .075, 1, 'ui'),
+    'close': ('close-short.wav', .72, .15, 2, 'ui_semantic'),
     'world_map': ('worldMap.wav', .82, .5, 3, 'ui_semantic'),
     'save': ('save.wav', .78, .2, 4, 'ui_semantic'),
     'error': ('error.wav', .80, .65, 5, 'ui_semantic'),
@@ -20,6 +20,12 @@ ALIASES = {'select': 'button', 'open': 'button', 'cancel': 'close',
            'success': 'save', 'failure': 'error'}
 
 
+def sound_path(filename):
+    from pathlib import Path
+    if filename=='close-short.wav':return Path(__file__).with_name('audio')/filename
+    return Path(SOUNDS_DIR)/'ui'/'selected'/filename
+
+
 def preload(assets):
     """Decode once; missing optional development files remain diagnosable."""
     if not pygame.mixer.get_init():return {}
@@ -27,7 +33,7 @@ def preload(assets):
     if cache is None:
         cache = assets._selected_cues = {}
         for name, (filename, *_rest) in CUES.items():
-            try:cache[name] = pygame.mixer.Sound(os.path.join(SOUNDS_DIR, 'ui', 'selected', filename))
+            try:cache[name] = pygame.mixer.Sound(str(sound_path(filename)))
             except (OSError, pygame.error) as error:
                 cache[name] = None
                 logging.getLogger(__name__).warning('Selected UI cue %s unavailable: %s', name, error)

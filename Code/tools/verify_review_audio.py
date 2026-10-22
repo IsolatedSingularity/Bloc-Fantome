@@ -29,7 +29,7 @@ def run(output):
     rows=[]
     for name,(filename,*_rest) in feedback.CUES.items():
         pygame.mixer.stop()
-        path=Path(SOUNDS_DIR)/'ui/selected'/filename
+        path=feedback.sound_path(filename)
         channel=feedback.play(assets,name)
         if channel is None or channel.get_sound() is not assets._selected_cues[name]:
             raise RuntimeError(f'Selected cue did not decode/play: {name}')

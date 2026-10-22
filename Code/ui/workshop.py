@@ -55,6 +55,7 @@ class Workshop:
         self.category_scroller=SmoothScroll();self.category_rect=pygame.Rect(0,0,0,0);self.category_max=0
         self.italic=load_ui_font(14,italic=True)
         self.tile_levels={};self.frame_dt=0
+        self.menu_group="File";self.menu_slots=False;self.menu_hits=[]
 
     @staticmethod
     def active(app):
@@ -311,6 +312,16 @@ class Workshop:
             if getattr(app,'searchActive',False) and self.page!='build':
                 self.focus=None
                 return False
+            if self.page=='menu' and event.key in (pygame.K_UP,pygame.K_DOWN,pygame.K_TAB):
+                actions=[a for _,a,e in self.menu_hits if e]
+                if actions:
+                    step=-1 if event.key==pygame.K_UP or mods&pygame.KMOD_SHIFT else 1
+                    self.focus=actions[(actions.index(self.focus)+step)%len(actions)] if self.focus in actions else actions[0]
+                self.reveal();return True
+            if self.page=='menu' and event.key in (pygame.K_LEFT,pygame.K_RIGHT):
+                from ui.command_palette import GROUPS
+                groups=list(GROUPS);step=-1 if event.key==pygame.K_LEFT else 1
+                self.act('menu_group:'+groups[(groups.index(self.menu_group)+step)%len(groups)],app);return True
             if event.key==pygame.K_TAB and (ctrl_tab or self.focus):
                 actions=[a for _,a,e in self.hits if e]
                 if actions:
@@ -320,6 +331,7 @@ class Workshop:
                 self.reveal();return True
             if event.key==pygame.K_ESCAPE:
                 if self.confirm:self.confirm=None;return True
+                if self.page=="menu" and self.menu_slots:self.menu_slots=False;self.scroller.reset();return True
                 if self.page or self.focus:self.close_drawer(app,audible=True);return True
                 if self.clean:self.clean=False;self.reveal();return True
             if event.key==pygame.K_F1:
@@ -397,6 +409,10 @@ class Workshop:
         self.reveal()
         if action not in ('save','save_as') and not action.startswith('quick_save_'):
             self.cue(app,'button')
+        if action.startswith('menu_group:'):
+            self.menu_group=action.split(':',1)[1];self.scroller.reset();self.focus=action;return
+        if action=='menu_slots':
+            self.menu_slots=not self.menu_slots;self.scroller.reset();return
         if action.startswith('slot:'):
             app.hotbarSelectedSlot=int(action[5:])
             self.select(app.hotbar[app.hotbarSelectedSlot],app,close=False);return

@@ -7,7 +7,7 @@ import pygame
 from tools.verify_review_audio import temporary_attribute
 
 
-def run(output, module):
+def run(output, module, *, polish=False):
     from ui import feedback, opening_scene
     import runtime_paths
     out=Path(output).resolve();out.parent.mkdir(parents=True,exist_ok=True)
@@ -40,7 +40,7 @@ def run(output, module):
          temporary_attribute(runtime_paths,'SAVES_DIR',str(evidence/'saves')), \
          temporary_attribute(opening_scene,'CONFIG_PATH',str(evidence/'opening-config.json')):
         app=module.BlocFantome();app.autoSaveEnabled=False;app.tutorialScreen.visible=False
-        display_driver=pygame.display.get_driver();mixer_format=pygame.mixer.get_init()
+        display_driver=pygame.display.get_driver();mixer_format=pygame.mixer.get_init();display_flags=app.screen.get_flags()
         app.tutorialScreen.shouldShowOnStartup=lambda:False
         app.effectsMuted=True;app.musicMuted=True;app.ambientMuted=True
         events=app._handleEvents;phase_start=[0];steps=[0]
@@ -52,10 +52,25 @@ def run(output, module):
             phase=state['phase']
             if phase=='startup':
                 assert app.openingScene is None
+                if polish:
+                    assert app.skyboxesEnabled
+                    assert all(block==module.BlockType.GRASS for (x,y,z),block in app.world.blocks.items() if z==0)
+                    operations.append({'fresh_grass_floor':True,'skyboxes_default_on':True})
                 state['phase']='editor';phase_start[0]=perf_counter()
             elif phase=='editor' and perf_counter()-phase_start[0]>.15:
                 pygame.image.save(app.screen,str(evidence/'editor.png'))
-                state['phase']='map';phase_start[0]=perf_counter();app._requestWorldMap()
+                if polish:
+                    state['phase']='palette';steps[0]=0;app.workshop.open_drawer('menu',app)
+                else:
+                    state['phase']='map';phase_start[0]=perf_counter();app._requestWorldMap()
+            elif phase=='palette':
+                steps[0]+=1
+                if steps[0]%6==0:
+                    pygame.image.save(app.screen,str(evidence/f'palette-{steps[0]//6}.png'))
+                    if steps[0]<24:
+                        pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_RIGHT,mod=0))
+                    else:
+                        app.workshop.close_drawer(app);state['phase']='map';phase_start[0]=perf_counter();app._requestWorldMap()
             elif phase=='map' and app.worldMapActive and app._mapTransition is None:
                 operations.append({'warm':state['map_visits']>0,'map_total_ms':(perf_counter()-phase_start[0])*1000,
                     'preparation':[(name,stamp-start) for name,stamp in app.worldMapView.source_map.preparation_timeline]})
@@ -64,11 +79,19 @@ def run(output, module):
                 if state['map_visits']==1:
                     phase_start[0]=perf_counter();app._requestWorldMap()
                 else:
-                    state['phase']='library';steps[0]=0
+                    state['phase']='map-audio-tail' if polish else 'library';steps[0]=0
+            elif phase=='map-audio-tail':
+                # Preserve map musical ownership; audition Library once its tail ends.
+                if not any(pygame.mixer.Channel(i).get_busy() for i in (27,28)):
+                    state['phase']='library'
             elif phase=='library':
                 dimensions=('overworld','nether','end');tabs=app.library.TABS
                 n=steps[0]
                 if n<24:
+                    if polish and n==0:
+                        before=len(cues);app.library.open(app)
+                        assert [row['cue'] for row in cues[before:]]==['close']
+                        operations.append({'library_open_one_close_cue':True})
                     t=perf_counter();app.library.dimension=dimensions[(n//4)%3]
                     app.library.visible=True;app.library.home=False;app.library.tab=tabs[n%4]
                     app.library.refresh(app);app.library.render(app)
@@ -76,9 +99,21 @@ def run(output, module):
                         'warm':n>=12,'ms':(perf_counter()-t)*1000})
                     steps[0]+=1
                 else:
+                    if polish:
+                        before=len(cues)
+                        app.library.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0),app)
+                        assert [row['cue'] for row in cues[before:]]==['close']
+                        operations.append({'library_close_one_close_cue':True})
+                        state['phase']='world-controls';steps[0]=0;app.workshop.page='world'
+                        return
                     app.library.visible=False;state['phase']='weather';steps[0]=0
                     t=perf_counter();app._toggleHorrorRain()
                     operations.append({'horror_enable_ms':(perf_counter()-t)*1000})
+            elif phase=='world-controls':
+                steps[0]+=1
+                if steps[0]==12:
+                    pygame.image.save(app.screen,str(evidence/'world-controls.png'))
+                    app.workshop.close_drawer(app);state['phase']='button';app.workshop.act('settings',app)
             elif phase=='weather':
                 steps[0]+=1
                 if steps[0]==12:
@@ -103,6 +138,10 @@ def run(output, module):
                 state['phase']='exit';app._requestExit()
                 app._render();pygame.image.save(app.screen,str(evidence/'exit.png'))
             elif phase=='exit':
+                if polish:
+                    action=app._exitDialog.handle(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+                    app._exitAction(action);assert app.running and app._exitDialog is None
+                    app._requestExit();assert app._exitDialog.focus=='stay'
                 state['phase']='shutdown';app._exitAction('exit')
         app._handleEvents=tick
         try:
@@ -115,6 +154,8 @@ def run(output, module):
             result={'display_driver':display_driver,'mixer_format':mixer_format,'frozen':bool(getattr(sys,'frozen',False)),'hidden':True,'physical_input':False,
                 'human_listening':False,'audio_muted':True,
                 'startup_ms':{k:(v-first)*1000 for k,v in metrics.items()},
+                'polish':polish,'display_flags':display_flags,
+                'vsync_supported':False,'vsync_reason':'Native software RESIZABLE display; neither SCALED nor OPENGL',
                 'presented_frames':records,'cues':cues,'operations':operations}
             for phase in ('startup','map','weather','shutdown'):
                 times=[row['seconds'] for row in records if row['phase']==phase]

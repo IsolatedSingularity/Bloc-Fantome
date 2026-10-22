@@ -1,4 +1,4 @@
-"""Native-size matte chrome. World textures never enter UI surfaces."""
+"""Native-size satin navy chrome. World textures never enter UI surfaces."""
 import pygame
 import pygame.gfxdraw
 from collections import OrderedDict
@@ -61,7 +61,14 @@ def rounded(screen, color, rect, radius=RADIUS):
 
 
 def panel(screen, rect, assets=None, accent=None, alpha=234):
+    rect=pygame.Rect(rect)
+    # Cached fills retain readable navy; only a small top highlight is translucent.
+    alpha=max(215,alpha-12) if alpha<250 else alpha
     rounded(screen,(*SURFACE,alpha),rect)
+    if rect.width>24 and rect.height>20:
+        edge=tuple(round(a*.70+b*.30) for a,b in zip(SURFACE,ACCENT))
+        pygame.draw.line(screen,edge,(rect.left+12,rect.top),(rect.right-13,rect.top))
+        pygame.draw.line(screen,(27,40,57),(rect.left+8,rect.bottom-1),(rect.right-9,rect.bottom-1))
 
 
 def ellipsize(text, font, width):

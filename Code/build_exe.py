@@ -112,6 +112,12 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     print("=" * 60)
 
     from engine.selected_audio import validate_selected_audio, validate_presentation_audio
+    import hashlib, json
+    derivative=os.path.join(SCRIPT_DIR,'ui','audio','close-short.wav')
+    with open(os.path.splitext(derivative)[0]+'.json',encoding='utf-8') as handle:record=json.load(handle)
+    with open(derivative,'rb') as handle:
+        if hashlib.sha256(handle.read()).hexdigest()!=record['sha256']:
+            raise ValueError('Short close derivative hash mismatch')
     validate_selected_audio(
         os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub'),
         os.path.join(PROJECT_ROOT, 'docs', 'design', 'selected-audio.json'))
@@ -333,6 +339,7 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     cmd.append(f"--add-data={SPLASH_ART}{os.pathsep}Assets/Icons")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'tutorial_prepared')}{os.pathsep}tutorial_prepared")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'ui', 'art')}{os.pathsep}ui/art")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'ui', 'audio')}{os.pathsep}ui/audio")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)

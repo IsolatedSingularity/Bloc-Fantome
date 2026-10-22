@@ -1825,6 +1825,9 @@ class AppIntegrationTests(unittest.TestCase):
         pygame.event.clear()
         pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
         self.app._handleEvents()
+        self.assertTrue(self.app.running)
+        self.assertIsNone(self.app._exitDialog)
+        self.app._requestExit();self.app._exitAction("exit")
         self.assertFalse(self.app.running)
         self.app._exitDialog=None
 

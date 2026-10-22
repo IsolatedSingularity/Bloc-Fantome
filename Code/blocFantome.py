@@ -8969,6 +8969,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             startupSplash = SplashScreen(
                 self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
             )
+            startupSplash.reduced_motion = self.workshop.visibility.reduced_motion
             startupSplash.present()
             self._startupMetrics['splash_presented'] = perf_counter()
             self._playLifecycleCue('boot')
@@ -9105,10 +9106,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.openingScene is not None:self._closeOpeningScene()
         self._playLifecycleCue('shutdown')
         shutdown_started = pygame.time.get_ticks()
-        closing = SplashScreen(self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR)
-        previous = self.screen.copy()
-        painting = closing.background_tile.copy()
-        painting.blit(closing.title, closing._title_rect())
+        from ui.lifecycle import GoodbyeScreen
+        closing = GoodbyeScreen(self.screen,self.workshop.visibility.reduced_motion)
         # Save user preferences before quitting
         self._saveAppConfig()
         
@@ -9126,15 +9125,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # selected recording's full multi-second decay or delay failed startup.
         fading=False
         map_futures = getattr(self, '_mapFutures', ())
-        while pygame.time.get_ticks()-shutdown_started < 620 or any(not future.done() for future in map_futures):
-            pygame.event.pump()
+        fast_exit=False
+        while (not fast_exit and pygame.time.get_ticks()-shutdown_started < closing.duration_ms) or any(not future.done() for future in map_futures):
+            if closing.skip_requested(pygame.event.get()):
+                fast_exit=True
+                if pygame.mixer.get_init():pygame.mixer.Channel(29).stop()
             elapsed = pygame.time.get_ticks() - shutdown_started
-            self.screen.blit(previous, (0, 0))
-            painting.set_alpha(255 if self.workshop.visibility.reduced_motion else min(255, round(elapsed / 200 * 255)))
-            self.screen.blit(painting, (0, 0))
+            closing.render(min(elapsed,closing.duration_ms))
             pygame.display.flip()
-            if not fading and pygame.time.get_ticks()-shutdown_started >= 500:
-                if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(120)
+            if not fading and pygame.time.get_ticks()-shutdown_started >= closing.duration_ms-closing.fade_ms:
+                if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(closing.fade_ms)
                 fading=True
             self.clock.tick(60)
         pygame.quit()
@@ -17714,7 +17714,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 ('Coordinates','showCoordinates'),('Grid','showGrid'),
                 ('Block outline','showBlockOutline'),('Block tooltip','showBlockTooltip'),
                 ('World-centered rotation','worldCenteredRotation'),('Play Introduction','opening'),
-                ('Autoplay introduction','skip'))
+                ('Autoplay introduction','skip'),('VSync unavailable','vsync_unavailable'))
         if self.workshop.active(self):fields=tuple(row for row in fields if row[1]!='showGrid')
         controls=[(label,attr,pygame.Rect(x+24+(i%2)*(cw+8),top+(i//2)*(row+7),cw,row))
                   for i,(label,attr) in enumerate(fields)]
@@ -17734,6 +17734,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self._setVolume(kind,(mouseX-control['track'].left)/control['track'].width);return
         for label,attr,control in controls:
             if not control.collidepoint(mouseX,mouseY):continue
+            if attr=='vsync_unavailable':return
             if attr=='opening':self._openOpeningScene()
             elif attr=='skip':
                 from ui.opening_scene import save_skip,skip_on_launch
@@ -18163,6 +18164,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._renderSettingsVolumeSlider(kind.title()+' Volume',getattr(self,kind+'Volume'),area.x,area.y,area.width)
         from ui.opening_scene import skip_on_launch
         for label,attr,area in controls:
+            if attr=='vsync_unavailable':
+                button(self.screen,area,label,self.smallFont,enabled=False)
+                from ui.chrome import wrapped
+                note=pygame.Rect(area.right+8,area.y,area.width,area.height)
+                if note.right<=rect.right-20:
+                    wrapped(self.screen,'Not supported by this display mode',self.smallFont,note,MUTED)
+                continue
             value=not skip_on_launch() if attr=='skip' else getattr(self,attr,False)
             if attr!='opening':label+=': '+('On' if value else 'Off')
             button(self.screen,area,label,self.smallFont,area.collidepoint(mouse),value)
@@ -22608,6 +22616,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-pass-b-polish' in sys.argv:
+        from tools.verify_pass_b_finalization import run
+        run(sys.argv[sys.argv.index('--verify-pass-b-polish')+1],sys.modules[__name__],polish=True)
+        return
     if '--verify-pass-b-finalization' in sys.argv:
         from tools.verify_pass_b_finalization import run
         run(sys.argv[sys.argv.index('--verify-pass-b-finalization')+1],sys.modules[__name__])

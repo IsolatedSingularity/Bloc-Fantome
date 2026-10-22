@@ -64,6 +64,9 @@ _cache_bytes=0
 def draw(surface,action,rect,color,phase=0):
     """Original scalable silhouettes; only these small icon buffers are sampled."""
     global _cache_bytes
+    from ui.refined_icons import NAMES as refined_names, draw as refined
+    if action in refined_names:
+        refined(surface,action,rect,phase);return
     from ui.generated_icons import NAMES,draw as generated
     if action in NAMES:
         generated(surface,action,rect,phase)

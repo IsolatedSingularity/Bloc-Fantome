@@ -54,6 +54,24 @@
         4
       ],
       "frozen_by_owner": true
+    },
+    {
+      "file": "polish-mask.png",
+      "sha256": "e78a232d5395535291b1fd255f83d07ac93b8630eb57b6298580a06f73a4a7e0",
+      "generator": "image_gen",
+      "source": "exec-36129b79-eea2-4e70-adba-bfdb5e287229.png",
+      "references": [
+        "dimensions-mask.png",
+        "controls-mask.png"
+      ],
+      "instruction": "Owner requested the established generated flat white style. Overworld and End variations apply only to Library Dimensions; World dimension icons stay unchanged. Lighting and Clouds use the same style.",
+      "cells": [
+        "dimension_overworld",
+        "dimension_end",
+        "lighting",
+        "clouds"
+      ],
+      "frozen_by_owner": false
     }
   ]
 }

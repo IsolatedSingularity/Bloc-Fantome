@@ -61,6 +61,7 @@ class SplashScreen:
         self.title = self._load_title_artwork()
         self.background_tile = self._create_background_tile()
         self.first_presented_at = None
+        self.reduced_motion = False
 
     def _load_title_font(self) -> pygame.font.Font:
         """Rasterize the understated title at its final display size."""
@@ -105,6 +106,9 @@ class SplashScreen:
         title_rect = self._title_rect()
         self._draw_background(self.screen)
         self.screen.blit(self.title, title_rect)
+        from ui.lifecycle import assembly
+        age=(pygame.time.get_ticks()-(self.first_presented_at or pygame.time.get_ticks()))/1000
+        assembly(self.screen,(self.window_width//2,title_rect.top-25),age,self.reduced_motion)
         pygame.display.flip()
         if self.first_presented_at is None:
             self.first_presented_at = pygame.time.get_ticks()

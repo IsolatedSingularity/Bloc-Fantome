@@ -1309,4 +1309,8 @@ def render_workshop(output_dir: Path):
 
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
+    if '--polish' in sys.argv:
+        from render_polish import render as render_polish
+        render_polish(destination)
+        raise SystemExit(0)
     (render_workshop if '--workshop' in sys.argv else render_opening if '--opening' in sys.argv else render_tour if '--tour' in sys.argv else render_consistency if '--consistency' in sys.argv else render_guided if '--guided' in sys.argv else render_world_map_regions if '--world-map' in sys.argv else render_redstone if '--redstone' in sys.argv else render)(destination)

@@ -7,7 +7,7 @@ Version 2.9.9 uses the owner's selected recordings; 3.0 retains this discipline.
 
 ## Selected semantic events
 
-All paths below are relative to `Assets/Sound Hub/ui/selected/`. Originals are
+Original paths below are relative to `Assets/Sound Hub/ui/selected/`. Originals are
 unchanged in `Sounds/`; full characteristics and hashes are in
 [selected-audio.json](docs/design/selected-audio.json).
 
@@ -18,15 +18,24 @@ unchanged in `Sounds/`; full characteristics and hashes are in
 | World Map | worldMap.wav | Start cartographic unfolding | 0.82 |
 | Save | save.wav | Confirmed successful manual write, including Ctrl+S | 0.78 |
 | Error | error.wav | Failed operation or explicit rejection | 0.80 |
-| Button | pressButton.wav | Deliberate ordinary UI activation | 0.80 |
-| Close | close.wav | Dismiss/back/collapse by mouse or keyboard | 0.72 |
+| Button | pressButton.wav | Deliberate ordinary UI activation | 0.90 |
+| Close | Code/ui/audio/close-short.wav | Dismiss/back/collapse; Library opening and closing | 0.72 |
 
 No save cue for opening/cancelling a dialog or background autosaves. Errors are
 not hover warnings; throttle repeats to at most one per 650 ms. No default hover,
 focus, scrolling, typing or idle cue. Extras are catalogued, unassigned proposals.
-Application shutdown has a bounded 620 ms event-pumped tail, fading after 500 ms;
-the original 5.31 s file is retained intact. This deliberately short exit audition
-requires owner listening review. It does not hold the app open for the full decay.
+Application shutdown has a bounded 1.8-second event-pumped Goodbye, fading over
+the final 300 ms. Escape, Enter, Space, click or window close stops the cue and
+skips the composition immediately. The original 5.31-second file stays intact.
+
+The close derivative retains 0.040–0.440 seconds of the original, applies gain
+1.25, a 3 ms attack ramp and a 150 ms cosine fade. Duration is 400 ms; measured
+peak is 0.4653 full scale with zero clipped samples. Reproduce it with
+`Code/tools/derive_close_cue.py`; the adjacent JSON records source/output hashes
+and the recipe. The original 3.69-second WAV is untouched. Library opening and
+closing each produce one short close cue, coalescing any enclosing button cue.
+The ordinary button gain rises from 0.80 to 0.90 without changing ambient routing.
+Timing, musical preference and balance still require owner headphone/speaker review.
 
 ## Routing and volume
 

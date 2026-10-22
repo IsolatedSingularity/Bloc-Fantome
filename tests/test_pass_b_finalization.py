@@ -116,6 +116,8 @@ def test_escape_modal_precedence_and_window_close(app):
     assert app.running and app._exitDialog
     pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
     app._handleEvents()
+    assert app.running and app._exitDialog is None
+    app._requestExit();app._exitAction("exit")
     assert not app.running
     app.running=True;app._exitDialog=None
 

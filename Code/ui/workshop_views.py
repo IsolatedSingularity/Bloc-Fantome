@@ -7,6 +7,9 @@ from ui.tool_icons import draw as icon
 
 
 def draw_drawer(shell,app):
+    if shell.page == "menu":
+        from ui.command_palette import render
+        return render(shell, app)
     screen=app.screen;w,h=screen.get_size();scale=shell.text_scale
     compact=w<1100 or scale>1.25
     width=min(w-48,round((420 if compact else 600)*min(scale,1.25))) if shell.page=='build' else min(w-48,round(400*scale))
@@ -21,7 +24,6 @@ def draw_drawer(shell,app):
     shell.list_rect=pygame.Rect(x,top,width-32,max(30,box.bottom-top-16))
     if shell.page=='build':build(shell,app,box,compact)
     elif shell.page=='world':world(shell,app,box)
-    elif shell.page=='menu':menu(shell,app,box)
     else:tools(shell,app,box)
     if shell.max_scroll:
         rect=shell.list_rect;thumb=max(20,round(rect.height**2/(rect.height+shell.max_scroll)))
@@ -162,43 +164,3 @@ def world(s,app,box):
     if tip:
         r=pygame.Rect(box.x+12,box.bottom-38,box.width-24,30);chrome.panel(screen,r,250)
         chrome.wrapped(screen,tip,s.small,r.inflate(-12,-4))
-
-
-def menu(s,app,box):
-    screen=app.screen;area=s.list_rect;row=max(36,s.small.get_linesize()+12);gap=6
-    groups=[('',('save','open','settings')),('Editing',('undo','redo','history')),('Workspace',('save_as','screenshot','fullscreen')),
-            ('Explore',('tutorial','advanced_tutorial','lab','help')),('Presentation',('pin','always','motion','text_scale','clean','legacy'))]
-    header=s.small.get_linesize()+12
-    height=sum((header if title else 0)+((len(keys)+(3 if not title else 2)-1)//(3 if not title else 2))*(row+(22 if not title else 0)+gap)+12 for title,keys in groups)
-    height += header + 4*(row+gap)
-    s.max_scroll=max(0,height-area.height);s.scroll=s.scroller.update(s.max_scroll,s.visibility.reduced_motion)
-    old=screen.get_clip();screen.set_clip(area);y=area.y-s.scroll
-    for title,keys in groups:
-        if title:screen.blit(s.small.render(title,True,chrome.MUTED),(area.x,y));y+=header
-        cols=3 if not title else 2;cw=(area.width-(cols-1)*gap)//cols;rh=row+(22 if not title else 0)
-        for i,key in enumerate(keys):
-            label=ACTIONS[key][1]
-            label={'open':'Open','settings':'Settings','always':'Always visible','pin':'Pin controls','help':'Controls','fullscreen':'Fullscreen','advanced_tutorial':'Advanced tour'}.get(key,label)
-            if key.startswith('quick_'):label=key.rsplit('_',1)[1]
-            rect=pygame.Rect(area.x+i%cols*(cw+gap),y+i//cols*(rh+gap),cw,rh)
-            s._button(screen,rect,label if title else '',key,quiet=bool(title))
-            if not title:
-                art={'save':'library_saved','open':'library_worlds','settings':'tools_emblem'}[key]
-                icon(screen,art,pygame.Rect(rect.centerx-15,rect.y+3,30,30),chrome.TEXT)
-                text=s.small.render(label,True,chrome.TEXT)
-                screen.blit(text,text.get_rect(midbottom=(rect.centerx,rect.bottom-4)))
-        y+=((len(keys)+cols-1)//cols)*(rh+gap)+12
-    screen.blit(s.small.render('Quick slots',True,chrome.MUTED),(area.x,y));y+=header
-    from pathlib import Path
-    from runtime_paths import SAVES_DIR
-    for slot in range(1,5):
-        occupied = any((Path(SAVES_DIR)/f'quicksave_{slot}{suffix}').is_file() for suffix in ('.json.gz','.json'))
-        text = f'{slot} · '+('Saved' if occupied else 'Empty')
-        label_width = max(90, s.small.size('4 · Saved')[0]+12)
-        screen.blit(s.small.render(text,True,chrome.MUTED),(area.x,y+8))
-        cw = (area.width-label_width-gap)//2
-        for index,action in enumerate(('save','load')):
-            rect=pygame.Rect(area.x+label_width+index*(cw+gap),y,cw,row)
-            s._button(screen,rect,action.title(),f'quick_{action}_{slot}',enabled=action=='save' or occupied,quiet=True)
-        y+=row+gap
-    screen.set_clip(old)

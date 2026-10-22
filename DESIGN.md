@@ -15,7 +15,8 @@ to roll back the accepted modern editor. Do not restyle either during Pass B.
 Current modern tokens (RGB): surface 16/24/39, control 30/43/62, hover 47/65/87,
 selected 41/61/84, text 230/236/245, muted 153/170/192, accent 173/203/235,
 focus 174/208/215, error 245/174/150. Base radius 12, gap 8, margin 24 px.
-Panels commonly use alpha 225–246/255. These are implementation facts, not
+Modern satin panels generally use alpha 220–234/255 (215 for lighter overlays), with subtle
+upper highlights and lower edges. Text and controls remain opaque. These are implementation facts, not
 measurements from the Cathedral concept.
 
 Preserve native Segoe UI selection through the shared font loader, the licensed
@@ -34,12 +35,15 @@ claim that those checks passed.
 
 ## Pass B finalization contracts
 
-The roadmap is Pass B finalization, then Pass C engineering/UX/consolidation,
-then Pass D original creature. The official installation and main branch remain
-held until owner acceptance after Pass C. This pass changes development only.
+After owner approval of the final Pass B polish, 2.9.9 can be finalized before
+Pass C engineering/UX/consolidation. Pass D original creature is a separate future
+decision. Main, installation and shortcuts remain held pending acceptance.
+This pass publishes development and one isolated review EXE only.
 
 The swamp painting presents before bulk assets, with boot audio requested at its
-first visible frame. Audio decoding yields to the display/event thread. The
+first visible frame. Three small original geometric forms assemble during actual
+loading, without an added delay; Reduced Motion holds them still. Audio decoding
+yields to the display/event thread. The
 cinematic is manual through Settings > Play Introduction; only an explicit
 Autoplay introduction selection enables launch playback. Guided tutorial launch
 preferences remain independent. The welcome lesson uses the existing compact
@@ -67,14 +71,39 @@ capture finishes. The writer streams v5 records without another world-sized list
 Success belongs to the captured revision and document, including edits
 made during writing. Background saves never mark a manual document clean.
 Escape first belongs to existing modals/tools; otherwise it opens the same exit
-confirmation as window close. A second Escape confirms. Stay and Exit are
+confirmation as window close. Stay has initial focus; Escape returns to the game.
+Only explicit Exit confirms departure. Stay and Exit are
 visible; dirty builds also offer Save and Exit. Pending saves must resolve before
-exit, and failure or dialog cancellation retains the world. Shutdown crossfades
-to the swamp painting while preserving the selected recording's attack.
+exit, and failure or dialog cancellation retains the world. Shutdown uses a
+distinct navy Goodbye screen and small disassembling geometry for 1.8 seconds,
+with a 300 ms music fade. Escape, Enter, Space, click or window close skips it
+immediately; already-running SDL jobs still finish safely before SDL teardown.
 
-Menu retains Save/Open/Settings and groups Editing, Workspace, Explore and
-Presentation separately. Four numbered quick-slot rows show occupancy and
-separate Save/Load controls, including legacy uncompressed slot files.
+Menu is a compact floating command palette: Save/Open/Settings, then File, Edit,
+View and More. File expands four quick slots with occupancy and separate
+Save/Load controls, including legacy files. Arrow keys change groups/focus;
+Tab, Enter, scrolling and existing shortcuts remain available.
+
+Only Library Dimensions uses the generated flat white village and End-island
+variations, matching the existing monochrome artwork and sampled from their
+original masks at native display size. Procedural isometric art is not used. World dimension icons and
+the Nether artwork retain their accepted forms. Fresh Overworld terrain remains
+grass; skyboxes default on when assets are available, with saved settings
+respected. Lighting
+shows changing face illumination and a grounded shadow; cloud layers drift
+independently. Other existing feature animations retain their visual roles.
+Small frame caches replace repeated image transforms; disabled tiles and Reduced
+Motion remain static with truthful On/Off state. The map's fixed cover/reveal
+timing and score are unchanged; its intermediate panel adds a small compass,
+unlabelled scale ticks and survey points without additional preparation work.
+
+Normal editor chrome has no version label; Settings and the window title retain
+the version. VSync is visibly unavailable: this native software RESIZABLE display
+uses neither OPENGL nor SCALED. Pygame only accepts a VSync request for those
+modes and does not guarantee it. No ineffective preference or renderer migration
+is introduced. Pass C may evaluate a renderer change with resize, DPI, coordinate
+and physical refresh verification. See the
+[Pygame display contract](https://www.pygame.org/docs/ref/display.html#pygame.display.set_mode).
 
 ## 3.0: Cathedral Soft Blue, Variant D
 

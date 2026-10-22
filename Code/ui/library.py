@@ -43,7 +43,7 @@ class Library:
         self.dimension = app.currentDimension
         if self.home:self.entries=[];self.pending=None
         else:self.refresh(app)
-        cue(app.assetManager,'button')
+        cue(app.assetManager,'close')
 
     def change_view(self,app,tab=None):
         self._morph_from=self.rect.copy();self._morph_at=pygame.time.get_ticks()

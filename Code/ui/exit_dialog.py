@@ -16,7 +16,7 @@ class ExitDialog:
     def handle(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                return 'exit'
+                return 'stay'
             choices = ['stay', 'save', 'exit'] if self.dirty else ['stay', 'exit']
             if event.key in (pygame.K_TAB, pygame.K_LEFT, pygame.K_RIGHT):
                 delta = -1 if event.key == pygame.K_LEFT else 1

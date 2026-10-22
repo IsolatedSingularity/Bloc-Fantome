@@ -28,6 +28,16 @@ class MapTransition:
             pygame.draw.lines(self.paper, (38, 60, 70), True, points, 1)
         for x in (w//4, w//2, 3*w//4):
             pygame.draw.line(self.paper, (47, 65, 75), (x, 0), (x, h))
+        # Quiet marginal cartography, drawn once; reveal timing stays unchanged.
+        ink=(94,119,131)
+        cx,cy=56,h-75
+        pygame.draw.lines(self.paper,ink,False,((cx-9,cy+8),(cx,cy-18),(cx+9,cy+8),(cx,cy+2),(cx-9,cy+8)),1)
+        self.paper.blit(self.small.render('N',True,ink),(cx-5,cy-40))
+        pygame.draw.line(self.paper,ink,(w-148,h-50),(w-48,h-50))
+        for x in range(w-148,w-47,25):pygame.draw.line(self.paper,ink,(x,h-54),(x,h-46))
+        for dx,dy in ((-29,8),(-9,-12),(16,-3),(32,-21)):
+            pygame.draw.circle(self.paper,ink,(w-93+dx,65+dy),2)
+        pygame.draw.lines(self.paper,(46,68,81),False,((w-122,73),(w-102,53),(w-77,62),(w-61,44)),1)
         title = self.font.render('World Map', True, chrome.TEXT)
         hint = self.small.render('Esc to cancel', True, chrome.MUTED)
         self.paper.blit(title, title.get_rect(center=(w//2, h//2-12)))

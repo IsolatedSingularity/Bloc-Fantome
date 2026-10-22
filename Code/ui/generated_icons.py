@@ -26,7 +26,8 @@ def artwork():
             ('library-revision-mask.png',('library_structures','library_saved'),2,1),
             ('library-landmarks-mask.png',('library_worlds','library_biomes','library_saved'),3,1),
             ('tools-a-mask.png',TOOLS_A,4,4),('tools-b-mask.png',TOOLS_B,4,4),
-            ('dimensions-mask.png',('library_worlds','library_biomes')+DIMENSIONS,5,1))
+            ('dimensions-mask.png',('library_worlds','library_biomes')+DIMENSIONS,5,1),
+            ('polish-mask.png',('dimension_overworld','dimension_end','lighting','clouds'),2,2))
     for filename,names,cols,rows in sheets:
         atlas=pygame.image.load(str(Path(__file__).with_name('art')/filename));w,h=atlas.get_size()
         for i,name in enumerate(names):
@@ -86,6 +87,12 @@ def precipitation(name):
     return pygame.transform.smoothscale(drop,(4,7))
 
 
+@lru_cache(maxsize=96)
+def faded_particle(name,level):
+    particle=precipitation(name).copy();particle.set_alpha(level*5)
+    return particle
+
+
 def weather_effect(surface,name,rect,phase):
     """Generated drops/flakes travel across active tiles; no off-state motion."""
     if not phase or name not in ('rain','horror_rain','snow'):return
@@ -96,12 +103,12 @@ def weather_effect(surface,name,rect,phase):
         x=rect.x+10+((i*.618034)%1)*(rect.width-24)
         x+=math.sin(phase+i)*5 if name=='snow' else -life*7
         y=rect.y+7+life*(rect.height-14)
-        drop=particle.copy();drop.set_alpha(round(115*math.sin(math.pi*life)))
+        drop=faded_particle(name,round(23*math.sin(math.pi*life)))
         surface.blit(drop,(round(x),round(y)))
     surface.set_clip(old)
 
 
-def draw(surface,name,rect,phase=0):
+def _draw_frame(surface,name,rect,phase=0):
     rect=pygame.Rect(rect)
     # Reserve motion space inside the hit tile; never resample a prior frame.
     size=(max(1,round(rect.width*.88)),max(1,round(rect.height*.88)))
@@ -116,10 +123,10 @@ def draw(surface,name,rect,phase=0):
             moving=drop.copy();moving.set_alpha(round(255*math.sin(math.pi*progress)**.5))
             surface.blit(moving,target.move(round(-progress*rect.width*.035),round((progress-.5)*rect.height*.14)))
     elif name in ('sun','snow'):
-        source=artwork()[name]
+        source=fitted(name,size)
         angle=t*(12 if name=='sun' else -8)
-        # Filtering the full-resolution original keeps rotation edges stable.
-        ratio=min(size[0]/source.get_width(),size[1]/source.get_height())*.84
+        # Rotate from the fitted native source once while preparing the cache.
+        ratio=1
         rotated=pygame.transform.rotozoom(source,angle,ratio)
         surface.blit(rotated,rotated.get_rect(center=rect.center))
     elif name=='clouds':
@@ -149,7 +156,7 @@ def draw(surface,name,rect,phase=0):
             surface.blit(effect,rect)
     elif name=='sky':
         # A slow lunar rock, not the weather tiles' falling motion.
-        source=artwork()[name];ratio=min(size[0]/source.get_width(),size[1]/source.get_height())*.94
+        source=fitted(name,size);ratio=1
         moon=pygame.transform.rotozoom(source,3*math.sin(t*.6),ratio)
         surface.blit(moon,moon.get_rect(center=rect.center))
     elif name=='nether':
@@ -165,3 +172,25 @@ def draw(surface,name,rect,phase=0):
             spark=ember.copy();spark.set_alpha(round(210*math.sin(math.pi*life)))
             surface.blit(spark,(rect.centerx+round(math.sin(t+i*2)*rect.width*.18),rect.centery-round(life*rect.height*.4)))
     else:surface.blit(base,target)
+
+
+@lru_cache(maxsize=32)
+def animation_frames(name,size):
+    """Build small native buffers once per tile size, never on each display frame."""
+    period={'rain':1/.85,'snow':45.,'sun':30.,'sky':math.tau/.6,'horror_rain':4.8,
+            'flow':1/.65,'nether':math.tau}.get(name,6.)
+    count=96 if name in ('sun','snow') else 48
+    result=[]
+    for i in range(count):
+        frame=pygame.Surface(size,pygame.SRCALPHA)
+        _draw_frame(frame,name,frame.get_rect(),period*(i+.001)/count)
+        result.append(frame)
+    return period,tuple(result)
+
+
+def draw(surface,name,rect,phase=0):
+    rect=pygame.Rect(rect)
+    if not phase or name not in ANIMATED:
+        _draw_frame(surface,name,rect,0);return
+    period,frames=animation_frames(name,rect.size)
+    surface.blit(frames[int((phase%period)/period*len(frames))],rect)
