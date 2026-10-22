@@ -133,13 +133,13 @@ class GuidedTutorialAppMixin:
         self._applyStagedBuild(snapshot.dimension,(snapshot.width,snapshot.depth,snapshot.height,snapshot.min_y),
             dict(snapshot.scene_metadata),snapshot,None,silent=True,preferredMusic=self.tutorialMusicPaths.get(snapshot.dimension))
         self.undoManager.clear();self.currentBuildPath=None
-        self._stopRain();self._stopSnow()
+        self._stopRain();self._stopSnow();self._stopHorrorRain()
         self.rainEnabled=step['id']=='rain'
         self.snowEnabled=step['id']=='snow'
         self.horrorRainEnabled=False
-        self.skyboxesEnabled=step['id']=='skies'
+        self.skyboxesEnabled=step['id'] in ('welcome','skies')
         self.cloudsEnabled=self.celestialEnabled=False
-        self.lightingEnabled=step['id']=='lighting'
+        self.lightingEnabled=step['id'] in ('welcome','lighting')
         self.showGrid=False
         self.hotbar=[BlockType[name.upper()] for name in step['icons']]
         self.hotbarSelectedSlot=0;self.selectedBlock=self.hotbar[0];self.previewFacing=Facing.SOUTH

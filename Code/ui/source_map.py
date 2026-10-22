@@ -42,7 +42,7 @@ class SourceMap:
         manifest=json.loads((REGION_ROOT/'atlas.json').read_text())
         if manifest['palettes'][f'{dimension}_{key}.json.gz'] != hashlib.sha256(json.dumps(self.palette,sort_keys=True).encode()).hexdigest():
             raise ValueError('World Map capture and model atlas are out of sync; rebake the source atlas')
-        self.atlas = pygame.image.load(str(REGION_ROOT / f"{dimension}_{key}.png")).convert_alpha()
+        self.atlas = pygame.image.load(str(REGION_ROOT / f"{dimension}_{key}.png"))
         self.sprites = []
         for index in range(len(self.palette)):
             cell = self.atlas.subsurface(((index%16)*128,(index//16)*208,128,208))
@@ -60,7 +60,7 @@ class SourceMap:
         self.crystals = tuple(tuple(e["Pos"]) for e in data["entities"] if e["id"] == "minecraft:end_crystal")
         self.crystal_sprites=[]
         if self.crystals:
-            atlas=pygame.image.load(str(REGION_ROOT/'end_crystals.png')).convert_alpha()
+            atlas=pygame.image.load(str(REGION_ROOT/'end_crystals.png'))
             for index in range(25):
                 cell=atlas.subsurface(((index%16)*128,(index//16)*208,128,208))
                 bounds=cell.get_bounding_rect()
@@ -91,7 +91,7 @@ class SourceMap:
         renderer.offsetX=width/2-(left+right)/2*renderer.zoomLevel
         renderer.offsetY=(height+8)/2-(top+bottom)/2*renderer.zoomLevel
 
-    def render(self, screen, renderer):
+    def render(self, screen, renderer, *, cooperative=False):
         if self.backdrop is None or self.backdrop.get_size()!=screen.get_size():
             width,height=screen.get_size()
             self.backdrop=pygame.Surface((width,height),pygame.SRCALPHA)
@@ -142,7 +142,13 @@ class SourceMap:
                 if full_map or (clip_left < x < clip_right and clip_top < y < clip_bottom):
                     sprite,offset = sprites[pid]
                     draws.append((sprite,(round((x*zoom+offset_x)*factor)+offset[0],round((y*zoom+offset_y)*factor)+offset[1])))
-            surface.blits(draws,doreturn=False)
+            if cooperative:
+                import time
+                for start in range(0, len(draws), 1024):
+                    surface.blits(draws[start:start+1024], doreturn=False)
+                    time.sleep(.001)
+            else:
+                surface.blits(draws,doreturn=False)
             self.surface=pygame.transform.smoothscale(surface,(width,height)) if factor==2 else surface
             self.cache_key = key
         screen.blit(self.surface,(round(left*zoom+renderer.offsetX),round(top*zoom+renderer.offsetY)) if full_map else (round(renderer.offsetX-anchor_x-margin),round(renderer.offsetY-anchor_y-margin)))

@@ -17,3 +17,13 @@ installed or claimed as reviewed. Variant A/E separate images remain unavailable
 their rail/optional-label requirements are supplied in the owner's request.
 The concept's sound strip is aesthetic guidance. The seven selected WAVs are
 authoritative for 2.9.9. No concept image implies new multiplayer functionality.
+
+## Pass B finalization runtime references (2026-10-22)
+
+The implementation targets the checkout's Python 3.12.10, Pygame 2.6.1 and
+SDL 2.28.4. [Pygame events](https://www.pygame.org/docs/ref/event.html) and
+[display ownership](https://www.pygame.org/docs/ref/display.html) support keeping
+pumping/presentation on the display thread while independent preparation runs
+on workers. [Python 3.12 futures](https://docs.python.org/3.12/library/concurrent.futures.html)
+inform cancellation and shutdown: cancellation cannot stop work already running,
+so canceled map preparations remain tracked until their SDL work finishes.

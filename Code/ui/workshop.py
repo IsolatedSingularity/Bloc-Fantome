@@ -178,6 +178,8 @@ class Workshop:
         detail_height=chrome.wrapped_height(detail,self.small,available) if detail else 0
         height=max(78,name_height+detail_height+16)
         self.context=pygame.Rect(24,screen.get_height()-10-height,width,height)
+        app.tutorialScreen.selectedPreviewRect = self.context.copy()
+        app.tutorialScreen.hotbarBounds = self.hotbar_bounds.copy()
         self._panel(screen,self.context,225)
         sprite=app.assetManager.getIconSprite(app.selectedBlock)
         if sprite:
@@ -393,7 +395,7 @@ class Workshop:
     @feedback_action
     def act(self,action,app):
         self.reveal()
-        if action not in ('save','save_as'):
+        if action not in ('save','save_as') and not action.startswith('quick_save_'):
             self.cue(app,'button')
         if action.startswith('slot:'):
             app.hotbarSelectedSlot=int(action[5:])

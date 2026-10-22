@@ -29,6 +29,8 @@ class Library:
         self.font = load_ui_font(18)
         self.small = load_ui_font(15)
         self.entries = []
+        self._saved_future = None
+        self._saved_entries = []
         self.max_scroll = 0
         self.row_height = 64
 
@@ -65,13 +67,26 @@ class Library:
                 detail=e.subtitle+'\n'+e.description, kind='world', value=e)
                 for e in world_catalog(WORLDS_DIR)
                 if e.category == {'overworld':'Overworld','nether':'Nether','end':'The End'}[self.dimension]]
+        elif self.tab == 'Structures':
+            self.entries = [dict(key=k, name=v['name'], detail='Place this structure in your current build.',
+                kind='structure', value=k) for k,v in app.structureDefinitions.items()]
         else:
-            builds = build_catalog(SAVES_DIR, BUILTIN_STRUCTURES_DIR, app.tutorialScreen.TUTORIAL_STEPS)
-            self.entries = [dict(key=e.key, name=e.label, detail=e.category,
-                kind='build', value=e) for e in builds if self.tab == 'Saved Builds' and e.kind == 'file']
-            if self.tab == 'Structures':
-                self.entries = [dict(key=k, name=v['name'], detail='Place this structure in your current build.',
-                    kind='structure', value=k) for k,v in app.structureDefinitions.items()] + self.entries
+            if self._saved_future is None or self._saved_future.done():
+                self._saved_future = app.worldLoadExecutor.submit(build_catalog, SAVES_DIR,
+                    BUILTIN_STRUCTURES_DIR, tuple(app.tutorialScreen.TUTORIAL_STEPS))
+            self.entries = list(self._saved_entries)
+
+    def _poll_entries(self, app):
+        future = self._saved_future
+        if self.tab != 'Saved Builds' or future is None or not future.done():return
+        self._saved_future = None
+        try:
+            self.entries = [dict(key=e.key, name=e.label, detail=e.category, kind='build', value=e)
+                            for e in future.result() if e.kind == 'file']
+            self._saved_entries = list(self.entries)
+        except OSError as error:
+            app.workshop.error = f'Could not read saved builds: {error}'
+
 
     def activate(self, app):
         entry = self.pending
@@ -90,6 +105,7 @@ class Library:
     @feedback_action
     def handle_event(self, event, app):
         if not self.visible: return False
+        self._poll_entries(app)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:self.visible=False;cue(app.assetManager,'close')
             elif self.home:
@@ -140,6 +156,7 @@ class Library:
 
     def render(self, app):
         if not self.visible:return
+        self._poll_entries(app)
         screen=app.screen;mouse=pygame.mouse.get_pos();sw,sh=screen.get_size()
         scale=app.workshop.text_scale;compact=sw<1100 or scale>1.25
         target=pygame.Rect(0,0,min(sw-48,round((460 if compact else 720)*min(scale,1.25))),
@@ -217,7 +234,7 @@ class Library:
             if preview:screen.blit(preview,(r.x+5,r.y+2))
             else:wrapped(screen,'Preparing…',self.small,(r.x+8,r.y+12,r.width-16,ih),MUTED)
             wrapped(screen,item['name'],self.small,(r.x+8,r.bottom-self.small.get_linesize()-3,r.width-16,self.small.get_linesize()+2))
-        if not self.entries:wrapped(screen,'No saved builds yet. Browse files to open one.',self.font,self.list_rect,MUTED)
+        if not self.entries:wrapped(screen,'Preparing saved builds…' if self._saved_future is not None and self.tab=='Saved Builds' else 'No saved builds yet. Browse files to open one.',self.font,self.list_rect,MUTED)
         screen.set_clip(old)
         if self.max_scroll:
             thumb=max(20,round(self.list_rect.height**2/(self.list_rect.height+self.max_scroll)))

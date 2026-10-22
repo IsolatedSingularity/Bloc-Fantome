@@ -90,13 +90,13 @@ class Builder:
 
 @lru_cache(maxsize=20)
 def scene_snapshot(key):
+    if key == 'welcome':
+        from ui.opening_geometry import sanctuary
+        cells = {(x+20,y+32,z): block for (x,y,z),(block,_tag) in sanctuary().items()}
+        return WorldSnapshot(42,64,56,blocks=cells,structure_positions=frozenset(cells),
+            scene_metadata={'kind':'tutorial','name':'The quiet sanctuary','authored':True})
     s=Builder();s.ground(river=key in ('welcome','history','liquids'),terraces=key in ('fill','selection','saving'))
-    if key=='welcome':
-        s.house(13,8,13,11);s.house(31,10,7,8)
-        s.box(8,23,5,15,29,5,B.OAK_PLANKS)
-        for x in (8,15):s.box(x,23,2,x,29,4,B.OAK_LOG)
-        s.tree(8,12);s.tree(36,35);s.tree(12,36)
-    elif key=='blocks':
+    if key=='blocks':
         for x,y,roof in ((9,9,B.SPRUCE_STAIRS),(27,9,B.SANDSTONE_STAIRS),(9,28,B.OAK_STAIRS),(27,28,B.STONE_BRICK_STAIRS)):s.house(x,y,9,8,roof=roof)
         s.pad(21,20,5,8,6,B.STONE_BRICKS);s.put(23,23,7,B.LANTERN)
     elif key=='camera':

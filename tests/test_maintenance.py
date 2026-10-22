@@ -161,13 +161,20 @@ def test_visibility_classification_matches_catalog_for_every_block():
     assert app.world._opaqueCubeTypes==expected
 
 
-def test_autosave_reports_backup_failure_even_when_main_save_succeeds():
-    app=app_stub();app.autoSaveEnabled=True;app.autoBackupEnabled=True
-    app.lastAutoSaveTime=-100000;app.autoSaveInterval=1;app.autoSavePath='auto.json.gz'
-    app._createRollingBackup=Mock(return_value=False);app._saveBuilding=Mock(return_value=True)
-    app._autoSave()
+def test_autosave_reports_backup_failure_even_when_main_save_succeeds(tmp_path):
+    from engine.save_job import capture_save, write_timed, SaveJob
+    app=app_stub();app.lastAutoSaveTime=-100000;app.autoSaveFlashTimer=0
+    app.workshop=SimpleNamespace(status='',error='',saved_revision=-1)
+    blocker=tmp_path/'blocked';blocker.write_text('preserved')
+    path=tmp_path/'auto.json.gz'
+    snapshot=capture_save(app.world,'overworld',app.sceneMetadata,app.sceneStructurePositions)
+    result=write_timed(path,snapshot,module.BLOCK_DEFINITIONS,(blocker,1))
+    future=Future();future.set_result(result)
+    app._pendingSave=SaveJob(future,app.world,app.world.revision,str(path),False,True,0,0,autosave=True)
+    app._pollSave()
     assert app.autoSaveFlashTimer==60 and app.lastAutoSaveTime!=-100000
     assert 'backup failed' in app.tooltipText
+    assert app.workshop.saved_revision==-1 and path.is_file() and blocker.read_text()=='preserved'
 
 
 @pytest.mark.parametrize('operation', ['undo', 'redo'])

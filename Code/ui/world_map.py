@@ -291,7 +291,7 @@ class WorldMapView:
                 except pygame.error:
                     pass
 
-    def set_hub(self, dimension: str, scene) -> None:
+    def set_hub(self, dimension: str, scene, prepared_source=None) -> None:
         self.mode = "hub"
         self.dimension = dimension
         self.scene = scene
@@ -303,7 +303,7 @@ class WorldMapView:
         self.source_map = None
         if scene.region_key is not None:
             from ui.source_map import SourceMap
-            self.source_map = SourceMap(dimension, scene.region_key)
+            self.source_map = prepared_source or SourceMap(dimension, scene.region_key)
 
     def set_level(self, dimension: str, objective) -> None:
         self.source_map = None

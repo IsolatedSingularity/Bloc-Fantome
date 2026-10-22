@@ -124,7 +124,9 @@ def world(s,app,box):
         value=bool(getattr(app,field));r=pygame.Rect(area.x+i%3*(tile+gap),area.y+i//3*(tile_h+gap)-s.scroll,tile,tile_h)
         if not r.colliderect(area):continue
         s.hits.append((r.clip(area),action,True))
-        level=s.tile_levels.get(action,float(value));level+= (float(value)-level)*(1 if s.visibility.reduced_motion else min(1,s.frame_dt/.16));s.tile_levels[action]=level
+        level=s.tile_levels.get(action,float(value));delta=s.frame_dt/.20
+        level=float(value) if s.visibility.reduced_motion else min(float(value),level+delta) if value else max(0.,level-delta)
+        s.tile_levels[action]=level
         color=colors[action];bg=tuple(round(a+(b*.45-a)*level) for a,b in zip(chrome.CONTROL,color))
         chrome.rounded(screen,(*bg,235),r,14)
         if value and not s.visibility.reduced_motion:
@@ -134,7 +136,12 @@ def world(s,app,box):
         if focused:
             pygame.draw.rect(screen,chrome.FOCUS,r.inflate(-2,-2),1,border_radius=13)
             tip=label+' · '+('On' if value else 'Off')
-        icon_size=min(68,tile_h-20,tile-20)
+        track=pygame.Rect(r.right-38,r.bottom-16,28,8)
+        pygame.draw.rect(screen,chrome.MUTED,track,1,border_radius=4)
+        pygame.draw.circle(screen,color if value else chrome.MUTED,(track.x+4+round(20*level),track.centery),3)
+        state=s.small.render('On' if value else 'Off',True,color if value else chrome.MUTED)
+        screen.blit(state,(r.x+10,r.bottom-state.get_height()-6))
+        icon_size=min(68,tile_h-32,tile-20)
         icon(screen,action,pygame.Rect(r.centerx-icon_size//2,r.centery-icon_size//2,icon_size,icon_size),color if value else chrome.MUTED,
              phase=pygame.time.get_ticks()/1000 if value and not s.visibility.reduced_motion else 0)
     top=area.y+toggle_h+16-s.scroll;aw=(area.width-3*gap)//4
@@ -159,11 +166,11 @@ def world(s,app,box):
 
 def menu(s,app,box):
     screen=app.screen;area=s.list_rect;row=max(36,s.small.get_linesize()+12);gap=6
-    groups=[('',('save','open','settings')),('Workspace',('save_as','undo','redo','history','screenshot','fullscreen')),
-            ('Explore',('tutorial','advanced_tutorial','lab','help')),('Presentation',('pin','always','motion','text_scale','clean','legacy')),
-            ('Quick save',tuple('quick_save_'+str(i) for i in range(1,5))),('Quick load',tuple('quick_load_'+str(i) for i in range(1,5)))]
+    groups=[('',('save','open','settings')),('Editing',('undo','redo','history')),('Workspace',('save_as','screenshot','fullscreen')),
+            ('Explore',('tutorial','advanced_tutorial','lab','help')),('Presentation',('pin','always','motion','text_scale','clean','legacy'))]
     header=s.small.get_linesize()+12
     height=sum((header if title else 0)+((len(keys)+(3 if not title else 2)-1)//(3 if not title else 2))*(row+(22 if not title else 0)+gap)+12 for title,keys in groups)
+    height += header + 4*(row+gap)
     s.max_scroll=max(0,height-area.height);s.scroll=s.scroller.update(s.max_scroll,s.visibility.reduced_motion)
     old=screen.get_clip();screen.set_clip(area);y=area.y-s.scroll
     for title,keys in groups:
@@ -181,4 +188,17 @@ def menu(s,app,box):
                 text=s.small.render(label,True,chrome.TEXT)
                 screen.blit(text,text.get_rect(midbottom=(rect.centerx,rect.bottom-4)))
         y+=((len(keys)+cols-1)//cols)*(rh+gap)+12
+    screen.blit(s.small.render('Quick slots',True,chrome.MUTED),(area.x,y));y+=header
+    from pathlib import Path
+    from runtime_paths import SAVES_DIR
+    for slot in range(1,5):
+        occupied = any((Path(SAVES_DIR)/f'quicksave_{slot}{suffix}').is_file() for suffix in ('.json.gz','.json'))
+        text = f'{slot} · '+('Saved' if occupied else 'Empty')
+        label_width = max(90, s.small.size('4 · Saved')[0]+12)
+        screen.blit(s.small.render(text,True,chrome.MUTED),(area.x,y+8))
+        cw = (area.width-label_width-gap)//2
+        for index,action in enumerate(('save','load')):
+            rect=pygame.Rect(area.x+label_width+index*(cw+gap),y,cw,row)
+            s._button(screen,rect,action.title(),f'quick_{action}_{slot}',enabled=action=='save' or occupied,quiet=True)
+        y+=row+gap
     screen.set_clip(old)

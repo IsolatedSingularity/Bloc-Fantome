@@ -78,7 +78,8 @@ def run_handoff(output, app_module):
             assert app.assetManager.loadAllAssets()
             app._createInitialFloor();app._render()
             ready();app._playLifecycleCue('boot');cue('boot')
-            ready();assert app._saveBuilding(filepath=str(out.parent/'saved.json.gz'));cue('save')
+            ready();app._saveBuilding(filepath=str(out.parent/'saved.json.gz'))
+            app._pendingSave.future.result(timeout=15);app._pollSave();cue('save')
             ready();app.currentBuildPath=None
             with temporary_attribute(app,'_openSaveAsDialog',lambda:None):app.workshop.act('save',app)
             assert not any(pygame.mixer.Channel(i).get_busy() for i in (0,1,27,28))
@@ -86,17 +87,21 @@ def run_handoff(output, app_module):
             ready()
             def failed_write(*args,**kwargs):raise OSError('isolated review failure')
             with temporary_attribute(build_io,'write_build',failed_write):
-                assert not app._saveBuilding(filepath=str(out.parent/'failed.json.gz'))
+                app._saveBuilding(filepath=str(out.parent/'failed.json.gz'))
+                while not app._pendingSave.future.done():pygame.event.pump();pygame.time.wait(1)
+                app._pollSave()
+                assert app.workshop.error
             cue('error');app.workshop.error=''
             ready();app.workshop.page='build'
             pygame.event.clear();pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
             app._handleEvents();cue('close');assert not app.workshop.page
             ready();app._requestWorldMap();cue('world_map')
             transition=app._mapTransition
-            with temporary_attribute(pygame.time,'get_ticks',lambda:transition.started+121):
-                app._render();pygame.image.save(app.screen,out.parent/'map-cover.png')
-                started=time.perf_counter();app._update()
-                result['map_activation_ms']=(time.perf_counter()-started)*1000
+            started=time.perf_counter()
+            while not app.worldMapActive and time.perf_counter()-started<15:
+                app._update();app._render();app.clock.tick(60)
+            pygame.image.save(app.screen,out.parent/'map-cover.png')
+            result['map_activation_ms']=(time.perf_counter()-started)*1000
             assert app.worldMapActive
             app._render();app._mapTransition=None;app._exitWorldMap()
             original=dict(app.world.blocks);history=list(app.undoManager.undo_stack)

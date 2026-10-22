@@ -13,18 +13,18 @@ unchanged in `Sounds/`; full characteristics and hashes are in
 
 | Role | File | Trigger | Gain before router |
 | --- | --- | --- | --- |
-| Boot | bootUp.wav | Once assets/audio are ready | 0.48 |
-| Shutdown | shutDown.wav | Normal application exit, distinct from panel close | 0.48 |
-| World Map | worldMap.wav | Request map cover/reveal | 0.52 |
-| Save | save.wav | Confirmed successful manual write, including Ctrl+S | 0.50 |
-| Error | error.wav | Failed operation or explicit rejection | 0.48 |
-| Button | pressButton.wav | Deliberate ordinary UI activation | 0.48 |
-| Close | close.wav | Dismiss/back/collapse by mouse or keyboard | 0.42 |
+| Boot | bootUp.wav | First visible swamp splash, before bulk assets | 0.76 |
+| Shutdown | shutDown.wav | Normal application exit, distinct from panel close | 0.76 |
+| World Map | worldMap.wav | Start cartographic unfolding | 0.82 |
+| Save | save.wav | Confirmed successful manual write, including Ctrl+S | 0.78 |
+| Error | error.wav | Failed operation or explicit rejection | 0.80 |
+| Button | pressButton.wav | Deliberate ordinary UI activation | 0.80 |
+| Close | close.wav | Dismiss/back/collapse by mouse or keyboard | 0.72 |
 
 No save cue for opening/cancelling a dialog or background autosaves. Errors are
 not hover warnings; throttle repeats to at most one per 650 ms. No default hover,
 focus, scrolling, typing or idle cue. Extras are catalogued, unassigned proposals.
-Application shutdown has a bounded 320 ms event-pumped tail, fading after 220 ms;
+Application shutdown has a bounded 620 ms event-pumped tail, fading after 500 ms;
 the original 5.31 s file is retained intact. This deliberately short exit audition
 requires owner listening review. It does not hold the app open for the full decay.
 
@@ -42,15 +42,19 @@ Channel allocation: buttons/retained map cues 0–1; weather 2–3; ambient 4–
 world effects 8–23; horror 24–25; portal 26; semantic UI 27–28; lifecycle 29;
 opening piano 30; editor music 31; opening-specific pools begin at 32. Reserve
 all named channels from automatic Sound.play. Never steal editor music, paused
-portal/horror loops or other pools for a UI cue. A saturated UI pool drops the
-new cue; deliberately ending the old boot cue on shutdown is lifecycle cleanup.
+portal/horror loops or other pools for a UI cue. Ordinary button attacks may replace an older button tail; a higher-priority
+semantic cue can replace a lower-priority semantic tail. No other pool is stolen; deliberately ending the old boot cue on shutdown is lifecycle cleanup.
 
 Selected cues use the existing effects slider/mute, applied to all three UI
 pools. They pass through 0.72 router headroom once. Do not multiply both Sound
 and channel gains by the same slider. Music remains under its existing separate
 controller. There is no new global master control. Respect existing volume
 ownership when adding world sounds, especially callers that already pass effects
-gain. Keep mix headroom; measure recordings and full audition mixes separately.
+gain. Ambient/weather/portal/horror buses use 0.60 of their previous gain, with the
+existing ambient mute also covering Horror Rain. Selected UI gains rise roughly
+4 dB. Horror Rain processes a bounded 30-second view of its preserved rain
+recording rather than copying/distorting the entire 12-minute recording.
+Keep mix headroom; measure recordings and full audition mixes separately.
 
 World Map retains its MP3 score sequence, plan/completion and quiet rollover
 semantics. Ordinary map button activation uses the selected button file. Do not
@@ -76,7 +80,7 @@ Human-derived distress must remain recognizably recorded voices: distinct breath
 whisper, strain and occasional sharp cries, bounded deep processing, irregular
 phrases, pauses and limited overlap. Preserve source attribution and processing
 recipes. Do not synthesize substitute vocals. Temporary rig and performance stay
-within Pass B; original creature design/Pass C remains paused.
+within Pass B; Pass C engineering/UX/consolidation and Pass D original creature remain deferred.
 
 ## Listening acceptance and evidence
 

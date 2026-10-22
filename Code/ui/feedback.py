@@ -8,13 +8,13 @@ from runtime_paths import SOUNDS_DIR
 
 # filename, gain before router headroom, cooldown seconds, priority, channel pool
 CUES = {
-    'button': ('pressButton.wav', .48, .075, 1, 'ui'),
-    'close': ('close.wav', .42, .15, 2, 'ui_semantic'),
-    'world_map': ('worldMap.wav', .52, .5, 3, 'ui_semantic'),
-    'save': ('save.wav', .50, .2, 4, 'ui_semantic'),
-    'error': ('error.wav', .48, .65, 5, 'ui_semantic'),
-    'boot': ('bootUp.wav', .48, 1, 6, 'lifecycle'),
-    'shutdown': ('shutDown.wav', .48, 1, 6, 'lifecycle'),
+    'button': ('pressButton.wav', .80, .075, 1, 'ui'),
+    'close': ('close.wav', .72, .15, 2, 'ui_semantic'),
+    'world_map': ('worldMap.wav', .82, .5, 3, 'ui_semantic'),
+    'save': ('save.wav', .78, .2, 4, 'ui_semantic'),
+    'error': ('error.wav', .80, .65, 5, 'ui_semantic'),
+    'boot': ('bootUp.wav', .76, 1, 6, 'lifecycle'),
+    'shutdown': ('shutDown.wav', .76, 1, 6, 'lifecycle'),
 }
 ALIASES = {'select': 'button', 'open': 'button', 'cancel': 'close',
            'success': 'save', 'failure': 'error'}
@@ -54,7 +54,17 @@ def play(assets, name):
     if last is None:last = assets._feedback_last = {}
     filename, gain, cooldown, priority, group = CUES[name]
     if now-last.get(name, -100) < cooldown:return None
-    channel = assets.audioRouter.play(sound, group=group, volume=gain, replace=False)
+    if group == 'ui_semantic':
+        candidates=[]
+        cache=preload(assets)
+        for index in (27,28):
+            candidate=pygame.mixer.Channel(index)
+            current=candidate.get_sound()
+            current_priority=next((CUES[key][3] for key,value in cache.items() if value is current),99)
+            if candidate.get_busy():candidates.append((current_priority,index))
+        if len(candidates)==2 and min(candidates)[0] < priority:
+            pygame.mixer.Channel(min(candidates)[1]).stop()
+    channel = assets.audioRouter.play(sound, group=group, volume=gain, replace=group=='ui')
     if channel is not None:last[name] = now
     return channel
 

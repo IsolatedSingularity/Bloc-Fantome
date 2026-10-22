@@ -103,6 +103,14 @@ class GuidedTutorialMixin:
         if focus in ('blocks','toggles','structures','worlds','biomes','terrain'):
             self.highlightRect=getattr(app,'lessonControlRects',{}).get(focus)
         elif focus=='settings':self.highlightRect=getattr(app,'settingsGearRect',None)
+    def _restoreTileRect(self):
+        preview = getattr(self, 'selectedPreviewRect', pygame.Rect(24, self.screenHeight-88, 190, 78))
+        hotbar = getattr(self, 'hotbarBounds', pygame.Rect(self.screenWidth//2-245, self.screenHeight-70, 490, 60))
+        tile = pygame.Rect(preview.right+8, self.screenHeight-42, 32, 32)
+        if tile.colliderect(hotbar.inflate(16, 16)) or tile.right > self.screenWidth-16:
+            tile.topleft = (max(16, min(preview.right+8, self.screenWidth-48)), preview.top-40)
+        return tile
+
     def _playClickSound(self):
         if self.assetManager:self.assetManager.playClickSound()
     def handleEvent(self,event):

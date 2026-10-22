@@ -124,6 +124,8 @@ class PreloadedMusicBackend:
         ordered = list(dict.fromkeys(str(path) for path in paths if path))
         if not ordered:
             return False
+        if self._sound is not None and self._path:
+            self._preloaded[self._path] = self._sound
         self.stop()
         sequence = []
         for path in ordered:

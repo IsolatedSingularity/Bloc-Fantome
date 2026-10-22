@@ -11,8 +11,8 @@ import pygame
 from ui.fonts import load_ui_font
 
 # Splash screen configuration
-SPLASH_DISPLAY_FRAMES = 120   # 2 seconds at 60fps
-SPLASH_FADE_FRAMES = 60       # 1 second fade
+SPLASH_DISPLAY_FRAMES = 0     # Loading itself supplies the visible dwell
+SPLASH_FADE_FRAMES = 14       # Short optional handoff at 60fps
 SPLASH_FPS = 60
 
 # Colors
@@ -118,7 +118,6 @@ class SplashScreen:
                                 Should return a pygame.Surface of the game view.
         """
         # Clear events
-        pygame.event.clear()
         pygame.event.pump()
 
         # Render title

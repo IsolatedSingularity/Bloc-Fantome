@@ -32,6 +32,50 @@ Pass A's direction is owner-accepted. Performance and incomplete native keyboard
 trackpad and OS DPI checks remain distinct holds; acceptance of style is not a
 claim that those checks passed.
 
+## Pass B finalization contracts
+
+The roadmap is Pass B finalization, then Pass C engineering/UX/consolidation,
+then Pass D original creature. The official installation and main branch remain
+held until owner acceptance after Pass C. This pass changes development only.
+
+The swamp painting presents before bulk assets, with boot audio requested at its
+first visible frame. Audio decoding yields to the display/event thread. The
+cinematic is manual through Settings > Play Introduction; only an explicit
+Autoplay introduction selection enables launch playback. Guided tutorial launch
+preferences remain independent. The welcome lesson uses the existing compact
+sanctuary, closely framed with sky and lighting. Its minimized tile sits 8 px
+right of the selected-block preview, lifting above it when the hotbar needs room.
+
+World controls retain their approved artwork, add a finite 200 ms state switch
+and explicit On/Off text, and snap immediately under Reduced Motion. Fresh
+skybox settings follow asset availability; saved choices remain authoritative.
+Horror Rain is exclusive with ordinary precipitation, cleans its loop on exit or
+dimension change, and uses a cached haze rather than world-size per-frame fog work.
+
+The map unfolds from its central fold over fixed contour artwork, then reveals
+the actual map outward. Independent preparation includes data, atlas composition
+and music decoding. Worker blits yield between bounded batches. Cancellation
+never commits a partial map. At most two prepared viewports remain cached.
+Library Structures avoids scanning saves; Saved Builds scans asynchronously;
+world/biome preview sources are retained within the existing byte budget.
+
+Save presents Saving… before an independently owned snapshot is captured. A
+single worker handles serialization/compression/atomic writes and autosave
+backups. Capture interns immutable property values and pumps/presents progress
+in bounded batches while input remains queued; mutation dispatch resumes when
+capture finishes. The writer streams v5 records without another world-sized list.
+Success belongs to the captured revision and document, including edits
+made during writing. Background saves never mark a manual document clean.
+Escape first belongs to existing modals/tools; otherwise it opens the same exit
+confirmation as window close. A second Escape confirms. Stay and Exit are
+visible; dirty builds also offer Save and Exit. Pending saves must resolve before
+exit, and failure or dialog cancellation retains the world. Shutdown crossfades
+to the swamp painting while preserving the selected recording's attack.
+
+Menu retains Save/Open/Settings and groups Editing, Workspace, Explore and
+Presentation separately. Four numbered quick-slot rows show occupancy and
+separate Save/Load controls, including legacy uncompressed slot files.
+
 ## 3.0: Cathedral Soft Blue, Variant D
 
 Primary target: [unchanged owner PNG](docs/design/references/cathedral-soft-blue-variant-d.png).

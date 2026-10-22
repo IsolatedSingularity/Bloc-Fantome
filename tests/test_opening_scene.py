@@ -72,12 +72,15 @@ def test_native_close_remains_available_during_encounter(app):
         assert scene.phase=='encounter'
         pygame.event.clear();pygame.event.post(pygame.event.Event(pygame.QUIT))
         app._handleEvents()
-        assert app.openingScene is None and not app.running
+        assert app.openingScene is None and app.running
+        assert app._exitDialog is not None
+        app._exitAction('stay')
         from ui.opening_audio import OPENING_CHANNELS
         assert not any(pygame.mixer.Channel(i).get_busy() for i in (*OPENING_CHANNELS.values(),30))
     finally:
         if app.openingScene:app._closeOpeningScene()
         app.running=running
+        app._exitDialog=None
 
 
 def test_rigid_sections_frame_rate_independent_and_exact_final_pose(app):
@@ -121,15 +124,15 @@ def test_visible_ghost_is_clickable_at_every_supported_size(app,size):
 def test_skip_preference_persists_and_corrupt_config_is_safe(app,tmp_path):
     target=tmp_path/'opening.json'
     with patch('ui.opening_scene.CONFIG_PATH',str(target)):
-        assert not skip_on_launch()
+        assert skip_on_launch()
         app.settingsMenuOpen=True
         app._renderSettingsMenu()
         control=next(rect for _,action,rect in app._settingsLayout()[2] if action=='skip')
         app._handleSettingsClick(*control.center)
         app.settingsMenuOpen=False
-        assert skip_on_launch()
-        target.write_text('[]')
         assert not skip_on_launch()
+        target.write_text('[]')
+        assert skip_on_launch()
 
 
 def test_settings_opening_button_matches_rendered_row(app):

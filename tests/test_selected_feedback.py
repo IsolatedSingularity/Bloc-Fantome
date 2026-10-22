@@ -66,12 +66,17 @@ def test_missing_optional_cues_silent_but_release_rejects(assets, tmp_path, monk
 
 def test_save_cue_owned_by_successful_write_for_keyboard_and_toolbar(app, tmp_path):
     with patch.object(app.assetManager.audioRouter, 'play') as play:
-        assert app._saveBuilding(filepath=str(tmp_path/'real.json.gz'))
+        assert app._saveBuilding(filepath=str(tmp_path/'real.json.gz')) is None
+        assert play.call_count == 0
+        app._pendingSave.future.result(timeout=10)
+        app._pollSave()
         assert play.call_args.args[0] is app.assetManager._selected_cues['save']
         play.reset_mock()
         with patch('engine.build_io.write_build', side_effect=OSError('disk unavailable')):
             app.assetManager._feedback_last = {}
-            assert not app._saveBuilding(filepath=str(tmp_path/'failed.json.gz'))
+            assert app._saveBuilding(filepath=str(tmp_path/'failed.json.gz')) is None
+            with pytest.raises(OSError):app._pendingSave.future.result(timeout=10)
+            app._pollSave()
         assert play.call_args.args[0] is app.assetManager._selected_cues['error']
         play.reset_mock()
         app.currentBuildPath = None
@@ -100,7 +105,9 @@ def test_map_transition_cancel_reduced_motion_and_editor_restore(app):
     app._handleEvents()
     assert app._mapTransition is None and not app.worldMapActive
     app.workshop.visibility.reduced_motion=True
-    app._requestWorldMap();app._update()
+    app._requestWorldMap()
+    app._mapTransition.future.result(timeout=10)
+    app._update()
     try:
         assert app.worldMapActive and app._mapTransition.finished
         app._render()
@@ -117,3 +124,12 @@ def test_lifecycle_once_uses_selected_files_and_effects_volume(app):
         app._playLifecycleCue('shutdown')
         assert play.call_count==2 and play.call_args.args[0] is app.assetManager._selected_cues['shutdown']
         assert app.assetManager.audioRouter._group_volume['lifecycle']==app.effectsVolume
+
+
+def test_confirmed_save_preempts_a_lower_priority_tail_only(assets):
+    feedback.play(assets,'world_map');feedback.play(assets,'close')
+    protected=pygame.mixer.Channel(31)
+    protected.play(assets._selected_cues['boot'],loops=-1)
+    assert feedback.play(assets,'save') is not None
+    assert any(pygame.mixer.Channel(i).get_sound() is assets._selected_cues['save'] for i in (27,28))
+    assert protected.get_busy() and protected.get_sound() is assets._selected_cues['boot']

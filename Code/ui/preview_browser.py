@@ -115,6 +115,8 @@ class PreviewImages:
                 if sprite:surface.blit(sprite,(round((x-y)*32*scale+ox-sprite.get_width()/2),round(((x+y)*16-z*32)*scale+oy)))
             if source is None:return None
         if source is None:return None
+        if kind in ('world','biome'):
+            self._retain((identity,(600,400)),source)
         # Remove capture margins before fitting the tile. Preserve the entire
         # actual build, including narrow towers and transparent decoration.
         bounds=source.get_bounding_rect(min_alpha=16)

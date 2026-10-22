@@ -24,14 +24,14 @@ def skip_on_launch():
     try:
         with open(CONFIG_PATH, encoding='utf-8') as handle:
             data=json.load(handle)
-            return bool(data.get('skipOnLaunch', False)) if isinstance(data,dict) else False
+            return not bool(data.get('autoplayIntroduction', False)) if isinstance(data,dict) else True
     except (OSError, ValueError, TypeError):
-        return False
+        return True
 
 
 def save_skip(value):
     with open(CONFIG_PATH + '.tmp', 'w', encoding='utf-8') as handle:
-        json.dump({'skipOnLaunch': bool(value)}, handle)
+        json.dump({'autoplayIntroduction': not bool(value)}, handle)
     os.replace(CONFIG_PATH + '.tmp', CONFIG_PATH)
 
 

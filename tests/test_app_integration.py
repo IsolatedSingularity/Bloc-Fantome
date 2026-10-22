@@ -1820,7 +1820,13 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertTrue(self.app.running)
 
         press_escape()
+        self.assertTrue(self.app.running)
+        self.assertIsNotNone(self.app._exitDialog)
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0))
+        self.app._handleEvents()
         self.assertFalse(self.app.running)
+        self.app._exitDialog=None
 
     def test_tutorial_can_open_nether_and_end_biomes_and_restore(self):
         original=dict(self.app.world.blocks)

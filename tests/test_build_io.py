@@ -151,6 +151,17 @@ def test_redstone_component_state_round_trips(tmp_path):
     assert restored.repeaterDelay == 4 and restored.repeaterLocked
 
 
+def test_streamed_write_failure_preserves_existing_save(tmp_path):
+    path=tmp_path/'existing.gz'
+    original=WorldSnapshot(2,2,2,blocks={(0,0,0):Block.STONE})
+    write_build(path,original,DEFINITIONS)
+    before=path.read_bytes()
+    broken=WorldSnapshot(2,2,2,blocks={(0,0,0):Block.STONE,(1,0,0):object()})
+    with pytest.raises(AttributeError):write_build(path,broken,DEFINITIONS)
+    assert path.read_bytes()==before
+    assert not path.with_name(path.name+'.tmp').exists()
+
+
 def test_shared_painter_sort_preserves_each_modes_exact_total_order(monkeypatch):
     import random
     from engine import build_io, native_acceleration

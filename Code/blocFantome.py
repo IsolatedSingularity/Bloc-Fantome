@@ -69,7 +69,12 @@ pygame.mixer.pre_init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 # Initialize pygame
 pygame.init()
 if pygame.mixer.get_init() is None:
-    pygame.mixer.init(44100, -16, 2, AUDIO_BUFFER_SIZE)
+    try:
+        pygame.mixer.init(44100, -16, 2, AUDIO_BUFFER_SIZE)
+    except pygame.error as error:
+        print(f'Audio device unavailable; continuing silently: {error}')
+        os.environ['SDL_AUDIODRIVER'] = 'dummy'
+        pygame.mixer.init(44100, -16, 2, AUDIO_BUFFER_SIZE)
 from ui.opening_audio import MIXER_CHANNEL_COUNT, RESERVED_CHANNEL_COUNT
 pygame.mixer.set_num_channels(MIXER_CHANNEL_COUNT)
 pygame.mixer.set_reserved(RESERVED_CHANNEL_COUNT)
@@ -3663,6 +3668,11 @@ class AssetManager:
         self.rainSoundChannel: Optional[pygame.mixer.Channel] = None
         self.rainTexture: Optional[pygame.Surface] = None
     
+    def _startupPulse(self):
+        callback = getattr(self, 'startupPulse', None)
+        import threading
+        if callback and threading.current_thread() is threading.main_thread():callback()
+
     def loadAllAssets(self) -> bool:
         """
         Load all textures and sounds from Texture Hub and Sound Hub.
@@ -3679,28 +3689,43 @@ class AssetManager:
             return False
         
         # Load textures
+        self._startupPulse()
         self._loadTextures()
         print(f"  Loaded {len(self.textures)} textures")
         
         # Create isometric block sprites
+        self._startupPulse()
         self._createBlockSprites()
         print(f"  Created {len(self.blockSprites)} block sprites")
         # Pre-render mipmap levels for all unique sprites (flyweight optimization)
+        self._startupPulse()
         self._buildMipmaps()
         print(f"  Built mipmaps for {len(self._mipmaps)} unique sprite(s)")
         
         # Create icon sprites for the panel
+        self._startupPulse()
         self._createIconSprites()
         
         # Load sounds from Sound Hub
-        self._loadSounds()
+        self._startupPulse()
+        if getattr(self, 'startupPulse', None):
+            with ThreadPoolExecutor(max_workers=1, thread_name_prefix='sound-decode') as loader:
+                future = loader.submit(self._loadSounds)
+                while not future.done():
+                    self._startupPulse()
+                    pygame.time.wait(1)
+                future.result()
+        else:
+            self._loadSounds()
         print(f"  Loaded {len(self.sounds)} sound categories")
         
         # Load UI textures
+        self._startupPulse()
         self._loadUITextures()
         print("  Loaded UI textures")
         
         # Create background
+        self._startupPulse()
         self._createBackground()
         print("  Created background")
         
@@ -3725,6 +3750,7 @@ class AssetManager:
         """Load all texture files into memory"""
         textureFiles = set()
         for blockDef in BLOCK_DEFINITIONS.values():
+            self._startupPulse()
             textureFiles.add(blockDef.textureTop)
             textureFiles.add(blockDef.textureSide)
             textureFiles.add(blockDef.textureBottom)
@@ -3746,6 +3772,7 @@ class AssetManager:
         })
         
         for textureName in textureFiles:
+            self._startupPulse()
             texturePath = os.path.join(TEXTURES_DIR, textureName)
             if os.path.exists(texturePath):
                 texture = pygame.image.load(texturePath).convert_alpha()
@@ -4149,6 +4176,7 @@ class AssetManager:
         """
         self._spriteInternPool.clear()
         for blockType, blockDef in BLOCK_DEFINITIONS.items():
+            self._startupPulse()
             topTex = self.textures.get(blockDef.textureTop)
             sideTex = self.textures.get(blockDef.textureSide)
             frontTex = self.textures.get(blockDef.textureFront) if blockDef.textureFront else sideTex
@@ -6164,6 +6192,7 @@ class AssetManager:
         since they have complex geometry that doesn't scale well.
         """
         for blockType, blockDef in BLOCK_DEFINITIONS.items():
+            self._startupPulse()
             # Special blocks get dedicated icon rendering (they're problematic)
             if blockDef.isThin:
                 # Compose both model cells so the preview matches a placed door.
@@ -6809,12 +6838,14 @@ class AssetManager:
         
         # Load dig sounds for basic material categories
         for category in ["grass", "gravel", "stone", "wood", "cloth", "sand"]:
+            self._startupPulse()
             self.sounds[category] = self._loadSoundFiles(
                 category, digDir, f"{category}{{i}}.ogg"
             )
         
         # Load additional sound variations (snow, coral, wet_grass)
         for category in ["snow", "coral", "wet_grass"]:
+            self._startupPulse()
             self.sounds[category] = self._loadSoundFiles(
                 category, digDir, f"{category}{{i}}.ogg"
             )
@@ -6830,6 +6861,7 @@ class AssetManager:
             self.sounds["water"].append(water)
             print(f"    Loaded water sound")
         for splashFile in ["splash.ogg", "splash2.ogg"]:
+            self._startupPulse()
             splash = self._loadSingleSound(os.path.join(liquidDir, splashFile), SOUND_VOLUME_AMBIENT)
             if splash:
                 self.sounds["water"].append(splash)
@@ -6846,6 +6878,7 @@ class AssetManager:
         # Fluid editing is a discrete pour/scoop, not a random ambience loop.
         bucketDir=os.path.join(SOUNDS_DIR,'item','bucket')
         for material,suffix in (('water',''),('lava','_lava')):
+            self._startupPulse()
             for event,verb in (('place','empty'),('break','fill')):
                 key=f'{material}_{event}'
                 self.sounds[key]=self._loadSoundFiles(key,bucketDir,f'{verb}{suffix}{{i}}.ogg',maxVariants=3)
@@ -6883,6 +6916,7 @@ class AssetManager:
             "decorated_pot", "copper_grate", "copper_bulb"
         ]
         for category in blockSoundCategories:
+            self._startupPulse()
             categoryDir = os.path.join(blockDir, category)
             self.sounds[category] = self._loadSoundFiles(category, categoryDir, "break{i}.ogg")
             # Also try to load place sounds (some blocks have separate place sounds)
@@ -6911,6 +6945,7 @@ class AssetManager:
         enderChestDir = os.path.join(blockDir, "enderchest")
         self.sounds["enderchest"] = []
         for sndFile in ["open.ogg", "close.ogg"]:
+            self._startupPulse()
             snd = self._loadSingleSound(os.path.join(enderChestDir, sndFile))
             if snd:
                 self.sounds["enderchest"].append(snd)
@@ -6958,6 +6993,7 @@ class AssetManager:
         entitySoundDir = os.path.join(SOUNDS_DIR, "entity")
         copperChestDir = os.path.join(entitySoundDir, "copper_chest")
         for variant in ["", "_weathered", "_oxidized"]:
+            self._startupPulse()
             key = f"copper_chest{variant}" if variant else "copper_chest"
             self.sounds[key] = []
             for i in range(1, 5):
@@ -7037,7 +7073,7 @@ class AssetManager:
         rainTexPath = os.path.join(TEXTURES_DIR.replace("blocks", "environment"), "rain.png")
         if os.path.exists(rainTexPath):
             try:
-                self.rainTexture = pygame.image.load(rainTexPath).convert_alpha()
+                self.rainTexture = pygame.image.load(rainTexPath)
                 print(f"    Loaded rain texture")
             except Exception as e:
                 print(f"Warning: Could not load rain texture: {e}")
@@ -7812,6 +7848,7 @@ class AssetManager:
         all_sprites += [v for v in self.stairSprites.values()]
         all_sprites += [v for v in self.doorSprites.values()]
         for sprite in all_sprites:
+            self._startupPulse()
             if sprite is None:
                 continue
             if sprite in seen:
@@ -8161,6 +8198,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.skyboxRenderer = SkyboxRenderer(
             SKYBOXES_DIR, (WINDOW_WIDTH, WINDOW_HEIGHT)
         )
+        self.skyboxesEnabled = self.skyboxRenderer.available(DIMENSION_OVERWORLD)
         self.skyboxPrevRect = pygame.Rect(0, 0, 0, 0)
         self.skyboxNextRect = pygame.Rect(0, 0, 0, 0)
         self.skyboxToggleRect = pygame.Rect(0, 0, 0, 0)
@@ -8783,7 +8821,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                         "worldCenteredRotation", False
                     )
                     # Version 2 adopts skies by default; later user choices persist.
-                    self.skyboxesEnabled = config.get('skyboxesEnabled',True) if int(config.get('skyboxDefaultsVersion',0))>=2 else True
+                    self.skyboxesEnabled = bool(config.get('skyboxesEnabled', self.skyboxesEnabled))
                     # Migrate the first skybox release to the intended presets:
                     # Overworld Night and End Void Aurora. Once migrated, user
                     # choices persist normally.
@@ -8920,6 +8958,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def run(self) -> None:
         """Main application loop"""
         startupSplash = None
+        from time import perf_counter
+        self._startupMetrics = {'run_started': perf_counter()}
         startupWindowSize = self.screen.get_size()
         self._compactStartupSplash = True
         try:
@@ -8930,19 +8970,37 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
             )
             startupSplash.present()
+            self._startupMetrics['splash_presented'] = perf_counter()
+            self._playLifecycleCue('boot')
+            self._startupMetrics['boot_requested'] = perf_counter()
         except Exception as error:
             print(f"Initial splash error: {error}")
         self._queueTutorialPreloads()
         # Load assets
-        if not self.assetManager.loadAllAssets():
+        def startup_pulse():
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:self.running = False
+            if startupSplash and pygame.time.get_ticks()-getattr(self, '_startupLastPresent', 0) >= 16:
+                startupSplash.present()
+                self._startupLastPresent = pygame.time.get_ticks()
+        self.assetManager.startupPulse = startup_pulse
+        loaded = self.assetManager.loadAllAssets()
+        self._startupMetrics['assets_ready'] = perf_counter()
+        if not self.running:
+            self._shutdown()
+            return
+        if not loaded:
             print("Failed to load assets!")
             return
 
-        self._playLifecycleCue('boot')
-        
-        # Start music immediately after assets load
-        self._playMenuMusic()
-        self._preloadTutorialMusic()
+        # Decode audio while the display thread keeps presenting the painting.
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix='startup-audio') as startup_audio:
+            for task in (self._playMenuMusic, self._preloadTutorialMusic):
+                future = startup_audio.submit(task)
+                while not future.done():
+                    startup_pulse()
+                    self.clock.tick(60)
+                future.result()
         
         # Set 3D app icon (after assets loaded)
         self._setAppIcon()
@@ -8966,6 +9024,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Create initial floor (needed for splash screen fade)
         self._createInitialFloor()
+        self.workshop.saved_revision = self.world.revision
         
         # Stage the first tutorial beneath the splash so its terrain and panel
         # are revealed together instead of popping in one blocking load later.
@@ -8980,6 +9039,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._compactStartupSplash = False
         self.screen = pygame.display.set_mode(startupWindowSize, pygame.RESIZABLE)
         self._applyWindowSize(*startupWindowSize, recreate=False)
+        handoff = SplashScreen(self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR)
+        self._startupOverlay = handoff.background_tile.copy()
+        self._startupOverlay.blit(handoff.title, handoff._title_rect())
+        self._startupRevealStarted = None
         from ui.opening_scene import skip_on_launch
         if not skip_on_launch():
             self._openOpeningScene()
@@ -8998,6 +9061,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         print("  ESC: Quit")
         print("================================\n")
         
+        self.assetManager.startupPulse = None
+        self._startupMetrics['editor_ready'] = perf_counter()
         # Main loop
         while self.running:
             self.performanceMonitor.frame_start()
@@ -9009,25 +9074,67 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         self._shutdown()
 
+    def _requestExit(self):
+        from ui.exit_dialog import ExitDialog
+        if getattr(self, '_exitDialog', None):
+            return
+        if self.openingScene is not None:
+            self._closeOpeningScene()
+        if self.worldMapActive:
+            self._exitWorldMap()
+        if self.tutorialScreen.visible:
+            self.tutorialScreen.hide()
+        dirty = self.workshop.saved_revision != self.world.revision
+        self._exitDialog = ExitDialog(self.screen, dirty)
+        self._exitAfterSave = False
+
+    def _exitAction(self, action):
+        if action == 'stay':
+            self._exitDialog = None
+            self._exitAfterSave = False
+        elif action == 'save':
+            result = self._saveBuilding() if self.currentBuildPath else self._openSaveAsDialog()
+            self._exitAfterSave = getattr(self, '_pendingSave', None) is not None
+        elif action == 'exit':
+            if getattr(self, '_pendingSave', None):
+                self._exitAfterSave = True
+            else:
+                self.running = False
+
     def _shutdown(self):
         if self.openingScene is not None:self._closeOpeningScene()
         self._playLifecycleCue('shutdown')
         shutdown_started = pygame.time.get_ticks()
+        closing = SplashScreen(self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR)
+        previous = self.screen.copy()
+        painting = closing.background_tile.copy()
+        painting.blit(closing.title, closing._title_rect())
         # Save user preferences before quitting
         self._saveAppConfig()
         
+        if hasattr(self, '_saveExecutor'):
+            self._saveExecutor.shutdown(wait=True)
         # Clean up
+        self._stopHorrorRain()
+        if self.snowEnabled:self._stopSnow()
         if self.rainEnabled:
             self._stopRain()
         self.musicController.stop()
         self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
+        if hasattr(self, '_mapExecutor'):self._mapExecutor.shutdown(wait=False, cancel_futures=True)
         # Bound the exit tail; continue pumping OS events, never wait for the
         # selected recording's full multi-second decay or delay failed startup.
         fading=False
-        while pygame.time.get_ticks()-shutdown_started < 320:
+        map_futures = getattr(self, '_mapFutures', ())
+        while pygame.time.get_ticks()-shutdown_started < 620 or any(not future.done() for future in map_futures):
             pygame.event.pump()
-            if not fading and pygame.time.get_ticks()-shutdown_started >= 220:
-                pygame.mixer.Channel(29).fadeout(100)
+            elapsed = pygame.time.get_ticks() - shutdown_started
+            self.screen.blit(previous, (0, 0))
+            painting.set_alpha(255 if self.workshop.visibility.reduced_motion else min(255, round(elapsed / 200 * 255)))
+            self.screen.blit(painting, (0, 0))
+            pygame.display.flip()
+            if not fading and pygame.time.get_ticks()-shutdown_started >= 500:
+                if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(120)
                 fading=True
             self.clock.tick(60)
         pygame.quit()
@@ -9368,6 +9475,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         PREVIEW_HEIGHT = 240
         
         for structName, structData in PREMADE_STRUCTURES.items():
+            self.assetManager._startupPulse()
             # Create transparent surface for preview
             preview = pygame.Surface((PREVIEW_WIDTH, PREVIEW_HEIGHT), pygame.SRCALPHA)
             preview.fill((0, 0, 0, 0))
@@ -9540,6 +9648,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.celestialEnabled = False
             self._stopCelestial()
         
+        if self.horrorRainEnabled:
+            self._stopHorrorRain()
+            self.horrorRainEnabled = False
+
         self.currentDimension = newDimension
         if hasattr(self.world, 'setDimension'):
             self.world.setDimension(newDimension)
@@ -9548,6 +9660,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.assetManager._createBackground(newDimension)
         
         if reset_canvas:
+            self._documentGeneration = getattr(self, '_documentGeneration', 0) + 1
             # A dimension selection is a fresh normal building canvas. Worlds can
             # be 256 x 256, so retaining their bounds here used to create 65,536
             # floor cells one at a time and stall for several seconds.
@@ -9912,6 +10025,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         )
         self._worldMapSessionSnapshot = {
             "world": snapshot,
+            "music": getattr(self.musicBackend, "_path", None),
+            "was_clean": self.workshop.saved_revision == self.world.revision,
+            "revision": self.world.revision,
             "sceneTerrainMode": self.sceneTerrainMode,
             "hotbar": list(self.hotbar),
             "hotbar2": list(self.hotbar2),
@@ -10006,6 +10122,20 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from ui.map_transition import MapTransition
         from ui.feedback import play
         self._mapTransition=MapTransition(self.screen,self.workshop.visibility.reduced_motion)
+        from ui.map_preparation import prepare_map
+        from copy import copy
+        if not hasattr(self, '_mapExecutor'):
+            self._mapExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='map-stage')
+        key = (self.currentDimension, self.screen.get_size())
+        self._mapTransition.cache_key = key
+        self._mapTransition.future = self._mapExecutor.submit(prepare_map,
+            self.currentDimension, self.world.catalog, copy(self.renderer), self.screen.get_size(),
+            self.musicBackend._decode, self._worldMapMusicSequence(self.currentDimension, include_intro=True)[0],
+            getattr(self, '_mapPreparedCache', {}).get(key))
+        # Canceled transitions can still own a running SDL surface preparation.
+        # Retain those futures until shutdown has safely finished their work.
+        self._mapFutures = {future for future in getattr(self, '_mapFutures', ()) if not future.done()}
+        self._mapFutures.add(self._mapTransition.future)
         play(self.assetManager,'world_map')
 
     def _renderMapTransition(self):
@@ -10014,7 +10144,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             transition.render(self.screen)
             if transition.finished:self._mapTransition=None
 
-    def _openWorldMap(self) -> None:
+    def _openWorldMap(self, prepared=None) -> None:
         """Enter the map without allowing its temporary worlds to replace the build."""
         if self.worldMapActive:
             return
@@ -10035,16 +10165,21 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.snowEnabled = False
         self.horrorRainEnabled = False
         self.worldMapActive = True
-        self._switchWorldMapHub(self.currentDimension, include_intro=True)
+        self._switchWorldMapHub(self.currentDimension, include_intro=True, prepared=prepared)
 
-    def _switchWorldMapHub(self, dimension: str, *, include_intro: bool = False) -> None:
+    def _switchWorldMapHub(self, dimension: str, *, include_intro: bool = False, prepared=None) -> None:
         self.panning = False
         self.tooltipTimer = 0
         self.worldMapMode = "hub"
         self.worldMapObjective = None
         self.worldMapProgress = (0, 0, False)
         self.worldMapDimension = dimension
-        self.worldMapScene = build_world_map_hub(self.world, dimension)
+        if prepared is None:
+            self.worldMapScene = build_world_map_hub(self.world, dimension)
+        else:
+            self.worldMapScene, bounds, _source, music = prepared
+            self.musicBackend._preloaded.update(music)
+            self.world.resize(*bounds[:3], min_y=bounds[3], preserve=False)
         self.sceneMetadata = {
             "name": self.worldMapScene.title,
             "mode": "world_map_hub",
@@ -10067,7 +10202,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         )
         self.showGrid = False
         self.interactionMode = False
-        self.worldMapView.set_hub(dimension, self.worldMapScene)
+        self.worldMapView.set_hub(dimension, self.worldMapScene, prepared[2] if prepared else None)
         self._frameWorldMapHub()
 
     def _frameWorldMapHub(self) -> None:
@@ -10196,7 +10331,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.lightingDirty = True
         self._visibleOrderCaches.clear()
         self._invalidateViewCaches()
-        self._playMenuMusic(snapshot.dimension)
+        self._playMenuMusic(snapshot.dimension, preferredTrack=state.get("music"))
+        if state.get("was_clean"):self.workshop.saved_revision = self.world.revision
         if getattr(self, "_tourMapReturn", False):
             self._tourMapReturn = False
             self.tutorialScreen.visible = True
@@ -10910,7 +11046,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if self.openingScene is not None:self._closeOpeningScene()
-                self.running = False
+                self._requestExit()
+                continue
+            if getattr(self, '_exitDialog', None):
+                self._exitAction(self._exitDialog.handle(event))
                 continue
             if getattr(self, 'openingScene', None) is not None:
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_F11 or
@@ -10931,6 +11070,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if getattr(self,'_mapTransition',None):
                 if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
                     ready=self._mapTransition.ready
+                    self._mapTransition.future.cancel()
                     self._mapTransition=None
                     if ready:self._exitWorldMap()
                     from ui.feedback import play
@@ -11892,7 +12032,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         elif command is InputCommand.CLOSE_TUTORIAL:
             self.tutorialScreen.hide()
         elif command is InputCommand.QUIT:
-            self.running = False
+            self._requestExit()
         elif command is InputCommand.CLOSE_MODAL:
             return False
         else:
@@ -13163,17 +13303,27 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _update(self):
         """Update game state"""
+        self._pollSave()
+        for group in ("ambient", "weather", "portal", "horror"):
+            self.assetManager.audioRouter.set_group_volume(group, 0 if self.ambientMuted else .60)
+        if getattr(self, '_exitDialog', None):return
         transition=getattr(self,'_mapTransition',None)
         if transition and not transition.ready:
-            if transition.covered:
-                try:self._openWorldMap()
+            if transition.covered and transition.future.done():
+                try:self._openWorldMap(transition.future.result())
                 except (OSError,ValueError,pygame.error) as error:
                     self._mapTransition=None
                     if self.worldMapActive:self._exitWorldMap()
                     self.workshop.error=f'World Map failed: {error}'
                     from ui.feedback import play
                     play(self.assetManager,'error')
-                else:transition.reveal()
+                else:
+                    from collections import OrderedDict
+                    if not hasattr(self, '_mapPreparedCache'):self._mapPreparedCache = OrderedDict()
+                    self._mapPreparedCache[transition.cache_key] = transition.future.result()
+                    self._mapPreparedCache.move_to_end(transition.cache_key)
+                    while len(self._mapPreparedCache)>2:self._mapPreparedCache.popitem(last=False)
+                    transition.reveal()
             return
         if self.openingScene is not None:
             self.openingScene.update(self.clock.get_time()/1000.0)
@@ -13486,6 +13636,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _toggleRain(self):
         """Toggle the first weather effect for the current dimension."""
+        if self.horrorRainEnabled:
+            self.horrorRainEnabled = False
+            self._stopHorrorRain()
+
         # If snow is on, turn it off first
         if self.snowEnabled:
             self.snowEnabled = False
@@ -13600,6 +13754,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _startHorrorRain(self):
         """Initialize horror rain effects (black rain)"""
+        self._stopHorrorRain()
         self.horrorRainDrops = []
         self.skyDarkness = 180  # Very dark sky
         self.horrorLightningBolts = []
@@ -13612,7 +13767,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         for _ in range(200):  # More drops for ominous feel
             self.horrorRainDrops.append({
                 "x": random.randint(0, WINDOW_WIDTH),
-                "y": random.randint(-WINDOW_HEIGHT, 0),
+                "y": random.randint(-50, WINDOW_HEIGHT),
                 "speed": random.randint(8, 15),  # Slower, more ominous
                 "length": random.randint(15, 30),  # Longer streaks
                 "angle": random.uniform(-0.05, 0.05)  # Subtle angle variation
@@ -13623,7 +13778,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             try:
                 import numpy as np
                 # Get the sound data
-                soundArray = pygame.sndarray.array(self.assetManager.relaxingRainSound)
+                soundArray = pygame.sndarray.samples(self.assetManager.relaxingRainSound)[:30*pygame.mixer.get_init()[0]].copy()
                 # Pitch down by taking every 2nd sample and repeating for creepy low pitch
                 pitchedDown = np.repeat(soundArray[::2], 2, axis=0)[:len(soundArray)]
                 # Bitcrush effect - reduce bit depth for harsh digital distortion
@@ -13686,8 +13841,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         # Update existing rain drops (just for visuals, no terrain collision)
         for drop in self.horrorRainDrops:
-            drop["y"] += drop["speed"]
-            drop["x"] += drop["angle"] * drop["speed"]
+            drop["y"] += drop["speed"] * min(dtSec * 60, 3)
+            drop["x"] += drop["angle"] * drop["speed"] * min(dtSec * 60, 3)
             
             # Reset when off screen
             if drop["y"] > WINDOW_HEIGHT:
@@ -13738,7 +13893,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         
         # Spawn 3-5 splashes per update on random top blocks
-        blockList = list(topBlocks.items())
+        key = (id(self.world), self.world.revision)
+        if getattr(self, '_horrorColumnsKey', None) != key:
+            self._horrorColumnsKey = key
+            self._horrorColumns = tuple(topBlocks.items())
+        blockList = self._horrorColumns
         numSplashes = min(len(blockList), random.randint(3, 5))
         
         for _ in range(numSplashes):
@@ -13846,8 +14005,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             
             # Subtle blue glow behind the drop (drawn first)
             glowColor = (40, 80, 140, 30)  # Very subtle light blue with low alpha
-            glowSurf = pygame.Surface((8, int(drop["length"]) + 4), pygame.SRCALPHA)
-            pygame.draw.line(glowSurf, glowColor, (4, 0), (4, int(drop["length"])), 6)
+            if not hasattr(self, '_horrorGlowCache'):self._horrorGlowCache = {}
+            length = int(drop['length'])
+            glowSurf = self._horrorGlowCache.get(length)
+            if glowSurf is None:
+                glowSurf = pygame.Surface((8, length + 4), pygame.SRCALPHA)
+                pygame.draw.line(glowSurf, glowColor, (4, 0), (4, length), 6)
+                self._horrorGlowCache[length] = glowSurf
             self.screen.blit(glowSurf, (int(drop["x"]) - 4, int(drop["y"]) - 2))
             
             # Dark rain drop core
@@ -13915,62 +14079,22 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.screen.blit(flashOverlay, (0, 0))
     
     def _renderHorrorFog(self):
-        """Render semi-transparent fog blocks across the terrain during horror rain"""
-        panelLeft = self._worldViewportRight()
-        
-        # Get all unique x,y positions in the world
-        uniquePositions = set()
-        for (x, y, z), blockType in self.world.blocks.items():
-            uniquePositions.add((x, y))
-        
-        # Also add positions within the grid even if empty
-        for x in range(self.world.width):
-            for y in range(self.world.depth):
-                uniquePositions.add((x, y))
-        
-        # Sort positions for proper isometric rendering (back to front)
-        sortedPositions = sorted(uniquePositions, key=lambda pos: pos[0] + pos[1])
-        
-        # Create fog surface
-        fogColor = (40, 30, 50)  # Dark purple fog
-        fogAlpha = 60  # Semi-transparent
-        
-        # Draw fog at z levels 1, 2, 3 (3 blocks height)
-        for fogZ in range(1, 4):
-            for (x, y) in sortedPositions:
-                # Get screen position for this fog block
-                screenX, screenY = self.renderer.worldToScreen(x, y, fogZ)
-                screenX += self.panOffsetX
-                screenY += self.panOffsetY
-                
-                # Skip if off-screen or in panel area
-                if screenX > panelLeft + TILE_WIDTH or screenX < -TILE_WIDTH:
-                    continue
-                if screenY > WINDOW_HEIGHT + TILE_HEIGHT or screenY < -TILE_HEIGHT * 2:
-                    continue
-                
-                # Draw fog as a diamond-shaped block top (only top face for fog)
-                # Create the isometric diamond points for fog
-                points = [
-                    (screenX, screenY),  # Top
-                    (screenX + TILE_WIDTH // 2, screenY + TILE_HEIGHT // 4),  # Right
-                    (screenX, screenY + TILE_HEIGHT // 2),  # Bottom
-                    (screenX - TILE_WIDTH // 2, screenY + TILE_HEIGHT // 4)  # Left
-                ]
-                
-                # Draw semi-transparent fog diamond
-                fogSurf = pygame.Surface((TILE_WIDTH, TILE_HEIGHT), pygame.SRCALPHA)
-                localPoints = [
-                    (TILE_WIDTH // 2, 0),  # Top
-                    (TILE_WIDTH, TILE_HEIGHT // 4),  # Right
-                    (TILE_WIDTH // 2, TILE_HEIGHT // 2),  # Bottom
-                    (0, TILE_HEIGHT // 4)  # Left
-                ]
-                pygame.draw.polygon(fogSurf, (*fogColor, fogAlpha), localPoints)
-                self.screen.blit(fogSurf, (screenX - TILE_WIDTH // 2, screenY))
-    
+        """A bounded low haze, independent of world area and block count."""
+        size = (self._worldViewportRight(), WINDOW_HEIGHT)
+        if getattr(self, '_horrorFogSize', None) != size:
+            self._horrorFogSize = size
+            self._horrorFogSurface = pygame.Surface(size, pygame.SRCALPHA)
+            for y in range(size[1]):
+                alpha = round(24 * max(0, (y/size[1] - .25)/.75))
+                pygame.draw.line(self._horrorFogSurface, (40, 30, 50, alpha), (0, y), (size[0], y))
+        self.screen.blit(self._horrorFogSurface, (0, 0))
+
     def _toggleSnow(self):
         """Toggle the second weather effect for the current dimension."""
+        if self.horrorRainEnabled:
+            self.horrorRainEnabled = False
+            self._stopHorrorRain()
+
         # If rain is on, turn it off first
         if self.rainEnabled:
             self.rainEnabled = False
@@ -14830,7 +14954,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         self.highlightedBlock = (baseX, baseY, baseZ)
 
-    def _saveBuilding(self, filename: str = None, silent: bool = False, filepath: str = None):
+    def _saveBuilding(self, filename: str = None, silent: bool = False, filepath: str = None, *, background=None):
         """Save the current building to a compressed JSON file (gzip) with atomic write"""
         from datetime import datetime
         from engine.build_io import write_build
@@ -14850,23 +14974,60 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 filepath = os.path.join(SAVES_DIR, filename)
         elif not filepath.endswith('.gz'):
             filepath = filepath + '.gz'
+        if getattr(self, '_pendingSave', None) is not None:
+            if not silent:
+                self.workshop.status = 'Saving…'
+            return None
+        from time import perf_counter
+        from engine.save_job import capture_save, SaveJob, write_timed
+        started = perf_counter()
+        if not silent:
+            from ui.chrome import panel, TEXT
+            self.workshop.status = 'Saving…'
+            self.workshop._status_at = pygame.time.get_ticks()/1000
+            label = self.smallFont.render('Saving…', True, TEXT)
+            box = label.get_rect(topleft=(36, 90)).inflate(24, 16)
+            panel(self.screen, box)
+            self.screen.blit(label, label.get_rect(center=box.center))
+            pygame.display.flip()
         try:
-            snapshot = WorldSnapshot(
-                width=self.world.width,
-                depth=self.world.depth,
-                height=self.world.height,
-                min_y=self.world.min_y,
-                dimension=self.currentDimension,
-                blocks=self.world.blocks,
-                properties=self.world.blockProperties,
-                liquid_levels=self.world.liquidLevels,
-                liquid_sources=self.world.liquidSources,
-                liquid_falling=self.world.liquidFalling,
-                scene_metadata=dict(getattr(self, "sceneMetadata", {}) or {}),
-                structure_positions=self.sceneStructurePositions,
-            )
+            last_present = [perf_counter()]
+            def capture_progress(index, total):
+                now = perf_counter()
+                if now - last_present[0] < .016:
+                    return
+                last_present[0] = now
+                pygame.event.pump()
+                if not silent:
+                    # Keep the native window responsive without dispatching mutations
+                    # until the stable snapshot is complete. Input remains queued.
+                    panel(self.screen, box)
+                    self.screen.blit(label, label.get_rect(center=box.center))
+                    pygame.draw.line(self.screen, (140, 177, 177),
+                        (box.left, box.bottom-2),
+                        (box.left + int(box.width*index/max(1,total)), box.bottom-2), 2)
+                    pygame.display.flip()
+            snapshot = capture_save(self.world, self.currentDimension,
+                getattr(self, 'sceneMetadata', {}) or {}, self.sceneStructurePositions,
+                progress=capture_progress)
+            capture_ms = (perf_counter() - started) * 1000
+            if background is None:
+                background = not silent
+            if background:
+                if not hasattr(self, '_saveExecutor'):
+                    self._saveExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='build-save')
+                autosave = silent and os.path.basename(filepath) == os.path.basename(self.autoSavePath)
+                backup = (self.backupDir, self.maxBackups) if autosave and self.autoBackupEnabled else None
+                self._pendingSave = SaveJob(self._saveExecutor.submit(write_timed, filepath,
+                    snapshot, BLOCK_DEFINITIONS, backup), self.world, self.world.revision,
+                    str(filepath), trackCurrentPath, silent, started, capture_ms,
+                    getattr(self, '_documentGeneration', 0), autosave)
+                self.workshop.status = 'Saving…'
+                self.workshop._status_at = pygame.time.get_ticks() / 1000
+                self.workshop.error = ''
+                return None
             result = write_build(filepath, snapshot, BLOCK_DEFINITIONS)
-            if getattr(self,'workshop',None):
+            if not silent and getattr(self,'workshop',None):
                 self.workshop.saved_revision=self.world.revision
                 self.workshop.error=''
             if not silent:
@@ -14890,6 +15051,59 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.tooltipTimer = 3000
             return False
     
+    def _pollSave(self):
+        job = getattr(self, '_pendingSave', None)
+        if job is None:
+            return
+        self.workshop.status = 'Saving…'
+        self.workshop._status_at = pygame.time.get_ticks() / 1000
+        if not job.future.done():
+            return
+        self._pendingSave = None
+        from ui.feedback import play
+        try:
+            result, write_ms, warning = job.future.result()
+        except Exception as error:
+            self.workshop.status = ''
+            self.workshop.error = f'Save failed: {error}. Your build is still open.'
+            self._exitAfterSave = False
+            if job.autosave:self._autoSaveRetryAt = pygame.time.get_ticks() + 10000
+            if not job.silent:
+                play(self.assetManager, 'error')
+            return
+        self._lastSaveMetrics = dict(capture_ms=job.capture_ms, write_ms=write_ms,
+                                    blocks=result.block_count if hasattr(result, 'block_count') else len(job.world.blocks))
+        same_document = self.world is job.world and getattr(self, '_documentGeneration', 0) == job.generation
+        if same_document:
+            map_state = self._worldMapSessionSnapshot if self.worldMapActive else None
+            if map_state is not None:
+                if not job.silent:
+                    map_state['was_clean'] = job.revision == map_state.get('revision')
+                    if job.track_path:map_state['currentBuildPath'] = str(result.path)
+            else:
+                if not job.silent:self.workshop.saved_revision = job.revision
+                if job.track_path and not job.silent:self.currentBuildPath = str(result.path)
+        if job.autosave:
+            self.lastAutoSaveTime = pygame.time.get_ticks()
+            self._autoSaveRetryAt = 0
+            self.autoSaveFlashTimer = 60
+        if warning:
+            self.workshop.error = warning
+            self.tooltipText = warning
+            self.tooltipTimer = 5000
+        if not job.silent:
+            self.workshop.status = 'Saved: ' + os.path.basename(str(result.path))
+            self.tutorialScreen.record('save')
+            play(self.assetManager, 'save')
+        else:
+            self.workshop.status = ''
+        if getattr(self, '_exitAfterSave', False):
+            self._exitAfterSave = False
+            if same_document and self.world.revision == job.revision:
+                self.running = False
+            else:
+                self.workshop.error = 'The world changed during saving. Save again before exiting.'
+
     def _legacyLoadBuilding(self, filename: str, silent: bool = False):
         """Load a building from a JSON file (supports both compressed .gz and plain .json)"""
         import json
@@ -15791,6 +16005,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _applyStagedBuild(self, dimension: str, bounds, sceneMetadata,
                           stagedBlocks, filepath: str, silent: bool,
                           preferredMusic: str = None) -> bool:
+        self._documentGeneration = getattr(self, '_documentGeneration', 0) + 1
         if dimension != self.currentDimension:
             self._switchDimension(dimension, preferredMusic=preferredMusic, reset_canvas=False)
         from engine.world_snapshot import WorldSnapshot
@@ -15973,15 +16188,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _quickSave(self, slot: int):
         """Quick save to a numbered slot"""
         filename = f"quicksave_{slot}.json"
-        if self._saveBuilding(filename):
-            self.quickSaveSlots[slot] = filename
-            print(f"Quick saved to slot {slot}")
+        self._saveBuilding(filename)
     
     def _quickLoad(self, slot: int):
         """Quick load from a numbered slot"""
-        filename = f"quicksave_{slot}.json"
+        filename = f"quicksave_{slot}.json.gz"
         filepath = os.path.join(SAVES_DIR, filename)
         
+        if not os.path.exists(filepath):
+            filename = f"quicksave_{slot}.json"
+            filepath = os.path.join(SAVES_DIR, filename)
         if os.path.exists(filepath):
             self._loadBuilding(filename)
             print(f"Quick loaded from slot {slot}")
@@ -16861,46 +17077,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.screen.blit(distSurf, (midX - distSurf.get_width() // 2, midY - distSurf.get_height() // 2))
 
     def _autoSave(self):
-        """Perform auto-save if enabled and interval has passed"""
+        """Capture once; serialize, back up and write without blocking presentation."""
         if (not self.autoSaveEnabled or self.worldMapActive or self.redstoneLabActive
-                or self._tutorialSessionSnapshot is not None):
+                or self._tutorialSessionSnapshot is not None or getattr(self, '_pendingSave', None)):
             return
-        
-        currentTime = pygame.time.get_ticks()
-        if currentTime < getattr(self, "_autoSaveRetryAt", 0):
-            return
-        if currentTime - self.lastAutoSaveTime >= self.autoSaveInterval:
-            # Create rolling backup before auto-save
-            backupFailed = self.autoBackupEnabled and not self._createRollingBackup()
-            
-            if not self._saveBuilding(os.path.basename(self.autoSavePath), silent=True):
-                self._autoSaveRetryAt = currentTime + 10000
-                self.autoSaveFlashTimer = 0
-                self.tooltipText = "Autosave failed; your world is still open"
+        now = pygame.time.get_ticks()
+        if now < getattr(self, '_autoSaveRetryAt', 0):return
+        if now - self.lastAutoSaveTime >= self.autoSaveInterval:
+            result = self._saveBuilding(os.path.basename(self.autoSavePath), silent=True, background=True)
+            if result is False:
+                self._autoSaveRetryAt = now + 10000
+                self.tooltipText = 'Autosave failed; your world is still open'
                 self.tooltipTimer = 3000
-                return
-            self._autoSaveRetryAt = 0
-            self.lastAutoSaveTime = currentTime
-            
-            # Show "Saved" indicator for ~1 second (60 frames at 60fps)
-            self.autoSaveFlashTimer = 60
-            if backupFailed:
-                self.tooltipText = "Autosaved, but recovery backup failed"
-                self.tooltipTimer = 5000
-                return
-            
-            # Horror: Rare creepy autosave message (0.5% chance)
-            if self.horrorEnabled and random.random() < 0.005:
-                creepyMessages = [
-                    "Saving... someone is watching",
-                    "Saving... you are not alone",
-                    "Saving... it remembers",
-                    "Saving... we see you building",
-                    "Saving..."  # Normal but the others are rare
-                ]
-                self.tooltipText = random.choice(creepyMessages)
-                self.tooltipTimer = 2000
-    
+
     def _createRollingBackup(self):
         """Create a rolling backup, maintaining only the last N backups"""
         import shutil
@@ -17524,8 +17713,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         fields=(('Auto-save (5 min)','autoSaveEnabled'),('Smooth camera','smoothCameraEnabled'),
                 ('Coordinates','showCoordinates'),('Grid','showGrid'),
                 ('Block outline','showBlockOutline'),('Block tooltip','showBlockTooltip'),
-                ('World-centered rotation','worldCenteredRotation'),('Opening scene','opening'),
-                ('Skip opening on launch','skip'))
+                ('World-centered rotation','worldCenteredRotation'),('Play Introduction','opening'),
+                ('Autoplay introduction','skip'))
         if self.workshop.active(self):fields=tuple(row for row in fields if row[1]!='showGrid')
         controls=[(label,attr,pygame.Rect(x+24+(i%2)*(cw+8),top+(i//2)*(row+7),cw,row))
                   for i,(label,attr) in enumerate(fields)]
@@ -17974,12 +18163,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._renderSettingsVolumeSlider(kind.title()+' Volume',getattr(self,kind+'Volume'),area.x,area.y,area.width)
         from ui.opening_scene import skip_on_launch
         for label,attr,area in controls:
-            value=skip_on_launch() if attr=='skip' else getattr(self,attr,False)
+            value=not skip_on_launch() if attr=='skip' else getattr(self,attr,False)
             if attr!='opening':label+=': '+('On' if value else 'Off')
             button(self.screen,area,label,self.smallFont,area.collidepoint(mouse),value)
         self.screen.blit(self.smallFont.render(f'Bloc Fantôme {APP_VERSION}',True,MUTED),(rect.x+24,rect.bottom-30))
-        hint=self.smallFont.render('Esc closes',True,MUTED)
-        self.screen.blit(hint,hint.get_rect(topright=(rect.right-24,rect.bottom-30)))
 
     def _drawRotationArrow(self, rect: pygame.Rect, clockwise: bool, centered: bool = False):
         """Draw a clean curved rotation arrow icon on a button"""
@@ -19163,8 +19350,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from ui.feedback import set_volume
         set_volume(self.assetManager,0 if self.effectsMuted else self.effectsVolume)
         self.assetManager.audioRouter.set_group_volume("effects",0 if self.effectsMuted else 1.0)
-        for group in ("ambient","weather","portal"):
-            self.assetManager.audioRouter.set_group_volume(group,0 if self.ambientMuted else 1.0)
+        for group in ("ambient","weather","portal","horror"):
+            self.assetManager.audioRouter.set_group_volume(group,0 if self.ambientMuted else .60)
     
     def _renderShortcutsPanel(self) -> None:
         from ui.help import render
@@ -19743,14 +19930,31 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             flashOverlay.fill((*flashColor, self.lightningFlash))
             self.screen.blit(flashOverlay, (0, 0))
 
+    def _presentFrame(self):
+        overlay = getattr(self, '_startupOverlay', None)
+        if overlay is not None and self.openingScene is None:
+            now = pygame.time.get_ticks()
+            if self._startupRevealStarted is None:self._startupRevealStarted = now
+            age = now-self._startupRevealStarted
+            if self.workshop.visibility.reduced_motion or age>=220:
+                self._startupOverlay = None
+            else:
+                overlay.set_alpha(round(255*(1-age/220)))
+                self.screen.blit(overlay,(0,0))
+        pygame.display.flip()
+
     def _render(self) -> None:
         """Render the game"""
+        if getattr(self, '_exitDialog', None):
+            self._exitDialog.render(self.screen, bool(getattr(self, '_pendingSave', None)), self.workshop.error)
+            self._presentFrame()
+            return
         transition=getattr(self,'_mapTransition',None)
         if transition and not transition.ready:
-            self._renderMapTransition();pygame.display.flip();return
+            self._renderMapTransition();self._presentFrame();return
         if self.openingScene is not None:
             self.openingScene.render(self.screen)
-            pygame.display.flip()
+            self._presentFrame()
             return
         if (self.worldMapActive and self.worldMapMode == "hub"
                 and self.worldMapView.source_map is not None):
@@ -19759,7 +19963,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.worldMapView.source_map.render(self.screen, self.renderer)
             self.worldMapView.render_hub(self.screen, self.renderer, self.worldMapCompleted)
             self._renderMapTransition()
-            pygame.display.flip()
+            self._presentFrame()
             return
         # Skyboxes drift independently; opaque underwater scenes cover them.
         # Missing local assets fall back to the normal dimension texture.
@@ -19878,14 +20082,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._renderRedstoneLabAnnotations()
             self._renderRedstoneLabHeader()
             self._renderRedstoneLabPanel()
-            pygame.display.flip()
+            self._presentFrame()
             return
 
         if self.worldMapActive and self.worldMapMode == "hub":
             self.worldMapView.render_hub(
                 self.screen, self.renderer, self.worldMapCompleted
             )
-            pygame.display.flip()
+            self._presentFrame()
             return
 
         if self.worldMapActive and self.worldMapMode == "level":
@@ -19893,7 +20097,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             # objective card, source UI arrow, and focused material hotbar.
             self._renderHotbar()
             self.worldMapView.render_level(self.screen, self.worldMapProgress)
-            pygame.display.flip()
+            self._presentFrame()
             return
         
         # Draw UI panel
@@ -19914,7 +20118,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.worldLibrary.render(self.screen)
             self.library.render(self)
             self._renderWorldLoadingOverlay()
-            pygame.display.flip()
+            self._presentFrame()
             return
         self._renderPanel()
         
@@ -19996,7 +20200,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._renderWorldLoadingOverlay()
         
         # Update display
-        pygame.display.flip()
+        self._presentFrame()
 
     def _renderWorldLoadingOverlay(self) -> None:
         from ui.chrome import panel, wrapped, TEXT, MUTED
@@ -22404,6 +22608,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-pass-b-finalization' in sys.argv:
+        from tools.verify_pass_b_finalization import run
+        run(sys.argv[sys.argv.index('--verify-pass-b-finalization')+1],sys.modules[__name__])
+        return
     if '--verify-review-handoff' in sys.argv:
         from tools.verify_review_audio import run_handoff
         run_handoff(sys.argv[sys.argv.index('--verify-review-handoff')+1],sys.modules[__name__])

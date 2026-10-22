@@ -30,7 +30,7 @@ These decisions supersede tentative creative alternatives above. The consolidate
 
 1. **Pass A-R: owner-requested revision, next.** Repair large-world loading/camera/edit lag and reported non-working block placement. Improve fidelity and refine the entire modern UI following precise owner art/interaction direction below. Design choices resolved; consolidated handoff issued, implementation/owner acceptance still pending.
 2. **Pass B: original professional UI/world/cinematic sound, architectural spatial audio, deep creature vocals, one temporary creature animation, abyss sea geometry/motion, full-intro Skip.** Approved direction, but deferred until A-R is reviewed and accepted.
-3. **Pass C: original low-poly horror creature replacing Twilight Thorn.** A distinct later artistic/technical pass after B. Not merely an animation tweak.
+3. **Pass D: original low-poly horror creature replacing Twilight Thorn.** A distinct later artistic/technical pass after Pass C engineering/UX/consolidation. Not merely an animation tweak.
 4. **Broader block/content/world fidelity and remaining performance work.** Not scoped or authorized; revisit after the above. Redstone Map remains deferred.
 
 Do not accidentally drop or conflate these phases across chats. Keep main as the accepted viable build; retain isolated unaccepted review builds and save/settings/media rollback. Technical tests are necessary, but not the owner's visual, listening, or gameplay acceptance.
@@ -70,7 +70,7 @@ Previously accepted Pass A behaviors still needed: contextual hotbar, precise tr
 
 **Acceptance.** Integrated playable scene and direct listening, event synchronization, low-end speaker/headphone translation, intelligibility, cue variation, actual spatial character, clipping/headroom, normal UI/ordinary SFX channel behavior, preservation and performance. Offline audition mixes are not proof of real live audio or subjective listener acceptance.
 
-## Deferred Pass C: original horror creature
+## Deferred Pass D: original horror creature
 
 REPLACE recognizable Kingdom Hearts Twilight Thorn asset/silhouette, motions and third-party textures in any future public distributable build with original authored low-poly horror creature. Keep dark faceted anatomy, elongated independent limbs, strong negative space/silhouette and uncanny yet physically legible mass. Use independently planted contacts, articulated multi-joint IK, asymmetric support/weight transfer and deliberate holds punctuated by violent, nonperiodic contortions. No simple mesh with two oscillating transforms accepted. Movement must interact with cathedral/architecture; avoid floating or intersections; inspect real 3D multi-angle renders and actual temporal animation, not only unit tests. Preserve the welcoming cathedral opening, pale stone, blue glass, immense abyss, camera choreography and atmospheric pacing. The existing 44s encounter is a reference, not a strict final runtime. Audio/visual artistic acceptance are separate mandatory owner judgments.
 

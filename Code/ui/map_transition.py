@@ -1,4 +1,5 @@
-"""Brief input-safe map cover/reveal using the accepted editor chrome."""
+"""A reversible, real-time cartographic fold over the preserved editor."""
+import math
 import pygame
 from ui import chrome
 from ui.fonts import load_ui_font
@@ -7,35 +8,62 @@ from ui.fonts import load_ui_font
 class MapTransition:
     def __init__(self, screen, reduced_motion=False):
         self.started = pygame.time.get_ticks()
-        self.reduced_motion = reduced_motion
         self.ready = False
+        self.future = None
+        self.reduced_motion = reduced_motion
         self.background = screen.copy()
         self.font = load_ui_font(24)
         self.small = load_ui_font(14)
-        self.layer = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        self.paper = pygame.Surface(screen.get_size())
+        self.paper.fill((20, 33, 43))
+        w, h = screen.get_size()
+        # Fixed contours, not a pulsing spinner. Fold edges establish map space.
+        for ring in range(9):
+            points = []
+            for step in range(101):
+                angle = step * math.tau / 100
+                radius = 35 + ring * 29 + 8 * math.sin(angle * 3 + ring * .3)
+                points.append((w*.5 + math.cos(angle)*radius*1.7,
+                               h*.5 + math.sin(angle)*radius))
+            pygame.draw.lines(self.paper, (38, 60, 70), True, points, 1)
+        for x in (w//4, w//2, 3*w//4):
+            pygame.draw.line(self.paper, (47, 65, 75), (x, 0), (x, h))
+        title = self.font.render('World Map', True, chrome.TEXT)
+        hint = self.small.render('Esc to cancel', True, chrome.MUTED)
+        self.paper.blit(title, title.get_rect(center=(w//2, h//2-12)))
+        self.paper.blit(hint, hint.get_rect(center=(w//2, h//2+22)))
 
     @property
     def covered(self):
-        return pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 120)
+        return pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 220)
 
     def reveal(self):
-        self.ready=True;self.started=pygame.time.get_ticks()
+        self.ready = True
+        self.started = pygame.time.get_ticks()
 
     @property
     def finished(self):
-        return self.ready and pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 180)
+        return self.ready and pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 320)
 
     def render(self, screen):
-        age=pygame.time.get_ticks()-self.started
-        if not self.ready:screen.blit(self.background,(0,0))
-        u=max(0,min(1,age/(180 if self.ready else 120)))
-        alpha=(1-u if self.ready else u*u*(3-2*u))
-        if self.reduced_motion:alpha=0 if self.ready else 1
-        if self.layer.get_size()!=screen.get_size():self.layer=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
-        self.layer.fill((*chrome.SURFACE,round(alpha*255)))
+        w, h = screen.get_size()
+        age = pygame.time.get_ticks()-self.started
+        u = min(1., age/(320 if self.ready else 220))
+        u = u*u*(3-2*u)
+        if self.reduced_motion:
+            u = 1.
         if not self.ready:
-            text=self.font.render('World Map',True,chrome.TEXT);text.set_alpha(round(alpha*255))
-            self.layer.blit(text,text.get_rect(center=screen.get_rect().center))
-            hint=self.small.render('Esc to cancel',True,chrome.MUTED);hint.set_alpha(round(alpha*255))
-            self.layer.blit(hint,hint.get_rect(center=(screen.get_width()//2,screen.get_height()//2+32)))
-        screen.blit(self.layer,(0,0))
+            screen.blit(self.background, (0, 0))
+            rect = pygame.Rect(0, 0, max(1, round(w*u)), h)
+            rect.center = screen.get_rect().center
+            screen.blit(self.paper, rect, rect)
+            pygame.draw.line(screen, chrome.ACCENT, rect.topleft, rect.bottomleft, 1)
+            pygame.draw.line(screen, chrome.ACCENT, rect.topright, rect.bottomright, 1)
+        else:
+            # Reveal the already prepared map outward from the central fold.
+            edge = round(w*(1-u)/2)
+            if edge:
+                screen.blit(self.paper, (0, 0), (0, 0, edge, h))
+                screen.blit(self.paper, (w-edge, 0), (w-edge, 0, edge, h))
+                pygame.draw.line(screen, chrome.ACCENT, (edge, 0), (edge, h), 1)
+                pygame.draw.line(screen, chrome.ACCENT, (w-edge, 0), (w-edge, h), 1)

@@ -522,53 +522,53 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
     path = Path(path)
     temp_path = path.with_name(path.name + ".tmp")
     path.parent.mkdir(parents=True, exist_ok=True)
-    blocks = []
-    for (x, y, z), block_type in snapshot.blocks.items():
-        position = (x, y, z)
-        block_data = {"x": x, "y": y, "z": z, "type": block_type.name}
-        if position in snapshot.liquid_levels:
-            block_data["liquidLevel"] = snapshot.liquid_levels[position]
-            block_data["liquidSource"] = position in snapshot.liquid_sources
-            block_data["liquidFalling"] = position in snapshot.liquid_falling
-        if position in snapshot.structure_positions:
-            block_data["role"] = "structure"
-        properties = snapshot.properties.get(position)
-        if properties is not None:
-            if properties.sourceCapture:
-                block_data['sourceCapture']=properties.sourceCapture
-                block_data['sourcePalette']=properties.sourcePalette
-            definition = definitions.get(block_type)
-            if properties.facing:
-                block_data["facing"] = properties.facing.name
-            if definition and definition.isDoor:
-                block_data["isOpen"] = properties.isOpen
-                block_data["doorHalf"] = properties.doorHalf.name
-                block_data["doorHinge"] = properties.doorHinge.name
-            if definition and definition.modelKind == "lantern":
-                block_data["isOpen"] = properties.isOpen
-            if definition and definition.modelKind in {
-                "redstone_dust", "redstone_torch", "lever", "repeater", "comparator",
-                "piston", "piston_head",
-            }:
-                block_data["powered"] = properties.powered
-                block_data["redstonePower"] = max(0, min(15, int(properties.redstonePower)))
-            if definition and definition.modelKind == "comparator":
-                block_data["comparatorSubtract"] = properties.comparatorSubtract
-            if definition and definition.modelKind == "repeater":
-                block_data["repeaterDelay"] = max(1, min(4, int(properties.repeaterDelay)))
-                block_data["repeaterLocked"] = properties.repeaterLocked
-            if definition and definition.modelKind in {"piston", "piston_head"}:
-                block_data["pistonExtended"] = properties.pistonExtended
-                block_data["sticky"] = properties.sticky
-            if definition and definition.isStair:
-                block_data["stairShape"] = properties.stairShape.name
-            if properties.slabPosition:
-                block_data["slabPosition"] = properties.slabPosition.name
-            if block_type.name == "OXIDIZING_COPPER":
-                block_data["oxidationStage"] = max(
-                    0, min(3, int(properties.oxidationStage))
-                )
-        blocks.append(block_data)
+    def block_records():
+        for (x, y, z), block_type in snapshot.blocks.items():
+            position = (x, y, z)
+            block_data = {"x": x, "y": y, "z": z, "type": block_type.name}
+            if position in snapshot.liquid_levels:
+                block_data["liquidLevel"] = snapshot.liquid_levels[position]
+                block_data["liquidSource"] = position in snapshot.liquid_sources
+                block_data["liquidFalling"] = position in snapshot.liquid_falling
+            if position in snapshot.structure_positions:
+                block_data["role"] = "structure"
+            properties = snapshot.properties.get(position)
+            if properties is not None:
+                if properties.sourceCapture:
+                    block_data['sourceCapture']=properties.sourceCapture
+                    block_data['sourcePalette']=properties.sourcePalette
+                definition = definitions.get(block_type)
+                if properties.facing:
+                    block_data["facing"] = properties.facing.name
+                if definition and definition.isDoor:
+                    block_data["isOpen"] = properties.isOpen
+                    block_data["doorHalf"] = properties.doorHalf.name
+                    block_data["doorHinge"] = properties.doorHinge.name
+                if definition and definition.modelKind == "lantern":
+                    block_data["isOpen"] = properties.isOpen
+                if definition and definition.modelKind in {
+                    "redstone_dust", "redstone_torch", "lever", "repeater", "comparator",
+                    "piston", "piston_head",
+                }:
+                    block_data["powered"] = properties.powered
+                    block_data["redstonePower"] = max(0, min(15, int(properties.redstonePower)))
+                if definition and definition.modelKind == "comparator":
+                    block_data["comparatorSubtract"] = properties.comparatorSubtract
+                if definition and definition.modelKind == "repeater":
+                    block_data["repeaterDelay"] = max(1, min(4, int(properties.repeaterDelay)))
+                    block_data["repeaterLocked"] = properties.repeaterLocked
+                if definition and definition.modelKind in {"piston", "piston_head"}:
+                    block_data["pistonExtended"] = properties.pistonExtended
+                    block_data["sticky"] = properties.sticky
+                if definition and definition.isStair:
+                    block_data["stairShape"] = properties.stairShape.name
+                if properties.slabPosition:
+                    block_data["slabPosition"] = properties.slabPosition.name
+                if block_type.name == "OXIDIZING_COPPER":
+                    block_data["oxidationStage"] = max(
+                        0, min(3, int(properties.oxidationStage))
+                    )
+            yield block_data
     payload = {
         "version": 5,
         "dimension": snapshot.dimension,
@@ -583,11 +583,21 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
             for key, value in dict(snapshot.scene_metadata).items()
             if not key.startswith("_")
         },
-        "blocks": blocks,
     }
     try:
         with gzip.open(temp_path, "wt", encoding="utf-8") as handle:
-            json.dump(payload, handle, separators=(",", ":"))
+            # Stream bounded records instead of allocating another million dictionaries.
+            # Encoding, compression and disk I/O all run on the save worker.
+            encoder = json.JSONEncoder(separators=(",", ":"))
+            handle.write(encoder.encode(payload)[:-1] + ',"blocks":[')
+            for index, record in enumerate(block_records()):
+                if index:
+                    handle.write(',')
+                handle.write(encoder.encode(record))
+                if index % 4096 == 0:
+                    import time
+                    time.sleep(.001)
+            handle.write(']}')
         os.replace(temp_path, path)
     except Exception:
         try:
@@ -595,4 +605,4 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
         except OSError:
             pass
         raise
-    return SaveResult(path, len(blocks))
+    return SaveResult(path, len(snapshot.blocks))

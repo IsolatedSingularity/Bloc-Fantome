@@ -1268,6 +1268,20 @@ def render_workshop(output_dir: Path):
                 app.library.open(app,'Structures');capture(f'library-960-text{round(scale*100)}');app.library.visible=False
             app.workshop.error='Save failed: the destination is unavailable. Your build stays open. Retry Save.';capture('save-failure-text150');app.workshop.error=''
             app.tutorialScreen.visible=True;capture('tutorial-text150');app.tutorialScreen.minimized=True;capture('tutorial-minimized-text150');app.tutorialScreen.visible=False
+            for size in ((960,640),(1200,800),(1920,1080)):
+                for scale in (1,1.5):
+                    set_text_scale(scale);app.workshop.text_scale=scale;app._applyWindowSize(*size)
+                    app.tutorialScreen.visible=True;app.tutorialScreen.minimized=True
+                    capture(f'tutorial-dock-{size[0]}-{round(scale*100)}')
+                    tile=app.tutorialScreen._restoreTileRect()
+                    assert not tile.colliderect(app.workshop.hotbar_bounds)
+                    app.tutorialScreen.visible=False
+                    app._requestExit();capture(f'exit-{size[0]}-{round(scale*100)}')
+                    app._exitAction('stay')
+                    app.workshop.page='menu';capture(f'menu-slots-{size[0]}-{round(scale*100)}')
+                    app.workshop.scroller.position=app.workshop.scroller.target=app.workshop.max_scroll
+                    capture(f'menu-slots-bottom-{size[0]}-{round(scale*100)}')
+                    app.workshop.page=''
             for scale in (1,1.5):
                 set_text_scale(scale);app.workshop.text_scale=scale
                 app._openWorldMap();capture(f'world-map-text{round(scale*100)}',30);app._exitWorldMap()
