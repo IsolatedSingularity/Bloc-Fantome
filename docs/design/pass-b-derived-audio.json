@@ -1,0 +1,286 @@
+{
+  "tool": "ffmpeg version 9.0.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "recipe_sha256": "eb9947ca1ba95706b998f3533cf6f862e140bc3b6741469ba60eb46901e84b0d",
+  "files": [
+    {
+      "name": "voice01",
+      "source": "Assets/Private Sources/Opening/voice01.wav",
+      "source_sha256": "f28200922f200f8f2c65d849bc75dd08de91bfa233c07162b83d855debe8c80f",
+      "filters": "asetrate=39360,aresample=48000,rubberband=tempo=1.2195122:pitch=0.8780488:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 2.6727083333333335,
+      "gain": 0.7211181945436939,
+      "peak": 0.550000011920929,
+      "rms": 0.12555326521396637,
+      "file": "voice01.wav",
+      "sha256": "92b4b067e06938a3506558d3606ce1567e139b34de225885cf9d3822fd3d6c5c",
+      "attribution": {
+        "id": "voice01",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/9432/",
+        "preview": "https://cdn.freesound.org/previews/9/9432_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - male_Thijs_loud_scream.aiff by thanvannispen"
+      }
+    },
+    {
+      "name": "voice02",
+      "source": "Assets/Private Sources/Opening/voice02.wav",
+      "source_sha256": "4e2570b3db950b1711bd7b4b4e845f55462e639a9f70485a76e33af24dc3de79",
+      "filters": "asetrate=48000,aresample=48000,rubberband=tempo=1.0000000:pitch=1.0200000:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 2.2965833333333334,
+      "gain": 0.7925837786004319,
+      "peak": 0.550000011920929,
+      "rms": 0.13756315410137177,
+      "file": "voice02.wav",
+      "sha256": "9e0f41264c7173de202ce8c65b7472477b33e5cb955eb732fb2d9cea492f3ec9",
+      "attribution": {
+        "id": "voice02",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/9429/",
+        "preview": "https://cdn.freesound.org/previews/9/9429_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - women_scream_AAA.aiff by thanvannispen"
+      }
+    },
+    {
+      "name": "voice03",
+      "source": "Assets/Private Sources/Opening/voice03.wav",
+      "source_sha256": "6fd6d3dce0fb681f2b99a724bc0f6152a4c99b09a79abb5199fef1168818f356",
+      "filters": "asetrate=43200,aresample=48000,rubberband=tempo=1.1111111:pitch=0.9222222:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.8056875,
+      "gain": 1.7072088211606915,
+      "peak": 0.550000011920929,
+      "rms": 0.11192858219146729,
+      "file": "voice03.wav",
+      "sha256": "00d2f7ba1ccbe3a6a6e3372030eea6c115868f33573cb0a57cc7829bbe459ed6",
+      "attribution": {
+        "id": "voice03",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/94585/",
+        "preview": "https://cdn.freesound.org/previews/94/94585_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_screams_8.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice04",
+      "source": "Assets/Private Sources/Opening/voice04.wav",
+      "source_sha256": "ea81ce6b7190739400e3539b62716da89563b74f9c1e24dc38beb674fdfda0cc",
+      "filters": "asetrate=37440,aresample=48000,rubberband=tempo=1.2820513:pitch=0.8717949:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.8461458333333334,
+      "gain": 1.4587829464337518,
+      "peak": 0.550000011920929,
+      "rms": 0.08992581814527512,
+      "file": "voice04.wav",
+      "sha256": "73783d5e4b3855570d8bffff1a055897997c87bba97f0532c98eb435742f1a17",
+      "attribution": {
+        "id": "voice04",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/94586/",
+        "preview": "https://cdn.freesound.org/previews/94/94586_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_screams_9.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice05",
+      "source": "Assets/Private Sources/Opening/voice05.wav",
+      "source_sha256": "25c331213aeccb54f339f3f94708697cc36feb2b2aab09879b2e5eb1cea66141",
+      "filters": "asetrate=41280,aresample=48000,rubberband=tempo=1.1627907:pitch=0.9302326:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 3.0613333333333332,
+      "gain": 0.6060667967670373,
+      "peak": 0.550000011920929,
+      "rms": 0.10821215063333511,
+      "file": "voice05.wav",
+      "sha256": "7807eed16084cbf3ad5199319e6b6e7440764b74fe70b4e69ae2de0ca33c5b56",
+      "attribution": {
+        "id": "voice05",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/125127/",
+        "preview": "https://cdn.freesound.org/previews/125/125127_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - schreeuw1clean.wav by thanvannispen"
+      }
+    },
+    {
+      "name": "voice06",
+      "source": "Assets/Private Sources/Opening/voice06.wav",
+      "source_sha256": "01444efb14375dd0d62c33c3540f932f4395addfc522a93c47dfbbb82d25bb0c",
+      "filters": "asetrate=46080,aresample=48000,rubberband=tempo=1.0416667:pitch=0.9791667:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.7503541666666667,
+      "gain": 0.7699394593158526,
+      "peak": 0.550000011920929,
+      "rms": 0.12371311336755753,
+      "file": "voice06.wav",
+      "sha256": "02adcaca513430c77bad5764a293139318c84ed36a231887dc25b94a0a731290",
+      "attribution": {
+        "id": "voice06",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/125128/",
+        "preview": "https://cdn.freesound.org/previews/125/125128_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_scream2.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice07",
+      "source": "Assets/Private Sources/Opening/voice07.wav",
+      "source_sha256": "a8fc0a5a19df388aef8e3a537ec0714fcba27104ca6453a407a1f486a62f17a0",
+      "filters": "asetrate=40320,aresample=48000,rubberband=tempo=1.1904762:pitch=0.9047619:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.7950833333333334,
+      "gain": 1.170071579077642,
+      "peak": 0.550000011920929,
+      "rms": 0.09760820865631104,
+      "file": "voice07.wav",
+      "sha256": "65a7942a0a7cea6111040253be2e23f427f64d6fff1d1b912dfbbe7d3afd3e14",
+      "attribution": {
+        "id": "voice07",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/125129/",
+        "preview": "https://cdn.freesound.org/previews/125/125129_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_scream4.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice08",
+      "source": "Assets/Private Sources/Opening/voice08.wav",
+      "source_sha256": "8d2cc2d9d3deaa9dc088e56bae5014f9846c85fa0f781f271f1f11f3d8556270",
+      "filters": "asetrate=44160,aresample=48000,rubberband=tempo=1.0869565:pitch=0.9565217:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.5945,
+      "gain": 1.054580879398283,
+      "peak": 0.550000011920929,
+      "rms": 0.0818634033203125,
+      "file": "voice08.wav",
+      "sha256": "8c3684e13bff3c9bee473b204423ce0bcdeb992aeeb87343e3ea15730e1a6103",
+      "attribution": {
+        "id": "voice08",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/125130/",
+        "preview": "https://cdn.freesound.org/previews/125/125130_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_scream5.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice09",
+      "source": "Assets/Private Sources/Opening/voice09.wav",
+      "source_sha256": "c0409cb8b86389c3cd04088da948c09d42963259482d2a25cb290b5d5144f030",
+      "filters": "asetrate=38400,aresample=48000,rubberband=tempo=1.2500000:pitch=0.8750000:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.81575,
+      "gain": 2.8639038345792383,
+      "peak": 0.550000011920929,
+      "rms": 0.1183314248919487,
+      "file": "voice09.wav",
+      "sha256": "a06e5d8b31fc77bf88625550f650d6ae7e7866553ab9f99cc1d7de0b957f4aa4",
+      "attribution": {
+        "id": "voice09",
+        "creator": "thanvannispen",
+        "url": "https://freesound.org/people/thanvannispen/sounds/125131/",
+        "preview": "https://cdn.freesound.org/previews/125/125131_13258-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "title": "Freesound - cell_scream_low.aif by thanvannispen"
+      }
+    },
+    {
+      "name": "voice10",
+      "source": "Assets/Private Sources/Opening/voice10.wav",
+      "source_sha256": "a91dc0c5c543972105958009c7dc4a120e238bfd8481fb844f4d288643816f3f",
+      "filters": "asetrate=47040,aresample=48000,rubberband=tempo=1.0204082:pitch=1.0000000:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 1.1769791666666667,
+      "gain": 1.7931607229333353,
+      "peak": 0.550000011920929,
+      "rms": 0.21645918488502502,
+      "file": "voice10.wav",
+      "sha256": "517bd654e1a0f426fb63fc7d444c0c39f03f31448ac56540c73cb6f8710d854e",
+      "attribution": {
+        "id": "voice10",
+        "creator": "missozzy",
+        "url": "https://freesound.org/people/missozzy/sounds/169811/",
+        "preview": "https://cdn.freesound.org/previews/169/169811_1122547-hq.mp3",
+        "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+        "title": "Freesound - Female scream 02 by missozzy"
+      }
+    },
+    {
+      "name": "voice11",
+      "source": "Assets/Private Sources/Opening/voice11.wav",
+      "source_sha256": "9412aeebd5943f0579134a24eb06ad6c14c8fd8a60c4588c4148e464304e55ac",
+      "filters": "asetrate=42240,aresample=48000,rubberband=tempo=1.1363636:pitch=0.9545455:formant=preserved,highpass=f=65,lowpass=f=6500",
+      "duration_seconds": 0.7194583333333333,
+      "gain": 1.2899974011235145,
+      "peak": 0.550000011920929,
+      "rms": 0.13521048426628113,
+      "file": "voice11.wav",
+      "sha256": "605fe8b9f93d64c7bb0fd101a70fe694c52c9d6dc860b48d9e39afa64238f764",
+      "attribution": {
+        "id": "voice11",
+        "creator": "tonsil5",
+        "url": "https://freesound.org/people/tonsil5/sounds/416542/",
+        "preview": "https://cdn.freesound.org/previews/416/416542_8247784-hq.mp3",
+        "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+        "title": "Freesound - Male_Scream_4.wav by tonsil5"
+      }
+    },
+    {
+      "name": "contact",
+      "source": "Assets/Private Sources/Opening/stone.wav",
+      "source_sha256": "fd6e7f0a2c4d5c618ce03e815176190d625c3f7a5c9813677270f0f3055c1182",
+      "filters": "atrim=start=24:duration=2.5,asetpts=PTS-STARTPTS,asetrate=30240,aresample=48000,highpass=f=38,lowpass=f=3600",
+      "duration_seconds": 0.72,
+      "gain": 2.4310350604283832,
+      "peak": 0.6200000047683716,
+      "rms": 0.026427006348967552,
+      "file": "contact.wav",
+      "sha256": "dc71a54d1d687e0171360035e84759d52d05edbad7dcb2d4eaf1c315c2867219",
+      "attribution": {
+        "id": "stone",
+        "creator": "Pastabra",
+        "url": "https://freesound.org/people/Pastabra/sounds/366160/",
+        "preview": "https://cdn.freesound.org/previews/366/366160_6097925-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "title": "Freesound - Pestle and mortar - Stone by Pastabra"
+      }
+    },
+    {
+      "name": "fall",
+      "source": "Assets/Private Sources/Opening/stone.wav",
+      "source_sha256": "fd6e7f0a2c4d5c618ce03e815176190d625c3f7a5c9813677270f0f3055c1182",
+      "filters": "atrim=start=11:duration=2.5,asetpts=PTS-STARTPTS,asetrate=23040,aresample=48000,highpass=f=38,lowpass=f=3600",
+      "duration_seconds": 2.1,
+      "gain": 3.0,
+      "peak": 0.58465576171875,
+      "rms": 0.024539764970541,
+      "file": "fall.wav",
+      "sha256": "98f17da2902b2407aa009c948417c4bb2db15104a015f4277708348a299e96d0",
+      "attribution": {
+        "id": "stone",
+        "creator": "Pastabra",
+        "url": "https://freesound.org/people/Pastabra/sounds/366160/",
+        "preview": "https://cdn.freesound.org/previews/366/366160_6097925-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "title": "Freesound - Pestle and mortar - Stone by Pastabra"
+      }
+    },
+    {
+      "name": "reflection",
+      "source": "Assets/Private Sources/Opening/stone.wav",
+      "source_sha256": "fd6e7f0a2c4d5c618ce03e815176190d625c3f7a5c9813677270f0f3055c1182",
+      "filters": "atrim=start=24:duration=2.5,asetpts=PTS-STARTPTS,asetrate=30240,aresample=48000,highpass=f=38,lowpass=f=850",
+      "duration_seconds": 0.65,
+      "gain": 2.7599728297785626,
+      "peak": 0.6200000047683716,
+      "rms": 0.02694348618388176,
+      "file": "reflection.wav",
+      "sha256": "635a7ce28325bdec9039c129436e830ecc009d9221a60fb73244a7cdee6d53f6",
+      "attribution": {
+        "id": "stone",
+        "creator": "Pastabra",
+        "url": "https://freesound.org/people/Pastabra/sounds/366160/",
+        "preview": "https://cdn.freesound.org/previews/366/366160_6097925-hq.mp3",
+        "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "title": "Freesound - Pestle and mortar - Stone by Pastabra"
+      }
+    }
+  ]
+}

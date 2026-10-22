@@ -143,6 +143,21 @@ class IsometricRenderer:
         screenY = (rx + ry) * self._tileHHalf - z * self._blockH + self.offsetY
         return (round(screenX), round(screenY))
     
+    def worldToScreenBatch(self, points):
+        """Project a repaint batch with the scalar arithmetic and rounding order.
+
+        No retained cache: each call uses current instance metrics and camera.
+        NumPy float64/rint preserves Python's nearest-even pixel rounding.
+        """
+        if not len(points):return []
+        import numpy as np
+        xyz=np.asarray(points,dtype=np.float64)
+        x,y,z=xyz.T
+        rx,ry=((x,y),(-y,x),(-x,-y),(y,-x))[self.viewRotation]
+        sx=(rx-ry)*self._tileWHalf+self.offsetX
+        sy=(rx+ry)*self._tileHHalf-z*self._blockH+self.offsetY
+        return np.rint(np.column_stack((sx,sy))).astype(np.int64).tolist()
+
     def _screenToWorldPoint(
         self, screenX: float, screenY: float, targetZ: float = 0
     ) -> Tuple[float, float]:

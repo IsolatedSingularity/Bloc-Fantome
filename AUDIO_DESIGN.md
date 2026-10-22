@@ -80,6 +80,19 @@ within Pass B; original creature design/Pass C remains paused.
 
 ## Listening acceptance and evidence
 
+Pass B uses eleven independently processed recorded vocal sources, two direct
+contact recordings and one low-pass reflection recording. The manifest retains
+original attribution, source hashes and processing recipes. Channels 37/38 hold
+at most two voices, 36 holds one contact, and 39/40 hold at most two reflections.
+No scheduler event loops; events more than 250 ms late are dropped, not burst.
+The virtual listener uses inverse-distance amplitude with a 42-unit reference
+distance (28 for architecture), and camera-relative stereo pan bounded at 0.85.
+One scene unit is treated as one metre for the 24/343 and 51/343 second reflected
+path delays. These are explicit artistic assumptions, not measured room acoustics.
+Direct contacts and skull animation share timeline constants. Existing piano and
+editor music remain separately owned. Missing derived recordings fall back to
+the preserved earlier score in source checkouts; release packaging rejects them.
+
 Automated checks must decode real recordings, route real SDL channels, exercise
 actual save success/failure and mute/ownership, and verify package hashes. Dummy
 SDL playback proves scheduling/decoding, not speakers, native physical input or

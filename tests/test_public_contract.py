@@ -63,7 +63,17 @@ def test_block_catalog_and_sound_contract():
     # soul fire retains the builder's stylized colored-light convention.
     # Stable enum/save identities and every other catalog field stay guarded.
     assert _digest(definitions) == "d5e4b013441961f5308e8c6650969bf1e35914fe73cf3cd0cf963f7920750b46"
-    assert _digest(sounds) == "b58593730d6308e173fb5166ecfe348ebf5c3776db569a00f55eb9bbd6ba5f98"
+    # Pass B deliberately separates fluid edit sounds from continuous ambience.
+    # Check those two changes explicitly, then retain the original digest for
+    # every remaining field and block rather than accepting a wholesale refresh.
+    reference=[]
+    for name,sound in sounds:
+        if name in ('WATER','LAVA'):
+            assert sound['placeSound']==name.lower()+'_place'
+            assert sound['breakSound']==name.lower()+'_break'
+            sound={**sound,'placeSound':name.lower(),'breakSound':name.lower()}
+        reference.append((name,sound))
+    assert _digest(reference) == "b58593730d6308e173fb5166ecfe348ebf5c3776db569a00f55eb9bbd6ba5f98"
 
 
 def test_category_order_and_membership_contract():

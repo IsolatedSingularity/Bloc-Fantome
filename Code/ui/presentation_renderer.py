@@ -123,6 +123,7 @@ class PresentationRenderer:
         self.gl.glGetString.argtypes=[U]
         ids=(U*2)();self.gl.glGenTextures(2,ids)
         self.ids=ids;self.overlay_size=None
+        self.region_id=None;self.region_size=None
         atlas=pygame.Surface((64*len(TEXTURES),64),pygame.SRCALPHA)
         for n,name in enumerate(TEXTURES):
             tile=pygame.transform.scale(pygame.image.load(os.path.join(TEXTURES_DIR,name)),(64,64))
@@ -224,5 +225,17 @@ class PresentationRenderer:
         self.gl.glReadPixels(0,0,w,h,0x1907,0x1401,data.ctypes.data)
         return pygame.image.frombytes(data[::-1].tobytes(),size,'RGB')
 
+    def overlay_region(self,surface,rect,viewport):
+        """Native-size control overlay without an FHD texture upload."""
+        self.screen_space(viewport)
+        if self.region_id is None:
+            self.region_id=(C.c_uint*1)();self.gl.glGenTextures(1,self.region_id)
+        initial=self.region_size!=surface.get_size()
+        self.upload(surface,self.region_id[0],initial=initial,linear=False)
+        self.region_size=surface.get_size()
+        x,y,w,h=rect
+        self.flat(((x,y,0),(x+w,y,0),(x+w,y+h,0),(x,y+h,0)),((1,1,1,1),)*4,self.region_id[0])
+
     def close(self):
+        if self.region_id is not None:self.gl.glDeleteTextures(1,self.region_id);self.region_id=None
         self.gl.glDeleteTextures(2,self.ids)

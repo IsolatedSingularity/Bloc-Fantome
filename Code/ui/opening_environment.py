@@ -24,25 +24,29 @@ def foundations():
 
 class AbyssGround:
     def __init__(self):
-        axis=np.arange(-320,321,9,dtype='float32')
+        axis=np.arange(-320,321,6,dtype='float32')
         x,y=np.meshgrid(axis,axis)
         # Shared vertices prevent gaps while triangular faces remain legible.
         x=x+1.8*np.sin(y*.15+x*.08)
         y=y+1.4*np.cos(x*.18-y*.06)
         self.xy=np.stack((x,y),axis=-1)
+        self.radius=np.sqrt((x+44)**2+(y+36)**2)
+        self.depth_falloff=np.exp(-self.radius/65)
         ids=np.arange(x.size).reshape(x.shape)
         self.indices=np.stack((ids[:-1,:-1],ids[:-1,1:],ids[1:,1:],
                                ids[:-1,:-1],ids[1:,1:],ids[1:,:-1]),axis=-1).reshape(-1,3)
-        ids=ids[::4,::4]
+        ids=ids[::6,::6]
         self.coarse_indices=np.stack((ids[:-1,:-1],ids[:-1,1:],ids[1:,1:],
                                      ids[:-1,:-1],ids[1:,1:],ids[1:,:-1]),axis=-1).reshape(-1,3)
 
     def mesh(self,t,swallow=0,*,coarse=False):
         x,y=self.xy[...,0],self.xy[...,1]
-        z=-19+1.6*np.sin(x*.032+t*.21)*np.cos(y*.026-t*.16)
-        z+=.65*np.sin(x*.07+y*.045-t*.34)
-        radius=np.sqrt((x+44)**2+(y+36)**2)
-        z-=swallow*15*np.exp(-radius/65)
+        z=-19+1.6*np.sin(x*.032+t*.26)*np.cos(y*.026-t*.20)
+        z+=.65*np.sin(x*.07+y*.045-t*.42)
+        # Long directional swells dominate, with a weaker oblique component.
+        # Shared vertices and incommensurate directions avoid seams/short loops.
+        z+=.22*np.sin(x*.11-y*.083+t*.31)
+        z-=swallow*15*self.depth_falloff
         points=np.stack((x,z,-y),axis=-1).reshape(-1,3)[self.coarse_indices if coarse else self.indices]
         normal=np.cross(points[:,1]-points[:,0],points[:,2]-points[:,0])
         normal/=np.maximum(1e-8,np.linalg.norm(normal,axis=1,keepdims=True))

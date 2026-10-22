@@ -12,12 +12,15 @@ from ui.presentation_renderer import PresentationRenderer
 
 def main():
     args=argparse.ArgumentParser();args.add_argument('--video',action='store_true')
+    args.add_argument('--audio',type=Path,help='Explicit offline audition to mux; not a live device capture')
+    args.add_argument('--size',nargs=2,type=int,default=(1920,1080))
     args.add_argument('--output',type=Path,default=ROOT/'.qa/encounter');options=args.parse_args()
     output=options.output;output.mkdir(parents=True,exist_ok=True)
     pygame.init();pygame.mixer.set_num_channels(32)
     pygame.display.gl_set_attribute(pygame.GL_DEPTH_SIZE,24)
-    screen=pygame.display.set_mode((1920,1080),pygame.OPENGL|pygame.DOUBLEBUF|pygame.HIDDEN)
-    scene=OpeningScene((1920,1080),None,effects_volume=0);scene.gpu=PresentationRenderer()
+    size=tuple(options.size)
+    screen=pygame.display.set_mode(size,pygame.OPENGL|pygame.DOUBLEBUF|pygame.HIDDEN)
+    scene=OpeningScene(size,None,effects_volume=0);scene.gpu=PresentationRenderer()
     def draw(name=None):
         scene.update(0);scene.render(screen)
         surface=scene.gpu.capture(scene.size) if name else None
@@ -44,8 +47,8 @@ def main():
         (output/'native-profile.json').write_text(json.dumps(report,indent=2));print(report,flush=True)
         if options.video:
             command=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-pixel_format','rgb24',
-                     '-video_size','1920x1080','-framerate','30','-i','pipe:0',
-                     '-i',str(ROOT/'Assets/Sound Hub/opening/encounter.wav'),'-c:v','libx264','-preset','fast',
+                     '-video_size',f'{size[0]}x{size[1]}','-framerate','30','-i','pipe:0',
+                     '-i',str(options.audio or ROOT/'Assets/Sound Hub/opening/encounter.wav'),'-c:v','libx264','-preset','fast',
                      '-crf','19','-c:a','aac','-b:a','192k','-pix_fmt','yuv420p','-movflags','+faststart',
                      '-t','44',str(output/'encounter.mp4')]
             with (output/'video.log').open('wb') as log:

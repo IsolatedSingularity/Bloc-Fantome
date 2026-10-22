@@ -35,9 +35,20 @@ auditioned for explicit transitions. These are proposals, not runtime mappings.
 - Minecraft textures/sounds, WorldBuilder map/UI/MP3s, skyboxes and temporary Thorn
   rig: existing owner-cleared local release inputs; retain their existing records.
 - Existing opening source recordings: `Assets/Sound Hub/opening/encounter-sources.json`
-  holds creator/source/license metadata; `.qa/encounter/audio/sources/` contains
-  original/decoded media. Derived Pass B files must have reproducible recipes,
-  source hashes and separate output names; never overwrite the older score.
+  holds creator/source/license metadata. The twelve used source recordings and
+  their MP3 downloads now have byte-identical permanent copies under
+  `Assets/Private Sources/Opening/`; earlier `.qa/encounter/audio/sources/` copies
+  remain untouched. These private sources are ignored and excluded from installer
+  file rules. `Code/tools/prepare_pass_b_audio.py` records reproducible filters,
+  hashes and attribution for fourteen separate runtime WAVs under
+  `Assets/Sound Hub/opening/pass-b/`; it never overwrites the older score.
+  Its ZIP round-trip backup is `.qa/pass-b/presentation-recordings.zip`, including
+  sources, outputs and attribution, with hashes in `presentation-backup.json`.
+  This is also a same-laptop copy: move it to independent storage before a reset.
+  Restore the archived paths before regenerating or packaging. The twelve source
+  records identify their creators and individual Creative Commons terms, including
+  attribution and noncommercial variants; owner private release clearance
+  remains the authority for this build, with no additional public asset upload.
 - Installed/root executables, earlier review packages, saves and settings are
   preservation inputs. Pass B review packaging must not update the installed app,
   Start Menu route, rollback builds or main branch.

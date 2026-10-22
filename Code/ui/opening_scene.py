@@ -164,7 +164,9 @@ class OpeningScene:
         self.renderer.size=self.size
         self.overlay=pygame.Surface(size,pygame.SRCALPHA)
         self.controls=pygame.Surface(size,pygame.SRCALPHA)
-        self.close_rect=pygame.Rect(w-56,20,36,36)
+        self.close_rect=pygame.Rect(w-24-max(112,self.small_font.size('Skip intro  Esc')[0]+24),20,
+                                   max(112,self.small_font.size('Skip intro  Esc')[0]+24),36)
+        self.skip_surface=pygame.Surface(self.close_rect.size,pygame.SRCALPHA)
         self.turn_rects=(pygame.Rect(w//2-184,h-72,42,40),pygame.Rect(w//2+142,h-72,42,40))
         self.slider_rect=pygame.Rect(w//2-118,h-59,236,14)
         self.return_rect=pygame.Rect(w//2-65,h-125,130,36)
@@ -194,7 +196,6 @@ class OpeningScene:
         if self.phase=='encounter':
             t=self.elapsed-self.awakened_at
             if t>=ENCOUNTER_DURATION:self.closed=True
-            self.audio.update_encounter(t,dt)
         if self.size[1]-155<=self.pointer[1]<=self.size[1] or self.dragging:
             self.controls_at=self.elapsed
         if self.placed_at is not None and previous-self.placed_at<self.REVEAL_DURATION<=self.elapsed-self.placed_at:
@@ -242,6 +243,11 @@ class OpeningScene:
             self.renderer.angle=self.target_angle=angle+turn*u
         self.zoom+=(self.target_zoom-self.zoom)*(1-math.exp(-dt*10))
         self.renderer.half*=self.zoom
+        self.audio.set_listener(self.renderer,self.SANCTUARY_OFFSET+(.5,-3,13)
+                                if self.phase!='shrine' else (.5,.5,2))
+        if self.phase=='encounter':
+            self.audio.update_encounter(self.elapsed-self.awakened_at,dt,self.renderer,
+                                        self.encounter.rig,self.SANCTUARY_OFFSET)
         self.audio.update_orbit((self.renderer.angle-old_angle)/dt if dt and self.orbit_enabled else 0,dt)
         # Less than three display pixels, zero-mean, decaying at the landing.
         tremor=0.0
@@ -357,6 +363,10 @@ class OpeningScene:
 
     def handle_event(self,event):
         if hasattr(event,'pos'):self.pointer=event.pos
+        if ((event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE) or
+            (event.type==pygame.MOUSEBUTTONDOWN and event.button==1 and self.close_rect.collidepoint(event.pos))):
+            self.closed=True;self.orbit_keys.clear();self.dragging=False
+            return
         if event.type==pygame.WINDOWFOCUSLOST:
             self.orbit_keys.clear();self.dragging=False
         if self.phase=='encounter':return
@@ -425,6 +435,7 @@ class OpeningScene:
             t=self.elapsed-self.awakened_at
             alpha=round(255*ramp(t,40.2,2.3))
             if alpha:surface.fill((0,0,0,alpha))
+            surface.blit(self._skip_control(),self.close_rect)
             return surface
         targets=self.targets()
         for name,(lo,hi) in targets.items():
@@ -461,7 +472,15 @@ class OpeningScene:
         surface=self.overlay
         if self.elapsed<3.85:
             surface.fill((0,0,0,round(255*(1-self.smooth(ramp(self.elapsed,.35,3.5))))))
+        surface.blit(self._skip_control(),self.close_rect)
         return surface
+
+    def _skip_control(self):
+        from ui.chrome import button
+        self.skip_surface.fill((0,0,0,0))
+        button(self.skip_surface,self.skip_surface.get_rect(),'Skip intro  Esc',self.small_font,
+               hovered=self.close_rect.collidepoint(self.pointer))
+        return self.skip_surface
 
     def _visible_meshes(self):
         result=[(self.meshes[n],(0,0,0)) for n in ('foundations','fixed','vein')]
@@ -486,8 +505,7 @@ class OpeningScene:
         return result
 
     def _encounter_overlay_gpu(self):
-        # No interface text exists during this phase. Draw its sparse motes
-        # directly instead of uploading an 8 MB transparent FHD image per frame.
+        # Draw motes directly, and upload only the small native-size Skip region.
         gpu=self.gpu;gpu.screen_space(self.size);gpu.gl.glDisable(0x0DE1)
         w,h=self.size;data=np.zeros((34,4,9),dtype='float32')
         for i in range(34):
@@ -500,6 +518,7 @@ class OpeningScene:
         gpu.draw(data)
         alpha=ramp(self.elapsed-self.awakened_at,40.2,2.3)
         if alpha:gpu.flat(((0,0,0),(w,0,0),(w,h,0),(0,h,0)),((0,0,0,alpha),)*4)
+        gpu.overlay_region(self._skip_control(),self.close_rect,self.size)
 
     def render(self,screen):
         # SDL2 resizes an OpenGL window without resizing Pygame's placeholder

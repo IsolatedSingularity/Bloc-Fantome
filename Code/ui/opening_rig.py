@@ -6,6 +6,7 @@ import numpy as np
 import pygame
 from runtime_paths import ASSETS_DIR
 from ui.opening_creature import ease, hinge, unit
+from ui.encounter_timeline import SKULL_CONTACTS
 
 
 def blend_quaternions(a,b,t):
@@ -86,7 +87,12 @@ class ThornRig:
                                         ('52A',26,15,.78)):
             amount=float(ease((t-start)/.65)*(1-ease((t-start-duration)/.8)))
             if amount:
-                b,c=self.clip(name,max(0,t-start)*speed,False)
+                age=max(0,t-start)
+                if name=='51A':
+                    # Hold the loaded shoulder before the overturn, then release
+                    # through the source motion. Continuous, non-repeating timing.
+                    age=float(np.interp(age,(0,.65,1.15,duration),(0,.12,1.15,duration)))
+                b,c=self.clip(name,age*speed,False)
                 q=blend_quaternions(q,b,amount)
                 c=c.copy();c[0]=p[0]
                 p=p*(1-amount)+c*amount
@@ -94,7 +100,8 @@ class ThornRig:
         # Several overlapping traveling contractions, each with a quick onset
         # and slower release, move through spine, shoulder, fingers and ribbons.
         for bone in (3,4,5,24,25,32,38,81,82,89,95,52,53,54,61,62,109,110,118,119,127,145):
-            breath=.045*math.sin(t*1.7-bone*.19)+.02*math.sin(t*4.3+bone*.31)
+            held=1-.8*float(ease((t-13.8)/.4)*(1-ease((t-15.3)/.2)))
+            breath=held*(.025*math.sin(t*1.7-bone*.19)+.012*math.sin(t*4.3+bone*.31))
             spasm=0.
             for onset,amplitude in ((15.2,.25),(18.4,-.32),(21.1,.45),(24.3,-.6),(26.7,.5),(28.5,-.7),(30.2,.4)):
                 age=t-onset-(bone%7)*.024
@@ -111,7 +118,7 @@ class ThornRig:
         origin=hip-pelvis[[0,2,1]]*(1,-1,1)*self.SCALE
         # Aim the articulated spine/neck at real stone, not an arbitrary local
         # rotation axis (the imported bones have different rest orientations).
-        for hit in (25.45,26.55,27.65):
+        for hit in SKULL_CONTACTS:
             age=t-hit
             if -.32<age<.7:
                 if age<-.1:
@@ -132,7 +139,8 @@ class ThornRig:
     def hip_path(t):
         keys=((0,(100,25,18)),(2,(78,25,18)),(4,(53,25,19)),
               (6,(32,25,22)),(8,(22,25,29)),(10,(12,22,38)),
-              (12,(3,19,47)),(15.5,(0,18,49)),(17,(1,17,52)),
+              (12,(3,19,47)),(13.8,(1,18.5,47.5)),(15.2,(.8,18.4,47.6)),
+              (15.5,(0,18,49)),(17,(1,17,52)),
               (19,(-18,22,37)),(20.5,(-28,28,12)),(22,(-23,27,15)),
               (25,(-12,27,33)),(28,(0,23,42)),(33,(0,22,46)),
               (39,(0,22,48)),(44,(0,22,48)))

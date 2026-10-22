@@ -71,6 +71,7 @@ Assets/Texture Hub/blocks/*
 
 # Owner-supplied licensed assets, skyboxes, font software, and private license records
 Assets/Fonts/Zekton/
+Assets/Private Sources/
 zekton.zip
 Assets/Skyboxes/
 *.skybox.zip

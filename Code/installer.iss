@@ -15,6 +15,73 @@
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
+; Required selected/derived media must not silently disappear from the wildcard.
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\bootUp.wav")
+#error Required Pass B audio missing: ui\selected\bootUp.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\shutDown.wav")
+#error Required Pass B audio missing: ui\selected\shutDown.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\worldMap.wav")
+#error Required Pass B audio missing: ui\selected\worldMap.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\save.wav")
+#error Required Pass B audio missing: ui\selected\save.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\error.wav")
+#error Required Pass B audio missing: ui\selected\error.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\pressButton.wav")
+#error Required Pass B audio missing: ui\selected\pressButton.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\ui\selected\close.wav")
+#error Required Pass B audio missing: ui\selected\close.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice01.wav")
+#error Required Pass B audio missing: opening\pass-b\voice01.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice02.wav")
+#error Required Pass B audio missing: opening\pass-b\voice02.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice03.wav")
+#error Required Pass B audio missing: opening\pass-b\voice03.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice04.wav")
+#error Required Pass B audio missing: opening\pass-b\voice04.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice05.wav")
+#error Required Pass B audio missing: opening\pass-b\voice05.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice06.wav")
+#error Required Pass B audio missing: opening\pass-b\voice06.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice07.wav")
+#error Required Pass B audio missing: opening\pass-b\voice07.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice08.wav")
+#error Required Pass B audio missing: opening\pass-b\voice08.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice09.wav")
+#error Required Pass B audio missing: opening\pass-b\voice09.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice10.wav")
+#error Required Pass B audio missing: opening\pass-b\voice10.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\voice11.wav")
+#error Required Pass B audio missing: opening\pass-b\voice11.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\contact.wav")
+#error Required Pass B audio missing: opening\pass-b\contact.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\fall.wav")
+#error Required Pass B audio missing: opening\pass-b\fall.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\reflection.wav")
+#error Required Pass B audio missing: opening\pass-b\reflection.wav
+#endif
+#if !FileExists(SourcePath + "..\Assets\Sound Hub\opening\pass-b\manifest.json")
+#error Required Pass B audio missing: opening\pass-b\manifest.json
+#endif
 #ifndef AppExeSource
   #define AppExeSource "..\\BlocFantome.exe"
 #endif

@@ -762,8 +762,8 @@ BLOCK_SOUNDS: Dict[BlockType, SoundDefinition] = {
     BlockType.OAK_DOOR: SoundDefinition("wood", "wood"),
     BlockType.IRON_DOOR: SoundDefinition("stone", "stone"),
     # Liquids
-    BlockType.WATER: SoundDefinition("water", "water"),
-    BlockType.LAVA: SoundDefinition("lava", "lava"),
+    BlockType.WATER: SoundDefinition("water_place", "water_break"),
+    BlockType.LAVA: SoundDefinition("lava_place", "lava_break"),
     # Stairs
     BlockType.OAK_STAIRS: SoundDefinition("wood", "wood"),
     BlockType.COBBLESTONE_STAIRS: SoundDefinition("stone", "stone"),
@@ -6842,6 +6842,13 @@ class AssetManager:
         lavapop = self._loadSingleSound(os.path.join(liquidDir, "lavapop.ogg"), SOUND_VOLUME_AMBIENT)
         if lavapop:
             self.sounds["lava"].append(lavapop)
+
+        # Fluid editing is a discrete pour/scoop, not a random ambience loop.
+        bucketDir=os.path.join(SOUNDS_DIR,'item','bucket')
+        for material,suffix in (('water',''),('lava','_lava')):
+            for event,verb in (('place','empty'),('break','fill')):
+                key=f'{material}_{event}'
+                self.sounds[key]=self._loadSoundFiles(key,bucketDir,f'{verb}{suffix}{{i}}.ogg',maxVariants=3)
         
         # Load UI click sound
         self.clickSound = self._loadSingleSound(
@@ -7470,24 +7477,24 @@ class AssetManager:
         """Start a loop on a dedicated group, replacing an older group loop."""
         return self.audioRouter.play(sound, group=group, volume=volume, loops=-1, replace=True)
     
-    def playDoorSound(self, isOpening: bool, blockType: BlockType = None):
+    def playDoorSound(self, isOpening: bool, blockType: BlockType = None, effectsVolume: float = 1.0):
         """Play door open or close sound - iron doors use metal door sounds"""
         import random
         # Iron doors use proper metal door sounds
         if blockType == BlockType.IRON_DOOR:
             if isOpening and self.ironDoorOpenSounds:
-                self.playOneShot(random.choice(self.ironDoorOpenSounds), volume=0.8)
+                self.playOneShot(random.choice(self.ironDoorOpenSounds), volume=0.8*effectsVolume)
             elif not isOpening and self.ironDoorCloseSounds:
-                self.playOneShot(random.choice(self.ironDoorCloseSounds), volume=0.8)
+                self.playOneShot(random.choice(self.ironDoorCloseSounds), volume=0.8*effectsVolume)
             else:
                 # Fallback to stone sound if iron door sounds not loaded
-                self.playSound("stone")
+                self.playSound("stone",effectsVolume=effectsVolume)
         else:
             # Wood doors use proper door sounds
             if isOpening and self.doorOpenSound:
-                self.playOneShot(self.doorOpenSound, volume=0.8)
+                self.playOneShot(self.doorOpenSound, volume=0.8*effectsVolume)
             elif not isOpening and self.doorCloseSound:
-                self.playOneShot(self.doorCloseSound, volume=0.8)
+                self.playOneShot(self.doorCloseSound, volume=0.8*effectsVolume)
     
     def playBlockSound(self, blockType: BlockType, isPlace: bool = True, worldPos: Tuple[int, int, int] = None, effectsVolume: float = 1.0):
         """Play the appropriate sound for a block type"""
@@ -8968,6 +8975,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
         # Show splash screen (also starts music during fade)
         if not self._showSplashScreen(startupSplash):
+            self._shutdown()
             return  # User quit during splash
         self._compactStartupSplash = False
         self.screen = pygame.display.set_mode(startupWindowSize, pygame.RESIZABLE)
@@ -8999,6 +9007,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.clock.tick(60)
             self.performanceMonitor.frame_end()
         
+        self._shutdown()
+
+    def _shutdown(self):
+        if self.openingScene is not None:self._closeOpeningScene()
         self._playLifecycleCue('shutdown')
         shutdown_started = pygame.time.get_ticks()
         # Save user preferences before quitting
@@ -9011,10 +9023,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
         # Bound the exit tail; continue pumping OS events, never wait for the
         # selected recording's full multi-second decay or delay failed startup.
+        fading=False
         while pygame.time.get_ticks()-shutdown_started < 320:
             pygame.event.pump()
-            if pygame.time.get_ticks()-shutdown_started >= 220:
+            if not fading and pygame.time.get_ticks()-shutdown_started >= 220:
                 pygame.mixer.Channel(29).fadeout(100)
+                fading=True
             self.clock.tick(60)
         pygame.quit()
 
@@ -12785,6 +12799,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             props.comparatorSubtract = not props.comparatorSubtract
             self.world.setBlockProperties(x,y,z,props)
             self.redstone.mark_dirty((x,y,z))
+            self._playRedstoneSound("redstone_click", (x, y, z))
             return True
         if blockType == BlockType.REPEATER:
             props = self.world.getBlockProperties(x, y, z) or BlockProperties()
@@ -12817,7 +12832,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     cellProps.isOpen = newOpen
                     cellProps.doorHalf = half
                     self.world.setBlockProperties(x, y, cellZ, cellProps)
-            self.assetManager.playDoorSound(newOpen, blockType)
+            self.assetManager.playDoorSound(newOpen, blockType, effectsVolume=self.effectsVolume)
             print(f"Door {'opened' if newOpen else 'closed'}")
             return True
         return False
@@ -21168,8 +21183,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         import time
         batchStarted = time.perf_counter()
         rasterVariants = {}
+        drawItems=() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]
+        screenPositions=(self.renderer.worldToScreenBatch([item[1:4] for item in drawItems])
+                         if len(drawItems)>=4096 else None)
+        properties_get=self.world.blockProperties.get
         for itemIndex, (_, x, y, z, blockType) in enumerate(
-            (() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]), startIndex
+            drawItems, startIndex
         ):
             if (incrementalZoomBuild and (self.tutorialScreen.visible or self._worldTransitionKind == 'load')
                     and itemIndex > startIndex and (itemIndex-startIndex)%32 == 0):
@@ -21178,7 +21197,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     break
             if (x, y, z) in movingTargets:
                 continue
-            screenX, screenY = self.renderer.worldToScreen(x, y, z)
+            screenX, screenY = (screenPositions[itemIndex-startIndex] if screenPositions is not None
+                                else self.renderer.worldToScreen(x,y,z))
             
             # Horror: Block texture flicker - briefly show wrong texture
             displayBlockType = blockType
@@ -21195,7 +21215,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
             sprite=None
             sourceDisplay=False
-            sourceProps=self.world.getBlockProperties(x,y,z)
+            sourceProps=properties_get((x,y,z))
             # Material rasterization is independent of position when lighting
             # and per-cell effects are absent. Reuse within this repaint only;
             # revision, camera, animation and property changes cannot go stale.
@@ -22384,6 +22404,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-review-handoff' in sys.argv:
+        from tools.verify_review_audio import run_handoff
+        run_handoff(sys.argv[sys.argv.index('--verify-review-handoff')+1],sys.modules[__name__])
+        return
+    if '--verify-review-audio' in sys.argv:
+        from tools.verify_review_audio import run
+        run(sys.argv[sys.argv.index('--verify-review-audio')+1])
+        return
     # Set up logging for frozen exe (since console is hidden)
     if getattr(sys, 'frozen', False):
         import logging

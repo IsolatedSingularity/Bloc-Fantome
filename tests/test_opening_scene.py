@@ -183,7 +183,7 @@ def test_two_scene_visible_click_path_and_return(app,size):
     click(heart);assert scene.awakened_at is not None
     assert scene.phase=='encounter'
     locked=(scene.renderer.angle,scene.target_zoom)
-    scene.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
+    scene.handle_event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_q))
     scene.handle_event(pygame.event.Event(pygame.MOUSEWHEEL,y=2))
     scene.update(1.3);click(scene.return_rect.center)
     assert not scene.closed and not scene.targets() and not scene.orbit_enabled
@@ -191,6 +191,30 @@ def test_two_scene_visible_click_path_and_return(app,size):
     scene.update(43)
     assert scene.closed
     scene.close()
+
+
+@pytest.mark.parametrize('phase', ['shrine','approach','sanctuary','encounter'])
+@pytest.mark.parametrize('method', ['mouse','escape'])
+def test_skip_entire_intro_in_every_phase_preserves_editor(app, phase, method):
+    original=dict(app.world.blocks)
+    camera=(app.zoomLevel,app.renderer.offsetX,app.renderer.offsetY,app.renderer.viewRotation)
+    history=list(app.undoManager.undo_stack);path=app.currentBuildPath
+    app._openOpeningScene()
+    scene=app.openingScene;scene.phase=phase
+    if phase=='encounter':scene.awakened_at=scene.elapsed;scene.audio.start_encounter()
+    pygame.event.clear()
+    event=(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE,mod=0) if method=='escape'
+           else pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=scene.close_rect.center))
+    pygame.event.post(event);app._handleEvents()
+    try:
+        assert app.openingScene is None
+        assert app.world.blocks==original and app.undoManager.undo_stack==history
+        assert camera==(app.zoomLevel,app.renderer.offsetX,app.renderer.offsetY,app.renderer.viewRotation)
+        assert app.currentBuildPath==path and app.running
+        from ui.opening_audio import OPENING_CHANNELS
+        assert not any(pygame.mixer.Channel(i).get_busy() for i in (*OPENING_CHANNELS.values(),30))
+    finally:
+        if app.openingScene:app._closeOpeningScene()
 
 
 def test_camera_projection_ray_round_trip_and_opaque_occlusion(app):

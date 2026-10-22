@@ -6,6 +6,9 @@
 | [2.9.9 checkpoint](../reviews/release-2.9.9/REVIEW.md) | Accepted visual/functional baseline; performance/native limitations remain |
 | [Owner roadmap](../handoffs/OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md) | Pass B intent; latest direct request unlocks B, C remains paused |
 | [Pygame mixer](https://www.pygame.org/docs/ref/mixer.html) | Channel reservation, nonblocking playback, channel vs Sound gain; runtime pinned 2.6.1 |
+| [OpenAL programming guide](https://www.openal.org/documentation/OpenAL_Programmers_Guide.pdf) | Distance attenuation model reference; Pygame implementation uses a virtual orthographic listener, not OpenAL |
+| [FFmpeg rubberband filter](https://ffmpeg.org/ffmpeg-filters.html#rubberband) | Recorded-source pitch, tempo and formant processing; exact filters/version/hashes in pass-b-derived-audio.json |
+| [Inno Setup FileExists](https://jrsoftware.org/ishelp/topic_fileexists.htm) | Required-media installer compilation checks |
 | [Fluent motion](https://fluent2.microsoft.design/motion) | Functional transitions and relationship-preserving movement; principles only, no web dependencies |
 | [W3C contrast explanation](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) | Readability targets, checked against composite backgrounds |
 

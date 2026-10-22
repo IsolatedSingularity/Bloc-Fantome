@@ -111,10 +111,13 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     print(f"Building Bloc Fantôme Executable v{VERSION}")
     print("=" * 60)
 
-    from engine.selected_audio import validate_selected_audio
+    from engine.selected_audio import validate_selected_audio, validate_presentation_audio
     validate_selected_audio(
         os.path.join(PROJECT_ROOT, 'Assets', 'Sound Hub'),
         os.path.join(PROJECT_ROOT, 'docs', 'design', 'selected-audio.json'))
+    validate_presentation_audio(
+        os.path.join(PROJECT_ROOT,'Assets','Sound Hub'),
+        os.path.join(PROJECT_ROOT,'docs','design','pass-b-derived-audio.json'))
 
     # Source builds retain a deliberate system-font fallback, but a release
     # must not silently ship without the owner-supplied licensed typeface.

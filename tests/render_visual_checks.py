@@ -1164,6 +1164,10 @@ def render_opening(output_dir: Path):
         save_capture(app.screen,output_dir/f'encounter_handoff_mid_{size[0]}.png')
         scene.update(1.4);scene.render(app.screen)
         save_capture(app.screen,output_dir/f'encounter_handoff_end_{size[0]}.png')
+        scene.pointer=scene.close_rect.center;scene.render(app.screen)
+        save_capture(app.screen,output_dir/f'encounter_skip_hover_{size[0]}.png')
+        scene.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN,button=1,pos=scene.close_rect.center))
+        assert scene.closed
         scene.close()
         app.settingsMenuOpen=True;app._render()
         save_capture(app.screen,output_dir/f'settings_{size[0]}.png')
@@ -1270,6 +1274,13 @@ def render_workshop(output_dir: Path):
                 app._toggleRedstoneLab();capture(f'lab-text{round(scale*100)}',30)
                 app.redstoneLabScroll=app.redstoneLabMaxScroll;capture(f'lab-scrolled-text{round(scale*100)}');app._toggleRedstoneLab()
             set_text_scale(1);app.workshop.text_scale=1;app._applyWindowSize(1200,800)
+            from ui.map_transition import MapTransition
+            for reduced in (False,True):
+                transition=MapTransition(app.screen,reduced)
+                for age in (0,60,120):
+                    with patch('pygame.time.get_ticks',return_value=transition.started+age):
+                        transition.render(app.screen)
+                        save_capture(app.screen,output_dir/f'map-cover-{reduced}-{age}.png')
             if pygame.display.get_driver()=='windows':
                 before=(app.renderer.offsetX,app.renderer.offsetY,app.zoomLevel)
                 app._toggleFullscreen();capture('fullscreen',30)

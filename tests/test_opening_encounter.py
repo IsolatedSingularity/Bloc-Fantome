@@ -106,11 +106,10 @@ def test_ground_is_connected_and_continuously_animated():
     assert np.max(abs(first[:,:,:3]-next_frame[:,:,:3]))<.02
     assert not np.array_equal(first[:,:,:3],next_frame[:,:,:3])
 
-def test_encounter_finishes_without_input_and_ignores_skip(scene):
+def test_encounter_finishes_without_input_and_locks_camera(scene):
     scene.phase='sanctuary';scene.activate('heart')
     before=scene.elapsed
-    for event in (pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE),
-                  pygame.event.Event(pygame.KEYDOWN,key=pygame.K_q),
+    for event in (pygame.event.Event(pygame.KEYDOWN,key=pygame.K_q),
                   pygame.event.Event(pygame.MOUSEWHEEL,y=8),
                   pygame.event.Event(pygame.WINDOWFOCUSLOST)):
         scene.handle_event(event)
@@ -126,7 +125,8 @@ def test_muted_score_still_runs_and_releases_channel():
     pygame.mixer.init();pygame.mixer.set_num_channels(32)
     audio=OpeningAudio(0)
     audio.start_encounter();audio.update_encounter(20,1/60)
-    assert pygame.mixer.Channel(OPENING_CHANNELS['score']).get_volume()==0
-    assert pygame.mixer.Channel(OPENING_CHANNELS['score']).get_busy()
+    channel=OPENING_CHANNELS['ambience' if audio.spatial.ready else 'score']
+    assert pygame.mixer.Channel(channel).get_volume()==0
+    assert pygame.mixer.Channel(channel).get_busy()
     audio.close()
-    assert not pygame.mixer.Channel(OPENING_CHANNELS['score']).get_busy()
+    assert not any(pygame.mixer.Channel(i).get_busy() for i in OPENING_CHANNELS.values())
