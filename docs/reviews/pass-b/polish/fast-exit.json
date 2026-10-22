@@ -1,0 +1,7 @@
+{
+  "native_driver": "windows",
+  "injected_key": "Escape",
+  "elapsed_ms": 42.49460017308593,
+  "mixer_closed": true,
+  "physical_input": false
+}

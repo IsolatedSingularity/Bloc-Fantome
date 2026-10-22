@@ -1,0 +1,4010 @@
+{
+  "display_driver": "windows",
+  "mixer_format": [
+    44100,
+    -16,
+    2
+  ],
+  "frozen": true,
+  "hidden": true,
+  "physical_input": false,
+  "human_listening": false,
+  "audio_muted": true,
+  "startup_ms": {
+    "run_started": 0.0,
+    "splash_presented": 32.59099996648729,
+    "boot_requested": 34.77900009602308,
+    "assets_ready": 4064.742899965495,
+    "editor_ready": 5218.647300032899
+  },
+  "polish": true,
+  "display_flags": 16777232,
+  "vsync_supported": false,
+  "vsync_reason": "Native software RESIZABLE display; neither SCALED nor OPENGL",
+  "presented_frames": [
+    {
+      "seconds": 0.1066387000028044,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.2831079000607133,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.2988779000006616,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.3148769000545144,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.33074790006503463,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.34679699991829693,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.3630089999642223,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.37883109995163977,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.3949102000333369,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.4108694000169635,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.4628822000231594,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.4786991998553276,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.49694300000555813,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.5139867998659611,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.5317076998762786,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.5501536000519991,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.568675999995321,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.5876505000051111,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6063993000425398,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6254304999019951,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6407999000512064,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6593670998699963,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6748673999682069,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.6908666999079287,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.709634399972856,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.7283250999171287,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.7464713999070227,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.7662680000066757,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.7819073998834938,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8013383999932557,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8182884999550879,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8375430998858064,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8529326999559999,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8715716998558491,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.8879271999467164,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9051012999843806,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9237500000745058,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9416100999806076,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9597803000360727,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9760171000380069,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 0.9932802999392152,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.0087532999459654,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.0273680000100285,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.0466910998802632,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.065055799903348,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.0833683998789638,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.0987334998790175,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.1154143998865038,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.1315084998495877,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.147120299981907,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.164666600059718,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.1830708999186754,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.1996480000671,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.219563900027424,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.2394707000348717,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.2549451999366283,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.2761429999954998,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.2934864000417292,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.3108663000166416,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.330317199928686,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.3503381998743862,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.3685983999166638,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.3849078000057489,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.4015806999523193,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.4188516999129206,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.436348200077191,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.4525941000320017,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.4715982999186963,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.4879880000371486,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.5080619000364095,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.5370571999810636,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.5561231998726726,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.5735966998618096,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.5906297999899834,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.6098132999613881,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.626961400033906,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.6461994999554008,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.6618661999236792,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.6814333000220358,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.6971720999572426,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.7172504998743534,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.7327765999361873,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.7520139999687672,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.7712741000577807,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.791143599897623,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.8104868999216706,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.8259296999312937,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.845208700047806,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.8648838000372052,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.8841309000272304,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.903434099862352,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.918921299977228,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.9348200999666005,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.954252899857238,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.969723700080067,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 1.9890653998591006,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.0050335000269115,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.0207289999816567,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.0403120999690145,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.056079800007865,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.0738794999197125,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.0913444000761956,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.106800500070676,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.1237875998485833,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.1404198999516666,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.157561299856752,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.174057099968195,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.1916404999792576,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.209137599915266,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.226194799877703,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.244484599912539,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.2617124000098556,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.2782252999022603,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.2938560000620782,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.310831799870357,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.327840300044045,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.3439917999785393,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.361888000043109,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.3783932998776436,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.39388779993169,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.410115199862048,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.4261558998841792,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.4440188000444323,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.4615547999273986,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.478173000039533,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.495403999928385,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.5185882998630404,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.5354291000403464,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.5518521000631154,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.569454399868846,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.5874159999657422,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.6038971999660134,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.6214211999904364,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.6382182999514043,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.6560788999777287,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.673192400019616,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.690158399986103,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.706117099849507,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.7220882000401616,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.738132399972528,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.754264899995178,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.771194800036028,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.7871016999706626,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.8041983998846263,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.8204020999837667,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.836755699943751,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.8542692998889834,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.8717217000667006,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.889817599905655,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.907516999868676,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.9241263999138027,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.9413312999531627,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.9582352999132127,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.97479879995808,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 2.9923032999504358,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.0091935000382364,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.0261941999197006,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.0443321999628097,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.060407599899918,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.0773203999269754,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.093953700037673,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.1113758999854326,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.127373999916017,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.1439882998820394,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.1603885998483747,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.175940299872309,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.194043699884787,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.2109586999285966,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.228204899933189,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.2440674998797476,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.2614688999019563,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.2780412000138313,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.2942065000534058,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.3110702999401838,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.3282959999050945,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.3463655998930335,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.364219699986279,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.380264699924737,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.3962304000742733,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.413311699870974,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.4303210999350995,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.446213899878785,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.464216500055045,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.482338699977845,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.49826669995673,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.513789099873975,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.5300990999676287,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.545808200025931,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.5638017000164837,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.5799564998596907,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.595871799858287,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.612016399856657,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.6279867999255657,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.645902100019157,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.6639221999794245,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.680050899973139,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.6960187000222504,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.712124800076708,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.7281211998779327,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.7442818998824805,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.7614947999827564,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.777163099963218,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.794024300063029,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.810191599885002,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.8261303999461234,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.8433244000189006,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.8603345998562872,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.878404699964449,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.893801499856636,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.9104367999825627,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.9273659999016672,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.9439664999954402,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.961371300043538,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.9780124998651445,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 3.9940863999072462,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.010586800053716,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.02749489992857,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.044094400014728,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.060060200048611,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.07651469996199,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.094007899984717,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.1111442998517305,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.128694399958476,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.156262599863112,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.172913699876517,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.189427400007844,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.206373099936172,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.223253699950874,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.2403440999332815,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.257357700029388,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.27428360003978,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.291321699973196,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.308018199866638,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.3245868999511,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.357044900069013,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.373920199926943,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.391189399873838,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.4080531999934465,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.424545600079,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.441162799950689,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.458171899896115,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.474658299935982,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.506346300011501,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.523395600030199,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.556347199948505,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.573398599866778,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.590398399857804,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.622989899944514,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.640022000065073,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.656982499873266,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.674164099851623,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.691034999908879,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.708032599883154,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.724629400065169,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.757026599952951,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.774090100079775,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.791242599952966,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.808119500055909,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.824644400039688,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.841237999964505,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.858149299863726,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.874722299864516,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.90717939985916,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.924309399910271,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.941354000009596,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.957812400069088,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.974374299868941,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 4.990867899963632,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.007415700005367,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.024368699872866,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.041216499870643,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.058213799959049,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.074696999974549,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.107252900023013,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.124327199999243,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.140885399887338,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.156777699943632,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.17557379999198,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.191938000032678,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.209058800013736,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.266646699979901,
+      "phase": "startup",
+      "visit": 0
+    },
+    {
+      "seconds": 5.791450300021097,
+      "phase": "editor",
+      "visit": 0
+    },
+    {
+      "seconds": 6.033252799883485,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.04415880003944,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.060220699990168,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.078597999876365,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.09392479993403,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.110393200069666,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.337447999976575,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.347255700035021,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.363945699995384,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.380739999935031,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.3968185998965055,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.4128938999492675,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.637207699939609,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.647700499976054,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.66317219985649,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.68003090005368,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.696140799904242,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.712675099959597,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.928061499958858,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.937795700039715,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.953740899916738,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.969768699957058,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 6.98562499997206,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 7.001388299977407,
+      "phase": "palette",
+      "visit": 0
+    },
+    {
+      "seconds": 7.217269199900329,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.218325400026515,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.259233699878678,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.3022517000790685,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.30330660007894,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.330262499861419,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.352323899976909,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.3743485999293625,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.396484900033101,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.418029899941757,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.430245300056413,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.447054599877447,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.46352900005877,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.499809500062838,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.514087500050664,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.534624099964276,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.551344499923289,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.569850299973041,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.585861699888483,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.605068299919367,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.620599600020796,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.638475799933076,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.655285699991509,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.672152699902654,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.6911355999764055,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.711342599941418,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.729284700006247,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.746294199954718,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.764837899943814,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.7827824000269175,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.797214000020176,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.816344799939543,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.831818700069562,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.848816700046882,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.8646267000585794,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.881187999853864,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.899609399959445,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.915998100070283,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.934474800014868,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.951852199854329,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.969310800079256,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 7.985054000047967,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.003734400030226,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.020647800061852,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.036576899932697,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.052425399888307,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.069342900067568,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.086274599889293,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.106268799863756,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.12220499990508,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.14107590005733,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.165858400054276,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.181687399977818,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.198182699969038,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.214569800067693,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.231079699937254,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.247871599858627,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.26543159992434,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.281651899917051,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.298116100020707,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.314076999900863,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.331589800072834,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.348015499999747,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.364847299875692,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.37935519986786,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.395986400078982,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.413287200033665,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.42904209997505,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.439435800071806,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.46221509994939,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.478569899918512,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.493435699958354,
+      "phase": "map",
+      "visit": 0
+    },
+    {
+      "seconds": 8.625668799970299,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.626521799946204,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.643628899939358,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.659275199985132,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.677327000070363,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.693812099983916,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.710623200051486,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.726217099931091,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.742833399912342,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.75874189985916,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.774849199922755,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.791624400066212,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.807502799900249,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.824707200052217,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.84477990004234,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.863930799998343,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.880349499871954,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.897594899870455,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.91309960000217,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.925000200048089,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.945459899958223,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.96244619996287,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.979962999932468,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 8.99620379996486,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.013326300075278,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.029330000048503,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.045276700053364,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.061537799891084,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.077578200027347,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.093708199914545,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.110809799982235,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.12563499994576,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.141564399935305,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.152566999895498,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.168076100060716,
+      "phase": "map",
+      "visit": 1
+    },
+    {
+      "seconds": 9.30323680001311,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.31244029989466,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.330280399881303,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.346420600079,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.363600299926475,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.379533400060609,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.395110900048167,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.411464100005105,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.428921199869365,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.443995999870822,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.454333799891174,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.470377600053325,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.487311699893326,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.504319499945268,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.520571399945766,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.536700299941003,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.558167800074443,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.573919199872762,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.589901899918914,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.606102999998257,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.62272879993543,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.638471700018272,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.655444100033492,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.671722099883482,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.688345199916512,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.70381770003587,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.720260199857876,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.736948800040409,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.747982200002298,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.76464940002188,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.78124519996345,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.798437299905345,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.814955899957567,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.832693099975586,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.854155899956822,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.870982999913394,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.88646150007844,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.898750999942422,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.919021399924532,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.935264199972153,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.951938499929383,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.96810119994916,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 9.985489199869335,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.000942300073802,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.018039699876681,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.03564350004308,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.046313700033352,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.063260199967772,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.080397800076753,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.096332999877632,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.113027999876067,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.128493800060824,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.145350900013,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.161502300063148,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.17928639985621,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.194747099885717,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.210144999902695,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.227050899993628,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.244277899852023,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.26057430007495,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.276259100064635,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.292949799913913,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.308460699860007,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.325065599987283,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.340926900040358,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.357220100006089,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.374016199959442,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.390627200016752,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.407522399909794,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.422704400029033,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.438813699875027,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.455052099889144,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.470686299959198,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.486927999882028,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.503544899867848,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.51981129986234,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.535780800040811,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.551769299898297,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.567128999857232,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.583752600010484,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.599269700003788,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.6165539000649,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.632518199970946,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.650261800037697,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.667330199852586,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.682963300030679,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.698400699999183,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.715621799929067,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.731676999945194,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.748643799917772,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.765243199886754,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.781721199862659,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.797239699866623,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.813419699901715,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.8295211000368,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.846870499895886,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.866305900039151,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.883279700065032,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.899495200021192,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.912127899937332,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.928169299848378,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.944105600006878,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.96191870002076,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.976658100029454,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 10.99262350006029,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.01089629996568,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.027747699990869,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.043247499968857,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.06012240005657,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.076287299860269,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.093810299877077,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.109718800056726,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.12605099985376,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.142763999989256,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.158457899931818,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.171634200029075,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.187482699984685,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.205347900046036,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.221162799978629,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.236914899898693,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.253485199995339,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.270426000002772,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.286246499978006,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.301396699855104,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.317922899965197,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.33474209997803,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.34932200005278,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.366987199988216,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.383232000051066,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.401720599969849,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.417061500018463,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.434133799979463,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.448447699891403,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.465754899894819,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.480990000069141,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.497396299848333,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.515457199886441,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.530658399919048,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.547745699994266,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.5622052999679,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.57994750002399,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.598158699925989,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.613763500005007,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.630871699890122,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.64810139988549,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.662055999971926,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.679092800011858,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.696256299968809,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.712299299892038,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.731021099956706,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.746929100016132,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.761976700043306,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.777928699972108,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.793894700007513,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.810546099906787,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.827164199901745,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.84440189995803,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.86013639997691,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.877086800057441,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.892217600019649,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.908997899852693,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.926504499977455,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.943039000034332,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.96014770003967,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.977805699920282,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 11.994861499872059,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 12.010997799923643,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 12.028066899860278,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 12.045063799945638,
+      "phase": "map-audio-tail",
+      "visit": 2
+    },
+    {
+      "seconds": 12.061933999881148,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.102277599973604,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.126369500067085,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.135476799914613,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.151566999964416,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.178586499998346,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.201083299936727,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.208705500001088,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.227133499924093,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.245124199893326,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.26663349987939,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.27160059986636,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.288113199872896,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.304806999862194,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.320110799977556,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.336817000061274,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.352219499880448,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.370680799940601,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.385935599915683,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.402625699993223,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.419576300075278,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.435329200001433,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.451468399958685,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.468163500074297,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.484646399971098,
+      "phase": "library",
+      "visit": 2
+    },
+    {
+      "seconds": 12.505617199931294,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.516695600003004,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.532034500036389,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.549353000009432,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.566542800050229,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.583539299899712,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.600656199967489,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.616343499859795,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.632204399909824,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.649980099871755,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.66552389995195,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.681571200024337,
+      "phase": "world-controls",
+      "visit": 2
+    },
+    {
+      "seconds": 12.880430199904367,
+      "phase": "button",
+      "visit": 2
+    },
+    {
+      "seconds": 12.885061099892482,
+      "phase": "button",
+      "visit": 2
+    },
+    {
+      "seconds": 12.891856299946085,
+      "phase": "error",
+      "visit": 2
+    },
+    {
+      "seconds": 12.903518799925223,
+      "phase": "error",
+      "visit": 2
+    },
+    {
+      "seconds": 12.915882899891585,
+      "phase": "save",
+      "visit": 2
+    },
+    {
+      "seconds": 12.92082199989818,
+      "phase": "save",
+      "visit": 2
+    },
+    {
+      "seconds": 12.936635700054467,
+      "phase": "save",
+      "visit": 2
+    },
+    {
+      "seconds": 12.954485499998555,
+      "phase": "exit",
+      "visit": 2
+    },
+    {
+      "seconds": 13.065377499908209,
+      "phase": "exit",
+      "visit": 2
+    },
+    {
+      "seconds": 13.071735000004992,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.09716370003298,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.10098069999367,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.117611999856308,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.133106299908832,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.14959320006892,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.16616649995558,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.183145399903879,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.200405299896374,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.217447399860248,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.234447799855843,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.251485100015998,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.268174899974838,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.285160799976438,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.302397900028154,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.319077000021935,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.335573399905115,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.351334699895233,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.367845699889585,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.385276400018483,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.402008400065824,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.418190199881792,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.43450709991157,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.451036900049075,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.467591400025412,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.484165400033817,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.501638500019908,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.517949899891391,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.534126600017771,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.551245999988168,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.568185599986464,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.584409599890932,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.601717799901962,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.61731330002658,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.634443199960515,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.65145289991051,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.66833440004848,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.684838499873877,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.70237259985879,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.719384300056845,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.736410999903455,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.752825999865308,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.770530899986625,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.787784399930388,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.803669499931857,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.818905899999663,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.835546900052577,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.852458599954844,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.869079899974167,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.88566239993088,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.901544600026682,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.918560500023887,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.936068800045177,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.953164499951527,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.970041699940339,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 13.986375299980864,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.002405500039458,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.019133300054818,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.036208499921486,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.05323820002377,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.070407199906185,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.08732569986023,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.103693699929863,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.119150399928913,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.136371499858797,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.152275400003418,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.168531199917197,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.185849800007418,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.202297099865973,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.219266699859872,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.236234500072896,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.253011299995705,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.269371500005946,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.286304200068116,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.303590999916196,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.31981740007177,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.336377199972048,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.353184700012207,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.37021810002625,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.387524399906397,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.404793599853292,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.42124930000864,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.438620199915022,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.455006500007585,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.471352099906653,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.487707799999043,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.503242200007662,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.519137699855492,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.536221300018951,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.55361790000461,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.569343500072137,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.586744599975646,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.603015899891034,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.620226999977604,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.6377204998862,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.654648199910298,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.671008199919015,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.687372700078413,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.70539280003868,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.722587500000373,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.739288999931887,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.756032899953425,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.771813099971041,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.787723999936134,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.803764499956742,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.820058499928564,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.83671519998461,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.85246629989706,
+      "phase": "shutdown",
+      "visit": 2
+    },
+    {
+      "seconds": 14.868749399902299,
+      "phase": "shutdown",
+      "visit": 2
+    }
+  ],
+  "cues": [
+    {
+      "seconds": 0.10917879990302026,
+      "cue": "boot",
+      "channel": 29
+    },
+    {
+      "seconds": 6.0133491000160575,
+      "cue": "open",
+      "channel": 0
+    },
+    {
+      "seconds": 6.338032400002703,
+      "cue": "button",
+      "channel": 1
+    },
+    {
+      "seconds": 6.63784660003148,
+      "cue": "button",
+      "channel": 0
+    },
+    {
+      "seconds": 6.928655199939385,
+      "cue": "button",
+      "channel": 1
+    },
+    {
+      "seconds": 7.21697869990021,
+      "cue": "world_map",
+      "channel": 27
+    },
+    {
+      "seconds": 8.617087200051174,
+      "cue": "close",
+      "channel": 28
+    },
+    {
+      "seconds": 8.62534169992432,
+      "cue": "world_map",
+      "channel": 28
+    },
+    {
+      "seconds": 12.075341699877754,
+      "cue": "close",
+      "channel": 27
+    },
+    {
+      "seconds": 12.49544860003516,
+      "cue": "close",
+      "channel": 27
+    },
+    {
+      "seconds": 12.870279900031164,
+      "cue": "button",
+      "channel": 0
+    },
+    {
+      "seconds": 12.89790440001525,
+      "cue": "close",
+      "channel": 28
+    },
+    {
+      "seconds": 12.89803669997491,
+      "cue": "error",
+      "channel": 27
+    },
+    {
+      "seconds": 12.932067099958658,
+      "cue": "save",
+      "channel": 28
+    },
+    {
+      "seconds": 13.084416599944234,
+      "cue": "shutdown",
+      "channel": 29
+    }
+  ],
+  "operations": [
+    {
+      "fresh_grass_floor": true,
+      "skyboxes_default_on": true
+    },
+    {
+      "warm": false,
+      "map_total_ms": 1292.4200999550521,
+      "preparation": [
+        [
+          "start",
+          7.2168235999997705
+        ],
+        [
+          "hub",
+          7.327004099963233
+        ],
+        [
+          "source",
+          7.48565259994939
+        ],
+        [
+          "render",
+          8.096771700074896
+        ],
+        [
+          "music",
+          8.141038799891248
+        ]
+      ]
+    },
+    {
+      "warm": true,
+      "map_total_ms": 564.0205999370664,
+      "preparation": [
+        [
+          "start",
+          8.622757500037551
+        ],
+        [
+          "source",
+          8.622763499850407
+        ],
+        [
+          "render",
+          8.625227099983022
+        ],
+        [
+          "music",
+          8.62522799987346
+        ]
+      ]
+    },
+    {
+      "library_open_one_close_cue": true
+    },
+    {
+      "library": "Worlds",
+      "dimension": "overworld",
+      "warm": false,
+      "ms": 19.218600122258067
+    },
+    {
+      "library": "Biomes",
+      "dimension": "overworld",
+      "warm": false,
+      "ms": 16.738700214773417
+    },
+    {
+      "library": "Structures",
+      "dimension": "overworld",
+      "warm": false,
+      "ms": 1.9089998677372932
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "overworld",
+      "warm": false,
+      "ms": 2.0634999964386225
+    },
+    {
+      "library": "Worlds",
+      "dimension": "nether",
+      "warm": false,
+      "ms": 12.829500017687678
+    },
+    {
+      "library": "Biomes",
+      "dimension": "nether",
+      "warm": false,
+      "ms": 14.993400080129504
+    },
+    {
+      "library": "Structures",
+      "dimension": "nether",
+      "warm": false,
+      "ms": 0.5190998781472445
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "nether",
+      "warm": false,
+      "ms": 0.5547001492232084
+    },
+    {
+      "library": "Worlds",
+      "dimension": "end",
+      "warm": false,
+      "ms": 3.72190005145967
+    },
+    {
+      "library": "Biomes",
+      "dimension": "end",
+      "warm": false,
+      "ms": 10.843700030818582
+    },
+    {
+      "library": "Structures",
+      "dimension": "end",
+      "warm": false,
+      "ms": 0.4787000361829996
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "end",
+      "warm": false,
+      "ms": 0.7686999160796404
+    },
+    {
+      "library": "Worlds",
+      "dimension": "overworld",
+      "warm": true,
+      "ms": 1.1648000217974186
+    },
+    {
+      "library": "Biomes",
+      "dimension": "overworld",
+      "warm": true,
+      "ms": 0.6540999747812748
+    },
+    {
+      "library": "Structures",
+      "dimension": "overworld",
+      "warm": true,
+      "ms": 0.687899999320507
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "overworld",
+      "warm": true,
+      "ms": 0.6689999718219042
+    },
+    {
+      "library": "Worlds",
+      "dimension": "nether",
+      "warm": true,
+      "ms": 1.8294001929461956
+    },
+    {
+      "library": "Biomes",
+      "dimension": "nether",
+      "warm": true,
+      "ms": 0.7112000603228807
+    },
+    {
+      "library": "Structures",
+      "dimension": "nether",
+      "warm": true,
+      "ms": 0.7229000329971313
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "nether",
+      "warm": true,
+      "ms": 1.0357999708503485
+    },
+    {
+      "library": "Worlds",
+      "dimension": "end",
+      "warm": true,
+      "ms": 1.5026999171823263
+    },
+    {
+      "library": "Biomes",
+      "dimension": "end",
+      "warm": true,
+      "ms": 1.1694999411702156
+    },
+    {
+      "library": "Structures",
+      "dimension": "end",
+      "warm": true,
+      "ms": 1.5563000924885273
+    },
+    {
+      "library": "Saved Builds",
+      "dimension": "end",
+      "warm": true,
+      "ms": 0.8344000671058893
+    },
+    {
+      "library_close_one_close_cue": true
+    },
+    {
+      "failed_save_retained_world": true
+    },
+    {
+      "save": {
+        "capture_ms": 0.6989000830799341,
+        "write_ms": 4.083900013938546,
+        "blocks": 144
+      }
+    }
+  ],
+  "startup_frame_count": 281,
+  "startup_max_frame_gap_ms": 176.4692000579089,
+  "map_frame_count": 107,
+  "map_max_frame_gap_ms": 43.018000200390816,
+  "weather_frame_count": 0,
+  "weather_max_frame_gap_ms": 0,
+  "shutdown_frame_count": 109,
+  "shutdown_max_frame_gap_ms": 25.42870002798736
+}

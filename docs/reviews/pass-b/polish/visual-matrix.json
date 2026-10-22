@@ -1,0 +1,506 @@
+[
+  {
+    "name": "menu-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-960-100-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-960-100-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "world-960-100",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "library-960-100",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-960-150-bright",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-960-150-dark",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "world-960-150",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "library-960-150",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-1200-100-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-1200-100-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "world-1200-100",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "library-1200-100",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-1200-150-bright",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-1200-150-dark",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "world-1200-150",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "library-1200-150",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-1920-100-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "slots-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "settings-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "exit-1920-100-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "world-1920-100",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "library-1920-100",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-1920-150-bright",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "slots-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "settings-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "exit-1920-150-dark",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "world-1920-150",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "library-1920-150",
+    "size": [
+      1920,
+      1080
+    ],
+    "scale": 1.5
+  },
+  {
+    "name": "menu-edit",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-view",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  },
+  {
+    "name": "menu-more",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1
+  }
+]

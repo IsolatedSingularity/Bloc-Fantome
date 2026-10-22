@@ -1,0 +1,11 @@
+{
+  "type": "Offline selected-cue reference synchronized to actual source flips; not live speaker loopback",
+  "effects": 0.5,
+  "headroom": 0.72,
+  "seconds": 14.583877551020407,
+  "peak": 0.1985748046875,
+  "clipped_samples": 0,
+  "shutdown_seconds": 1.8,
+  "shutdown_fade_seconds": 0.3,
+  "original_close_preserved": true
+}

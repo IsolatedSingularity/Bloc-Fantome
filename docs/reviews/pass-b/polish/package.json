@@ -1,0 +1,23 @@
+{
+  "runtime_commit": "776692d2e485c9a0856c94384648506baf41d2cb",
+  "executable": ".qa\\pass-b-polish\\package\\BlocFantome.exe",
+  "sha256": "75be54287be6efb6e4171937bb372818bbd232538a9f31de3138caf923245c0b",
+  "bytes": 276227453,
+  "embedded_files": [
+    {
+      "file": "ui/audio/close-short.wav",
+      "sha256": "bbbc7ecc803beae8dd4e5d53c17b49956a56962b75e388846592f10eb0bb24b8",
+      "matches_source": true
+    },
+    {
+      "file": "ui/audio/close-short.json",
+      "sha256": "6be3650551b4821f884112cb4552333dcb49bac46319e8be854aebaf8fdd6af5",
+      "matches_source": true
+    },
+    {
+      "file": "ui/art/polish-mask.png",
+      "sha256": "e78a232d5395535291b1fd255f83d07ac93b8630eb57b6298580a06f73a4a7e0",
+      "matches_source": true
+    }
+  ]
+}

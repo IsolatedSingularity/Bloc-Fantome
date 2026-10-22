@@ -1,0 +1,16 @@
+{
+  "source": "Assets/Sound Hub/ui/selected/close.wav",
+  "source_sha256": "3130ad44242b5263fde0277edf1467d07c66402ec41bc10aa42b17ac7c8c61c0",
+  "file": "close-short.wav",
+  "sha256": "bbbc7ecc803beae8dd4e5d53c17b49956a56962b75e388846592f10eb0bb24b8",
+  "trim_seconds": [
+    0.04,
+    0.44
+  ],
+  "gain": 1.25,
+  "fade_in_seconds": 0.003,
+  "cosine_fade_out_seconds": 0.15,
+  "seconds": 0.4,
+  "peak": 0.4653072977856659,
+  "clipped_samples": 0
+}
