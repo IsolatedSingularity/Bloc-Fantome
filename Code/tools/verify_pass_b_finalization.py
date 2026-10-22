@@ -108,6 +108,9 @@ def run(output, module):
         try:
             app.run()
             metrics=app._startupMetrics
+            assert 'editor_ready' in metrics, 'Startup did not reach the editor; check packaged Assets'
+            assert state['phase']=='shutdown' and state['map_visits']==2, 'Probe did not finish all interactions'
+            assert set(feedback.CUES) <= {row['cue'] for row in cues}, 'Selected cue coverage incomplete'
             first=metrics['run_started']
             result={'display_driver':display_driver,'mixer_format':mixer_format,'frozen':bool(getattr(sys,'frozen',False)),'hidden':True,'physical_input':False,
                 'human_listening':False,'audio_muted':True,
