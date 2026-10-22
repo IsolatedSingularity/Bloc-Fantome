@@ -3,11 +3,21 @@ import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from contextlib import contextmanager
 import pygame
 from engine.audio import AudioRouter
 from runtime_paths import SOUNDS_DIR
 from ui import feedback
 from ui.opening_audio import OpeningAudio, MIXER_CHANNEL_COUNT, RESERVED_CHANNEL_COUNT
+
+
+@contextmanager
+def temporary_attribute(owner,name,value):
+    """Isolate the opt-in probe without packaging the unittest framework."""
+    previous=getattr(owner,name)
+    setattr(owner,name,value)
+    try:yield
+    finally:setattr(owner,name,previous)
 
 
 def run(output):
@@ -42,19 +52,19 @@ def run(output):
 def run_handoff(output, app_module):
     """Hidden native integration probe with isolated saves/settings and real calls."""
     import time
-    from unittest.mock import patch
     import runtime_paths
+    import engine.build_io as build_io
     from ui.opening_audio import OPENING_CHANNELS
     out=Path(output).resolve();out.parent.mkdir(parents=True,exist_ok=True)
     original_mode=pygame.display.set_mode
     def hidden(size,flags=0,*args,**kwargs):
         return original_mode(size,flags|pygame.HIDDEN,*args,**kwargs)
-    with patch.object(pygame.display,'set_mode',hidden), \
-         patch.object(app_module,'APP_CONFIG_FILE',str(out.parent/'isolated-config.json')), \
-         patch.object(app_module,'SAVES_DIR',str(out.parent/'saves')), \
-         patch.object(runtime_paths,'SAVES_DIR',str(out.parent/'saves')), \
-         patch.object(app_module,'DERIVED_WORLD_CACHE_DIR',str(out.parent/'cache')), \
-         patch.object(app_module.TutorialScreen,'_saveConfig'):
+    with temporary_attribute(pygame.display,'set_mode',hidden), \
+         temporary_attribute(app_module,'APP_CONFIG_FILE',str(out.parent/'isolated-config.json')), \
+         temporary_attribute(app_module,'SAVES_DIR',str(out.parent/'saves')), \
+         temporary_attribute(runtime_paths,'SAVES_DIR',str(out.parent/'saves')), \
+         temporary_attribute(app_module,'DERIVED_WORLD_CACHE_DIR',str(out.parent/'cache')), \
+         temporary_attribute(app_module.TutorialScreen,'_saveConfig',lambda *_:None):
         app=app_module.BlocFantome();app.autoSaveEnabled=False;app.tutorialScreen.visible=False
         app.musicMuted=True;app.effectsMuted=True;app.effectsVolume=0
         result=dict(hidden=True,physical_input=False,human_listening=False,checks=[])
@@ -70,11 +80,12 @@ def run_handoff(output, app_module):
             ready();app._playLifecycleCue('boot');cue('boot')
             ready();assert app._saveBuilding(filepath=str(out.parent/'saved.json.gz'));cue('save')
             ready();app.currentBuildPath=None
-            with patch.object(app,'_openSaveAsDialog',return_value=None):app.workshop.act('save',app)
+            with temporary_attribute(app,'_openSaveAsDialog',lambda:None):app.workshop.act('save',app)
             assert not any(pygame.mixer.Channel(i).get_busy() for i in (0,1,27,28))
             result['checks'].append('cancel silent')
             ready()
-            with patch('engine.build_io.write_build',side_effect=OSError('isolated review failure')):
+            def failed_write(*args,**kwargs):raise OSError('isolated review failure')
+            with temporary_attribute(build_io,'write_build',failed_write):
                 assert not app._saveBuilding(filepath=str(out.parent/'failed.json.gz'))
             cue('error');app.workshop.error=''
             ready();app.workshop.page='build'
@@ -82,7 +93,7 @@ def run_handoff(output, app_module):
             app._handleEvents();cue('close');assert not app.workshop.page
             ready();app._requestWorldMap();cue('world_map')
             transition=app._mapTransition
-            with patch('pygame.time.get_ticks',return_value=transition.started+121):
+            with temporary_attribute(pygame.time,'get_ticks',lambda:transition.started+121):
                 app._render();pygame.image.save(app.screen,out.parent/'map-cover.png')
                 started=time.perf_counter();app._update()
                 result['map_activation_ms']=(time.perf_counter()-started)*1000
@@ -109,6 +120,10 @@ def run_handoff(output, app_module):
             started=time.perf_counter();app._shutdown()
             result['shutdown_ms']=(time.perf_counter()-started)*1000
             out.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+        except Exception:
+            import traceback
+            out.with_suffix('.error.txt').write_text(traceback.format_exc(),encoding='utf-8')
+            raise SystemExit(1)
         finally:
             if app.openingScene is not None:app._closeOpeningScene()
             app.worldLoadExecutor.shutdown(wait=True,cancel_futures=True)
