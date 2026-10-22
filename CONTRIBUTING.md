@@ -2,6 +2,20 @@
 
 Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to the project.
 
+
+## Active development policy (owner decision, 2026-10-21)
+
+This policy overrides historical handoffs or branch names when they conflict. Apply it to every new Codex/browser development pass:
+
+- Keep **main** as the latest owner-accepted, viable source, and aim for **one current shared development/review branch**. Commit successive coherent passes to that same branch until accepted; do not create a topic branch for every task or agent.
+- New branch names are neutral and purpose-based, **never prefixed with codex/** or another agent/product name. Prefer **development** for the single ongoing development branch. An existing legacy-named branch may be temporarily retained to avoid an unsafe rename. Rename/consolidate it only after verifying remote/local refs, worktrees, unique commits and collaborators; do not create extra temporary branches merely to rename.
+- At a safe checkpoint, inspect historical branches. Retire obsolete ones only when unique commits/evidence have been preserved or integrated, and there is an easy rollback. Never force-push/rewrite history or delete owner changes as cleanup.
+- First read the live branch HEAD, status, local AGENTS.md and latest docs/handoffs owner roadmap. Keep review builds, installed executable and saves safe until acceptance. Do not promote HOLD work merely because unit tests pass.
+- Current owner roadmap (including Pass A-R, deferred Pass B, original-creature Pass C and later backlog): [OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md](docs/handoffs/OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md). Current approved A-R handoff: [PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md](docs/handoffs/PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md). Historical branches and docs are evidence, not automatic new instructions.
+- If local AGENTS.md remains ignored, keep following its existing owner rules and inform the owner that this repository-level policy also applies; do not overwrite that file or unignore other local/private agent configurations without approval.
+
+**Current acceptance status:** Pass A still fails the owner's large-world input/performance and visual-design review. Historical performance claims below must be checked against the newest native QA; their presence in old guidelines does not imply a live PASS.
+
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
