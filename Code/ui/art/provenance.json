@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-21",
+  "instruction": "Existing approved artwork retained byte-for-byte. Owner requested simpler Dimensions/Biomes and three dimension selectors; explicitly preferred new cells 2 (Biomes) and 4 (Nether) on 2026-10-21.",
+  "assets": [
+    {
+      "file": "controls-mask.png",
+      "sha256": "8dcff943fb6651ff79bed76c5b4a88c0b95ef9dfc28f863fab555a8cf42cdf2a",
+      "generator": "image_gen",
+      "source": "exec-3902ad0b-300c-4bfd-8a2f-9a336877cb68.png",
+      "frozen_by_owner": true
+    },
+    {
+      "file": "actions-mask.png",
+      "sha256": "9e43ecc3f66b7c2df325ea1232a3ba93bc8551b15af467adbcc5f1bb68a5e5ef",
+      "generator": "image_gen",
+      "source": "exec-238d5be0-f3d8-40cb-9a2a-64aa599a7c92.png",
+      "frozen_by_owner": true
+    },
+    {
+      "file": "library-revision-mask.png",
+      "sha256": "0a1e09bddedbe628e7614d179b19b9c4347be342be9ddfc8b9eaedccc93c15a4",
+      "generator": "image_gen",
+      "source": "exec-0b6d3e89-1fcc-4136-98d9-8ef102396790.png",
+      "frozen_by_owner": true
+    },
+    {
+      "file": "tools-a-mask.png",
+      "sha256": "238ca9b17cefec09b1809bc1b8667924a8b378a94180827048a17dfa84474dea",
+      "generator": "image_gen",
+      "source": "exec-30a02662-219c-4f84-b670-5f4fec87b2d3.png",
+      "frozen_by_owner": false
+    },
+    {
+      "file": "tools-b-mask.png",
+      "sha256": "78cac79b23d2665a29713c4ab3d45fa7c0f29e02f512f51f8bfd78d23431644e",
+      "generator": "image_gen",
+      "source": "exec-fbab83ae-c91f-4400-b9ae-52ddc8e90b90.png",
+      "frozen_by_owner": false
+    },
+    {
+      "file": "library-landmarks-mask.png",
+      "sha256": "6da20dc44ccc0c66745b6c4140bd424ec58b8315c08d09d5a1171907c41b7cf0",
+      "generator": "image_gen",
+      "source": "exec-cd34a3e4-e1ef-4332-81d0-433c00aeaaf6.png",
+      "frozen_by_owner": false
+    },
+    {
+      "file": "dimensions-mask.png",
+      "sha256": "01bdde00c3a791a22d26165a6d6b1211dc02f7a6efb0e3a90300bff48643c657",
+      "generator": "image_gen",
+      "source": "exec-34b68291-5a5f-4d9c-b779-2dc353e175bc.png",
+      "owner_preferred_cells": [
+        2,
+        4
+      ],
+      "frozen_by_owner": true
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "scene": "floor",
+    "cells": 144,
+    "action": "grow",
+    "cold_ms": 6.565599935129285,
+    "warm_p95_ms": 0.7488999981433153,
+    "warm_max_ms": 0.9272999595850706
+  },
+  {
+    "scene": "floor",
+    "cells": 144,
+    "action": "shrink",
+    "cold_ms": 0.6385000888258219,
+    "warm_p95_ms": 0.6498000584542751,
+    "warm_max_ms": 0.6868999917060137
+  },
+  {
+    "scene": "floor",
+    "cells": 144,
+    "action": "noise",
+    "cold_ms": 6.9992998614907265,
+    "warm_p95_ms": 0.9574999567121267,
+    "warm_max_ms": 3.4856998827308416
+  },
+  {
+    "scene": "ocean_monument",
+    "cells": 989663,
+    "action": "grow",
+    "cold_ms": 10.232099797576666,
+    "warm_p95_ms": 0.5824998952448368,
+    "warm_max_ms": 0.6441001314669847
+  },
+  {
+    "scene": "ocean_monument",
+    "cells": 989663,
+    "action": "shrink",
+    "cold_ms": 10.03060000948608,
+    "warm_p95_ms": 0.5878000520169735,
+    "warm_max_ms": 0.6407999899238348
+  },
+  {
+    "scene": "ocean_monument",
+    "cells": 989663,
+    "action": "noise",
+    "cold_ms": 23.75500020571053,
+    "warm_p95_ms": 0.5473000928759575,
+    "warm_max_ms": 0.6047999486327171
+  }
+]

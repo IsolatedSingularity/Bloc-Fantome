@@ -1,0 +1,52 @@
+{
+  "version": "2.9.9",
+  "exe_sha256": "68f6cb069801b2bc51a0cd2c427287dda86fbd352d7bec87a31c0a8d46ee5528",
+  "installer_sha256": "047397f8062d7c5db9acb23c8395132073d1b70dae1dbb6b56029c0bd39e9c52",
+  "installed_sha256": "68f6cb069801b2bc51a0cd2c427287dda86fbd352d7bec87a31c0a8d46ee5528",
+  "root_sha256": "68f6cb069801b2bc51a0cd2c427287dda86fbd352d7bec87a31c0a8d46ee5528",
+  "bundled_art": [
+    "controls-mask.png",
+    "actions-mask.png",
+    "library-revision-mask.png",
+    "tools-a-mask.png",
+    "tools-b-mask.png",
+    "library-landmarks-mask.png",
+    "dimensions-mask.png"
+  ],
+  "accepted_main": "175686c21649a8d37826f8a22850c85482a69fd9",
+  "source_hashes": {
+    "CHANGELOG.md": "626e61f7173e6436c3637c2e5217554e44e42d4c1f3225305507cbaa79c247c5",
+    "Code/blocFantome.py": "9b315ec338c8b53d758523f59da0a95619c752aff3c1b938392057f88396377c",
+    "Code/build_exe.py": "f4649226bb7d01dc777a651389b7a0c05dbf5a28622c4bf78048467cbd3c620c",
+    "Code/installer.iss": "23a6334ddf04455b8b0585bb7519c0581d7c11d7bce175e6ec2369161fff0a8a",
+    "Code/ui/chrome.py": "1327e8bdb9b2119da0e6d7e1eb9dc6c178f866b0ce4b25f32556a066af31e7e0",
+    "Code/ui/help.py": "2a1592980bcf9d8843034d4ed9e671806f53128ab76cbda5bc15e2568937a436",
+    "Code/ui/library.py": "b85ebb9270f313ae0b17e36078d66c179cab867e9f8db4bc6b7e639e2d8bb931",
+    "Code/ui/preview_browser.py": "5c498379e7a6c2e910caada29522d50656d76385f0727a752ceca1e6be9048c9",
+    "Code/ui/source_map.py": "701fe34a7506d1b71b3e7700b1131a46e06f8d6dc26da29809c40ab04ba2f380",
+    "Code/ui/tool_icons.py": "5f6e4053337553db4146a2876ed6772ecc3c4ff949653c3c75a243d51a42af3e",
+    "Code/ui/workshop.py": "ed6ec85860deaa8b0f0fc4a1860d7aede6ab0ba33a47d2da462e343cbc3e4e42",
+    "Code/ui/workshop_actions.py": "163bfdae5f234d9863793da86925ea0ed3a332e3f8d6e9f9c88544b96a621f2d",
+    "Code/ui/workshop_views.py": "359fc2732352138a494f5289f8c82f3e03642ed58446b9ed6423cbd263e61207",
+    "tests/render_visual_checks.py": "d53c9445ef527fb2baf2b8fe1c3873e6030ea29e75a64c8200ed9a74d4ebaf24",
+    "tests/test_app_integration.py": "bc9bcf10446a2d1ca3d346cb22e07ba17f6b33ad7e96c5995f1fca12819403de",
+    "tests/test_owner_pass_ar_ui.py": "e3d02295686d8531d4081ae3777a0d505a2cd8c3832054b1c36bd07a8f326625",
+    "tests/test_workshop.py": "34ec711b7a6899368072b601d103ea1359985dc26d872b6a1115a6e5151bc0d9",
+    "Code/engine/canvas_resize.py": "1ca12e988c3cb133e1b44149031e674d60e264a16616710384f1caa90a85d3f9",
+    "Code/ui/art/actions-mask.png": "9e43ecc3f66b7c2df325ea1232a3ba93bc8551b15af467adbcc5f1bb68a5e5ef",
+    "Code/ui/art/controls-mask.png": "8dcff943fb6651ff79bed76c5b4a88c0b95ef9dfc28f863fab555a8cf42cdf2a",
+    "Code/ui/art/dimensions-mask.png": "01bdde00c3a791a22d26165a6d6b1211dc02f7a6efb0e3a90300bff48643c657",
+    "Code/ui/art/library-landmarks-mask.png": "6da20dc44ccc0c66745b6c4140bd424ec58b8315c08d09d5a1171907c41b7cf0",
+    "Code/ui/art/library-revision-mask.png": "0a1e09bddedbe628e7614d179b19b9c4347be342be9ddfc8b9eaedccc93c15a4",
+    "Code/ui/art/provenance.json": "4571a99cc84a92766da471324ae35975ef4e644305d86c710218043a51e92854",
+    "Code/ui/art/tools-a-mask.png": "238ca9b17cefec09b1809bc1b8667924a8b378a94180827048a17dfa84474dea",
+    "Code/ui/art/tools-b-mask.png": "78cac79b23d2665a29713c4ab3d45fa7c0f29e02f512f51f8bfd78d23431644e",
+    "Code/ui/generated_icons.py": "6e65c13e7bdced4b1f572a2468266e323461a2c48f52160f6178f537be156110",
+    "tests/test_generated_icons.py": "5a64718b324dcd0d8803e223860b111010c743f9a3115588e3471eea415f2569",
+    "tests/test_release_299_ui.py": "796b3e4d68d709d2b4b674da5313400a1b41846d03a078ac90e6518c18e5c0a0"
+  },
+  "rollback_hashes": {
+    "installed-2.9.8.exe": "b90eeba07012c3e1818aafcd4e275673fa66e3e59d0d3cd5221a12337da040c7",
+    "root-2.9.8.exe": "b90eeba07012c3e1818aafcd4e275673fa66e3e59d0d3cd5221a12337da040c7"
+  }
+}

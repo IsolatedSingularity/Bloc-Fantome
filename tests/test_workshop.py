@@ -29,7 +29,7 @@ def test_ui_press_consumes_release_after_fade_without_world_edit():
 
 
 def test_save_failure_stays_visible_and_has_no_saved_revision():
-    pygame.init();shell=Workshop();shell.act('save',SimpleNamespace(_saveBuilding=lambda:False))
+    pygame.init();shell=Workshop();shell.act('save',SimpleNamespace(currentBuildPath='build.json.gz',_saveBuilding=lambda:False))
     assert shell.error and shell.saved_revision is None and not shell.status
 
 

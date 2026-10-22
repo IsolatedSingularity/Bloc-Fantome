@@ -26,7 +26,6 @@ TOOLS = (
  ('layers','Layer view','key',('/',),'layerViewEnabled'),
  ('layer_up','Layer up','key',('.',),None),
  ('layer_down','Layer down','key',(',',),None),
- ('grid','Grid','key',('g',),'showGrid'),
  ('xray','X-ray','key',('x',),'xrayEnabled'),
  ('minimap','Minimap','key',('tab',),'showMinimap'),
  ('center','Center selection / cursor','command',(Command.CENTER_CONTEXT,),None),

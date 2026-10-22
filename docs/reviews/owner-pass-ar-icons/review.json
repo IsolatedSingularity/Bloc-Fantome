@@ -1,0 +1,28 @@
+{
+  "build": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\owner-pass-ar-icons\\package-v2\\BlocFantome.exe",
+  "sha256": "51dbbbd6be06149ea686642a687bbf0b725bb69f57a37d980df1be9988787fbe",
+  "base_commit": "c34520df",
+  "source_status": "Uncommitted local revision; no new branch or push",
+  "tests": "38 focused tests passed",
+  "native_visual": "Windows SDL hidden matrix, 960/1200/1920 and 100/125/150 percent text; fullscreen deliberately bypassed in this matrix",
+  "assets": "Three image-generated sheets bundled; approved action sheet and original control sheet unchanged; only Structures and Saved overridden",
+  "changes": [
+    "White generated Library and World icons",
+    "Original-reference crowned arch and folder replacement",
+    "Smaller generated action buttons",
+    "X close controls",
+    "Aligned selected outlines instead of detached underlines",
+    "Generated bold plus/minus terrain tiles",
+    "Falling rain and snow across active tiles, moving flame and embers, per-state motion; reduced motion suppresses effects"
+  ],
+  "holds": [
+    "Owner artistic acceptance",
+    "Existing large-world camera/loading holds remain; this pass changes UI only"
+  ],
+  "preserved": "59 prior preservation hashes plus Pass A-R EXE match",
+  "references": [
+    "https://www.pygame.org/docs/ref/surfarray.html",
+    "https://www.pygame.org/docs/ref/transform.html"
+  ],
+  "packaged_native_input": "Exact-path package-v2 launch; actual World navigation and rain toggle; generated art visible. Window remained open and showed new placed blocks during the closing check, so it was left available rather than interrupting possible owner interaction. Clean exit not verified for this launch."
+}

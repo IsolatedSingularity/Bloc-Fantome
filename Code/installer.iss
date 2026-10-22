@@ -11,10 +11,13 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "2.9.8"
+#define MyAppVersion "2.9.9"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
+#ifndef AppExeSource
+  #define AppExeSource "..\\BlocFantome.exe"
+#endif
 #define MyAppAssocName "Bloc Fantôme Structure"
 #define MyAppAssocExt ".bsms"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -64,7 +67,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main executable
-Source: "..\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppExeSource}"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Configuration file
 Source: "config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist

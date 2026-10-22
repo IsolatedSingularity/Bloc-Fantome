@@ -1,0 +1,14 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Bloc Fantôme\\Bloc Fantôme.lnk",
+    "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\BlocFantome.exe",
+    "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+    "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme"
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Bloc Fantôme\\Uninstall Bloc Fantôme.lnk",
+    "Target": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\unins000.exe",
+    "Icon": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme\\Assets\\Icons\\Respawn_Anchor.ico,0",
+    "WorkingDirectory": "C:\\Users\\hunkb\\AppData\\Local\\Programs\\Bloc Fantôme"
+  }
+]

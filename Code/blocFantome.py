@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "2.9.8"
+APP_VERSION = "2.9.9"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -56,7 +56,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.9.8'
+        myappid = 'blocfantome.builder.2.9.9'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -8769,7 +8769,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     # - searchQuery: ""
                     
                     # Restore other preferences (these are useful to persist)
-                    self.showGrid = config.get("showGrid", True)
+                    self.showGrid = config.get("showGrid", False)
                     self.showMinimap = bool(config.get("showMinimap", False))
                     self.showCoordinates = bool(config.get("showCoordinates", False))
                     self.lightingEnabled = config.get("lightingEnabled", False)
@@ -10048,7 +10048,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.targetOffsetX = self.renderer.offsetX
         self.targetOffsetY = self.renderer.offsetY
         self.cameraFocusZ = round(center[2])
-        if self.worldMapScene.region_key == "central":
+        if self.worldMapView.source_map is not None:
             self.worldMapView.source_map.frame_overview(self.renderer, self.screen.get_size())
             self.zoomLevel = self.renderer.zoomLevel
             self.targetOffsetX, self.targetOffsetY = self.renderer.offsetX, self.renderer.offsetY
@@ -11561,7 +11561,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if mods & pygame.KMOD_SHIFT:
                 self._openSaveAsDialog()
             else:
-                if self._saveBuilding():self.assetManager.playClickSound()
+                result=self._saveBuilding() if self.currentBuildPath else self._openSaveAsDialog()
+                if result:self.assetManager.playClickSound()
         
         elif event.key == pygame.K_o and mods & pygame.KMOD_CTRL:
             self._openLoadDialog()
@@ -12056,7 +12057,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
         # ===== CHECK BUILD FILE BUTTONS (using stored rects from render) =====
         if hasattr(self, 'saveBtnRect') and self.saveBtnRect.collidepoint(mouseX, mouseY):
-            self._saveBuilding()
+            if self.currentBuildPath:self._saveBuilding()
+            else:self._openSaveAsDialog()
             self.assetManager.playClickSound()
             return
         if hasattr(self, 'saveAsBtnRect') and self.saveAsBtnRect.collidepoint(mouseX, mouseY):
@@ -14605,7 +14607,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _renderGrid(self) -> None:
         """Render isometric grid lines over the platform when grid is enabled"""
-        if not self.showGrid:
+        # Retain the old overlay only in the archived legacy interface.
+        # The current editor uses exact block and operation previews instead.
+        if not self.showGrid or (getattr(self,'workshop',None) and self.workshop.active(self)):
             return
         
         # Grid line color - semi-transparent white for visibility on any block
@@ -15285,12 +15289,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 filetypes=[("Compressed build", "*.json.gz"), ("All files", "*.*")],
             )
             if filepath:
-                self._saveBuilding(filepath=filepath)
+                return self._saveBuilding(filepath=filepath)
         except Exception as error:
             print(f"Error opening save dialog: {error}")
             self.tooltipText = f"Save As failed: {error}"
             self.workshop.error=self.tooltipText+". Your current build stays open."
             self.tooltipTimer = 3000
+            return False
         finally:
             if root is not None:
                 try:
@@ -17432,6 +17437,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 ('Block outline','showBlockOutline'),('Block tooltip','showBlockTooltip'),
                 ('World-centered rotation','worldCenteredRotation'),('Opening scene','opening'),
                 ('Skip opening on launch','skip'))
+        if self.workshop.active(self):fields=tuple(row for row in fields if row[1]!='showGrid')
         controls=[(label,attr,pygame.Rect(x+24+(i%2)*(cw+8),top+(i//2)*(row+7),cw,row))
                   for i,(label,attr) in enumerate(fields)]
         return rect,sliders,controls
@@ -18229,10 +18235,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.tooltipTimer <= 0 or not self.tooltipText:
             return
         
-        from ui.chrome import panel, wrapped
+        from ui.chrome import panel, wrapped, wrapped_height
         alpha=min(255,int(255*self.tooltipTimer/500))
         width=min(self._worldViewportRight()-48,self.smallFont.size(self.tooltipText)[0]+28)
-        height=max(40,2*self.smallFont.get_linesize()+18)
+        height=wrapped_height(self.tooltipText,self.smallFont,width-24)+12
         y=130 if self.workshop.active(self) and self.workshop.operation(self) else 80
         rect=pygame.Rect((self._worldViewportRight()-width)//2,y,width,height)
         panel(self.screen,rect,alpha=round(alpha*.94))
@@ -18431,9 +18437,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _canvasResizeImpact(self, delta: int) -> Tuple[Tuple[int, int, int], int]:
         """Return centered target dimensions and occupied cells clipped."""
-        width = max(GRID_WIDTH, self.world.width + delta)
-        depth = max(GRID_DEPTH, self.world.depth + delta)
-        height = max(GRID_HEIGHT, self.world.height + delta)
+        width, depth, height = self._canvasResizeDimensions(delta)
         maxY = self.world.min_y + height
         offsetX = (width - self.world.width) // 2
         offsetY = (depth - self.world.depth) // 2
@@ -18446,6 +18450,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             )
         )
         return (width, depth, height), clipped
+
+    def _canvasResizeDimensions(self, delta: int):
+        """Preview geometry without scanning the world's occupied cells."""
+        return (max(GRID_WIDTH, self.world.width + delta),
+                max(GRID_DEPTH, self.world.depth + delta),
+                max(GRID_HEIGHT, self.world.height + delta))
 
     @staticmethod
     def _shiftPosition(position, offsetX: int, offsetY: int):
@@ -18556,17 +18566,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         return snapshot, exteriorGlass
 
     def _resizeCanvas(self, delta: int) -> None:
-        """Grow or shrink symmetrically while preserving relative geometry."""
-        dimensions, clipped = self._canvasResizeImpact(delta)
-        if delta < 0 and clipped:
-            self.tooltipText = 'Shrink needs an empty border'
-            self.tooltipTimer = 1800
-            if getattr(self, 'workshop', None):self.workshop.status = self.tooltipText
-            return
+        """Resize immediately; Undo restores the entire previous canvas."""
+        from engine.canvas_resize import CanvasResizeCommand
+        dimensions = self._canvasResizeDimensions(delta)
         if dimensions == (self.world.width, self.world.depth, self.world.height):
-            self.tooltipText = "Canvas is already at the default minimum"
-            self.tooltipTimer = 1800
             return
+        self.undoManager.execute(CanvasResizeCommand(self, delta))
+
+    def _resizeCanvasNow(self, delta: int) -> None:
+        """Apply a resize owned by a CanvasResizeCommand."""
+        dimensions = self._canvasResizeDimensions(delta)
         oldWidth, oldDepth = self.world.width, self.world.depth
         offsetX = (dimensions[0] - oldWidth) // 2
         offsetY = (dimensions[1] - oldDepth) // 2
@@ -18595,14 +18604,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                             continue
                         if self.world.getBlock(x, y, self.world.min_y) == BlockType.AIR:
                             self.world.setBlock(x, y, self.world.min_y, floorBlock)
-        self.undoManager.clear()
+        self._clearTerrainNoisePreview()
         self.lightingDirty = True
         self._frameCurrentCanvas()
-        self.tooltipText = (
-            f"Canvas {dimensions[0]} x {dimensions[1]} x {dimensions[2]}"
-            + (f" | {clipped} blocks removed" if clipped else "")
-        )
-        self.tooltipTimer = 2600
+        self.tooltipText = ''
+        self.tooltipTimer = 0
 
     def _planLocalTerrainNoise(self, seed: int):
         """Return the exact protected terrain plan used by preview and apply."""

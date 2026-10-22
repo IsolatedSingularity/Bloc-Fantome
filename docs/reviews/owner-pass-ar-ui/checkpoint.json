@@ -1,0 +1,46 @@
+{
+  "build": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\owner-pass-ar-ui\\package-v2\\BlocFantome.exe",
+  "sha256": "6229eea74c0c3db04ae8e60168c832bd6c2599f4433f62d775a1175b41d6830e",
+  "bundled_art": [
+    "controls-mask.png",
+    "actions-mask.png",
+    "library-revision-mask.png",
+    "tools-a-mask.png",
+    "tools-b-mask.png",
+    "library-landmarks-mask.png"
+  ],
+  "branch": "codex/pass1-owner-review-2026-10-20",
+  "head": "c34520dfc82b103bafad0ac5f4e53a0cd92dbb03",
+  "accepted_main": "175686c21649a8d37826f8a22850c85482a69fd9",
+  "source_hashes": {
+    "Code/blocFantome.py": "9d875c7c54895c6c427159f21c9a60703a7adec3c95e0ee741cd370de6fd4b89",
+    "Code/build_exe.py": "d1ff7feb28d5645df116d7cf3eb6faba5e7b0fbee886e2308aca67d91ce21acf",
+    "Code/engine/canvas_resize.py": "1ca12e988c3cb133e1b44149031e674d60e264a16616710384f1caa90a85d3f9",
+    "Code/ui/art/actions-mask.png": "9e43ecc3f66b7c2df325ea1232a3ba93bc8551b15af467adbcc5f1bb68a5e5ef",
+    "Code/ui/art/controls-mask.png": "8dcff943fb6651ff79bed76c5b4a88c0b95ef9dfc28f863fab555a8cf42cdf2a",
+    "Code/ui/art/library-landmarks-mask.png": "6da20dc44ccc0c66745b6c4140bd424ec58b8315c08d09d5a1171907c41b7cf0",
+    "Code/ui/art/library-revision-mask.png": "0a1e09bddedbe628e7614d179b19b9c4347be342be9ddfc8b9eaedccc93c15a4",
+    "Code/ui/art/provenance.json": "faf71f47247a4b568402b3e3073758a55c2349510125578ebdf381de01f588be",
+    "Code/ui/art/tools-a-mask.png": "238ca9b17cefec09b1809bc1b8667924a8b378a94180827048a17dfa84474dea",
+    "Code/ui/art/tools-b-mask.png": "78cac79b23d2665a29713c4ab3d45fa7c0f29e02f512f51f8bfd78d23431644e",
+    "Code/ui/chrome.py": "1327e8bdb9b2119da0e6d7e1eb9dc6c178f866b0ce4b25f32556a066af31e7e0",
+    "Code/ui/generated_icons.py": "756c9f50166c9fcec250b77a5d09d0447513babd1dd50859dab9db6c7c0c65b1",
+    "Code/ui/help.py": "2a1592980bcf9d8843034d4ed9e671806f53128ab76cbda5bc15e2568937a436",
+    "Code/ui/library.py": "9408afbaf7da6dd259180e7df42cecce7ea990d70224747aa9dc77848688814c",
+    "Code/ui/tool_icons.py": "5f6e4053337553db4146a2876ed6772ecc3c4ff949653c3c75a243d51a42af3e",
+    "Code/ui/workshop.py": "d0bc26c05496bb621e221aa7b6f5c6ff54d75d660b2625ba062bf6d15a7091d7",
+    "Code/ui/workshop_actions.py": "163bfdae5f234d9863793da86925ea0ed3a332e3f8d6e9f9c88544b96a621f2d",
+    "Code/ui/workshop_views.py": "b6fbb02c180d1522c8312240330b8f3495ee9cd4e905cdf6f0ba1a8ed64d7511",
+    "tests/render_visual_checks.py": "16641130e82db3903fbc3c8ab3d2ef2dc2b3b804f4c719eb72f3ede9e121acdc",
+    "tests/test_app_integration.py": "bc9bcf10446a2d1ca3d346cb22e07ba17f6b33ad7e96c5995f1fca12819403de",
+    "tests/test_generated_icons.py": "5a64718b324dcd0d8803e223860b111010c743f9a3115588e3471eea415f2569",
+    "tests/test_owner_pass_ar_ui.py": "e3d02295686d8531d4081ae3777a0d505a2cd8c3832054b1c36bd07a8f326625"
+  },
+  "rollback_builds": {
+    ".qa\\owner-pass-ar\\package\\BlocFantome.exe": "70af3e2be3d28ccf17939d0af9f37713360ad9f1ab77c51e5096a7d0270946db",
+    ".qa\\owner-pass-ar-icons\\package-v2\\BlocFantome.exe": "51dbbbd6be06149ea686642a687bbf0b725bb69f57a37d980df1be9988787fbe",
+    ".qa\\owner-pass-ar-ui\\package\\BlocFantome.exe": "f39b41c20683f244f8d4b1686c70c4f6a0a140a38dad86fd4bd9d7bc71195dbb"
+  },
+  "preservation_checks": 59,
+  "source_status": "Unstaged, uncommitted, unpushed; no new branch"
+}

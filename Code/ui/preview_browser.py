@@ -115,7 +115,12 @@ class PreviewImages:
                 if sprite:surface.blit(sprite,(round((x-y)*32*scale+ox-sprite.get_width()/2),round(((x+y)*16-z*32)*scale+oy)))
             if source is None:return None
         if source is None:return None
-        ratio=min(size[0]/source.get_width(),size[1]/source.get_height())
+        # Remove capture margins before fitting the tile. Preserve the entire
+        # actual build, including narrow towers and transparent decoration.
+        bounds=source.get_bounding_rect(min_alpha=16)
+        if bounds.width and bounds.height:source=source.subsurface(bounds)
+        fit=max if kind in ('world','biome') else min
+        ratio=fit(size[0]/source.get_width(),size[1]/source.get_height())
         result=pygame.Surface(size,pygame.SRCALPHA)
         fitted=pygame.transform.scale(source,(max(1,round(source.get_width()*ratio)),max(1,round(source.get_height()*ratio))))
         result.blit(fitted,fitted.get_rect(center=result.get_rect().center))

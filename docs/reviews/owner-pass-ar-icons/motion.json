@@ -1,0 +1,10 @@
+{
+  "driver": "windows",
+  "frames": 288,
+  "fps": 60,
+  "median_ms": 0.7378000300377607,
+  "p95_ms": 1.0240001138299704,
+  "max_ms": 1.809899928048253,
+  "cold_ms": 161.11049987375736,
+  "input": "scripted production icon rendering"
+}

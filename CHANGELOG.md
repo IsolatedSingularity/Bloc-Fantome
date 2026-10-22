@@ -5,6 +5,21 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.9] - 2026-10-21
+
+### Changed
+- Consolidate the Pass A-R placement repair, modern editor controls and generated monochrome icon sets.
+- Rename the Library's Worlds tile to Dimensions; add large dimension selectors, two-column galleries, tightly framed previews and reciprocal back navigation.
+- Restore the larger held-block preview and colored grow, shrink and terrain-noise hover previews. Canvas shrink is immediate and undoable.
+- Keep World controls open after dimension and Horror Rain changes, color the selected dimension, and animate liquid controls with falling drops and ripples.
+- Ask for a filename on the first manual save, reuse that path afterward, and keep cancellation harmless.
+- Frame World Map landscapes closer, remove the modern editor's floating grid, and refine button corners, spacing and Menu hierarchy.
+- Document laptop-reset recovery inputs separately from reproducible caches.
+
+### Known limitations
+- Large scenes still have cold camera, loading and save stalls. See the 2.9.9 evidence checkpoint; this release does not imply performance acceptance or promotion of accepted main.
+- Borderless presentation, Pass B and original-creature replacement remain deferred.
+
 ## [2.9.8] - 2026-10-20
 
 ### Changed

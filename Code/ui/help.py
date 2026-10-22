@@ -10,7 +10,7 @@ SHORTCUTS = (
     ('Q / E', 'Rotate view'), ('Home', 'Fit world'),
     ('1–9 / Shift+1–9', 'Select hotbar slot'), ('I', 'Build / interact mode'),
     ('R / Shift+R', 'Rotate preview / placed block'), ('F', 'Flip slab / fill tool'),
-    ('B', 'Brush size'), ('G / X', 'Grid / X-ray'),
+    ('B', 'Brush size'), ('X', 'X-ray'),
     ('M', 'Measure'), ('Shift+M / Ctrl+M', 'Mirror Y / X'),
     ('Ctrl+T', 'Radial symmetry'), ('Ctrl+C / Ctrl+V', 'Copy / paste'),
     ('[ / ]', 'Rotate clipboard'), ('Ctrl+B', 'Selection box'),

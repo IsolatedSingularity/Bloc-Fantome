@@ -64,6 +64,10 @@ _cache_bytes=0
 def draw(surface,action,rect,color,phase=0):
     """Original scalable silhouettes; only these small icon buffers are sampled."""
     global _cache_bytes
+    from ui.generated_icons import NAMES,draw as generated
+    if action in NAMES:
+        generated(surface,action,rect,phase)
+        return
     rect=pygame.Rect(rect);tick=round(phase*20)%160 if phase else 0
     key=(action,rect.size,tuple(color),tick)
     tile=_cache.get(key)

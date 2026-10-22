@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-21",
+  "worktrees": 1,
+  "open_pull_requests": 0,
+  "github_collaborators": ["IsolatedSingularity"],
+  "active_before": "codex/pass1-owner-review-2026-10-20",
+  "active_before_head": "c34520dfc82b103bafad0ac5f4e53a0cd92dbb03",
+  "active_after": "development",
+  "operation": "Rename existing development line; no new topic branch or history rewrite",
+  "engineering_consolidation_head": "ef6dae62a86a148bdf77d508e4e2422fe2ba5e02",
+  "engineering_unique_commits": 0,
+  "engineering_history": "Reachable from active development history; obsolete ref retired",
+  "research_branch_retained": "docs/builder-ux-research-20261020",
+  "research_unique_commits": 9,
+  "accepted_main_unchanged": "175686c21649a8d37826f8a22850c85482a69fd9"
+}

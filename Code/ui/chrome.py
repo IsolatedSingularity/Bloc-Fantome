@@ -2,6 +2,7 @@
 import pygame
 import pygame.gfxdraw
 from collections import OrderedDict
+from functools import lru_cache
 
 TEXT = (230, 236, 245)
 MUTED = (153, 170, 192)
@@ -32,17 +33,24 @@ def rounded(screen, color, rect, radius=RADIUS):
     layer = _rounded_cache.get(key)
     if layer is None:
         layer=pygame.Surface(rect.size,pygame.SRCALPHA)
+        layer.fill((*rgba[:3],0))
         w,h=rect.size;r=radius
         pygame.draw.rect(layer,rgba,(r,0,w-2*r,h))
         pygame.draw.rect(layer,rgba,(0,r,w,h-2*r))
         # Supersample only four tiny corner buffers. Text and the panel body
         # stay at their native final size; no full-screen supersampling.
         corner=pygame.Surface((r*6,r*6),pygame.SRCALPHA)
-        pygame.draw.circle(corner,rgba,(r*3,r*3),r*3)
+        pygame.draw.circle(corner,(255,255,255,255),(r*3,r*3),r*3)
         circle=pygame.transform.smoothscale(corner,(r*2,r*2))
+        coverage=pygame.surfarray.array_alpha(circle).astype('uint16')*rgba[3]//255
+        alpha=pygame.surfarray.pixels_alpha(layer)
         for dest,area in (((0,0),(0,0,r,r)),((w-r,0),(r,0,r,r)),
                           ((0,h-r),(0,r,r,r)),((w-r,h-r),(r,r,r,r))):
-            layer.blit(circle,dest,area)
+            # Filter only coverage, never RGB against transparent black. This
+            # prevents dark corner patches from double-multiplied edge colors.
+            dx,dy=dest;sx,sy,_,_=area
+            alpha[dx:dx+r,dy:dy+r]=coverage[sx:sx+r,sy:sy+r]
+        del alpha
         cost=w*h*4
         while _rounded_cache and _rounded_bytes+cost>12*1024*1024:
             _,old=_rounded_cache.popitem(last=False);_rounded_bytes-=old.get_width()*old.get_height()*4
@@ -69,13 +77,45 @@ def button(screen, rect, text, font, hovered=False, selected=False,
     if not quiet or hovered or selected:
         rounded(screen, HOVER if hovered and enabled else SELECTED if selected else CONTROL, rect, 7)
     if selected:
-        pygame.draw.line(screen, ACCENT, (rect.left+10, rect.bottom-3), (rect.right-10, rect.bottom-3), 2)
+        pygame.draw.rect(screen, ACCENT, rect.inflate(-4,-4), 1, border_radius=5)
     if focused:
         pygame.draw.rect(screen, FOCUS, rect.inflate(4, 4), 2, border_radius=6)
     color = ACCENT if selected else TEXT if enabled else MUTED
+    if text=='Close':
+        # A restrained, rounded X with the same optical weight at every size.
+        size=max(12,min(18,round(font.get_height()*.65)))
+        glyph=_close_glyph(size,color)
+        screen.blit(glyph,glyph.get_rect(center=rect.center))
+        return
     label = font.render(ellipsize(text, font, max(0, rect.width-16)), True, color)
     old = screen.get_clip(); screen.set_clip(rect.clip(old))
     screen.blit(label, label.get_rect(center=rect.center)); screen.set_clip(old)
+
+
+@lru_cache(maxsize=16)
+def _close_glyph(size,color):
+    scale=3;image=pygame.Surface((size*scale,size*scale),pygame.SRCALPHA)
+    lo=scale;hi=(size-1)*scale-scale
+    for start,end in (((lo,lo),(hi,hi)),((lo,hi),(hi,lo))):
+        pygame.draw.line(image,color,start,end,2*scale)
+        for point in (start,end):pygame.draw.circle(image,color,point,scale)
+    return pygame.transform.smoothscale(image,(size,size))
+
+
+def close_size(font):
+    return max(32,font.get_height()+10)
+
+
+def wrapped_height(text,font,width):
+    lines=0
+    for paragraph in str(text).split('\n'):
+        line='';lines+=1
+        for word in paragraph.split():
+            trial=(line+' '+word).strip()
+            if line and font.size(trial)[0]>width:
+                lines+=1;line=word
+            else:line=trial
+    return lines*font.get_linesize()+max(0,lines-1)*3
 
 
 def button_surface(texture, size):

@@ -15,7 +15,8 @@ def draw_drawer(shell,app):
     shell._panel(screen,box,234);shell.shortcuts_rect=pygame.Rect(0,0,0,0);shell.category_rect=pygame.Rect(0,0,0,0)
     x=box.x+16;y=box.y+12
     screen.blit(shell.title.render(shell.page.title(),True,chrome.TEXT),(x,y))
-    shell._button(screen,(box.right-94,y,78,max(30,shell.small.get_height()+6)),'Close','close',quiet=True)
+    close_width=chrome.close_size(shell.small)
+    shell._button(screen,(box.right-16-close_width,y,close_width,close_width),'Close','close',quiet=True)
     top=y+max(42,shell.title.get_linesize()+8)
     shell.list_rect=pygame.Rect(x,top,width-32,max(30,box.bottom-top-16))
     if shell.page=='build':build(shell,app,box,compact)
@@ -104,8 +105,8 @@ def tools(s,app,box):
         value=getattr(app,field,False) if field else False
         s._button(screen,r,'',action,bool(value))
         chrome.wrapped(screen,label,s.small,(r.x+10,r.y+(row-s.small.get_height())//2,r.width-54,row))
-        pygame.draw.polygon(screen,chrome.HOVER,[(r.right-38,r.y),(r.right,r.y),(r.right,r.y+38)])
-        icon(screen,action,pygame.Rect(r.right-32,r.y+4,26,26),chrome.ACCENT if value else chrome.MUTED)
+        size=min(32,row-8)
+        icon(screen,action,pygame.Rect(r.right-size-8,r.centery-size//2,size,size),chrome.ACCENT if value else chrome.MUTED)
     screen.set_clip(old)
 
 
@@ -115,7 +116,7 @@ def world(s,app,box):
     actions=[r for r in WORLD if not r[4] and r[0] not in ('grow','shrink','noise','map')]
     tile=(area.width-2*gap)//3;tile_h=min(104,max(72,tile));row=max(36,s.small.get_linesize()+12)
     toggle_h=((len(toggles)+2)//3)*(tile_h+gap)
-    action_h=((len(actions)+1)//2)*(row+6)
+    action_h=((len(actions)+3)//4)*56
     s.max_scroll=max(0,toggle_h+24+action_h-area.height);s.scroll=s.scroller.update(s.max_scroll,s.visibility.reduced_motion)
     old=screen.get_clip();screen.set_clip(area);tip=None
     colors={'rain':(113,176,229),'snow':(195,225,244),'sun':(240,194,102),'lighting':(240,215,133),'clouds':(182,198,221),'sky':(152,162,232),'flow':(96,205,189),'horror_rain':(221,116,132)}
@@ -126,16 +127,30 @@ def world(s,app,box):
         level=s.tile_levels.get(action,float(value));level+= (float(value)-level)*(1 if s.visibility.reduced_motion else min(1,s.frame_dt/.16));s.tile_levels[action]=level
         color=colors[action];bg=tuple(round(a+(b*.45-a)*level) for a,b in zip(chrome.CONTROL,color))
         chrome.rounded(screen,(*bg,235),r,14)
+        if value and not s.visibility.reduced_motion:
+            from ui.generated_icons import weather_effect
+            weather_effect(screen,action,r,pygame.time.get_ticks()/1000)
         focused=s.focus==action or r.collidepoint(pygame.mouse.get_pos())
         if focused:
             pygame.draw.rect(screen,chrome.FOCUS,r.inflate(-2,-2),1,border_radius=13)
             tip=label+' · '+('On' if value else 'Off')
-        icon(screen,action,pygame.Rect(r.centerx-25,r.centery-25,50,50),color if value else chrome.MUTED,
+        icon_size=min(68,tile_h-20,tile-20)
+        icon(screen,action,pygame.Rect(r.centerx-icon_size//2,r.centery-icon_size//2,icon_size,icon_size),color if value else chrome.MUTED,
              phase=pygame.time.get_ticks()/1000 if value and not s.visibility.reduced_motion else 0)
-    top=area.y+toggle_h+16-s.scroll;aw=(area.width-gap)//2
+    top=area.y+toggle_h+16-s.scroll;aw=(area.width-3*gap)//4
+    pygame.draw.line(screen,chrome.HOVER,(area.x,top-8),(area.right,top-8))
     for i,(action,label,*_) in enumerate(actions):
-        r=pygame.Rect(area.x+i%2*(aw+gap),top+i//2*(row+6),aw,row)
-        s._button(screen,r,label,action,quiet=True)
+        r=pygame.Rect(area.x+i%4*(aw+gap),top+i//4*56,aw,48)
+        if not r.colliderect(area):continue
+        active=action==app.currentDimension
+        s._button(screen,r,'',action,selected=False)
+        if active:
+            accent={'overworld':(78,143,94),'nether':(168,66,60),'end':(132,91,171)}[action]
+            chrome.rounded(screen,(*accent,235),r,10)
+        focused=s.focus==action or r.collidepoint(pygame.mouse.get_pos())
+        if focused:tip=label
+        icon(screen,action,pygame.Rect(r.centerx-19,r.centery-19,38,38),(255,255,255),
+             phase=pygame.time.get_ticks()/1000 if (active or focused) and not s.visibility.reduced_motion else 0)
     screen.set_clip(old)
     if tip:
         r=pygame.Rect(box.x+12,box.bottom-38,box.width-24,30);chrome.panel(screen,r,250)
@@ -158,6 +173,12 @@ def menu(s,app,box):
             label=ACTIONS[key][1]
             label={'open':'Open','settings':'Settings','always':'Always visible','pin':'Pin controls','help':'Controls','fullscreen':'Fullscreen','advanced_tutorial':'Advanced tour'}.get(key,label)
             if key.startswith('quick_'):label=key.rsplit('_',1)[1]
-            s._button(screen,(area.x+i%cols*(cw+gap),y+i//cols*(rh+gap),cw,rh),label,key,quiet=bool(title))
+            rect=pygame.Rect(area.x+i%cols*(cw+gap),y+i//cols*(rh+gap),cw,rh)
+            s._button(screen,rect,label if title else '',key,quiet=bool(title))
+            if not title:
+                art={'save':'library_saved','open':'library_worlds','settings':'tools_emblem'}[key]
+                icon(screen,art,pygame.Rect(rect.centerx-15,rect.y+3,30,30),chrome.TEXT)
+                text=s.small.render(label,True,chrome.TEXT)
+                screen.blit(text,text.get_rect(midbottom=(rect.centerx,rect.bottom-4)))
         y+=((len(keys)+cols-1)//cols)*(rh+gap)+12
     screen.set_clip(old)

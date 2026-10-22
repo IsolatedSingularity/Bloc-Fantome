@@ -84,7 +84,9 @@ class SourceMap:
     def frame_overview(self, renderer, size):
         width,height=size
         left,top,right,bottom=self.projected_bounds
-        zoom=min((width-64)/(right-left),(height-230)/(bottom-top))
+        # An isometric footprint is a diamond: covering its bounding rectangle
+        # still exposes all four corners. Fit the viewport inside that diamond.
+        zoom=1.08*(width/(right-left)+height/(bottom-top))
         renderer.setZoom(max(.025,min(1.0,zoom)))
         renderer.offsetX=width/2-(left+right)/2*renderer.zoomLevel
         renderer.offsetY=(height+8)/2-(top+bottom)/2*renderer.zoomLevel

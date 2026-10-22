@@ -1,0 +1,222 @@
+[
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-299-before",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-299-final",
+    "Files": 108,
+    "Bytes": 100545.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-299-full",
+    "Files": 108,
+    "Bytes": 100495.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-299-transition",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-299-ui",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-engine",
+    "Files": 108,
+    "Bytes": 100546.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-failing",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-final",
+    "Files": 108,
+    "Bytes": 100542.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-final2",
+    "Files": 108,
+    "Bytes": 100545.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-final3",
+    "Files": 108,
+    "Bytes": 100550.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-pick",
+    "Files": 1,
+    "Bytes": 199.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-python",
+    "Files": 1,
+    "Bytes": 199.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-ui",
+    "Files": 1,
+    "Bytes": 199.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-ui-fail",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-ar-ui2",
+    "Files": 1,
+    "Bytes": 199.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-baseline-diagnose",
+    "Files": 5,
+    "Bytes": 1001.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-bundle",
+    "Files": 41,
+    "Bytes": 23431.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-capture-red",
+    "Files": 14,
+    "Bytes": 1300.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-clean",
+    "Files": 73,
+    "Bytes": 27169.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-cleanup",
+    "Files": 19,
+    "Bytes": 29478.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-cleanup-fixed",
+    "Files": 24,
+    "Bytes": 30527.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-core",
+    "Files": 73,
+    "Bytes": 27108.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-data",
+    "Files": 56,
+    "Bytes": 25116.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-full",
+    "Files": 81,
+    "Bytes": 67661.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-global",
+    "Files": 26,
+    "Bytes": 42856.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-runtime",
+    "Files": 10,
+    "Bytes": 981.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-settings-fixed",
+    "Files": 5,
+    "Bytes": 3646.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-settings-red",
+    "Files": 5,
+    "Bytes": 4743.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-undo",
+    "Files": 10,
+    "Bytes": 981.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-audit-visibility",
+    "Files": 10,
+    "Bytes": 981.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-clean-final",
+    "Files": 97,
+    "Bytes": 57609.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-clean-stabilized",
+    "Files": 97,
+    "Bytes": 57681.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-engineering-final",
+    "Files": 105,
+    "Bytes": 98169.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-engineering-stabilized",
+    "Files": 105,
+    "Bytes": 98214.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-icons",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-icons-final",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-icons-final2",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-load-retention-fixed",
+    "Files": 10,
+    "Bytes": 981.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-load-retention-red",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pytest-python-fallback",
+    "Files": 0,
+    "Bytes": null
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code\\build\\work",
+    "Files": 28,
+    "Bytes": 567062676.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.pytest_cache",
+    "Files": 5,
+    "Bytes": 69929.0
+  },
+  {
+    "Path": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.ruff_cache",
+    "Files": 5,
+    "Bytes": 479.0
+  }
+]

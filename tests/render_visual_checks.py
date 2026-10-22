@@ -1216,9 +1216,30 @@ def render_workshop(output_dir: Path):
                 app.workshop.query='';capture(f'build-rail-{size[0]}');app.workshop.page='tools';capture(f'tools-{size[0]}')
                 app.workshop.page='world';capture(f'world-{size[0]}')
                 app.workshop.page='menu';capture(f'menu-{size[0]}')
-                app.library.open(app);capture(f'library-home-{size[0]}');app.library.visible=False
+                app.library.open(app);capture(f'library-home-{size[0]}')
+                with patch('pygame.mouse.get_pos',return_value=app.library.tab_rects['Saved Builds'].center):
+                    capture(f'library-saved-hover-{size[0]}')
+                app.library.visible=False
                 app.workshop.page=''
             app._applyWindowSize(1200,800);app._fitWorldToViewport()
+            app._resizeCanvas(16)
+            app.workshop.page=''
+            capture('held-block',30)
+            for rect,action in app.workshop.canvas_controls(app.screen.get_size()):
+                with patch('pygame.mouse.get_pos',return_value=rect.center):
+                    capture('preview-'+action)
+            app.undoManager.undo()
+            from ui.workshop_actions import WORLD
+            toggles={row[4]:getattr(app,row[4]) for row in WORLD if row[4]}
+            app.workshop.page='world'
+            for field in toggles:setattr(app,field,False)
+            capture('world-icons-off')
+            for field in toggles:setattr(app,field,True)
+            capture('world-icons-active')
+            app.workshop.visibility.reduced_motion=True;capture('world-icons-reduced-motion')
+            app.workshop.visibility.reduced_motion=False
+            for field,value in toggles.items():setattr(app,field,value)
+            app.workshop.page=''
             app.workshop.focus='half';capture('focus');app.workshop.focus=None
             app.workshop.visibility.pinned=False;app.workshop.visibility.last_activity=-100;app.workshop.visibility.alpha=0
             with patch('pygame.mouse.get_pos',return_value=(500,400)),patch('pygame.mouse.get_pressed',return_value=(False,False,False)):capture('quiet')
@@ -1236,6 +1257,7 @@ def render_workshop(output_dir: Path):
                 app.workshop.page='build';capture(f'build-960-text{round(scale*100)}')
                 app.workshop.category_menu=True;capture(f'categories-960-text{round(scale*100)}');app.workshop.category_menu=False;app.workshop.page=''
                 app.library.open(app);capture(f'library-home-960-text{round(scale*100)}');app.library.visible=False
+                app.library.open(app,'Worlds');capture(f'dimensions-960-text{round(scale*100)}',40);app.library.visible=False
                 for page in ('tools','world','menu'):
                     app.workshop.page=page;capture(f'{page}-960-text{round(scale*100)}')
                 app.workshop.page=''

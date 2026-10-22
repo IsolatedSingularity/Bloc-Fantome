@@ -1,0 +1,131 @@
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents\Embryo
+warn: could not canonicalize path C:\Users\hunkb\OneDrive\Documents
+warn: could not canonicalize path C:\Users\hunkb\OneDrive
+warn: could not canonicalize path C:\Users\hunkb
+warn: could not canonicalize path C:\Users
+warn: could not canonicalize path C:\
+    Finished `release` profile [optimized] target(s) in 0.03s
+Native accelerator already matches the compiled build: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\native\bin\bloc_fantome_native.dll
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+466 INFO: PyInstaller: 6.21.0, contrib hooks: 2026.6
+466 INFO: Python: 3.12.10
+829 INFO: Platform: Windows-11-10.0.26300-SP0
+829 INFO: Python environment: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.venv
+830 INFO: wrote C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\BlocFantome.spec
+839 INFO: Removing temporary files and cleaning cache in C:\Users\hunkb\AppData\Local\Packages\sandbox.{213c8df9-ba19-4699-b6db-3f0a0b5457a9}\AC\pyinstaller
+882 INFO: Module search paths (PYTHONPATH):
+['C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\python312.zip',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\DLLs',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312\\Lib',
+ 'C:\\Users\\hunkb\\AppData\\Local\\Programs\\Python\\Python312',
+ 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv',
+ 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages',
+ 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code']
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+2149 INFO: Appending 'binaries' from .spec
+2152 INFO: Appending 'datas' from .spec
+2353 INFO: checking Analysis
+2353 INFO: Building Analysis because Analysis-00.toc is non existent
+2353 INFO: Looking for Python shared library...
+2353 INFO: Using Python shared library: C:\Users\hunkb\AppData\Local\Programs\Python\Python312\python312.dll
+2353 INFO: Running Analysis Analysis-00.toc
+2353 INFO: Target bytecode optimization level: 0
+2353 INFO: Initializing module dependency graph...
+2357 INFO: Initializing module graph hook caches...
+2370 INFO: Analyzing modules for base_library.zip ...
+5664 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+6834 INFO: Processing standard module hook 'hook-math.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+7048 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+8027 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+9546 INFO: Caching module dependency graph...
+9588 INFO: Analyzing C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py
+10683 INFO: Processing standard module hook 'hook-pygame.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\pygame\\__pyinstaller'
+11154 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+11157 INFO: SetuptoolsInfo: initializing cached setuptools info...
+12732 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+13790 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+13924 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+14094 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+14306 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+14361 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+14434 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+16811 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+16814 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+18935 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+19032 INFO: Processing module hooks (post-graph stage)...
+19083 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+19114 INFO: Performing binary vs. data reclassification (2030 entries)
+19656 INFO: Looking for ctypes DLLs
+19864 INFO: Analyzing run-time hooks ...
+19864 INFO: Including custom run-time hook 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\Code\\pyi_tk_runtime.py'
+19871 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+19875 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+19882 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+19887 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks'
+19944 INFO: Creating base_library.zip...
+19970 INFO: Looking for dynamic libraries
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+20959 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\numpy.libs', 'C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.venv\\Lib\\site-packages\\pygame']
+20959 INFO: Extra DLL search directories (PATH): []
+23146 INFO: Warnings written to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\warn-BlocFantome.txt
+23183 INFO: Graph cross-reference written to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\xref-BlocFantome.html
+23281 INFO: checking PYZ
+23282 INFO: Building PYZ because PYZ-00.toc is non existent
+23282 INFO: Building PYZ (ZlibArchive) C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\PYZ-00.pyz
+23651 INFO: Building PYZ (ZlibArchive) C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\build\work\BlocFantome\PYZ-00.pyz completed successfully.
+23697 INFO: checking PKG
+23697 INFO: Building PKG because PKG-00.toc is non existent
+23697 INFO: Building PKG (CArchive) BlocFantome.pkg
+47240 INFO: Building PKG (CArchive) BlocFantome.pkg completed successfully.
+47281 INFO: Bootloader C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.venv\Lib\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+47281 INFO: checking EXE
+47281 INFO: Building EXE because EXE-00.toc is non existent
+47281 INFO: Building EXE from EXE-00.toc
+47315 INFO: Copying bootloader EXE to C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\release-299\package\BlocFantome.exe
+47396 INFO: Copying icon to EXE
+47464 INFO: Copying version information to EXE
+47526 INFO: Copying 0 resources to EXE
+47526 INFO: Embedding manifest in EXE
+47584 INFO: Appending PKG archive to EXE
+47753 INFO: Fixing EXE headers
+49095 INFO: Building EXE from EXE-00.toc completed successfully.
+49130 INFO: Build complete! The results are available in: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\release-299\package
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+============================================================
+Building Bloc Fant�me Executable v2.9.9
+============================================================
+pygame 2.6.1 (SDL 2.28.4, Python 3.12.10)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Prepacked 0 updated source captures
+
+Running PyInstaller with options:
+  Main script: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py
+  Icon: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Assets\Icons\Respawn_Anchor.ico
+  Output: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\release-299\package
+
+
+============================================================
+BUILD SUCCESSFUL!
+============================================================
+
+Executable created at:
+  C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\release-299\package\BlocFantome.exe
+
+--- Distribution Instructions ---
+To share this application, provide users with:
+  1. C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\.qa\release-299\package\BlocFantome.exe
+  2. Instructions to run setup_assets.py first
+  3. config.json (optional, for custom settings)
+
+Note: Users must have Minecraft Java Edition 1.21.1+ installed
+      and run setup_assets.py to extract textures and sounds.
+
+To create an installer, run:
+  iscc installer.iss

@@ -1,5 +1,6 @@
 """Anchored editor presentation; world, commands and persistence stay in the app."""
 from dataclasses import dataclass
+import random
 import pygame
 from ui import chrome
 from ui.fonts import load_ui_font, set_text_scale
@@ -125,6 +126,67 @@ class Workshop:
     def _panel(self,screen,rect,alpha=246):
         rect=pygame.Rect(rect);chrome.panel(screen,rect,alpha=alpha);self.panels.append(rect)
 
+    @staticmethod
+    def canvas_controls(size):
+        w,h=size
+        return [(pygame.Rect(w-210+i*64,h-64,58,44),action)
+                for i,action in enumerate(('grow','shrink','noise'))]
+
+    def _canvas_preview(self,app,controls,mouse):
+        modal=(self.clean or self.confirm or app.library.visible or app.settingsMenuOpen
+               or app.tutorialScreen.visible or app.showShortcutsPanel or app.historyPanelOpen
+               or getattr(app,'_pendingTourLoad',None))
+        action=next((a for rect,a in controls if rect.collidepoint(mouse)),None) if not modal else None
+        if action!='noise':app._clearTerrainNoisePreview()
+        if action is None:
+            self._preview_key=None
+            return
+        key=(action,app.world.revision,app.screen.get_size(),app.renderer.offsetX,
+             app.renderer.offsetY,app.renderer.viewRotation,app.zoomLevel)
+        if action=='noise':
+            if app._terrainNoisePreviewSeed is None:
+                app._terrainNoisePreviewSeed=random.randint(0,0x7fffffff)
+            plan=app._terrainNoisePlanForSeed(app._terrainNoisePreviewSeed)
+            key+=(app._terrainNoisePreviewPlanKey,)
+            surface=app._terrainNoisePreviewSurface
+        else:surface=app._canvasResizePreviewSurface
+        if key==getattr(self,'_preview_key',None) and surface is not None:
+            app.screen.blit(surface,(0,0))
+        elif action=='noise':app._renderTerrainNoisePreview(plan)
+        else:
+            delta=16 if action=='grow' else -16
+            app._renderCanvasResizePreview(delta,app._canvasResizeDimensions(delta))
+        self._preview_key=key
+
+    def _held_block(self,screen,app):
+        definition=app.world.catalog.definitions[app.selectedBlock]
+        details=['Interact'] if app.interactionMode else []
+        if definition.isSlab or definition.isStair:
+            details.append(app.previewSlabPosition.name.title()+' half')
+        if definition.isStair or definition.isDoor or definition.textureFront:
+            details.append(app.previewFacing.name.title())
+        detail=' · '.join(details)
+        name=definition.name
+        width=min(screen.get_width()-48,max(190,self.font.size(name)[0]+78,self.small.size(detail)[0]+78))
+        width=min(width,self.hotbar_bounds.left-40)
+        compact=width<240;text_left=72 if compact else 88
+        name_font=self.small if compact else self.font
+        available=width-text_left-12
+        name_height=chrome.wrapped_height(name,name_font,available)
+        detail_height=chrome.wrapped_height(detail,self.small,available) if detail else 0
+        height=max(78,name_height+detail_height+16)
+        self.context=pygame.Rect(24,screen.get_height()-10-height,width,height)
+        self._panel(screen,self.context,225)
+        sprite=app.assetManager.getIconSprite(app.selectedBlock)
+        if sprite:
+            icon_size=60 if compact else 72
+            scale=min(icon_size/sprite.get_width(),icon_size/sprite.get_height())
+            sprite=pygame.transform.scale(sprite,(max(1,round(sprite.get_width()*scale)),max(1,round(sprite.get_height()*scale))))
+            screen.blit(sprite,sprite.get_rect(center=(self.context.x+text_left//2,self.context.centery)))
+        top=self.context.centery-(name_height+detail_height)//2
+        chrome.wrapped(screen,name,name_font,(self.context.x+text_left,top,available,name_height),chrome.TEXT)
+        if detail:chrome.wrapped(screen,detail,self.small,(self.context.x+text_left,top+name_height,available,detail_height),chrome.MUTED)
+
     def render(self,app):
         screen=app.screen;w,h=screen.get_size();mouse=pygame.mouse.get_pos()
         now=pygame.time.get_ticks()/1000;dt=now-self.last_time;self.last_time=now
@@ -141,9 +203,7 @@ class Workshop:
                     lines+=1;line=word
                 else:line=trial
             self.operation_rect.height=max(42,lines*(self.small.get_linesize()+3)+14)
-        context_height=max(107,self.small.get_linesize()+self.font.get_linesize()+max(30,self.small.get_height()+8)+38)
-        self.context=pygame.Rect(24,h-80-context_height,min(w-48,round(320*self.text_scale)),context_height)
-        dirty=(self.saved_revision!=app.world.revision if self.saved_revision is not None else app.undoManager.can_undo())
+        self.context=pygame.Rect(24,h-80,0,0)
         occupied=bool(self.page or self.focus or self.captured or operation or self.error or app.panning
                       or app.draggingSlider or app.library.visible or app.settingsMenuOpen
                       or app.tutorialScreen.visible or self.confirm or app.showShortcutsPanel or app.historyPanelOpen
@@ -151,27 +211,34 @@ class Workshop:
         if 0<=mouse[0]<w and h-16<=mouse[1]<h and not self.clean:self.reveal()
         if self.hotbar_bounds.collidepoint(mouse) and self.visibility.alpha>0:occupied=True
         alpha=self.visibility.update(now,dt,occupied)
+        controls=self.canvas_controls(screen.get_size())
+        self._canvas_preview(app,controls,mouse)
         if not self.clean:
             if alpha>0:
                 navigation=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
-                self._panel(navigation,(24,20,370,46),225)
-                for i,label in enumerate(('Build','Library','World','Map')):
-                    self._button(navigation,(28+i*91,26,89,34),label,'nav:'+label.lower(),self.page==label.lower(),quiet=True)
-                self._panel(navigation,(w-301,20,277,46),225)
-                for i,(label,action) in enumerate((('Tools','nav:tools'),('Save','save'),('Menu','nav:menu'))):
-                    self._button(navigation,(w-297+i*91,26,89,34),label,action,self.page==label.lower(),quiet=True)
+                for right,items in ((False,tuple((label,'nav:'+label.lower()) for label in ('Build','Library','World','Map'))),
+                                    (True,(('Tools','nav:tools'),('Save','save'),('Menu','nav:menu')))):
+                    widths=[max(86,self.small.size(label)[0]+24) for label,_ in items]
+                    group_width=sum(widths)+4*(len(items)-1)+12
+                    x=w-24-group_width if right else 24
+                    self._panel(navigation,(x,20,group_width,46),225)
+                    x+=6
+                    for (label,action),width in zip(items,widths):
+                        self._button(navigation,(x,26,width,34),label,action,self.page==label.lower(),quiet=True)
+                        x+=width+4
                 navigation.set_alpha(round(alpha*255));screen.blit(navigation,(0,0))
-            for i,(label,action) in enumerate((('+','grow'),('−','shrink'),('Noise','noise'))):
-                rect=pygame.Rect(w-208+i*62,h-64,58,44)
+            for rect,action in controls:
                 self._button(screen,rect,'',action,quiet=False)
                 draw_icon(screen,action,rect.inflate(-4,-2),chrome.ACCENT)
                 if rect.collidepoint(mouse):
-                    text={'grow':'Grow canvas (+)','shrink':'Shrink canvas (−)','noise':'Local terrain noise'}[action]
-                    tip=pygame.Rect(w-230,h-98,206,28);chrome.panel(screen,tip)
-                    chrome.wrapped(screen,text,self.small,tip.inflate(-10,-4))
+                    text={'grow':'Grow canvas','shrink':'Shrink canvas','noise':'Terrain noise'}[action]
+                    label=self.small.render(text,True,chrome.TEXT)
+                    tip=label.get_rect().inflate(20,12);tip.bottomright=(w-24,rect.top-8)
+                    chrome.panel(screen,tip);screen.blit(label,label.get_rect(center=tip.center))
             if alpha>0:
                 layer=pygame.Surface(screen.get_size(),pygame.SRCALPHA)
                 self._hotbar(layer,app)
+                if self.page!='build':self._held_block(layer,app)
                 layer.set_alpha(round(alpha*255));screen.blit(layer,(0,0))
             else:self.hotbar_bounds=pygame.Rect(0,0,0,0)
             if self.page:self._drawer(app)
@@ -181,17 +248,17 @@ class Workshop:
             chrome.wrapped(screen,operation+' · Esc cancels',self.small,rect.inflate(-24,-14),chrome.ACCENT)
         if self.status and now-self._status_at>3:self.status=''
         if self.error or self.status:
-            height=max(44,self.small.get_linesize()*(2 if self.error else 1)+20)
             width=min(w-48,620 if self.error else self.small.size(self.status)[0]+28)
-            box=pygame.Rect(24,self.context.top-16-height,width,height);self._panel(screen,box)
+            height=chrome.wrapped_height(self.error or self.status,self.small,width-24)+12
+            box=pygame.Rect(24,self.context.top-8-height,width,height);self._panel(screen,box)
             chrome.wrapped(screen,self.error or self.status,self.small,box.inflate(-24,-12),chrome.ERROR if self.error else chrome.TEXT)
         if self.confirm:
             box=pygame.Rect(0,0,min(w-48,460),170);box.center=screen.get_rect().center
             self._panel(screen,box)
-            message = ('Shrink canvas? Blocks outside the new bounds will be removed.' if self.confirm=='shrink' else 'Clear this world? Unsaved changes will be removed.')
+            message = 'Clear this world? Unsaved changes will be removed.'
             chrome.wrapped(screen,message,self.font,box.inflate(-40,-38))
             self._button(screen,(box.x+20,box.bottom-50,190,34),'Cancel','confirm:cancel')
-            self._button(screen,(box.right-210,box.bottom-50,190,34),'Shrink canvas' if self.confirm=='shrink' else 'Clear world','confirm:clear')
+            self._button(screen,(box.right-210,box.bottom-50,190,34),'Clear world','confirm:clear')
         if self.dragging and self.drag_block is not None:
             sprite=app.assetManager.getIconSprite(self.drag_block)
             if sprite:screen.blit(sprite,sprite.get_rect(center=mouse))
@@ -331,7 +398,9 @@ class Workshop:
         if action.startswith('nav:'):
             page=action[4:]
             if page=='map':self.close_drawer(app);app._openWorldMap();return
-            if page=='library':self.close_drawer(app);app.library.open(app)
+            if page=='library':
+                if app.library.visible:app.library.visible=False
+                else:self.close_drawer(app);app.library.open(app)
             else:self.open_drawer(page,app)
             return
         if action in ('build','menu'):self.open_drawer(action,app);return
@@ -347,8 +416,6 @@ class Workshop:
         if action=='confirm:cancel':self.confirm=None;self.focus=None;return
         if action=='confirm:clear':
             action=self.confirm;self.confirm=None;self.focus=None
-            if action=='shrink':app._resizeCanvas(-16);return
-        elif action=='shrink' and app._canvasResizeImpact(-16)[1]:self.status='Shrink needs an empty border';return
         elif action=='clear_world':self.confirm=action;self.focus='confirm:cancel';return
         if action=='fit':app._executeInputCommand(Command.FIT_WORLD);return
         if action in ('left','right'):app._rotateViewAndRecenter(-1 if action=='left' else 1);return
@@ -364,9 +431,11 @@ class Workshop:
                 if args[0]=='_beginTutorial':app._beginTutorial(advanced=args[1] if len(args)>1 else False)
                 else:getattr(app,args[0])(*args[1:])
             elif route=='save':
-                if app._saveBuilding():
-                    self.status='Saved';self.error='';self.saved_revision=app.world.revision;self.cue(app,'success')
-                else:
+                result=app._saveBuilding() if app.currentBuildPath else app._openSaveAsDialog()
+                if result:
+                    from pathlib import Path
+                    self.status='Saved: '+Path(app.currentBuildPath).name;self.error='';self.saved_revision=app.world.revision;self.cue(app,'success')
+                elif result is False:
                     self.error='Save failed. Your build is still open. Retry Save.';self.cue(app,'failure')
             elif route in ('undo','redo'):
                 result=getattr(app.undoManager,route)()
@@ -383,7 +452,7 @@ class Workshop:
             elif route=='legacy':self.legacy=True
             elif route=='terrain_view':
                 modes=('all','transparent','hidden');app.sceneTerrainMode=modes[(modes.index(app.sceneTerrainMode)+1)%3];app._invalidateViewCaches()
-            if route not in ('preference','text_scale') and action not in ('rain','snow','sun','clouds','lighting','sky','sky_previous','sky_next','flow'):
+            if route not in ('preference','text_scale') and action not in ('rain','snow','sun','clouds','lighting','sky','sky_previous','sky_next','flow','horror_rain','overworld','nether','end'):
                 self.close_drawer(app)
         except (OSError,ValueError,pygame.error) as error:
             self.error=f'{label} failed: {error}'
