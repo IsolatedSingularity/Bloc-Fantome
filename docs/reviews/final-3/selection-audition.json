@@ -1,0 +1,17 @@
+[
+  {
+    "label": "Before: accepted click / previous selection",
+    "starts_seconds": 0.6,
+    "duration_seconds": 0.7453741496598639
+  },
+  {
+    "label": "After: soft material selection",
+    "starts_seconds": 1.9453741496598638,
+    "duration_seconds": 0.4439909297052154
+  },
+  {
+    "label": "After: preference / World switch",
+    "starts_seconds": 2.9893650793650792,
+    "duration_seconds": 0.62
+  }
+]

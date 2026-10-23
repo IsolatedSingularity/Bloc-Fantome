@@ -9,6 +9,8 @@ from runtime_paths import SOUNDS_DIR
 # filename, gain before router headroom, cooldown seconds, priority, channel pool
 CUES = {
     'button': ('pressButton.wav', .90, .075, 1, 'ui'),
+    'select': ('select-soft.wav', .86, .10, 2, 'ui'),
+    'toggle': ('toggle-soft.wav', .70, .16, 2, 'ui'),
     'close': ('close-short.wav', .72, .15, 2, 'ui_semantic'),
     'world_map': ('worldMap.wav', .82, .5, 3, 'ui_semantic'),
     'save': ('save.wav', .78, .2, 4, 'ui_semantic'),
@@ -16,13 +18,13 @@ CUES = {
     'boot': ('bootUp.wav', .76, 1, 6, 'lifecycle'),
     'shutdown': ('shutDown.wav', .76, 1, 6, 'lifecycle'),
 }
-ALIASES = {'select': 'button', 'open': 'button', 'cancel': 'close',
+ALIASES = {'open': 'button', 'cancel': 'close',
            'success': 'save', 'failure': 'error'}
 
 
 def sound_path(filename):
     from pathlib import Path
-    if filename=='close-short.wav':return Path(__file__).with_name('audio')/filename
+    if filename in ('close-short.wav','select-soft.wav','toggle-soft.wav'):return Path(__file__).with_name('audio')/filename
     return Path(SOUNDS_DIR)/'ui'/'selected'/filename
 
 

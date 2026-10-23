@@ -1,0 +1,218 @@
+{
+  "status": "rejected: no measurable improvement; final renderer restored to c3591022",
+  "experiment": "batch screen culling and hoisted patch bounds",
+  "measurements": [
+    {
+      "scene": "ancient_city_121",
+      "operations": {
+        "pan": {
+          "accepted": {
+            "median_ms": 93.19739986676723,
+            "max_ms": 94.08409986644983,
+            "median_total_ms": 93.19739986676723
+          },
+          "candidate": {
+            "median_ms": 96.87360003590584,
+            "max_ms": 97.70969999954104,
+            "median_total_ms": 96.87360003590584
+          }
+        },
+        "zoom": {
+          "accepted": {
+            "median_ms": 9.022750076837838,
+            "max_ms": 24.80540005490184,
+            "median_total_ms": 110.39580008946359
+          },
+          "candidate": {
+            "median_ms": 9.06760012730956,
+            "max_ms": 29.2452999856323,
+            "median_total_ms": 116.25459988135844
+          }
+        },
+        "rotate": {
+          "accepted": {
+            "median_ms": 12.038800050504506,
+            "max_ms": 22.63729996047914,
+            "median_total_ms": 24.16284999344498
+          },
+          "candidate": {
+            "median_ms": 13.55605002027005,
+            "max_ms": 26.33440005593002,
+            "median_total_ms": 27.53675007261336
+          }
+        },
+        "edit": {
+          "accepted": {
+            "median_ms": 22.59374991990626,
+            "max_ms": 24.15889990516007,
+            "median_total_ms": 22.59374991990626
+          },
+          "candidate": {
+            "median_ms": 26.662800111807883,
+            "max_ms": 27.055999962612987,
+            "median_total_ms": 26.662800111807883
+          }
+        }
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "operations": {
+        "pan": {
+          "accepted": {
+            "median_ms": 176.02829996030778,
+            "max_ms": 176.58139998093247,
+            "median_total_ms": 176.02829996030778
+          },
+          "candidate": {
+            "median_ms": 176.913799950853,
+            "max_ms": 178.79500007256866,
+            "median_total_ms": 176.913799950853
+          }
+        },
+        "zoom": {
+          "accepted": {
+            "median_ms": 8.82879993878305,
+            "max_ms": 10.159200057387352,
+            "median_total_ms": 232.16434952337295
+          },
+          "candidate": {
+            "median_ms": 8.865599986165762,
+            "max_ms": 10.124000022187829,
+            "median_total_ms": 240.96080078743398
+          }
+        },
+        "rotate": {
+          "accepted": {
+            "median_ms": 24.945199955254793,
+            "max_ms": 26.739099994301796,
+            "median_total_ms": 24.945199955254793
+          },
+          "candidate": {
+            "median_ms": 31.329949968494475,
+            "max_ms": 35.16099997796118,
+            "median_total_ms": 31.329949968494475
+          }
+        },
+        "edit": {
+          "accepted": {
+            "median_ms": 23.46185001078993,
+            "max_ms": 25.47909994609654,
+            "median_total_ms": 23.46185001078993
+          },
+          "candidate": {
+            "median_ms": 29.260799987241626,
+            "max_ms": 29.65040015988052,
+            "median_total_ms": 29.260799987241626
+          }
+        }
+      }
+    },
+    {
+      "scene": "village_plains_1161",
+      "operations": {
+        "pan": {
+          "accepted": {
+            "median_ms": 176.33820010814816,
+            "max_ms": 181.7125000525266,
+            "median_total_ms": 176.33820010814816
+          },
+          "candidate": {
+            "median_ms": 180.5511498823762,
+            "max_ms": 189.75790007971227,
+            "median_total_ms": 180.5511498823762
+          }
+        },
+        "zoom": {
+          "accepted": {
+            "median_ms": 8.793000131845474,
+            "max_ms": 9.673400083556771,
+            "median_total_ms": 214.79949995409697
+          },
+          "candidate": {
+            "median_ms": 8.837649947963655,
+            "max_ms": 9.747499832883477,
+            "median_total_ms": 217.60899969376624
+          }
+        },
+        "rotate": {
+          "accepted": {
+            "median_ms": 9.02429991401732,
+            "max_ms": 37.063000025227666,
+            "median_total_ms": 74.3466499261558
+          },
+          "candidate": {
+            "median_ms": 8.935449994169176,
+            "max_ms": 43.80120011046529,
+            "median_total_ms": 78.69125017896295
+          }
+        },
+        "edit": {
+          "accepted": {
+            "median_ms": 70.27144997846335,
+            "max_ms": 73.7289001699537,
+            "median_total_ms": 70.27144997846335
+          },
+          "candidate": {
+            "median_ms": 73.53565003722906,
+            "max_ms": 76.66329992935061,
+            "median_total_ms": 73.53565003722906
+          }
+        }
+      }
+    },
+    {
+      "scene": "ocean_monument_1161",
+      "operations": {
+        "pan": {
+          "accepted": {
+            "median_ms": 123.91940003726631,
+            "max_ms": 128.55920009315014,
+            "median_total_ms": 123.91940003726631
+          },
+          "candidate": {
+            "median_ms": 129.30475000757724,
+            "max_ms": 129.71049989573658,
+            "median_total_ms": 129.30475000757724
+          }
+        },
+        "zoom": {
+          "accepted": {
+            "median_ms": 8.895999984815717,
+            "max_ms": 9.527700021862984,
+            "median_total_ms": 150.00595012679696
+          },
+          "candidate": {
+            "median_ms": 8.862900082021952,
+            "max_ms": 9.627000195905566,
+            "median_total_ms": 149.07984994351864
+          }
+        },
+        "rotate": {
+          "accepted": {
+            "median_ms": 9.07994993031025,
+            "max_ms": 31.88410005532205,
+            "median_total_ms": 47.658649971708655
+          },
+          "candidate": {
+            "median_ms": 8.915100013837218,
+            "max_ms": 38.084100000560284,
+            "median_total_ms": 51.49965011514723
+          }
+        },
+        "edit": {
+          "accepted": {
+            "median_ms": 46.98005004320294,
+            "max_ms": 47.813700046390295,
+            "median_total_ms": 46.98005004320294
+          },
+          "candidate": {
+            "median_ms": 52.25354991853237,
+            "max_ms": 54.18340000323951,
+            "median_total_ms": 52.25354991853237
+          }
+        }
+      }
+    }
+  ]
+}

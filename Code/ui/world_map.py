@@ -569,7 +569,7 @@ class WorldMapView:
         width, _height = screen.get_size()
         font=self._ui_font(15);row_height=max(27,font.get_linesize()+8)
         panel_width=min(width//2,round(242*TEXT_SCALE))
-        panel = pygame.Rect(width-panel_width-18,66,panel_width,48+len(self.scene.route_labels)*row_height)
+        panel = pygame.Rect(width-panel_width-18,66+getattr(self,'title_inset',0),panel_width,48+len(self.scene.route_labels)*row_height)
         self.route_panel_rect=panel
         self._panel(screen, panel)
         accent = DIMENSION_COLORS[self.dimension]
@@ -782,7 +782,7 @@ class WorldMapView:
         self._render_dimension_ambience(screen)
         self._render_landmarks(screen, renderer)
         self._render_travelers(screen, renderer)
-        title_rect = pygame.Rect(16, 14, min(520, width - 302), 82)
+        title_rect = pygame.Rect(16, 14+getattr(self,'title_inset',0), min(520, width - 302), 82)
         self._panel(screen, title_rect)
         accent = DIMENSION_COLORS[self.dimension]
         pygame.draw.rect(screen, accent, (title_rect.x + 4, title_rect.y + 4, 6, title_rect.height - 8))
@@ -791,7 +791,7 @@ class WorldMapView:
         screen.blit(title, (title_rect.x + 19, title_rect.y + 10))
         screen.blit(subtitle, (title_rect.x + 20, title_rect.y + 48))
 
-        self.back_rect = pygame.Rect(width - 124, 17, 106, 36)
+        self.back_rect = pygame.Rect(width - 124, 17+getattr(self,'title_inset',0), 106, 36)
         self._worldbuilder_panel(
             screen, self.back_rect,
             selected=self.back_rect.collidepoint(pygame.mouse.get_pos()),
@@ -874,7 +874,7 @@ class WorldMapView:
         row=max(32,self.small_font.get_linesize()+8)
         heading=self._text('EXPLORE',ACCENT,scale=2)
         first=heading.get_height()+24
-        panel=pygame.Rect(16,110,226,first+(len(REGIONS[self.dimension])+1)*row+16)
+        panel=pygame.Rect(16,110+getattr(self,'title_inset',0),226,first+(len(REGIONS[self.dimension])+1)*row+16)
         self.region_panel_rect=panel
         self._panel(screen, panel)
         heading = self._text("EXPLORE", (244, 226, 157), scale=2)
@@ -901,14 +901,14 @@ class WorldMapView:
         current, total, _done = progress
         title_font=self._ui_font(18,bold=True);body=self._ui_font(14)
         line=body.get_linesize()+4
-        panel = pygame.Rect(62,14,min(640,width-82),title_font.get_linesize()+line*(len(self.objective.instructions)+2)+34)
+        panel = pygame.Rect(62,14+getattr(self,'title_inset',0),min(640,width-82),title_font.get_linesize()+line*(len(self.objective.instructions)+2)+34)
         self._panel(screen,panel)
         native_wrapped(screen,self.objective.title,title_font,(panel.x+18,panel.y+12,panel.width-36,title_font.get_linesize()+4))
         y=panel.y+title_font.get_linesize()+24
         for instruction in self.objective.instructions:
             native_wrapped(screen,instruction,body,(panel.x+18,y,panel.width-36,line));y+=line
         native_wrapped(screen,f'Objective {current}/{total}',body,(panel.x+18,panel.bottom-line-10,panel.width-36,line),ACCENT)
-        self.back_rect = pygame.Rect(16,20,38,38)
+        self.back_rect = pygame.Rect(16,20+getattr(self,'title_inset',0),38,38)
         self._worldbuilder_arrow(screen,self.back_rect,previous=True)
         if self.completed_now:
             card=pygame.Rect(0,0,min(520,width-40),max(170,title_font.get_linesize()+body.get_linesize()*2+100));card.center=(width//2,height//2)

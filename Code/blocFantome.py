@@ -36,6 +36,7 @@ APP_VERSION = "3.0.0"
 # Import splash screen module
 from splash import SplashScreen, show_splash
 from engine.app_icon import render_runtime_icon_surface, render_splash_background_surface
+from engine.audio_decode import load_sound
 render_app_icon_surface = render_runtime_icon_surface
 from engine.input_commands import (
     Command as InputCommand,
@@ -3852,7 +3853,7 @@ class AssetManager:
         portalSoundPath = os.path.join(SOUNDS_DIR, "portal", "portal.ogg")
         if os.path.exists(portalSoundPath):
             try:
-                self.portalAmbientSound = pygame.mixer.Sound(portalSoundPath)
+                self.portalAmbientSound = load_sound(portalSoundPath)
                 self.portalAmbientSound.set_volume(0.3)
                 print("    Loaded portal ambient sound")
             except Exception as e:
@@ -6721,7 +6722,7 @@ class AssetManager:
             soundPath = os.path.join(directory, pattern.format(i=i))
             if os.path.exists(soundPath):
                 try:
-                    sound = pygame.mixer.Sound(soundPath)
+                    sound = load_sound(soundPath)
                     sound.set_volume(volume)
                     sounds.append(sound)
                 except Exception as e:
@@ -6744,7 +6745,7 @@ class AssetManager:
         """
         if os.path.exists(path):
             try:
-                sound = pygame.mixer.Sound(path)
+                sound = load_sound(path)
                 sound.set_volume(volume)
                 return sound
             except Exception as e:
@@ -6960,7 +6961,7 @@ class AssetManager:
             if os.path.exists(relaxingPath):
                 self.relaxingRainPath = relaxingPath
                 try:
-                    self.relaxingRainSound = pygame.mixer.Sound(relaxingPath)
+                    self.relaxingRainSound = load_sound(relaxingPath)
                     self.relaxingRainSound.set_volume(0.5)
                     print(f"    Pre-loaded relaxing rain track")
                 except Exception as e:
@@ -6970,7 +6971,7 @@ class AssetManager:
                 thunderPath = os.path.join(weatherDir, f"thunder{i}.ogg")
                 if os.path.exists(thunderPath):
                     try:
-                        snd = pygame.mixer.Sound(thunderPath)
+                        snd = load_sound(thunderPath)
                         snd.set_volume(0.8)
                         self.thunderSounds.append(snd)
                     except pygame.error as e:
@@ -6980,7 +6981,7 @@ class AssetManager:
                 ambientPath = os.path.join(weatherDir, name)
                 if os.path.exists(ambientPath):
                     try:
-                        snd = pygame.mixer.Sound(ambientPath)
+                        snd = load_sound(ambientPath)
                         snd.set_volume(0.4)  # Background ambience
                         self.thunderAmbientSounds.append(snd)
                     except pygame.error as e:
@@ -7008,7 +7009,7 @@ class AssetManager:
                 cavePath = os.path.join(caveDir, f"cave{i}.ogg")
                 if os.path.exists(cavePath):
                     try:
-                        snd = pygame.mixer.Sound(cavePath)
+                        snd = load_sound(cavePath)
                         snd.set_volume(0.3)  # Subtle volume for ambience
                         self.caveSounds.append(snd)
                     except pygame.error:
@@ -7024,7 +7025,7 @@ class AssetManager:
                 if f.endswith('.ogg'):
                     netherPath = os.path.join(netherAmbientDir, f)
                     try:
-                        snd = pygame.mixer.Sound(netherPath)
+                        snd = load_sound(netherPath)
                         snd.set_volume(0.25)
                         self.netherAmbientSounds.append(snd)
                     except pygame.error:
@@ -7041,7 +7042,7 @@ class AssetManager:
                     stepPath = os.path.join(stepDir, f"{stepType}{i}.ogg")
                     if os.path.exists(stepPath):
                         try:
-                            snd = pygame.mixer.Sound(stepPath)
+                            snd = load_sound(stepPath)
                             snd.set_volume(0.08)  # Very quiet - phantom footsteps
                             self.phantomFootsteps.append(snd)
                         except pygame.error:
@@ -7054,7 +7055,7 @@ class AssetManager:
         knockPath = os.path.join(SOUNDS_DIR, "random", "door_close.ogg")
         if os.path.exists(knockPath):
             try:
-                self.knockSound = pygame.mixer.Sound(knockPath)
+                self.knockSound = load_sound(knockPath)
                 self.knockSound.set_volume(0.05)  # Very quiet
                 print(f"    Loaded distant knock sound")
             except pygame.error:
@@ -7065,7 +7066,7 @@ class AssetManager:
         breathPath = os.path.join(SOUNDS_DIR, "random", "breath.ogg")
         if os.path.exists(breathPath):
             try:
-                self.breathSound = pygame.mixer.Sound(breathPath)
+                self.breathSound = load_sound(breathPath)
                 self.breathSound.set_volume(0.03)  # Very quiet
                 print(f"    Loaded breathing sound")
             except pygame.error:
@@ -7079,7 +7080,7 @@ class AssetManager:
                 moanPath = os.path.join(ghastDir, f"moan{i}.ogg")
                 if os.path.exists(moanPath):
                     try:
-                        snd = pygame.mixer.Sound(moanPath)
+                        snd = load_sound(moanPath)
                         snd.set_volume(0.04)  # Very quiet distant ghast
                         self.ghastMoans.append(snd)
                     except pygame.error:
@@ -7095,7 +7096,7 @@ class AssetManager:
                 if f.startswith(("idle", "stare")) and f.endswith('.ogg'):
                     soundPath = os.path.join(endermanDir, f)
                     try:
-                        snd = pygame.mixer.Sound(soundPath)
+                        snd = load_sound(soundPath)
                         snd.set_volume(0.03)  # Very quiet
                         self.endermanSounds.append(snd)
                     except pygame.error:
@@ -7818,12 +7819,21 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def __init__(self):
         """Initialize the application"""
+        global WINDOW_WIDTH, WINDOW_HEIGHT
         import os
         # Set app icon BEFORE creating display (important for Windows taskbar)
         self._setAppIconEarly()
         
         # Set up display
+        if pygame.display.get_driver()=='windows':
+            # The final editor and the full painting share one floating geometry.
+            # At 640 artwork pixels high the complete 1920:890 painting fits.
+            desktop=pygame.display.get_desktop_sizes()[0]
+            width,height=SplashScreen.fitted_window_size(min(1381,desktop[0]-80),min(640,desktop[1]-100),ICONS_DIR)
+            WINDOW_WIDTH,WINDOW_HEIGHT=max(960,width),max(640,height+28)
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
+        from ui.window_chrome import WindowChrome
+        self.windowChrome=WindowChrome()
         pygame.display.set_caption(f"{TITLE} [{APP_VERSION}]")
         try:
             from pygame._sdl2.video import Window
@@ -7832,6 +7842,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         except (ImportError, AttributeError, pygame.error):
             pass
         self.clock = pygame.time.Clock()
+        self._launchSplash=SplashScreen(self.screen,self.clock,TEXTURES_DIR,FONTS_DIR,ICONS_DIR)
+        self._launchSplash.chrome=self.windowChrome
+        self._launchSplash.present()
         self.running = True
         self.minimumWindowSize = (960, 640)
         self.windowedSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -8409,6 +8422,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.assetManager.audioRouter,
             self.assetManager,
         )
+        self.worldMapView.title_inset = 28 if self.windowChrome.enabled else 0
         
         # ============ BLOCK PREVIEW GHOST ============
         self.showBlockPreview = True  # Show semi-transparent preview before placement
@@ -8892,15 +8906,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from time import perf_counter
         self._startupMetrics = {'run_started': perf_counter()}
         startupWindowSize = self.screen.get_size()
-        self._compactStartupSplash = True
+        self._compactStartupSplash = False
         try:
-            self.screen = pygame.display.set_mode(
-                SplashScreen.fitted_window_size(*startupWindowSize, ICONS_DIR)
-            )
-            startupSplash = SplashScreen(
-                self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR
-            )
+            startupSplash = self._launchSplash
             startupSplash.reduced_motion = self.workshop.visibility.reduced_motion
+            startupSplash.chrome = self.windowChrome
             from ui import feedback
             feedback.preload(self.assetManager, ('boot',))
             startupSplash.present()
@@ -8910,8 +8920,18 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         except Exception as error:
             print(f"Initial splash error: {error}")
         self._queueTutorialPreloads()
+        # Decode the next music bed early on its own channel. Its fade used to
+        # remain at zero until the editor loop, leaving a gap after the boot cue.
+        startup_audio = ThreadPoolExecutor(max_workers=1, thread_name_prefix='startup-music')
+        music_future = startup_audio.submit(self._playMenuMusic)
+        pulse_time = perf_counter()
         # Load assets
         def startup_pulse():
+            nonlocal pulse_time
+            now=perf_counter();dt=(now-pulse_time)*1000;pulse_time=now
+            boot_age=now-self._startupMetrics.get('boot_requested',now)
+            if music_future.done() and boot_age>=3.2:
+                self.musicController.update(min(dt,100))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:self.running = False
             if startupSplash and pygame.time.get_ticks()-getattr(self, '_startupLastPresent', 0) >= 16:
@@ -8919,6 +8939,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self._startupLastPresent = pygame.time.get_ticks()
         self.assetManager.startupPulse = startup_pulse
         loaded = self.assetManager.loadAllAssets()
+        while not music_future.done():
+            startup_pulse();self.clock.tick(60)
+        try:music_future.result()
+        finally:startup_audio.shutdown(wait=True)
         self._startupMetrics['assets_ready'] = perf_counter()
         if not self.running:
             self._shutdown()
@@ -8929,7 +8953,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
         # Decode audio while the display thread keeps presenting the painting.
         with ThreadPoolExecutor(max_workers=1, thread_name_prefix='startup-audio') as startup_audio:
-            for task in (self._playMenuMusic, self._preloadTutorialMusic):
+            for task in (self._preloadTutorialMusic,):
                 future = startup_audio.submit(task)
                 while not future.done():
                     startup_pulse()
@@ -8966,16 +8990,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if showStartupTutorial:
             self._beginTutorial(advanced=False)
 
-        # Show splash screen (also starts music during fade)
-        if not self._showSplashScreen(startupSplash):
-            self._shutdown()
-            return  # User quit during splash
-        self._compactStartupSplash = False
-        self.screen = pygame.display.set_mode(startupWindowSize, pygame.RESIZABLE)
-        self._applyWindowSize(*startupWindowSize, recreate=False)
-        handoff = SplashScreen(self.screen, self.clock, TEXTURES_DIR, FONTS_DIR, ICONS_DIR)
-        self._startupOverlay = handoff.background_tile.copy()
-        self._startupOverlay.blit(handoff.title, handoff._title_rect())
+        # Reuse the last fully composed loading frame, including the blocks.
+        # No display recreation, second artwork fit, or partial editor flash.
+        if startupSplash:startupSplash.present()
+        self._startupOverlay = self.screen.copy() if startupSplash else None
         self._startupRevealStarted = None
         from ui.opening_scene import skip_on_launch
         if not skip_on_launch():
@@ -9048,7 +9066,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         window_hidden=False
         if fast_exit and pygame.display.get_driver()!='dummy':
             from pygame._sdl2 import Window
-            Window.from_display_module().hide()
+            self._displayWindow=Window.from_display_module()
+            self._displayWindow.hide()
             window_hidden=True
         closing = None if fast_exit else GoodbyeScreen(self.screen,self.workshop.visibility.reduced_motion)
         from ui import feedback
@@ -9101,7 +9120,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 # then drain it before quitting SDL, never flash old artwork.
                 if pygame.display.get_driver()!='dummy':
                     from pygame._sdl2 import Window
-                    Window.from_display_module().hide()
+                    self._displayWindow=Window.from_display_module()
+                    self._displayWindow.hide()
                 window_hidden=True
             if closing and not fast_exit:
                 closing.render(min(elapsed,closing.duration_ms))
@@ -9246,6 +9266,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self._displayWindow=Window.from_display_module()
                 self._displayWindow.position=(0,0)
                 self._fullscreenBorderless=True
+        if getattr(self,'windowChrome',None):self.windowChrome.sync(self.fullscreen)
         WINDOW_WIDTH, WINDOW_HEIGHT = width, height
         new_canvas_width = self._worldViewportRight()
         native_scale = min(
@@ -9290,11 +9311,20 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.fullscreen:
             self.fullscreen = False
             self._applyWindowSize(*self.windowedSize,zoom_scale=1/getattr(self,'_fullscreenScale',1))
+            if hasattr(self,'_windowedPosition'):
+                from pygame._sdl2 import Window
+                # Pygame stores this wrapper as a borrowed SDL user-data pointer.
+                # Keep it alive before the next window event is converted.
+                self._displayWindow=Window.from_display_module()
+                self._displayWindow.position=self._windowedPosition
         else:
             self.windowedSize = (WINDOW_WIDTH, WINDOW_HEIGHT)
+            from pygame._sdl2 import Window
+            self._displayWindow=window=Window.from_display_module()
+            self._windowedPosition=window.position
             # Info.current_w/h describe the current *window* after set_mode.
             # They are not necessarily a supported exclusive display mode.
-            desktop = pygame.display.get_desktop_sizes()[0]
+            desktop = pygame.display.get_desktop_sizes()[window.display_index]
             previous_zoom=self.zoomLevel
             self.fullscreen = True
             self._applyWindowSize(*desktop)
@@ -11022,6 +11052,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _dispatchEvents(self) -> None:
         """Handle pygame events"""
         for event in pygame.event.get():
+            if getattr(self,'windowChrome',None) and self.windowChrome.handle(event,self):continue
             if event.type == pygame.QUIT:
                 if self.openingScene is not None:self._closeOpeningScene()
                 self._requestExit()
@@ -11145,6 +11176,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if self.settingsMenuOpen:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE or (event.key == pygame.K_COMMA and pygame.key.get_mods() & pygame.KMOD_CTRL):self.settingsMenuOpen = False
+                    else:
+                        from ui.settings_inspector import key
+                        key(self,event)
                     continue
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:self._handleSettingsClick(*event.pos)
@@ -17631,6 +17665,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._openingDisplay=(self.screen.get_size(),self.fullscreen,self._displayWindow.position)
         self.openingScene = OpeningScene(self.screen.get_size(),self.assetManager,skip=skip_on_launch(),
             effects_volume=0 if self.effectsMuted else self.effectsVolume)
+        self.openingScene.title_inset=28 if self.windowChrome.enabled else 0
         self._setOpeningDisplay('--opening-windowed' in sys.argv or pygame.display.get_driver()=='dummy')
         self.settingsMenuOpen = False
         self.panning = False
@@ -17664,6 +17699,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.screen=pygame.display.get_surface()
             scene.gpu=PresentationRenderer()
             scene.resize(pygame.display.get_window_size())
+            self.windowChrome.sync(not windowed)
             pygame.event.clear((pygame.VIDEORESIZE,pygame.WINDOWRESIZED,pygame.WINDOWSIZECHANGED))
         except (pygame.error,OSError,AttributeError) as error:
             # Keep the world accessible on machines without a compatibility context.
@@ -17672,6 +17708,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._displayWindow=Window.from_display_module()
             self._openingWindowed=True
             scene.resize(self.screen.get_size())
+            self.windowChrome.sync(False)
 
     def _closeOpeningScene(self):
         from pygame._sdl2 import Window
@@ -17687,30 +17724,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             pygame.event.pump()
             self.screen=pygame.display.get_surface()
             pygame.event.clear((pygame.VIDEORESIZE,pygame.WINDOWRESIZED,pygame.WINDOWSIZECHANGED))
+            self.windowChrome.sync(fullscreen)
         pygame.mixer.unpause()
         self.musicController.unpause()
 
     def _settingsLayout(self):
         """One native layout for draw, hit testing and text-scale reflow."""
-        from ui.fonts import TEXT_SCALE
-        rect=self._settingsMenuRect();x,y,w,h=rect
-        line=self.smallFont.get_linesize();gap=max(54,line+30)
-        sliders=[(name,pygame.Rect(x+24,y+66+i*gap,w-48,gap-10))
-                 for i,name in enumerate(('music','ambient','effects'))]
-        top=sliders[-1][1].bottom+26;row=max(34,line+12);cw=(w-56)//2
-        fields=(('Auto-save (5 min)','autoSaveEnabled'),('Smooth camera','smoothCameraEnabled'),
-                ('Coordinates','showCoordinates'),('Grid','showGrid'),
-                ('Block outline','showBlockOutline'),('Block tooltip','showBlockTooltip'),
-                ('World-centered rotation','worldCenteredRotation'),('Play Introduction','opening'),
-                ('Autoplay introduction','skip'),('VSync unavailable','vsync_unavailable'))
-        if self.workshop.active(self):fields=tuple(row for row in fields if row[1]!='showGrid')
-        controls=[(label,attr,pygame.Rect(x+24+(i%2)*(cw+8),top+(i//2)*(row+7),cw,row))
-                  for i,(label,attr) in enumerate(fields)]
-        return rect,sliders,controls
+        from ui.settings_inspector import layout
+        return layout(self)
 
     def _handleSettingsClick(self, mouseX, mouseY):
         rect,sliders,controls=self._settingsLayout()
-        close=pygame.Rect(rect.right-112,rect.y+18,88,max(32,self.smallFont.get_height()+6))
+        from ui.settings_inspector import close_rect
+        close=close_rect(self,rect)
         if close.collidepoint(mouseX,mouseY) or not rect.collidepoint(mouseX,mouseY):
             self.settingsMenuOpen=False;return
         for kind,control in self.volumeControlRects.items():
@@ -17729,14 +17755,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 try:save_skip(not skip_on_launch())
                 except OSError as error:self.workshop.error=f'Opening preference was not saved: {error}'
             else:setattr(self,attr,not getattr(self,attr))
-            self.assetManager.playClickSound();return
+            from ui.feedback import play
+            play(self.assetManager,'button' if attr=='opening' else 'toggle')
+            self._saveAppConfig();return
 
     def _settingsMenuRect(self):
-        from ui.fonts import TEXT_SCALE
-        width=min(WINDOW_WIDTH-48,round(600*TEXT_SCALE))
-        line=self.smallFont.get_linesize()
-        height=min(WINDOW_HEIGHT-32,66+3*max(54,line+30)+20+5*(max(34,line+12)+7)+42)
-        return pygame.Rect((WINDOW_WIDTH-width)//2,(WINDOW_HEIGHT-height)//2,width,height)
+        return self._settingsLayout()[0]
 
     def _handleFillToolClick(self, mouseX: int, mouseY: int):
         """Handle clicks when fill tool is active"""
@@ -18140,28 +18164,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _renderSettingsMenu(self):
         if not self.settingsMenuOpen:return
-        from ui.chrome import panel,button,TEXT,MUTED
-        rect,sliders,controls=self._settingsLayout();mouse=pygame.mouse.get_pos()
-        shade=pygame.Surface(self.screen.get_size(),pygame.SRCALPHA);shade.fill((0,0,0,150));self.screen.blit(shade,(0,0))
-        panel(self.screen,rect)
-        self.screen.blit(self.sectionFont.render('Settings',True,TEXT),(rect.x+24,rect.y+18))
-        close=pygame.Rect(rect.right-112,rect.y+18,88,max(32,self.smallFont.get_height()+6))
-        button(self.screen,close,'Close',self.smallFont,close.collidepoint(mouse),quiet=True)
-        self.volumeControlRects.clear()
-        for kind,area in sliders:
-            self._renderSettingsVolumeSlider(kind.title()+' Volume',getattr(self,kind+'Volume'),area.x,area.y,area.width)
-        from ui.opening_scene import skip_on_launch
-        for label,attr,area in controls:
-            if attr=='vsync_unavailable':
-                button(self.screen,area,label,self.smallFont,enabled=False)
-                from ui.chrome import wrapped
-                note=pygame.Rect(area.right+8,area.y,area.width,area.height)
-                if note.right<=rect.right-20:
-                    wrapped(self.screen,'Not supported by this display mode',self.smallFont,note,MUTED)
-                continue
-            value=not skip_on_launch() if attr=='skip' else getattr(self,attr,False)
-            if attr!='opening':label+=': '+('On' if value else 'Off')
-            button(self.screen,area,label,self.smallFont,area.collidepoint(mouse),value)
+        from ui.settings_inspector import render
+        render(self)
 
     def _drawRotationArrow(self, rect: pygame.Rect, clockwise: bool, centered: bool = False):
         """Draw a clean curved rotation arrow icon on a button"""
@@ -18240,34 +18244,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             pygame.draw.polygon(self.screen, arrowColor, [tip, backLeft, backRight])
     
     def _renderSettingsVolumeSlider(self, label: str, value: float, x: int, y: int, width: int):
-        """Render a volume slider for settings menu"""
-        labelSurf = self.smallFont.render(label, True, (255, 255, 255))
-        self.screen.blit(labelSurf, (x, y))
-        volumeType = label.split()[0].lower()
-        muted = getattr(self,volumeType+'Muted',False)
-        mute = pygame.Rect(x+width-30,y,30,26)
-        self.assetManager.drawButton(self.screen,mute,'',self.smallFont,mute.collidepoint(pygame.mouse.get_pos()),muted)
-        from ui.chrome import speaker
-        speaker(self.screen,mute,muted)
-        valueText = self.smallFont.render('Muted' if muted else f"{int(value * 100)}%", True, (220, 220, 220))
-        self.screen.blit(valueText, valueText.get_rect(topright=(mute.left-10, y)))
-        width -= 42
+        from ui.settings_inspector import slider
+        slider(self,label,value,x,y,width)
 
-        track = pygame.Rect(x, y + max(22,self.smallFont.get_height()+5), width, 8)
-        self.volumeControlRects[volumeType] = {"track":track,"mute":mute}
-        pygame.draw.rect(self.screen, (12, 12, 12), track)
-        pygame.draw.rect(self.screen, (70, 70, 70), track.inflate(-4, -4))
-        fillWidth = max(0, int((width - 4) * value))
-        if fillWidth:
-            pygame.draw.rect(
-                self.screen, (208, 194, 153),
-                (track.x + 2, track.y + 2, fillWidth, track.height - 4),
-            )
-        handleX = track.x + 5 + round((track.width-10) * value)
-        handle = pygame.Rect(handleX - 5, track.y - 3, 10, track.height + 6)
-        pygame.draw.rect(self.screen, (210, 210, 210), handle)
-        pygame.draw.rect(self.screen, (45, 45, 45), handle, 2)
-    
     def _renderToggle(self, label: str, value: bool, x: int, y: int, width: int):
         """Render a toggle option"""
         # Label
@@ -19938,6 +19917,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             else:
                 overlay.set_alpha(round(255*(1-age/220)))
                 self.screen.blit(overlay,(0,0))
+        if getattr(self,'windowChrome',None):
+            gpu=getattr(self.openingScene,'gpu',None)
+            if gpu:
+                # SDL's OpenGL display Surface can retain its previous size
+                # after a mode change. Rasterize against the actual drawable.
+                viewport=pygame.display.get_window_size()
+                title=pygame.Surface((viewport[0],28),pygame.SRCALPHA)
+                self.windowChrome.draw(title)
+                gpu.overlay_region(title,(0,0,title.get_width(),28),viewport)
+            else:self.windowChrome.draw(self.screen)
         pygame.display.flip()
 
     def _render(self) -> None:
@@ -22615,6 +22604,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-final-finishing' in sys.argv:
+        from tools.verify_final_finishing import run
+        run(sys.argv[sys.argv.index('--verify-final-finishing')+1],sys.modules[__name__])
+        return
     if '--verify-acceptance-edges' in sys.argv:
         from tools.verify_acceptance_edges import run
         run(sys.argv[sys.argv.index('--verify-acceptance-edges')+1],sys.modules[__name__])

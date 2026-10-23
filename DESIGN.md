@@ -1,6 +1,6 @@
 # Bloc Fantôme design specification
 
-Status: owner-approved direction, 2.9.9 Pass B. The Cathedral redesign is reserved
+Status: final 3.0 finishing candidate on development, awaiting owner acceptance. The Cathedral redesign is reserved
 for 4.0. This file separates preservation requirements from future design tokens.
 The current owner's request supersedes historical handoffs that still block Pass B.
 
@@ -19,8 +19,9 @@ Modern satin panels generally use alpha 232–246/255 (225 for lighter HUD overl
 continuous antialiased edge. Text and controls remain opaque. These are implementation facts, not
 measurements from the Cathedral concept.
 
-Preserve native Segoe UI selection through the shared font loader, the licensed
-Zekton fallback and final-size rasterization. Preserve original pixel-art blocks,
+Use bundled IBM Plex Sans Regular for functional text and selectively Light for headings
+through the shared font loader. Preserve branding, licensed Zekton/system fallbacks
+and final-size rasterization. Preserve original pixel-art blocks,
 thumbnail previews, generated navigation artwork, responsive Build category rail,
 Library home/gallery transformation and explicit Open/Place, compact Menu and
 World controls, draggable tutorial, hotkeys, and four-second HUD inactivity fade.
@@ -83,7 +84,7 @@ full-bleed nighttime Goodbye screen for 3 seconds, with a 350 ms audio fade.
 The original root `night.png` (PNG, 2560×1419) is preserved byte-for-byte in
 `Code/ui/art/goodbye-night.png`. Focal-point cover protects the moon and two figures.
 Eight quiet farewell messages accompany restrained text arrival and the same
-three boot blocks, jumping right, middle, left with softer, slower motion;
+three boot blocks, jumping right, middle, left with softer motion settling before the fade;
 Reduced Motion is static. Any key, click or window close skips it immediately;
 already-running SDL jobs still finish safely before SDL teardown. The boot overlay
 cannot enter exit confirmation, and no editor frame renders after confirmed Exit.
@@ -229,3 +230,34 @@ a game screenshot as if the documentation strip or concept scenery were runtime 
 See [review checklist](docs/design/REVIEW_CHECKLIST.md),
 [references](docs/design/REFERENCES.md), [asset register](docs/design/ASSETS.md),
 and [audio specification](AUDIO_DESIGN.md).
+
+## Final 3.0 finishing contracts
+
+The accepted drawer organization and navy identity remain intact. A single floating
+window fits the complete swamp painting and remains the editor window. Its final
+loading frame fades directly into the complete editor. The unchanged boot recording
+hands off to the menu bed; compressed OGG/MP3 decoding uses libsndfile outside
+SDL_mixer's playback lock. WAV cues, channel ownership and the 1024-sample buffer
+remain unchanged. Three cubes are 18% larger at unchanged centers, with ballistic
+descent, finite contact compression and damped recoil. Reduced Motion is static.
+
+Windows uses a 28px navy title with SDL native hit testing for drag/edge resize.
+Minimize, desktop fullscreen/exact floating restore and Close share real input
+routes. F10 focuses title controls; arrows/Tab, Enter/Space and Escape operate them.
+Unsupported drivers or BLOC_NATIVE_FRAME=1 retain the native frame. Map controls
+clear the title region; the opening GPU overlay uses the same strip.
+
+World toggles use translucent colored material, white original masks and individual
+rain, snow, celestial, cloud, illumination, sky, horror and current motion. Their
+short transitions preserve truthful On/Off states; static actions do not loop.
+The End action uses a simpler original island/pillar silhouette. Settings is a
+measured floating inspector with three inline audio sliders/mutes, preference
+switches, a separate Play Introduction action and quiet unavailable VSync text.
+Autoplay stays off by default. Keyboard and mouse use the same control rectangles.
+
+Selection and preference changes have separate non-destructive piano derivatives;
+the accepted owner recordings retain their hashes. The Pass C renderer is retained:
+the bounded follow-up experiment did not earn inclusion. Review evidence and the
+remaining physical/artistic checks are in docs/reviews/final-3/REVIEW.md.
+Stage A preserves root and installed executables. Stage B promotion, root build,
+installation and Start Menu delivery require explicit owner acceptance.

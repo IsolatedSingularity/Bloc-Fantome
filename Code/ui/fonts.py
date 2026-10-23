@@ -22,9 +22,8 @@ def set_text_scale(scale):
 
 
 def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None, italic=False, experiment=True):
-    # Review-only choice. No saved preference or global default change.
-    # Large labels may use Light; small functional text stays Regular/Text.
-    experiment=os.environ.get('BLOC_FONT_EXPERIMENT','') if experiment else ''
+    # Production Plex; explicit Segoe remains useful for comparison evidence.
+    experiment=os.environ.get('BLOC_FONT_EXPERIMENT','plex-light') if experiment else ''
     if experiment in ('plex','plex-light') and not italic:
         weight='Text' if bold else 'Regular'
         path=Path(__file__).with_name('fonts')/'IBMPlexSans'/f'IBMPlexSans-{weight}.ttf'
@@ -113,9 +112,9 @@ def load_ui_font(
     italic: bool = False,
     experiment: bool = True,
 ) -> UIFont:
-    """Resolve OS Segoe UI, with the existing licensed local font as fallback."""
+    """Resolve bundled Plex at final size, with OS and licensed fallbacks."""
     path = font_source(bold, fonts_dir, fallback, italic, experiment)
-    if experiment and os.environ.get('BLOC_FONT_EXPERIMENT')=='plex-light' and size>=20 and not italic:
+    if experiment and os.environ.get('BLOC_FONT_EXPERIMENT','plex-light')=='plex-light' and size>=20 and not italic:
         light=Path(__file__).with_name('fonts')/'IBMPlexSans'/'IBMPlexSans-Light.ttf'
         if light.is_file():path=str(light)
     try:

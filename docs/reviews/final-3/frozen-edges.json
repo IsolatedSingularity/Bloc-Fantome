@@ -1,0 +1,68 @@
+{
+  "physical_input": false,
+  "audio_muted": true,
+  "cases": [
+    {
+      "case": "escape",
+      "driver": "windows",
+      "elapsed_ms": 58.50149993784726,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "letter",
+      "driver": "windows",
+      "elapsed_ms": 60.8024001121521,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "mouse",
+      "driver": "windows",
+      "elapsed_ms": 62.31190008111298,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "window-close",
+      "driver": "windows",
+      "elapsed_ms": 62.86450009793043,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "worker-skip",
+      "driver": "windows",
+      "elapsed_ms": 368.41210001148283,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": [
+        "SDL alive until worker finished"
+      ]
+    },
+    {
+      "case": "reduced-motion",
+      "driver": "windows",
+      "elapsed_ms": 3130.9214998036623,
+      "frames": 183,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    }
+  ]
+}

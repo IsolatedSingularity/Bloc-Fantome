@@ -73,13 +73,14 @@ def test_map_transition_resize_and_reduced_motion(closing):
     transition.reveal();assert transition.finished
 
 
-def test_typography_default_and_opt_in(monkeypatch):
+def test_typography_production_default_and_branding_exception(monkeypatch):
     monkeypatch.delenv('BLOC_FONT_EXPERIMENT',raising=False)
     baseline=font_source()
+    assert baseline.endswith('IBMPlexSans-Regular.ttf')
     monkeypatch.setenv('BLOC_FONT_EXPERIMENT','plex-light')
     assert load_ui_font(14).path.endswith('IBMPlexSans-Regular.ttf')
     assert load_ui_font(25,bold=True).path.endswith('IBMPlexSans-Light.ttf')
-    assert load_ui_font(25,experiment=False).path==baseline
+    assert load_ui_font(25,experiment=False).path!=baseline
 
 
 def test_full_startup_sprite_pixels_match_accepted(app):

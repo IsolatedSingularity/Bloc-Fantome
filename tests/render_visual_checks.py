@@ -1309,6 +1309,12 @@ def render_workshop(output_dir: Path):
 
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
+    if '--final-finishing' in sys.argv:
+        import subprocess
+        env=dict(os.environ,SDL_VIDEODRIVER='windows')
+        env.pop('SDL_AUDIODRIVER',None)
+        raise SystemExit(subprocess.call([sys.executable,str(ROOT/'Code/blocFantome.py'),
+                                         '--verify-final-finishing',str(destination)],env=env))
     if '--pass-c' in sys.argv:
         from render_pass_c import render as render_pass_c
         render_pass_c(destination)

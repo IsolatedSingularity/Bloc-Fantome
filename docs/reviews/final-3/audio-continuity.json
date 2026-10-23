@@ -1,0 +1,128 @@
+[
+  {
+    "name": "baseline-loopback-clean",
+    "onset_s": 0.72,
+    "correlation": 0.3693095603839104,
+    "unexpected_silence_runs_s": [
+      [
+        0.0,
+        0.14
+      ],
+      [
+        1.34,
+        2.36
+      ],
+      [
+        2.68,
+        2.74
+      ]
+    ],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "decode-trace-audio",
+    "onset_s": 1.3158333333333334,
+    "correlation": 0.33146530860577134,
+    "unexpected_silence_runs_s": [
+      [
+        1.06,
+        2.06
+      ],
+      [
+        2.38,
+        2.56
+      ],
+      [
+        2.64,
+        2.74
+      ]
+    ],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "decoded-loopback",
+    "onset_s": 1.031,
+    "correlation": 0.6685477254294904,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-source-0",
+    "onset_s": 1.0228333333333333,
+    "correlation": 0.6511550470937083,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-source-1",
+    "onset_s": 0.9578333333333333,
+    "correlation": 0.6511430275381797,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-source-2",
+    "onset_s": 1.0078333333333334,
+    "correlation": 0.6511597038796706,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-frozen-0",
+    "onset_s": 3.6828333333333334,
+    "correlation": 0.6512139870325323,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-frozen-1",
+    "onset_s": 3.8678333333333335,
+    "correlation": 0.6512088597261961,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "repeat-frozen-2",
+    "onset_s": 3.7345,
+    "correlation": 0.6357617189538258,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "final-frozen-output",
+    "onset_s": 3.9328333333333334,
+    "correlation": 0.6512489605559755,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  }
+]

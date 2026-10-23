@@ -5,6 +5,22 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - Unreleased candidate
+
+### Changed
+- Make IBM Plex Sans the production default, with Regular labels and Light headings.
+- Keep one painting-fitted startup/editor window and fade directly into the editor.
+- Decode compressed sounds outside SDL's playback lock and hand boot audio into the existing menu bed.
+- Add native borderless dragging/resizing, quiet title controls and exact floating geometry restore.
+- Give the enlarged lifecycle cubes finite physical recoil; refine translucent World tiles with distinct motion and a simpler End icon.
+- Replace Settings with a compact measured inspector and keyboard-operable sliders, mutes and switches.
+- Add subtle selection/toggle piano derivatives while preserving accepted recordings.
+
+### Verification and release status
+- The final finishing review documents source/frozen tests, Windows output captures and remaining owner checks.
+- Keep Pass C rendering improvements; reject the follow-up optimization that did not improve measured latency.
+- Development candidate only. Main promotion, root executable and installation await owner acceptance.
+
 ## [2.9.9] - 2026-10-21
 
 ### Changed

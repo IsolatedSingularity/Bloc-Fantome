@@ -164,7 +164,7 @@ class OpeningScene:
         self.renderer.size=self.size
         self.overlay=pygame.Surface(size,pygame.SRCALPHA)
         self.controls=pygame.Surface(size,pygame.SRCALPHA)
-        self.close_rect=pygame.Rect(w-24-max(112,self.small_font.size('Skip intro  Esc')[0]+24),20,
+        self.close_rect=pygame.Rect(w-24-max(112,self.small_font.size('Skip intro  Esc')[0]+24),20+getattr(self,'title_inset',0),
                                    max(112,self.small_font.size('Skip intro  Esc')[0]+24),36)
         self.skip_surface=pygame.Surface(self.close_rect.size,pygame.SRCALPHA)
         self.turn_rects=(pygame.Rect(w//2-184,h-72,42,40),pygame.Rect(w//2+142,h-72,42,40))

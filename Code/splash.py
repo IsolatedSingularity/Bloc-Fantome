@@ -62,6 +62,7 @@ class SplashScreen:
         self.background_tile = self._create_background_tile()
         self.first_presented_at = None
         self.reduced_motion = False
+        self.chrome = None
 
     def _load_title_font(self) -> pygame.font.Font:
         """Rasterize the understated title at its final display size."""
@@ -79,7 +80,8 @@ class SplashScreen:
         path = os.path.join(self.icons_dir, 'Splash_Swamp.jpg')
         if os.path.isfile(path):
             artwork = pygame.image.load(path).convert()
-            available = pygame.Rect(0, 0, self.window_width, self.window_height)
+            available = pygame.Rect(0, 28 if pygame.display.get_driver()=='windows' else 0,
+                                    self.window_width, self.window_height-(28 if pygame.display.get_driver()=='windows' else 0))
             scale = min(available.width / artwork.get_width(), available.height / artwork.get_height())
             size = (round(artwork.get_width() * scale), round(artwork.get_height() * scale))
             artwork = pygame.transform.smoothscale(artwork, size)
@@ -109,6 +111,7 @@ class SplashScreen:
         from ui.lifecycle import assembly
         age=(pygame.time.get_ticks()-(self.first_presented_at or pygame.time.get_ticks()))/1000
         assembly(self.screen,(self.window_width//2,title_rect.top-25),age,self.reduced_motion)
+        if self.chrome:self.chrome.draw(self.screen)
         pygame.display.flip()
         if self.first_presented_at is None:
             self.first_presented_at = pygame.time.get_ticks()

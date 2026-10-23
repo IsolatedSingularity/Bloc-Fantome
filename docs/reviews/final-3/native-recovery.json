@@ -1,0 +1,38 @@
+{
+  "intermediate_failure": {
+    "exit": 3221225477,
+    "phase": "after map restore, before Goodbye",
+    "evidence": ".qa/final-3/native-frozen-final-build"
+  },
+  "repair": "Retain borrowed SDL Window wrappers in fullscreen, fast shutdown and probe",
+  "repeated_checks": [
+    {
+      "case": "source",
+      "exit": 0,
+      "restored_geometry": true,
+      "single_startup_mode": true,
+      "os_dpi": 120
+    },
+    {
+      "case": "frozen-0",
+      "exit": 0,
+      "restored_geometry": true,
+      "single_startup_mode": true,
+      "os_dpi": 120
+    },
+    {
+      "case": "frozen-1",
+      "exit": 0,
+      "restored_geometry": true,
+      "single_startup_mode": true,
+      "os_dpi": 120
+    },
+    {
+      "case": "frozen-2",
+      "exit": 0,
+      "restored_geometry": true,
+      "single_startup_mode": true,
+      "os_dpi": 120
+    }
+  ]
+}

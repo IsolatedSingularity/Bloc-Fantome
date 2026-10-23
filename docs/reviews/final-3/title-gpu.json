@@ -1,0 +1,8 @@
+{
+  "driver": "windows",
+  "gpu_title_pixels": true,
+  "fullscreen_floating_fullscreen": true,
+  "close_confirmation": true,
+  "geometry_world_restore": true,
+  "physical_input": false
+}

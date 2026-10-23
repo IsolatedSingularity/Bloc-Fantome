@@ -218,7 +218,8 @@ class Workshop:
         self.hits=[];self.panels=[];self.hotbar_rects=[]
         operation=self.operation(app)
         if getattr(app,'_pendingTourLoad',None):operation='Preparing lesson…'
-        self.operation_rect=pygame.Rect(24,78,min(w-48,800),0)
+        title_inset=20 if getattr(getattr(app,'windowChrome',None),'enabled',False) else 0
+        self.operation_rect=pygame.Rect(24,78+title_inset,min(w-48,800),0)
         if operation:
             lines=1;line=''
             for word in (operation+' · Esc cancels').split():
@@ -245,10 +246,10 @@ class Workshop:
                     widths=[max(86,self.small.size(label)[0]+24) for label,_ in items]
                     group_width=sum(widths)+4*(len(items)-1)+12
                     x=w-24-group_width if right else 24
-                    self._panel(navigation,(x,20,group_width,46),225)
+                    self._panel(navigation,(x,20+title_inset,group_width,46),225)
                     x+=6
                     for (label,action),width in zip(items,widths):
-                        self._button(navigation,(x,26,width,34),label,action,self.page==label.lower(),quiet=True)
+                        self._button(navigation,(x,26+title_inset,width,34),label,action,self.page==label.lower(),quiet=True)
                         x+=width+4
                 navigation.set_alpha(round(alpha*255));screen.blit(navigation,(0,0))
             for rect,action in controls:
@@ -485,6 +486,7 @@ class Workshop:
         if action=='category_next':self.category_page+=1;return
         if action=='categories':self.category_menu=not self.category_menu;self.scroll=0;app.searchActive=False;return
         if action.startswith('category:'):
+            if self.category!=action[9:]:self.cue(app,'select')
             self.category=action[9:];self.category_menu=False;self.scroll=0;self.scroller.reset();app.searchActive=False;return
         if action=='favorite':app._toggleFavorite(app.selectedBlock);return
         if action=='confirm:cancel':self.confirm=None;self.focus=None;return
@@ -528,6 +530,7 @@ class Workshop:
                 modes=('all','transparent','hidden');app.sceneTerrainMode=modes[(modes.index(app.sceneTerrainMode)+1)%3];app._invalidateViewCaches()
             if route not in ('preference','text_scale') and action not in ('rain','snow','sun','clouds','lighting','sky','sky_previous','sky_next','flow','horror_rain','overworld','nether','end'):
                 self.close_drawer(app)
+            if field or route=='preference':self.cue(app,'toggle')
         except (OSError,ValueError,pygame.error) as error:
             self.error=f'{label} failed: {error}'
             self.cue(app,'error')

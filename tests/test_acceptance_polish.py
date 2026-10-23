@@ -14,14 +14,14 @@ from ui.motion import Opacity
 
 def test_jump_is_ordered_settled_and_seamless():
     for index in range(3):
-        t=index*.9+.32
-        assert jump_height(t,index)==13
+        t=index*1.02+.37
+        assert jump_height(t,index)==15
         assert all(jump_height(t,j)==0 for j in range(3) if j!=index)
-        assert jump_height(index*.9+.8,index)==0
-    for t in (0,2.7,5.4):assert all(abs(jump_height(t,i))<1e-9 for i in range(3))
+        assert jump_height(index*1.02+.96,index)==0
+    for t in (0,3.6,7.2):assert all(abs(jump_height(t,i))<1e-9 for i in range(3))
     for i in range(3):
-        for t in (.28,.38,.64,.76):
-            assert abs(jump_height(i*.9+t-1e-6,i)-jump_height(i*.9+t+1e-6,i))<.001
+        for t in (.33,.41,.66,.94):
+            assert abs(jump_height(i*1.02+t-1e-6,i)-jump_height(i*1.02+t+1e-6,i))<.001
 
 
 @pytest.mark.parametrize('size',[(960,640),(1200,800),(1920,1080),(800,960),(2560,1080)])

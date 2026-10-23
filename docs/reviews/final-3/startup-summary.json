@@ -1,0 +1,30 @@
+{
+  "baseline-source": {
+    "median_ms": 5317.3,
+    "range_ms": [
+      5053.4,
+      5869.8
+    ]
+  },
+  "baseline-frozen": {
+    "median_ms": 8481.6,
+    "range_ms": [
+      8472.4,
+      8493.5
+    ]
+  },
+  "source": {
+    "median_ms": 5525.8,
+    "range_ms": [
+      5161.4,
+      5616.1
+    ]
+  },
+  "frozen": {
+    "median_ms": 8962.0,
+    "range_ms": [
+      8923.7,
+      9229.7
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "file": "select-soft.wav",
+    "source": "Assets/Sound Hub/ui/selected/pressButton.wav",
+    "source_sha256": "8616f2bc95d0a6dd851ec1fb3d4381ec7e942db22201f22f10dc5dc5473ad66d",
+    "filters": "atrim=0:0.42,highpass=f=180,lowpass=f=4200,afade=t=in:d=0.012,afade=t=out:st=0.12:d=0.30,aecho=0.8:0.7:24:0.13,volume=0.72",
+    "sha256": "585b1fd4b951382d821b9f01db3fa8283fd4541eafe7f53e7705e98330dc7101"
+  },
+  {
+    "file": "toggle-soft.wav",
+    "source": "Assets/Sound Hub/ui/selected/Extra/Piano_Ui (6).wav",
+    "source_sha256": "baeb619af4e15e9eb7fe375bdc9ee58461deaad5a3516ff736895f5c114bbdf1",
+    "filters": "atrim=0:0.62,highpass=f=150,lowpass=f=5500,afade=t=in:d=0.025,afade=t=out:st=0.18:d=0.44,volume=0.65",
+    "sha256": "8b630175c107747f5169f4d2501c1929d485bc9db2127b5d043dbecd943f02b2"
+  }
+]

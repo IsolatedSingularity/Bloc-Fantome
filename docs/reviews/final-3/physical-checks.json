@@ -1,0 +1,23 @@
+{
+  "source": {
+    "route": "Windows Computer Use mouse input into native SDL window",
+    "os_dpi": 120,
+    "title_drag": "passed",
+    "corner_resize": "passed; minimum height respected",
+    "fullscreen": "passed; 1920x1200 desktop",
+    "exact_restore": "observed logical origin 344,316 and size 1105x534 before and after",
+    "minimize_return": "minimize invoked, window activated and visible afterward",
+    "close_stay": "passed",
+    "world_rain": "clicked tile, On state and rain observed",
+    "goodbye": "observed after confirmed Exit, without editor flash",
+    "keyboard_injection": "inconclusive: F10 and Ctrl+comma produced no observable change"
+  },
+  "packaged": {
+    "physical_input": "not completed",
+    "error": "foreground window did not report a process id",
+    "recovery": "refreshed inventory/handle and desktop launch; attachment still failed",
+    "cleanup": "exact review executable processes stopped; zero remained"
+  },
+  "not_verified": ["physical keyboard", "trackpad", "Windows Snap", "100% and 150% OS DPI", "multiple monitors"],
+  "programmatic_native_checks": ["source-native.json", "frozen-native.json", "title-gpu.json"]
+}

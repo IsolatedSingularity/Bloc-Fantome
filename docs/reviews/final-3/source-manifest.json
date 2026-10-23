@@ -1,0 +1,32 @@
+{
+  "baseline": "c3591022abecb929ff40e24fc6c8beb0739e02d4",
+  "branch": "development",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "modified_files": {
+    "Code/blocFantome.py": "9a7d6ad64081b4de699f4917a46c49be3917d9669e6de2c698fb548c0252fe0c",
+    "Code/build_exe.py": "79221b950134a59c5e79e2468da0870f47e05d788ccae0cad9f9cee8ea76bd89",
+    "Code/engine/audio.py": "151476601f1cfb6a5b613d6243a6513c37aededcdb2ba42100b7af685442b95e",
+    "Code/engine/audio_decode.py": "3086caa6d08be7fadbb68951e9eed412f588fbbde570d237b3c224871ec4b34e",
+    "Code/splash.py": "2cbd0d2db5bff0d55bdb015e66dac9e2de1199d863f969b80880baba27188405",
+    "Code/tools/verify_final_finishing.py": "5187ec1d7ec97a5abca97a005e927075767276e2f943ca6d7caf935711ff130b",
+    "Code/ui/audio/select-soft.wav": "585b1fd4b951382d821b9f01db3fa8283fd4541eafe7f53e7705e98330dc7101",
+    "Code/ui/audio/toggle-soft.wav": "8b630175c107747f5169f4d2501c1929d485bc9db2127b5d043dbecd943f02b2",
+    "Code/ui/feedback.py": "391e92605fc5739caef6caf101fb5d444f5a4bc2e2d10a4df993f045281ab1cb",
+    "Code/ui/fonts.py": "7ccd9f2e02c1f8817fb1d223744a449e2c4270b83206499ec03769f4e3ea1581",
+    "Code/ui/lifecycle.py": "ba8d7906f1005d07e60f3c71752b894e3d386edcd5bc0bd7c1eb90c628db3d52",
+    "Code/ui/opening_scene.py": "69026e527b66e3baaebc4f9c1142db406ce818795298896e7c1a2b86f345fecc",
+    "Code/ui/settings_inspector.py": "14b7a5b5fe94529f7225fbd8567b447045f6a0a242ede9f03500520baa9bdb2c",
+    "Code/ui/window_chrome.py": "330cfbaed15ad12c562eef24b56ace1aaa3dc419dc0f1995850cf7ac8aab2310",
+    "Code/ui/workshop.py": "94bc176083bd3abf17249366e029df81cb437558339ba549984fb22bf34c3e22",
+    "Code/ui/workshop_views.py": "d2d9f4d4b81a30c31c5520d2ece2972468859cb2756b7247b1fa18cf4ec74ae4",
+    "Code/ui/world_map.py": "211410495c41094edcba6ee056fb6a1bedd0eeab77890a3631f5aaac7f47ef5f",
+    "Code/ui/world_material.py": "7fa5dbf654f55e1f875d191e45d4bc8f257d24b6ad0a607e3b58cffd5c87a53f",
+    "requirements.txt": "205c585c5072711ef39b0268fb7ec94fb8e1f4c7d516bfe5eee58a108839772b",
+    "tests/profile_final_finishing.py": "3fa7ce653a9b4a238fc9e69442912cd3660aea4504e659db7d332b1eb1ae2abb",
+    "tests/render_visual_checks.py": "021ca161e7314c61074aecd87503062b99ffbdb9dd4bfa4183996afe9fdf9e9f",
+    "tests/test_acceptance_polish.py": "66bf6011a8586be407d2f31b576d500d7b0d40dd452eb0beabbe30c9daf38877",
+    "tests/test_final_finishing.py": "40859bb032e5b2a67d4a1f87c971cd1e049bcade6c1b44bb29e9e673d587590a",
+    "tests/test_pass_c.py": "847990baa6153fa6d6f8a3fe13b63c1be1da57622f1d04e4ecb63f8ee46f33fd"
+  },
+  "review_executable_sha256": "76fd9256186434f0a9eab2b207f7aca68c558c3bc066b23d9caaaf2da44bd7d5"
+}

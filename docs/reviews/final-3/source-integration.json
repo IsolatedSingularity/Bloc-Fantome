@@ -1,0 +1,19 @@
+{
+  "hidden": true,
+  "physical_input": false,
+  "human_listening": false,
+  "checks": [
+    "boot",
+    "save",
+    "cancel silent",
+    "error",
+    "close",
+    "world_map",
+    "encounter Escape restores editor and releases WGL/audio",
+    "shutdown"
+  ],
+  "map_activation_ms": 1131.7583001218736,
+  "opengl_renderer": "AMD Radeon(TM) 860M Graphics",
+  "gl_error": 0,
+  "shutdown_ms": 3125.585899921134
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "label": "Before: Pass C source",
+    "starts_seconds": 0.5,
+    "duration_seconds": 8.0
+  },
+  {
+    "label": "After: packaged finishing candidate",
+    "starts_seconds": 9.0,
+    "duration_seconds": 8.0
+  }
+]

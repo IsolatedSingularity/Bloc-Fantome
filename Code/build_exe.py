@@ -260,6 +260,9 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
         "--hidden-import=tkinter.messagebox",
         "--hidden-import=tkinter.simpledialog",
         "--hidden-import=engine.anvil",
+        "--copy-metadata=soundfile",
+        "--copy-metadata=cffi",
+        "--copy-metadata=pycparser",
         f"--runtime-hook={TK_RUNTIME_HOOK}",
         # Exclude truly unused modules for smaller exe
         # NOTE: Be careful! Many modules have hidden dependencies

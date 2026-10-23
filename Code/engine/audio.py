@@ -90,7 +90,8 @@ class PreloadedMusicBackend:
             return sound
 
     def _decode(self, path: str) -> Any:
-        decoded = self._mixer.Sound(path)
+        from engine.audio_decode import load_sound
+        decoded = load_sound(path,mixer=self._mixer)
         return self._trim_mp3_padding(path, decoded)
 
     def preload(self, path: str) -> None:

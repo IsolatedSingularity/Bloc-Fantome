@@ -6,29 +6,48 @@ import pygame
 from ui.fonts import load_ui_font
 
 
+def block_pose(seconds, index):
+    """Ballistic lift/contact, followed by a finite damped spring response.
+
+    Height and velocity meet at the apex. Contact transfers downward velocity
+    into compression; the exponential envelope dissipates it before the next
+    block starts. The sequence repeats only after all three have rested.
+    """
+    t = seconds % 3.6 - index * 1.02
+    if not 0 < t < .94:
+        return 0., 1., 0.
+    if t < .33:
+        q=t/.33
+        return 15*(2*q-q*q), 1., -.035*q
+    if t < .41:
+        return 15., 1., -.035
+    if t < .66:
+        q=(t-.41)/.25
+        return 15*(1-q*q), 1., -.035*(1-q)
+    age=t-.66
+    response=math.exp(-18*age)*math.sin(39*age)
+    # Smoothly truncate the imperceptible tail, including its derivative.
+    tail=min(1.,max(0.,(.94-t)/.07));tail=tail*tail*(3-2*tail)
+    return -1.6*response*tail, 1-.18*response*tail, .065*response*tail
+
+
 def jump_height(seconds, index):
-    """Rise, hang, land and settle completely before the next block moves."""
-    t = (seconds % 2.7) - index * .9
-    if not 0 < t < .76:
-        return 0.0
-    if t < .28:
-        return 13 * (1 - (1 - t / .28) ** 3)
-    if t < .38:
-        return 13.0
-    if t < .64:
-        return 13 * (1 - ((t - .38) / .26) ** 2)
-    return -1.2 * math.sin(math.pi * (t - .64) / .12)
+    return block_pose(seconds,index)[0]
 
 
 def assembly(screen, center, seconds, reduced=False, closing=False, opacity=1):
     for i in range(3):
-        # Outro runs once, right to left, at a slower and lower amplitude.
-        lift=0 if reduced else round(jump_height(min(seconds*.97,2.69),2-i)*.65 if closing else jump_height(seconds,i))
+        # Outro runs once, right to left, settling before the closing fade.
+        lift,stretch,angle=(0.,1.,0.) if reduced else block_pose(min(seconds*1.14,3.59),2-i) if closing else block_pose(seconds,i)
+        if closing:lift*=.65;stretch=1+(stretch-1)*.65;angle*=.65
         x=center[0]+(i-1)*18;y=center[1]-lift
         color=tuple(round(v*opacity) for v in (177,204,205))
-        pygame.draw.polygon(screen,color,((x-6,y),(x,y-3),(x+6,y),(x,y+3)))
-        pygame.draw.lines(screen,color,False,((x-6,y+1),(x-6,y+6),(x,y+9),(x+6,y+6),(x+6,y+1)),1)
-        pygame.draw.line(screen,color,(x,y+3),(x,y+9),1)
+        def point(px,py):
+            px*=1.18/stretch;py=(py-9)*1.18*stretch
+            return round(x+px*math.cos(angle)-py*math.sin(angle)),round(y+10.62+px*math.sin(angle)+py*math.cos(angle))
+        pygame.draw.polygon(screen,color,[point(*p) for p in ((-6,0),(0,-3),(6,0),(0,3))])
+        pygame.draw.lines(screen,color,False,[point(*p) for p in ((-6,1),(-6,6),(0,9),(6,6),(6,1))],1)
+        pygame.draw.line(screen,color,point(0,3),point(0,9),1)
 
 
 FAREWELLS = (

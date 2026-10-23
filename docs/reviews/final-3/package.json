@@ -1,0 +1,33 @@
+{
+  "sha256": "76fd9256186434f0a9eab2b207f7aca68c558c3bc066b23d9caaaf2da44bd7d5",
+  "bytes": 280757884,
+  "required_contents": {
+    "libsndfile": [
+      "_soundfile_data\\libsndfile_x64.dll"
+    ],
+    "SDL2.dll": [
+      "SDL2.dll",
+      "pygame\\SDL2.dll"
+    ],
+    "select-soft": [
+      "ui\\audio\\select-soft.wav"
+    ],
+    "toggle-soft": [
+      "ui\\audio\\toggle-soft.wav"
+    ],
+    "PlexSans-Light": [
+      "ui\\fonts\\IBMPlexSans\\IBMPlexSans-Light.ttf"
+    ],
+    "soundfile-0.13.1.dist-info": [
+      "soundfile-0.13.1.dist-info\\INSTALLER",
+      "soundfile-0.13.1.dist-info\\LICENSE",
+      "soundfile-0.13.1.dist-info\\METADATA",
+      "soundfile-0.13.1.dist-info\\RECORD",
+      "soundfile-0.13.1.dist-info\\REQUESTED",
+      "soundfile-0.13.1.dist-info\\WHEEL",
+      "soundfile-0.13.1.dist-info\\top_level.txt"
+    ]
+  },
+  "audio_repeat_build_sha256": "3f4f42208d62b225a104945b4f42fee221212bec9f06e40185fb0f2cd95e9c68",
+  "video_and_final_audio_build_sha256": "76fd9256186434f0a9eab2b207f7aca68c558c3bc066b23d9caaaf2da44bd7d5"
+}

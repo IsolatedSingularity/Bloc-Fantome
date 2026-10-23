@@ -13,9 +13,15 @@ def draw_drawer(shell,app):
     screen=app.screen;w,h=screen.get_size();scale=shell.text_scale
     compact=w<1100 or scale>1.25
     width=min(w-48,round((420 if compact else 600)*min(scale,1.25))) if shell.page=='build' else min(w-48,round(400*scale))
-    y=shell.operation_rect.bottom+8 if shell.operation_rect.height else 82
+    y=shell.operation_rect.bottom+8
     box=pygame.Rect(w-width-24 if shell.page in ('tools','world','menu') else 24,y,width,h-y-84)
-    shell._panel(screen,box,234);shell.shortcuts_rect=pygame.Rect(0,0,0,0);shell.category_rect=pygame.Rect(0,0,0,0)
+    if shell.page=='world':
+        # The World material deliberately exposes scene luminance beneath it.
+        chrome.rounded(screen,(*chrome.SURFACE,178),box,12)
+        chrome.outline(screen,(137,170,204,70),box,12)
+        shell.panels.append(box)
+    else:shell._panel(screen,box,234)
+    shell.shortcuts_rect=pygame.Rect(0,0,0,0);shell.category_rect=pygame.Rect(0,0,0,0)
     x=box.x+16;y=box.y+12
     screen.blit(shell.title.render(shell.page.title(),True,chrome.TEXT),(x,y))
     close_width=chrome.close_size(shell.small)
@@ -129,12 +135,10 @@ def world(s,app,box):
         level=s.tile_levels.get(action,float(value));delta=s.frame_dt/.20
         level=float(value) if s.visibility.reduced_motion else min(float(value),level+delta) if value else max(0.,level-delta)
         s.tile_levels[action]=level
-        color=colors[action];bg=tuple(round(a+(b*.45-a)*level) for a,b in zip(chrome.CONTROL,color))
-        chrome.rounded(screen,(*bg,235),r,14)
-        if value and not s.visibility.reduced_motion:
-            from ui.generated_icons import weather_effect
-            weather_effect(screen,action,r,pygame.time.get_ticks()/1000)
+        color=colors[action]
         focused=s.focus==action or r.collidepoint(pygame.mouse.get_pos())
+        from ui.world_material import material,icon as world_icon
+        material(screen,r,color,level,focused)
         if focused:
             pygame.draw.rect(screen,chrome.FOCUS,r.inflate(-2,-2),1,border_radius=13)
             tip=label+' · '+('On' if value else 'Off')
@@ -144,8 +148,9 @@ def world(s,app,box):
         state=s.small.render('On' if value else 'Off',True,color if value else chrome.MUTED)
         screen.blit(state,(r.x+10,r.bottom-state.get_height()-6))
         icon_size=min(68,tile_h-32,tile-20)
-        icon(screen,action,pygame.Rect(r.centerx-icon_size//2,r.centery-icon_size//2,icon_size,icon_size),color if value else chrome.MUTED,
-             phase=pygame.time.get_ticks()/1000 if value and not s.visibility.reduced_motion else 0)
+        world_icon(screen,action,pygame.Rect(r.centerx-icon_size//2,r.y+8,icon_size,icon_size),
+                   pygame.time.get_ticks()/1000+i*.731,level,s.visibility.reduced_motion,
+                   getattr(app,'celestialAngle',0))
     top=area.y+toggle_h+16-s.scroll;aw=(area.width-3*gap)//4
     pygame.draw.line(screen,chrome.HOVER,(area.x,top-8),(area.right,top-8))
     for i,(action,label,*_) in enumerate(actions):
@@ -158,8 +163,10 @@ def world(s,app,box):
             chrome.rounded(screen,(*accent,235),r,10)
         focused=s.focus==action or r.collidepoint(pygame.mouse.get_pos())
         if focused:tip=label
-        icon(screen,action,pygame.Rect(r.centerx-19,r.centery-19,38,38),(255,255,255),
-             phase=pygame.time.get_ticks()/1000 if (active or focused) and not s.visibility.reduced_motion else 0)
+        if action=='end':
+            from ui.world_material import end_icon
+            screen.blit(end_icon((34,34)),(r.centerx-17,r.centery-17))
+        else:icon(screen,action,pygame.Rect(r.centerx-19,r.centery-19,38,38),(255,255,255),phase=0)
     screen.set_clip(old)
     if tip:
         r=pygame.Rect(box.x+12,box.bottom-38,box.width-24,30);chrome.panel(screen,r,250)

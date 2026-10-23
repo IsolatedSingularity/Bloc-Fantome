@@ -1,0 +1,297 @@
+{
+  "ready_seconds": 6.598039400065318,
+  "startup_modes": [
+    {
+      "t": 0.01630200003273785,
+      "size": [
+        1381,
+        668
+      ],
+      "args": [
+        16
+      ]
+    }
+  ],
+  "native_title": true,
+  "os_dpi": 120,
+  "rain-0": true,
+  "rain-1": false,
+  "snow-0": true,
+  "snow-1": false,
+  "sun-0": true,
+  "sun-1": false,
+  "clouds-0": true,
+  "clouds-1": false,
+  "lighting-0": true,
+  "lighting-1": false,
+  "sky-0": false,
+  "sky-1": true,
+  "horror_rain-0": true,
+  "horror_rain-1": false,
+  "flow-0": false,
+  "flow-1": true,
+  "fullscreen_size": [
+    1920,
+    1200
+  ],
+  "restored_geometry": true,
+  "version": "3.0.0",
+  "cues": [
+    {
+      "t": 0.1627666000276804,
+      "name": "boot",
+      "busy": true
+    },
+    {
+      "t": 7.333270600065589,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 8.541245399974287,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 9.716836499981582,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 10.898595600156114,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 12.10125740012154,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 13.314154900144786,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 14.51518790004775,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 15.71760020009242,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 16.93331480002962,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 18.09969040006399,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 19.30431369994767,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 20.503730500116944,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 21.768121700035408,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 22.91690730000846,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 24.105066400021315,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 25.330523600103334,
+      "name": "toggle",
+      "busy": true
+    },
+    {
+      "t": 30.635465299943462,
+      "name": "close",
+      "busy": true
+    },
+    {
+      "t": 30.706354400143027,
+      "name": "shutdown",
+      "busy": true
+    }
+  ],
+  "modes": [
+    {
+      "t": 0.01630200003273785,
+      "size": [
+        1381,
+        668
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 7.315042900154367,
+      "size": [
+        1200,
+        900
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 27.37424849998206,
+      "size": [
+        960,
+        640
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 27.505309300031513,
+      "size": [
+        960,
+        640
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 27.613478200044483,
+      "size": [
+        960,
+        640
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 27.740315099945292,
+      "size": [
+        1200,
+        800
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 27.944883699994534,
+      "size": [
+        1200,
+        800
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 28.12287320010364,
+      "size": [
+        1200,
+        800
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 28.28568940004334,
+      "size": [
+        1920,
+        1080
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 28.60989570012316,
+      "size": [
+        1920,
+        1080
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 28.909357300028205,
+      "size": [
+        1920,
+        1080
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 29.197673900052905,
+      "size": [
+        1200,
+        800
+      ],
+      "args": [
+        16
+      ]
+    },
+    {
+      "t": 29.211565600009635,
+      "size": [
+        1920,
+        1200
+      ],
+      "args": [
+        -2147483648
+      ]
+    },
+    {
+      "t": 29.21660319995135,
+      "size": [
+        1920,
+        1200
+      ],
+      "args": [
+        32
+      ]
+    },
+    {
+      "t": 29.682765600038692,
+      "size": [
+        1200,
+        800
+      ],
+      "args": [
+        16
+      ]
+    }
+  ],
+  "interactive_mode": false,
+  "audio_driver": "default",
+  "startup": {
+    "run_started": 1283881.1304219,
+    "splash_presented": 1283881.1324164,
+    "boot_requested": 1283881.1324741,
+    "assets_ready": 1283886.7155477,
+    "editor_ready": 1283887.5676877
+  }
+}
