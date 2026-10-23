@@ -13,4 +13,8 @@ def test_batch_projection_is_pixel_exact_for_every_rotation_and_zoom():
             for zoom in (.05,.125,.333,1.,1.75,3.):
                 renderer.setZoom(zoom);renderer.offsetX=113.5;renderer.offsetY=-48.5
                 assert renderer.worldToScreenBatch(points)==[list(renderer.worldToScreen(*p)) for p in points]
+                items=[(0,*point,None) for point in points]
+                columns=renderer.worldToScreenBatch(items,draw_items=True,columns=True)
+                assert list(zip(*columns))==[renderer.worldToScreen(*p) for p in points]
         assert renderer.worldToScreenBatch([])==[]
+        assert renderer.worldToScreenBatch([],columns=True)==([],[])

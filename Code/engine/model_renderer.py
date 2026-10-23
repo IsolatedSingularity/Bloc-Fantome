@@ -42,30 +42,8 @@ class BlockModelRenderer:
         )
 
     def _draw_face(self, surface, points, texture, shade, uv_origin, uv_u, uv_v) -> None:
-        p0, p1, p2, p3 = points
-        min_x = max(0, int(min(point[0] for point in points)))
-        max_x = min(surface.get_width() - 1, int(max(point[0] for point in points) + 1))
-        min_y = max(0, int(min(point[1] for point in points)))
-        max_y = min(surface.get_height() - 1, int(max(point[1] for point in points) + 1))
-        ux, uy = p1[0] - p0[0], p1[1] - p0[1]
-        vx, vy = p3[0] - p0[0], p3[1] - p0[1]
-        determinant = ux * vy - uy * vx
-        if abs(determinant) < 0.001:
-            return
-        width, height = texture.get_size()
-        for py in range(min_y, max_y + 1):
-            for px in range(min_x, max_x + 1):
-                dx, dy = px + 0.5 - p0[0], py + 0.5 - p0[1]
-                a = (dx * vy - dy * vx) / determinant
-                b = (ux * dy - uy * dx) / determinant
-                if -0.001 <= a <= 1.001 and -0.001 <= b <= 1.001:
-                    u = uv_origin[0] + a * uv_u[0] + b * uv_v[0]
-                    v = uv_origin[1] + a * uv_u[1] + b * uv_v[1]
-                    tx = max(0, min(width - 1, int(u * width) % width))
-                    ty = max(0, min(height - 1, int(v * height) % height))
-                    color = texture.get_at((tx, ty))
-                    if color.a:
-                        surface.set_at((px, py), self._shade(color, shade))
+        from engine.raster import model_face
+        model_face(surface,points,texture,shade,uv_origin,uv_u,uv_v)
 
     def _draw_box(self, surface, box: Box, top, side, front) -> None:
         x1, y1, z1, x2, y2, z2 = box

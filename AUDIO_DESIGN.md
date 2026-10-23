@@ -92,7 +92,7 @@ Human-derived distress must remain recognizably recorded voices: distinct breath
 whisper, strain and occasional sharp cries, bounded deep processing, irregular
 phrases, pauses and limited overlap. Preserve source attribution and processing
 recipes. Do not synthesize substitute vocals. Temporary rig and performance stay
-within Pass B; Pass C engineering/UX/consolidation and Pass D original creature remain deferred.
+within Pass B; Pass C engineering/UX/consolidation retains these assets; the original creature replacement remains deferred.
 
 ## Listening acceptance and evidence
 

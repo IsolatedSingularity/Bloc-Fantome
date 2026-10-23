@@ -164,7 +164,7 @@ class Library:
         target=pygame.Rect(0,0,min(sw-48,round((460 if compact else 720)*min(scale,1.25))),
                            min(sh-100,round((332 if compact else 202)*min(scale,1.25)))) if self.home else pygame.Rect(0,0,min(sw-48,880),min(sh-160,580))
         target.center=(sw//2,sh//2)
-        progress=min(1,(pygame.time.get_ticks()-self._morph_at)/180)
+        progress=min(1,(pygame.time.get_ticks()-self._morph_at)/240)
         if app.workshop.visibility.reduced_motion:progress=1
         self._transition_progress=progress
         if self._morph_from is not None and progress<1:

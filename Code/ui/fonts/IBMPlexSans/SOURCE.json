@@ -1,0 +1,12 @@
+{
+  "source": "https://github.com/IBM/plex/tree/master/packages/plex-sans/fonts/complete/ttf",
+  "license": "OFL.txt",
+  "retrieved": "2026-10-22",
+  "usage": "Optional BLOC_FONT_EXPERIMENT=plex or plex-light. Default remains Segoe UI.",
+  "sha256": {
+    "IBMPlexSans-Light.ttf": "2218b5f3f1fc9d3a793343f45c3be5ee7eae9584a7a52391bb8cf2d37622b3e0",
+    "IBMPlexSans-Regular.ttf": "975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5",
+    "IBMPlexSans-Text.ttf": "4abc4919d313b56a5e3ffdb249ed2450392a5df21478aa4e25ff23901398b1fb",
+    "OFL.txt": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+  }
+}

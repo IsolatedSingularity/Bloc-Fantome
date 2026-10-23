@@ -690,9 +690,14 @@ class AppIntegrationTests(unittest.TestCase):
         self.app._handleZoom(0.025, *cursor)
         self.assertIsNotNone(self.app._worldZoomFallback)
         self.assertEqual(self.app._worldZoomFallback.get_size(), exactSize)
+        # Pass C may yield within the 8 ms raster budget. Until completion,
+        # the displayed frame must remain the complete captured fallback.
+        expected=self.app.screen.copy()
+        expected.blit(self.app._worldZoomFallback,(-self.app._worldSurfaceMargin,-self.app._worldSurfaceMargin))
         self.app._renderWorld()
-        self.assertIsNone(self.app._worldSurfaceBuild)
-        self.assertIsNone(self.app._worldZoomFallback)
+        if self.app._worldSurfaceBuild is not None:
+            self.assertIsNotNone(self.app._worldZoomFallback)
+            self.assertEqual(pygame.image.tobytes(self.app.screen,'RGBA'),pygame.image.tobytes(expected,'RGBA'))
 
         for _ in range(8):
             self.app._renderWorld()
@@ -722,9 +727,14 @@ class AppIntegrationTests(unittest.TestCase):
         with patch.object(pygame.mouse, "get_pos", return_value=cursor):
             self.app._rotateViewAndRecenter(1)
         self.assertIsNotNone(self.app._worldZoomFallback)
+        # Pass C may yield within the 8 ms raster budget. Until completion,
+        # the displayed frame must remain the complete captured fallback.
+        expected=self.app.screen.copy()
+        expected.blit(self.app._worldZoomFallback,(-self.app._worldSurfaceMargin,-self.app._worldSurfaceMargin))
         self.app._renderWorld()
-        self.assertIsNone(self.app._worldSurfaceBuild)
-        self.assertIsNone(self.app._worldZoomFallback)
+        if self.app._worldSurfaceBuild is not None:
+            self.assertIsNotNone(self.app._worldZoomFallback)
+            self.assertEqual(pygame.image.tobytes(self.app.screen,'RGBA'),pygame.image.tobytes(expected,'RGBA'))
 
         for _ in range(8):
             self.app._renderWorld()

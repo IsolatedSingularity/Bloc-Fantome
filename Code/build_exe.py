@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "2.9.9"
+VERSION = "3.0.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -343,6 +343,7 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     cmd.append(f"--add-data={SPLASH_ART}{os.pathsep}Assets/Icons")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'tutorial_prepared')}{os.pathsep}tutorial_prepared")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'ui', 'art')}{os.pathsep}ui/art")
+    cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'ui', 'fonts')}{os.pathsep}ui/fonts")
     cmd.append(f"--add-data={os.path.join(SCRIPT_DIR, 'ui', 'audio')}{os.pathsep}ui/audio")
     
     # Add main script

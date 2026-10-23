@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "2.9.9"
+APP_VERSION = "3.0.0"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -56,7 +56,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.2.9.9'
+        myappid = 'blocfantome.builder.3.0.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -4453,80 +4453,9 @@ class AssetManager:
             pygame.draw.polygon(surface, leftAvg, leftPoints)
             pygame.draw.polygon(surface, rightAvg, rightPoints)
         
-        # TOP FACE - isometric diamond
-        for py in range(TILE_HEIGHT):
-            # Calculate horizontal span for this row
-            if py <= halfH:
-                spanRatio = py / halfH if halfH > 0 else 0
-            else:
-                spanRatio = (TILE_HEIGHT - py) / halfH if halfH > 0 else 0
-            
-            span = int(halfW * spanRatio)
-            if span <= 0:
-                continue
-                
-            leftX = halfW - span
-            rightX = halfW + span
-            
-            for px in range(leftX, rightX):
-                # Map to texture coordinates using isometric transform
-                # Convert screen (px, py) to texture (u, v)
-                relX = px - halfW
-                relY = py - halfH
-                
-                # Inverse isometric projection
-                u = (relX / halfW + relY / halfH) * 0.5 + 0.5
-                v = (-relX / halfW + relY / halfH) * 0.5 + 0.5
-                
-                texX = int(u * (texW - 1))
-                texY = int(v * (texW - 1))
-                
-                texX = max(0, min(texW - 1, texX))
-                texY = max(0, min(texW - 1, texY))
-                
-                color = topTex.get_at((texX, texY))
-                if color.a > 0:
-                    surface.set_at((px, py), color)
-        
-        # LEFT FACE - parallelogram (side view)
-        for px in range(halfW):
-            topY = halfH + int((px / halfW) * halfH)
-            bottomY = min(topY + BLOCK_HEIGHT, H)
-            
-            for py in range(topY, bottomY):
-                texX = int((px / halfW) * (texW - 1))
-                texY = int(((py - topY) / BLOCK_HEIGHT) * (texH - 1))
-                
-                texX = max(0, min(texW - 1, texX))
-                texY = max(0, min(texH - 1, texY))
-                
-                color = leftTex.get_at((texX, texY))
-                if color.a > 0:
-                    shade = 0.8 if transparent else 0.7
-                    shaded = (int(color.r * shade), int(color.g * shade), 
-                             int(color.b * shade), color.a)
-                    surface.set_at((px, py), shaded)
-        
-        # RIGHT FACE - parallelogram (front view)
-        for px in range(halfW, W):
-            relX = px - halfW
-            topY = TILE_HEIGHT - 1 - int((relX / halfW) * halfH)
-            bottomY = min(topY + BLOCK_HEIGHT, H)
-            
-            for py in range(max(0, topY), bottomY):
-                texX = int((relX / halfW) * (texW - 1))
-                texY = int(((py - topY) / BLOCK_HEIGHT) * (texH - 1))
-                
-                texX = max(0, min(texW - 1, texX))
-                texY = max(0, min(texH - 1, texY))
-                
-                color = rightTex.get_at((texX, texY))
-                if color.a > 0:
-                    shade = 0.9 if transparent else 0.85
-                    shaded = (int(color.r * shade), int(color.g * shade),
-                             int(color.b * shade), color.a)
-                    surface.set_at((px, py), shaded)
-        
+        from engine.raster import cube_faces
+        cube_faces(surface,(topTex,leftTex,rightTex),W,TILE_HEIGHT,BLOCK_HEIGHT,transparent)
+
         # Draw subtle outlines for definition (thinner, less prominent)
         if transparent:
             outlineColor = (80, 80, 80, 100)
@@ -4561,22 +4490,11 @@ class AssetManager:
     
     def _getAverageColor(self, surface: pygame.Surface) -> Tuple[int, int, int]:
         """Get the average color of a surface"""
-        totalR, totalG, totalB = 0, 0, 0
-        count = 0
-        
-        for x in range(surface.get_width()):
-            for y in range(surface.get_height()):
-                color = surface.get_at((x, y))
-                totalR += color.r
-                totalG += color.g
-                totalB += color.b
-                count += 1
-        
-        if count == 0:
-            return (128, 128, 128)
-        
-        return (totalR // count, totalG // count, totalB // count)
-    
+        import numpy as np
+        colors=pygame.surfarray.array3d(surface)
+        if not colors.size:return (128,128,128)
+        return tuple(int(v) for v in np.sum(colors,axis=(0,1),dtype=np.int64)//(surface.get_width()*surface.get_height()))
+
     def _darkenColor(self, color: Tuple[int, int, int], factor: float) -> Tuple[int, int, int]:
         """Darken a color by a factor"""
         return (
@@ -7990,6 +7908,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._worldSurfaceBuildKey = None
         self._worldSurfaceBuild = None
         self._worldSurfaceBuildIndex = 0
+        from engine.repaint_batch import RepaintBatch
+        self._repaintBatch = RepaintBatch()
         self._cameraCacheStep = 256
         self._screenCullAnchorOffset = None
         self._renderChunkAnchor = None
@@ -10319,6 +10239,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _returnToWorldMapHub(self) -> None:
         self._switchWorldMapHub(self.worldMapDimension)
 
+    def _requestExitWorldMap(self):
+        if not self.worldMapActive:return
+        from ui.map_transition import MapTransition
+        self._mapTransition=MapTransition(self.screen,self.workshop.visibility.reduced_motion,closing=True)
+
     def _exitWorldMap(self) -> bool:
         from ui.feedback import play
         if self.worldMapActive:play(self.assetManager,'close')
@@ -10399,7 +10324,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._invalidateViewCaches()
             return
         if action == "exit":
-            self._exitWorldMap()
+            self._requestExitWorldMap()
         elif action == "hub":
             self._returnToWorldMapHub()
         elif action == "previous":
@@ -11122,10 +11047,15 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 continue
             if getattr(self,'_mapTransition',None):
                 if event.type==pygame.KEYDOWN and event.key==pygame.K_ESCAPE:
-                    ready=self._mapTransition.ready
-                    self._mapTransition.future.cancel()
-                    self._mapTransition=None
-                    if ready:self._exitWorldMap()
+                    transition=self._mapTransition
+                    if transition.closing:
+                        if not transition.ready:self._exitWorldMap()
+                        self._mapTransition=None
+                    elif transition.ready:
+                        self._requestExitWorldMap()
+                    else:
+                        transition.future.cancel()
+                        self._mapTransition=None
                     from ui.feedback import play
                     play(self.assetManager,'close')
                 continue
@@ -11157,7 +11087,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     if event.type == pygame.WINDOWFOCUSLOST:
                         self.panning = False
                     elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        self._exitWorldMap()
+                        self._requestExitWorldMap()
                     elif event.type == pygame.KEYDOWN and event.key == pygame.K_HOME:
                         self._frameWorldMapHub()
                     elif event.type == pygame.MOUSEWHEEL:
@@ -13362,6 +13292,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if getattr(self, '_exitDialog', None):return
         transition=getattr(self,'_mapTransition',None)
         if transition and not transition.ready:
+            if transition.closing:
+                if transition.covered:
+                    self._exitWorldMap()
+                    transition.reveal()
+                return
             if transition.covered and transition.future.done():
                 try:self._openWorldMap(transition.future.result())
                 except (OSError,ValueError,pygame.error) as error:
@@ -18227,7 +18162,6 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             value=not skip_on_launch() if attr=='skip' else getattr(self,attr,False)
             if attr!='opening':label+=': '+('On' if value else 'Off')
             button(self.screen,area,label,self.smallFont,area.collidepoint(mouse),value)
-        self.screen.blit(self.smallFont.render(f'Bloc Fantôme {APP_VERSION}',True,MUTED),(rect.x+24,rect.bottom-30))
 
     def _drawRotationArrow(self, rect: pygame.Rect, clockwise: bool, centered: bool = False):
         """Draw a clean curved rotation arrow icon on a button"""
@@ -19992,6 +19926,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.screen.blit(flashOverlay, (0, 0))
 
     def _presentFrame(self):
+        transition=getattr(self,'_mapTransition',None)
+        if transition and transition.ready:self._renderMapTransition()
         overlay = getattr(self, '_startupOverlay', None)
         if overlay is not None and self.openingScene is None:
             now = pygame.time.get_ticks()
@@ -20028,7 +19964,6 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                               "overworld": (24,35,34), "ocean": (9,34,48)}[self.worldMapDimension])
             self.worldMapView.source_map.render(self.screen, self.renderer)
             self.worldMapView.render_hub(self.screen, self.renderer, self.worldMapCompleted)
-            self._renderMapTransition()
             self._presentFrame()
             return
         # Skyboxes drift independently; opaque underwater scenes cover them.
@@ -21386,7 +21321,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         targetSurface = self.screen
         incrementalZoomBuild = bool(
             canCacheSurface
-            and self._worldTransitionKind == 'load'
+            and self._worldTransitionKind in ('load','zoom','rotation')
             and len(blocksToDraw) > 4000
         )
         if canCacheSurface:
@@ -21433,7 +21368,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 targetSurface.set_clip(clip);targetSurface.fill((0,0,0,0),clip)
                 incrementalZoomBuild=False
         startIndex = self._worldSurfaceBuildIndex if incrementalZoomBuild else 0
-        transitionBatch = 800 if self._worldTransitionKind == "load" or self._worldZoomFallback is None else 2400 if self._worldTransitionKind == "rotation" else 4200
+        transitionBatch = 800 if self._worldTransitionKind == "load" else 8192
         endIndex = (
             min(len(blocksToDraw), startIndex + transitionBatch)
             if incrementalZoomBuild
@@ -21448,26 +21383,29 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if reusedBlits is not None:
             blits = reusedBlits
             drawnCount = len(blits)
+        pooledBlits = labKey is None and len(blocksToDraw) > 4000
+        if pooledBlits:
+            blits = self._repaintBatch.begin(targetSurface)
 
         # Yield cold sprite work between frames without dropping any cells.
         import time
         batchStarted = time.perf_counter()
         rasterVariants = {}
         drawItems=() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]
-        screenPositions=(self.renderer.worldToScreenBatch([item[1:4] for item in drawItems])
+        screenPositions=(self.renderer.worldToScreenBatch(drawItems, draw_items=True, columns=True)
                          if len(drawItems)>=4096 else None)
         properties_get=self.world.blockProperties.get
         for itemIndex, (_, x, y, z, blockType) in enumerate(
             drawItems, startIndex
         ):
-            if (incrementalZoomBuild and (self.tutorialScreen.visible or self._worldTransitionKind == 'load')
+            if (incrementalZoomBuild
                     and itemIndex > startIndex and (itemIndex-startIndex)%32 == 0):
                 if time.perf_counter()-batchStarted >= 0.008:
                     endIndex = itemIndex
                     break
             if (x, y, z) in movingTargets:
                 continue
-            screenX, screenY = (screenPositions[itemIndex-startIndex] if screenPositions is not None
+            screenX, screenY = ((screenPositions[0][itemIndex-startIndex], screenPositions[1][itemIndex-startIndex]) if screenPositions is not None
                                 else self.renderer.worldToScreen(x,y,z))
             
             # Horror: Block texture flicker - briefly show wrong texture
@@ -21677,8 +21615,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
         if reusedBlits is None:
             remember(self, labKey, labIndices, blits)
-        if blits:
-            targetSurface.blits(blits)
+        if pooledBlits:
+            blits.finish()
+        elif blits:
+            targetSurface.blits(blits, doreturn=False)
 
         if incrementalZoomBuild and endIndex < len(blocksToDraw):
             self._worldSurfaceBuildIndex = endIndex
@@ -22679,6 +22619,10 @@ def main():
         from tools.verify_acceptance_edges import run
         run(sys.argv[sys.argv.index('--verify-acceptance-edges')+1],sys.modules[__name__])
         return
+    if '--verify-pass-c-startup' in sys.argv:
+        from tools.verify_pass_c import startup
+        startup(sys.argv[sys.argv.index('--verify-pass-c-startup')+1],sys.modules[__name__])
+        sys.exit(0)
     if '--verify-acceptance' in sys.argv:
         from tools.verify_pass_b_finalization import run
         run(sys.argv[sys.argv.index('--verify-acceptance')+1],sys.modules[__name__],polish=True,acceptance=True)

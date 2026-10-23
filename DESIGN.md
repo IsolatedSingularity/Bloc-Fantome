@@ -1,7 +1,7 @@
 # Bloc Fantôme design specification
 
 Status: owner-approved direction, 2.9.9 Pass B. The Cathedral redesign is reserved
-for 3.0. This file separates preservation requirements from future design tokens.
+for 4.0. This file separates preservation requirements from future design tokens.
 The current owner's request supersedes historical handoffs that still block Pass B.
 
 ## Accepted 2.9.9 presentation
@@ -35,10 +35,11 @@ claim that those checks passed.
 
 ## Pass B finalization contracts
 
-After owner approval of the final Pass B polish, 2.9.9 can be finalized before
-Pass C engineering/UX/consolidation. Pass D original creature is a separate future
-decision. Main, installation and shortcuts remain held pending acceptance.
-This pass publishes development and one isolated review EXE only.
+The owner provisionally accepted Pass B on 22 October 2026. Local main is
+fast-forwarded to `2ea56e3438263aae0a8ec4fc9879e49f341d9660`; its runtime is
+`0a90d833a5f49a83249ab1f5759bd7c5fe7859d4`. Pass C develops 3.0 on development.
+The original creature replacement remains a separate future decision. Installation
+and shortcuts remain unchanged. Pass C produces one isolated review EXE.
 
 The swamp painting presents before bulk assets, with boot audio requested at its
 first visible frame, with its cue decoded before presentation. Three small original
@@ -48,7 +49,7 @@ yields to the display/event thread. The
 cinematic is manual through Settings > Play Introduction; only an explicit
 Autoplay introduction selection enables launch playback. The guided tutorial opens
 only deliberately, including when an old saved preference requested auto-launch.
-Its quiet question-mark dock remains available; the panel states that it opens manually.
+Its quiet book dock remains available; the panel states that it opens manually.
 The welcome lesson uses the existing compact
 sanctuary, closely framed with sky and lighting. Its minimized tile sits 8 px
 right of the selected-block preview, lifting above it when the hotbar needs room.
@@ -105,8 +106,8 @@ Motion remain static with truthful On/Off state. The map's fixed cover/reveal
 timing and score are unchanged; its intermediate panel adds a small compass,
 unlabelled scale ticks and survey points without additional preparation work.
 
-Normal editor chrome has no version label; Settings and the window title retain
-the version. VSync is visibly unavailable: this native software RESIZABLE display
+Normal editor chrome has no version label; The window title retains
+the version. Settings has no visible version footer. VSync is visibly unavailable: this native software RESIZABLE display
 uses neither OPENGL nor SCALED. Pygame only accepts a VSync request for those
 modes and does not guarantee it. No ineffective preference or renderer migration
 is introduced. Pass C may evaluate a renderer change with resize, DPI, coordinate
@@ -120,7 +121,16 @@ Normal and overview views, transparent/modelled blocks and captured Java atlases
 retain the existing pipeline. Fullscreen remains a native desktop surface, with
 no low-resolution viewport enlargement. Original 16×16 texture detail is preserved.
 
-## 3.0: Cathedral Soft Blue, Variant D
+## 3.0: Pass C consolidation
+
+Preserve accepted Pass B. Restore the small book with a persisted white unread dot;
+center and enlarge Goodbye; pair atlas opening and closing; profile startup and
+large-world repaint work. IBM Plex is an opt-in visual experiment only. Segoe UI
+remains the default pending owner review. The original creature replacement stays
+separate. Only local main was fast-forwarded to the accepted 2.9.9 source; 3.0
+remains unpromoted and the working installation is preserved.
+
+## 4.0: Cathedral Soft Blue, Variant D
 
 Primary target: [unchanged owner PNG](docs/design/references/cathedral-soft-blue-variant-d.png).
 SHA-256: `62a34de6bd3b7aaf9ef9be9d07450c043d0b884264a6b33cb52339e71d72df51`.
@@ -184,7 +194,7 @@ from antialiased icon/chrome rendering. No scaled low-resolution text surfaces.
 ### Interaction and implementation proposals
 
 The following numeric values are provisional engineering defaults for a future
-3.0 prototype, not pixel measurements or newly owner-approved styling:
+4.0 prototype, not pixel measurements or newly owner-approved styling:
 
 | Property | Proposed starting point | Review criterion |
 | --- | --- | --- |

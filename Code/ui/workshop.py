@@ -265,7 +265,7 @@ class Workshop:
                 if self.page!='build':self._held_block(layer,app)
                 if not app.tutorialScreen.visible and self.page!='build':
                     rect=app.tutorialScreen._restoreTileRect()
-                    chrome.icon_button(layer,rect,'?',app.tutorialScreen.dockFont,rect.collidepoint(mouse),self.focus=='tutorial')
+                    app.tutorialScreen.renderDock(layer,rect,self.focus=='tutorial')
                     self.hits.append((rect,'tutorial',True))
                     if rect.collidepoint(mouse):
                         label=self.small.render('Tutorial',True,chrome.TEXT)

@@ -1309,6 +1309,10 @@ def render_workshop(output_dir: Path):
 
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "visual-checks"
+    if '--pass-c' in sys.argv:
+        from render_pass_c import render as render_pass_c
+        render_pass_c(destination)
+        raise SystemExit(0)
     if '--polish' in sys.argv or '--acceptance' in sys.argv:
         from render_polish import render as render_polish
         render_polish(destination)

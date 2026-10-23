@@ -1,0 +1,482 @@
+[
+  {
+    "name": "segoe-menu-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-settings-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-library-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-hud-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-menu-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-settings-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-library-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-hud-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-menu-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-settings-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-library-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-hud-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-menu-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-settings-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-library-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "segoe-hud-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-menu-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-settings-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-library-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-hud-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-menu-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-settings-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-library-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-hud-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-menu-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-settings-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-library-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-hud-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-menu-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-settings-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-library-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-hud-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-menu-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-settings-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-library-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-hud-960-100.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-menu-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-settings-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-library-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-hud-960-150.png",
+    "size": [
+      960,
+      640
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-menu-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-settings-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-library-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-hud-1200-100.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-menu-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-settings-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-library-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  },
+  {
+    "name": "plex-light-hud-1200-150.png",
+    "size": [
+      1200,
+      800
+    ],
+    "scale": 1.5,
+    "driver": "windows",
+    "os_dpi": 120
+  }
+]

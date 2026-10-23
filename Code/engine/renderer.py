@@ -143,19 +143,25 @@ class IsometricRenderer:
         screenY = (rx + ry) * self._tileHHalf - z * self._blockH + self.offsetY
         return (round(screenX), round(screenY))
     
-    def worldToScreenBatch(self, points):
+    def worldToScreenBatch(self, points, *, draw_items=False, columns=False):
         """Project a repaint batch with the scalar arithmetic and rounding order.
 
         No retained cache: each call uses current instance metrics and camera.
         NumPy float64/rint preserves Python's nearest-even pixel rounding.
+        Draw items include a leading sort key and trailing block type. Returning
+        two columns avoids allocating one tracked Python pair per visible block.
         """
-        if not len(points):return []
+        if not len(points):return ([], []) if columns else []
         import numpy as np
-        xyz=np.asarray(points,dtype=np.float64)
+        xyz=(np.fromiter((value for item in points for value in item[1:4]),
+                         dtype=np.float64, count=len(points)*3).reshape(-1,3)
+             if draw_items else np.asarray(points,dtype=np.float64))
         x,y,z=xyz.T
         rx,ry=((x,y),(-y,x),(-x,-y),(y,-x))[self.viewRotation]
         sx=(rx-ry)*self._tileWHalf+self.offsetX
         sy=(rx+ry)*self._tileHHalf-z*self._blockH+self.offsetY
+        if columns:
+            return np.rint(sx).astype(np.int64).tolist(), np.rint(sy).astype(np.int64).tolist()
         return np.rint(np.column_stack((sx,sy))).astype(np.int64).tolist()
 
     def _screenToWorldPoint(

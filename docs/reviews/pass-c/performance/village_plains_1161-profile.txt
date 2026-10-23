@@ -1,0 +1,33 @@
+         826682 function calls in 0.194 seconds
+
+   Ordered by: cumulative time
+   List reduced from 62 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.194    0.194 profile_pass_c.py:42(settle)
+       14    0.030    0.002    0.192    0.014 blocFantome.py:21225(_renderWorld)
+       14    0.042    0.003    0.068    0.005 blocFantome.py:21145(_visibleScreenRenderPlan)
+       12    0.001    0.000    0.043    0.004 renderer.py:146(worldToScreenBatch)
+       12    0.020    0.002    0.041    0.003 {built-in method numpy.fromiter}
+   162364    0.027    0.000    0.034    0.000 {method 'get' of 'dict' objects}
+   281484    0.021    0.000    0.021    0.000 renderer.py:156(<genexpr>)
+   206974    0.017    0.000    0.017    0.000 {built-in method builtins.round}
+       14    0.008    0.001    0.008    0.001 {method 'blit' of 'pygame.surface.Surface' objects}
+    20624    0.005    0.000    0.008    0.000 repaint_batch.py:15(append)
+    41558    0.005    0.000    0.007    0.000 enum.py:1266(__hash__)
+       16    0.000    0.000    0.005    0.000 repaint_batch.py:23(flush)
+       14    0.004    0.000    0.004    0.000 {method 'blits' of 'pygame.surface.Surface' objects}
+       14    0.000    0.000    0.004    0.000 repaint_batch.py:31(finish)
+    41558    0.002    0.000    0.002    0.000 {built-in method builtins.hash}
+     3032    0.001    0.000    0.002    0.000 renderer.py:128(worldToScreen)
+    20624    0.002    0.000    0.002    0.000 blocFantome.py:21102(_usesExteriorShellGlass)
+    20638    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}
+       24    0.001    0.000    0.001    0.000 {method 'tolist' of 'numpy.ndarray' objects}
+    20774    0.001    0.000    0.001    0.000 {built-in method builtins.len}
+       14    0.001    0.000    0.001    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+      198    0.000    0.000    0.001    0.000 blocFantome.py:7720(getScaledSprite)
+     3032    0.000    0.000    0.000    0.000 renderer.py:96(_rotateCoords)
+       14    0.000    0.000    0.000    0.000 blocFantome.py:20839(_visibleBlocksInDrawOrder)
+       14    0.000    0.000    0.000    0.000 blocFantome.py:20857(_editorVisibleBlocksInDrawOrder)
+
+

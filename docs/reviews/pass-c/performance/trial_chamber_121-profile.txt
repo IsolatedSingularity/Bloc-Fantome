@@ -1,0 +1,33 @@
+         235186 function calls in 0.058 seconds
+
+   Ordered by: cumulative time
+   List reduced from 57 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.058    0.058 profile_pass_c.py:42(settle)
+        1    0.006    0.006    0.058    0.058 blocFantome.py:21225(_renderWorld)
+        1    0.029    0.029    0.046    0.046 blocFantome.py:21145(_visibleScreenRenderPlan)
+   137356    0.012    0.000    0.012    0.000 {built-in method builtins.round}
+    73504    0.006    0.000    0.007    0.000 {method 'get' of 'dict' objects}
+     2423    0.001    0.000    0.002    0.000 renderer.py:128(worldToScreen)
+     4841    0.001    0.000    0.001    0.000 enum.py:1266(__hash__)
+        1    0.001    0.001    0.001    0.001 {method 'blits' of 'pygame.surface.Surface' objects}
+        1    0.001    0.001    0.001    0.001 {method 'blit' of 'pygame.surface.Surface' objects}
+     2416    0.001    0.000    0.001    0.000 blocFantome.py:21003(_isOpaqueCubeDefinition)
+     2415    0.000    0.000    0.000    0.000 blocFantome.py:21102(_usesExteriorShellGlass)
+     4835    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+     2423    0.000    0.000    0.000    0.000 renderer.py:96(_rotateCoords)
+     4841    0.000    0.000    0.000    0.000 {built-in method builtins.hash}
+        1    0.000    0.000    0.000    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+        1    0.000    0.000    0.000    0.000 blocFantome.py:20839(_visibleBlocksInDrawOrder)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 blocFantome.py:20857(_editorVisibleBlocksInDrawOrder)
+        1    0.000    0.000    0.000    0.000 blocFantome.py:7720(getScaledSprite)
+        4    0.000    0.000    0.000    0.000 blocFantome.py:9210(_worldViewportRight)
+        1    0.000    0.000    0.000    0.000 blocFantome.py:20832(_cameraWorldCenter)
+        8    0.000    0.000    0.000    0.000 profile_pass_c.py:35(gc_trace)
+        2    0.000    0.000    0.000    0.000 performance.py:305(get)
+        7    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        1    0.000    0.000    0.000    0.000 blocFantome.py:7681(getBlockSprite)
+
+

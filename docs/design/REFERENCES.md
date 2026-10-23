@@ -2,7 +2,7 @@
 
 | Reference | Authority / use |
 | --- | --- |
-| [Cathedral Soft Blue Variant D](references/cathedral-soft-blue-variant-d.png) | Owner primary visual target for 3.0; unchanged PNG |
+| [Cathedral Soft Blue Variant D](references/cathedral-soft-blue-variant-d.png) | Owner primary visual target for 4.0; unchanged PNG |
 | [2.9.9 checkpoint](../reviews/release-2.9.9/REVIEW.md) | Accepted visual/functional baseline; performance/native limitations remain |
 | [Owner roadmap](../handoffs/OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md) | Pass B intent; latest direct request unlocks B, C remains paused |
 | [Pygame mixer](https://www.pygame.org/docs/ref/mixer.html) | Channel reservation, nonblocking playback, channel vs Sound gain; runtime pinned 2.6.1 |

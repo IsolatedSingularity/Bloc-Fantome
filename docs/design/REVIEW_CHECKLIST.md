@@ -1,6 +1,6 @@
 # Design review checklist
 
-- Name the version and baseline. Keep 2.9.9 preservation separate from 3.0 proposals.
+- Name the version and baseline. Keep 2.9.9 preservation separate from 4.0 proposals.
 - Inspect actual rendered captures at 960x640, 1200x800 and 1920x1080, with
   100/125/150% text. Record actual OS DPI and display backend; do not infer them.
 - Compare bright/dark terrain, menus, Build, Library home/gallery/back, World,

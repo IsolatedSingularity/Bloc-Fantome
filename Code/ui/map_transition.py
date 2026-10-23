@@ -6,7 +6,7 @@ from ui.fonts import load_ui_font
 
 
 class MapTransition:
-    def __init__(self, screen, reduced_motion=False):
+    def __init__(self, screen, reduced_motion=False, *, closing=False):
         self.started = pygame.time.get_ticks()
         self.ready = False
         self.future = None
@@ -14,38 +14,61 @@ class MapTransition:
         self.background = screen.copy()
         self.font = load_ui_font(24)
         self.small = load_ui_font(14)
-        self.paper = pygame.Surface(screen.get_size())
-        self.paper.fill((20, 33, 43))
-        w, h = screen.get_size()
-        # Fixed contours, not a pulsing spinner. Fold edges establish map space.
-        for ring in range(9):
-            points = []
-            for step in range(101):
-                angle = step * math.tau / 100
-                radius = 35 + ring * 29 + 8 * math.sin(angle * 3 + ring * .3)
-                points.append((w*.5 + math.cos(angle)*radius*1.7,
-                               h*.5 + math.sin(angle)*radius))
-            pygame.draw.lines(self.paper, (38, 60, 70), True, points, 1)
-        for x in (w//4, w//2, 3*w//4):
-            pygame.draw.line(self.paper, (47, 65, 75), (x, 0), (x, h))
-        # Quiet marginal cartography, drawn once; reveal timing stays unchanged.
-        ink=(94,119,131)
-        cx,cy=56,h-75
-        pygame.draw.lines(self.paper,ink,False,((cx-9,cy+8),(cx,cy-18),(cx+9,cy+8),(cx,cy+2),(cx-9,cy+8)),1)
-        self.paper.blit(self.small.render('N',True,ink),(cx-5,cy-40))
-        pygame.draw.line(self.paper,ink,(w-148,h-50),(w-48,h-50))
-        for x in range(w-148,w-47,25):pygame.draw.line(self.paper,ink,(x,h-54),(x,h-46))
-        for dx,dy in ((-29,8),(-9,-12),(16,-3),(32,-21)):
-            pygame.draw.circle(self.paper,ink,(w-93+dx,65+dy),2)
-        pygame.draw.lines(self.paper,(46,68,81),False,((w-122,73),(w-102,53),(w-77,62),(w-61,44)),1)
-        title = self.font.render('World Map', True, chrome.TEXT)
-        hint = self.small.render('Esc to cancel', True, chrome.MUTED)
-        self.paper.blit(title, title.get_rect(center=(w//2, h//2-12)))
-        self.paper.blit(hint, hint.get_rect(center=(w//2, h//2+22)))
+        self.closing = closing
+        self.paper = self._paper(screen.get_size())
+
+    def _paper(self,size):
+        w,h=size
+        paper=pygame.Surface(size);paper.fill((20,33,43))
+        faint=(31,48,59);ink=(70,94,108);light=(133,158,174)
+        # Two asymmetric contour fields leave the central survey mark quiet.
+        for cx,cy,stretch,phase in ((w*.12,h*.33,1.45,.6),(w*.88,h*.72,1.65,2.4)):
+            for ring in range(13):
+                points=[]
+                for step in range(181):
+                    angle=step*math.tau/180
+                    r=32+ring*18+12*math.sin(angle*3+phase)+6*math.sin(angle*5+ring*.12)
+                    points.append((cx+math.cos(angle)*r*stretch,cy+math.sin(angle)*r))
+                pygame.draw.aalines(paper,faint,True,points)
+        margin=max(24,round(min(w,h)*.065))
+        frame=pygame.Rect(margin,margin,w-2*margin,h-2*margin)
+        pygame.draw.rect(paper,(43,63,77),frame,1)
+        for x in (frame.left,frame.right):
+            for y in (frame.top,frame.bottom):
+                sx=1 if x==frame.left else -1;sy=1 if y==frame.top else -1
+                pygame.draw.lines(paper,ink,False,((x,y+sy*24),(x,y),(x+sx*24,y)))
+        cx,cy=w//2,round(h*.43);radius=round(min(w,h)*.14)
+        pygame.draw.circle(paper,ink,(cx,cy),radius,1)
+        pygame.draw.circle(paper,(43,63,77),(cx,cy),radius+8,1)
+        for i in range(64):
+            angle=i*math.tau/64-math.pi/2
+            outer=radius+8;inner=outer-(8 if i%8==0 else 3)
+            pygame.draw.aaline(paper,ink,(cx+math.cos(angle)*inner,cy+math.sin(angle)*inner),
+                               (cx+math.cos(angle)*outer,cy+math.sin(angle)*outer))
+        # Slightly turned compass rose, not a continuously spinning loader.
+        for i in range(8):
+            angle=i*math.tau/8-math.pi/2-.08
+            tip=(cx+math.cos(angle)*radius*.82,cy+math.sin(angle)*radius*.82)
+            a=(cx+math.cos(angle+.5)*radius*.17,cy+math.sin(angle+.5)*radius*.17)
+            b=(cx+math.cos(angle-.5)*radius*.17,cy+math.sin(angle-.5)*radius*.17)
+            pygame.draw.polygon(paper,light if i%2==0 else ink,((cx,cy),a,tip))
+            pygame.draw.aalines(paper,ink,True,((cx,cy),b,tip))
+        for label,dx,dy in (('N',0,-1),('E',1,0),('S',0,1),('W',-1,0)):
+            text=self.small.render(label,True,light)
+            paper.blit(text,text.get_rect(center=(cx+dx*(radius+28),cy+dy*(radius+28))))
+        title=self.font.render('World Map',True,chrome.TEXT)
+        paper.blit(title,title.get_rect(center=(cx,cy+radius+74)))
+        if not self.closing:
+            hint=self.small.render('Esc to cancel',True,chrome.MUTED)
+            paper.blit(hint,hint.get_rect(center=(cx,cy+radius+110)))
+        # Survey scale in the lower margin, balanced with the central fold.
+        for x in range(cx-60,cx+61,20):pygame.draw.line(paper,ink,(x,h-margin-21),(x,h-margin-15))
+        pygame.draw.line(paper,ink,(cx-60,h-margin-18),(cx+60,h-margin-18))
+        return paper
 
     @property
     def covered(self):
-        return pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 220)
+        return pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else (320 if self.closing else 220))
 
     def reveal(self):
         self.ready = True
@@ -53,27 +76,33 @@ class MapTransition:
 
     @property
     def finished(self):
-        return self.ready and pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else 320)
+        return self.ready and pygame.time.get_ticks()-self.started >= (0 if self.reduced_motion else (220 if self.closing else 320))
 
     def render(self, screen):
         w, h = screen.get_size()
+        if self.paper.get_size()!=(w,h):
+            self.paper=self._paper((w,h))
+            # Resize only the captured scene; text is rerasterized natively above.
+            self.background=pygame.transform.scale(self.background,(w,h))
         age = pygame.time.get_ticks()-self.started
-        u = min(1., age/(320 if self.ready else 220))
-        u = u*u*(3-2*u)
-        if self.reduced_motion:
-            u = 1.
-        if not self.ready:
-            screen.blit(self.background, (0, 0))
-            rect = pygame.Rect(0, 0, max(1, round(w*u)), h)
-            rect.center = screen.get_rect().center
-            screen.blit(self.paper, rect, rect)
-            pygame.draw.line(screen, chrome.ACCENT, rect.topleft, rect.bottomleft, 1)
-            pygame.draw.line(screen, chrome.ACCENT, rect.topright, rect.bottomright, 1)
+        duration=(220 if self.closing else 320) if self.ready else (320 if self.closing else 220)
+        u=min(1.,max(0.,age/duration));u=u*u*(3-2*u)
+        if self.reduced_motion:u=1.
+        if not self.ready:screen.blit(self.background,(0,0))
+        # Exit is the temporal reverse: cover from margins, then fold inward.
+        center_panel = self.ready if self.closing else not self.ready
+        amount=(1-u if self.ready else u)
+        if center_panel:
+            width=round(w*amount)
+            if width:
+                rect=pygame.Rect((w-width)//2,0,width,h)
+                screen.blit(self.paper,rect,rect)
+                pygame.draw.line(screen,chrome.ACCENT,rect.topleft,rect.bottomleft)
+                pygame.draw.line(screen,chrome.ACCENT,rect.topright,rect.bottomright)
         else:
-            # Reveal the already prepared map outward from the central fold.
-            edge = round(w*(1-u)/2)
+            edge=round(w*amount/2)
             if edge:
-                screen.blit(self.paper, (0, 0), (0, 0, edge, h))
-                screen.blit(self.paper, (w-edge, 0), (w-edge, 0, edge, h))
-                pygame.draw.line(screen, chrome.ACCENT, (edge, 0), (edge, h), 1)
-                pygame.draw.line(screen, chrome.ACCENT, (w-edge, 0), (w-edge, h), 1)
+                screen.blit(self.paper,(0,0),(0,0,edge,h))
+                screen.blit(self.paper,(w-edge,0),(w-edge,0,edge,h))
+                pygame.draw.line(screen,chrome.ACCENT,(edge,0),(edge,h))
+                pygame.draw.line(screen,chrome.ACCENT,(w-edge,0),(w-edge,h))

@@ -1,0 +1,16 @@
+{
+  "ui/art/goodbye-night.png": "687732f6c3083195ef8aefb3c1497bb8b16096e447c4a5ecba390319e7328adf",
+  "ui/fonts/IBMPlexSans/IBMPlexSans-Light.ttf": "2218b5f3f1fc9d3a793343f45c3be5ee7eae9584a7a52391bb8cf2d37622b3e0",
+  "ui/fonts/IBMPlexSans/IBMPlexSans-Regular.ttf": "975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5",
+  "ui/fonts/IBMPlexSans/IBMPlexSans-Text.ttf": "4abc4919d313b56a5e3ffdb249ed2450392a5df21478aa4e25ff23901398b1fb",
+  "ui/fonts/IBMPlexSans/OFL.txt": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da",
+  "ui/fonts/IBMPlexSans/SOURCE.json": "d27896099c072e3009decf46a79f32a4866809de747ba11182211efd8b07299d",
+  "exe_sha256": "8e070a23a0ea0232f4e6de0bb74fb0e249a7e2effa43bfb778f591360bf7587e",
+  "bytes": 279432692,
+  "modules": [
+    "engine.raster",
+    "engine.repaint_batch",
+    "ui.map_transition",
+    "tools.verify_pass_c"
+  ]
+}

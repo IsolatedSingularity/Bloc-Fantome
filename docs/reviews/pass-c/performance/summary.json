@@ -1,0 +1,226 @@
+[
+  {
+    "scene": "ancient_city_121",
+    "blocks": 153520,
+    "edit_handler_ms": 1.39000010676682,
+    "picking_20_ms": 17.42949988692999,
+    "operations": {
+      "pan": {
+        "accepted": {
+          "median_frame_ms": 180.68374984432012,
+          "max_frame_ms": 260.0336999166757,
+          "median_repaint_ms": 180.68374984432012
+        },
+        "candidate": {
+          "median_frame_ms": 103.43709995504469,
+          "max_frame_ms": 138.3086999412626,
+          "median_repaint_ms": 103.43709995504469
+        }
+      },
+      "zoom": {
+        "accepted": {
+          "median_frame_ms": 112.31900006532669,
+          "max_frame_ms": 257.7611000742763,
+          "median_repaint_ms": 112.31900006532669
+        },
+        "candidate": {
+          "median_frame_ms": 9.169500088319182,
+          "max_frame_ms": 26.849099900573492,
+          "median_repaint_ms": 119.77095005568117
+        }
+      },
+      "rotate": {
+        "accepted": {
+          "median_frame_ms": 24.574049981310964,
+          "max_frame_ms": 25.02419985830784,
+          "median_repaint_ms": 24.574049981310964
+        },
+        "candidate": {
+          "median_frame_ms": 12.294700019992888,
+          "max_frame_ms": 24.312200024724007,
+          "median_repaint_ms": 25.443800259381533
+        }
+      },
+      "edit": {
+        "accepted": {
+          "median_frame_ms": 24.105199961923063,
+          "max_frame_ms": 173.53440006263554,
+          "median_repaint_ms": 24.105199961923063
+        },
+        "candidate": {
+          "median_frame_ms": 23.29424989875406,
+          "max_frame_ms": 23.7765999045223,
+          "median_repaint_ms": 23.29424989875406
+        }
+      }
+    }
+  },
+  {
+    "scene": "trial_chamber_121",
+    "blocks": 181697,
+    "edit_handler_ms": 1.1517999228090048,
+    "picking_20_ms": 26.247500209137797,
+    "operations": {
+      "pan": {
+        "accepted": {
+          "median_frame_ms": 216.18344995658845,
+          "max_frame_ms": 385.7110000681132,
+          "median_repaint_ms": 216.18344995658845
+        },
+        "candidate": {
+          "median_frame_ms": 186.73644994851202,
+          "max_frame_ms": 190.23820012807846,
+          "median_repaint_ms": 186.73644994851202
+        }
+      },
+      "zoom": {
+        "accepted": {
+          "median_frame_ms": 230.63139989972115,
+          "max_frame_ms": 410.89539998210967,
+          "median_repaint_ms": 230.63139989972115
+        },
+        "candidate": {
+          "median_frame_ms": 8.912599878385663,
+          "max_frame_ms": 11.329199885949492,
+          "median_repaint_ms": 253.2078499207273
+        }
+      },
+      "rotate": {
+        "accepted": {
+          "median_frame_ms": 26.17249998729676,
+          "max_frame_ms": 26.351300068199635,
+          "median_repaint_ms": 26.17249998729676
+        },
+        "candidate": {
+          "median_frame_ms": 26.342099998146296,
+          "max_frame_ms": 27.1978999953717,
+          "median_repaint_ms": 26.342099998146296
+        }
+      },
+      "edit": {
+        "accepted": {
+          "median_frame_ms": 25.988099980168045,
+          "max_frame_ms": 26.21140005066991,
+          "median_repaint_ms": 25.988099980168045
+        },
+        "candidate": {
+          "median_frame_ms": 26.302200159989297,
+          "max_frame_ms": 26.663900120183825,
+          "median_repaint_ms": 26.302200159989297
+        }
+      }
+    }
+  },
+  {
+    "scene": "village_plains_1161",
+    "blocks": 779588,
+    "edit_handler_ms": 0.9405000600963831,
+    "picking_20_ms": 38.36670005694032,
+    "operations": {
+      "pan": {
+        "accepted": {
+          "median_frame_ms": 226.8026500241831,
+          "max_frame_ms": 559.8470000550151,
+          "median_repaint_ms": 226.8026500241831
+        },
+        "candidate": {
+          "median_frame_ms": 181.1871500685811,
+          "max_frame_ms": 182.2432999033481,
+          "median_repaint_ms": 181.1871500685811
+        }
+      },
+      "zoom": {
+        "accepted": {
+          "median_frame_ms": 234.50735001824796,
+          "max_frame_ms": 575.618099886924,
+          "median_repaint_ms": 234.50735001824796
+        },
+        "candidate": {
+          "median_frame_ms": 8.763450081460178,
+          "max_frame_ms": 11.568499961867929,
+          "median_repaint_ms": 219.54409999307245
+        }
+      },
+      "rotate": {
+        "accepted": {
+          "median_frame_ms": 69.27094992715865,
+          "max_frame_ms": 70.05350012332201,
+          "median_repaint_ms": 69.27094992715865
+        },
+        "candidate": {
+          "median_frame_ms": 8.822349947877228,
+          "max_frame_ms": 36.785600008443,
+          "median_repaint_ms": 70.84780011791736
+        }
+      },
+      "edit": {
+        "accepted": {
+          "median_frame_ms": 72.62290001381189,
+          "max_frame_ms": 77.3732999805361,
+          "median_repaint_ms": 72.62290001381189
+        },
+        "candidate": {
+          "median_frame_ms": 66.66374998167157,
+          "max_frame_ms": 68.06849990971386,
+          "median_repaint_ms": 66.66374998167157
+        }
+      }
+    }
+  },
+  {
+    "scene": "ocean_monument_1161",
+    "blocks": 989663,
+    "edit_handler_ms": 0.6465001497417688,
+    "picking_20_ms": 21.256200037896633,
+    "operations": {
+      "pan": {
+        "accepted": {
+          "median_frame_ms": 143.1972001446411,
+          "max_frame_ms": 143.50000000558794,
+          "median_repaint_ms": 143.1972001446411
+        },
+        "candidate": {
+          "median_frame_ms": 136.17385004181415,
+          "max_frame_ms": 136.46340020932257,
+          "median_repaint_ms": 136.17385004181415
+        }
+      },
+      "zoom": {
+        "accepted": {
+          "median_frame_ms": 146.48370014037937,
+          "max_frame_ms": 147.17210014350712,
+          "median_repaint_ms": 146.48370014037937
+        },
+        "candidate": {
+          "median_frame_ms": 8.88970005325973,
+          "max_frame_ms": 11.109699960798025,
+          "median_repaint_ms": 159.52930029015988
+        }
+      },
+      "rotate": {
+        "accepted": {
+          "median_frame_ms": 43.295550043694675,
+          "max_frame_ms": 45.17259984277189,
+          "median_repaint_ms": 43.295550043694675
+        },
+        "candidate": {
+          "median_frame_ms": 8.833450032398105,
+          "max_frame_ms": 33.79860008135438,
+          "median_repaint_ms": 46.86350002884865
+        }
+      },
+      "edit": {
+        "accepted": {
+          "median_frame_ms": 43.3850500266999,
+          "max_frame_ms": 371.4400001335889,
+          "median_repaint_ms": 43.3850500266999
+        },
+        "candidate": {
+          "median_frame_ms": 43.67009992711246,
+          "max_frame_ms": 44.12469989620149,
+          "median_repaint_ms": 43.67009992711246
+        }
+      }
+    }
+  }
+]

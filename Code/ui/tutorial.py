@@ -27,13 +27,22 @@ class GuidedTutorialMixin:
         self.configPath=os.path.join(BASE_DIR,'.tutorial_config.json')
         # Old auto-launch values stay untouched on disk and cannot revive a lesson.
         self.showOnStartup=False
+        self.openedOnce=False
+        self._preferences={}
+        try:
+            with open(self.configPath,encoding='utf-8') as source:
+                data=json.load(source)
+            if isinstance(data,dict):self._preferences=data
+            self.openedOnce=self._preferences.get('openedOnce',False) is True
+        except (OSError,ValueError):pass
 
     def shouldShowOnStartup(self):
         return False
     def _saveConfig(self):
         try:
             with open(self.configPath+'.tmp','w',encoding='utf-8') as f:
-                json.dump({'showOnStartup':self.showOnStartup,'guidedVersion':2},f)
+                json.dump(dict(self._preferences,showOnStartup=False,guidedVersion=2,
+                               openedOnce=self.openedOnce),f)
             os.replace(self.configPath+'.tmp',self.configPath)
         except OSError:pass
     def setAdvanced(self,advanced):
@@ -76,6 +85,9 @@ class GuidedTutorialMixin:
         self.optionalRect=pygame.Rect(x,y-26,308,21)
     def advancedHotbarNames(self,index):return tuple(TOUR[index]['icons'])
     def show(self):
+        if not self.openedOnce:
+            self.openedOnce=True
+            self._saveConfig()
         self.visible=True;self.minimized=False;self.dragging=False;self.menuOpen=False
         self.selectLesson(0)
     def selectLesson(self,index,retry=False):
@@ -182,6 +194,18 @@ class GuidedTutorialMixin:
                     (self.panelX+14,self.backButtonRect.bottom+10))
 
     def _renderMinimizedTile(self, screen):
+        self.renderDock(screen,self._restoreTileRect())
+
+    def renderDock(self,screen,rect,focused=False):
         from ui.chrome import icon_button
-        rect=self._restoreTileRect()
-        icon_button(screen,rect,'?',self.dockFont,rect.collidepoint(pygame.mouse.get_pos()))
+        icon_button(screen,rect,'',self.dockFont,rect.collidepoint(pygame.mouse.get_pos()),focused)
+        # Original open-book silhouette, optically centered in shared navy chrome.
+        cx,cy=rect.center
+        left=[(cx-10,cy-7),(cx,cy-4),(cx,cy+8),(cx-10,cy+5)]
+        right=[(cx,cy-4),(cx+10,cy-7),(cx+10,cy+5),(cx,cy+8)]
+        pygame.draw.polygon(screen,(210,205,187),left)
+        pygame.draw.polygon(screen,(229,224,205),right)
+        pygame.draw.aalines(screen,(64,58,55),True,left)
+        pygame.draw.aalines(screen,(64,58,55),True,right)
+        if not self.openedOnce:
+            pygame.draw.circle(screen,(250,252,255),(rect.right-5,rect.top+5),3)

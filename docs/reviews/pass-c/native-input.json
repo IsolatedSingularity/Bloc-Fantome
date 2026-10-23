@@ -1,0 +1,32 @@
+{
+  "executable": "C:\\Users\\hunkb\\OneDrive\\Documents\\Embryo\\Bloc-Fantome\\.qa\\pass-c\\package\\BlocFantome.exe",
+  "version": "3.0.0",
+  "method": "Windows Computer Use mouse injection and native window screenshots",
+  "passed": [
+    "tutorial book opens sanctuary",
+    "leave restores build",
+    "unread dot cleared and openedOnce persisted",
+    "map button opens map",
+    "Back returns to editor",
+    "Settings has no version footer",
+    "exit confirmation and centered Goodbye"
+  ],
+  "unverified": [
+    "injected keyboard events did not visibly dismiss Settings or focus navigation",
+    "physical keyboard and trackpad",
+    "human audio listening"
+  ],
+  "qa_window_closed": true,
+  "launcher_issue": "sky.launch_app resolved exact candidate path to installed 2.9.9; closed that QA process and used exact-path Start-Process for candidate",
+  "earlier_presentation_build_sha256": "d4c0efe69ed3886a22d6f4e08ceb57d6f9bb2b0649fcf9a1e339a18bfb85ce6c",
+  "final_build_sha256": "8e070a23a0ea0232f4e6de0bb74fb0e249a7e2effa43bfb778f591360bf7587e",
+  "final_build_recheck": [
+    "launch 3.0.0",
+    "persisted unread dot remains cleared",
+    "map open and Back",
+    "unchanged editor restored",
+    "Exit dialog",
+    "centered Goodbye",
+    "window closed"
+  ]
+}

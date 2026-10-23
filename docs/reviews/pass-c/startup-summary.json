@@ -1,0 +1,72 @@
+{
+  "source": {
+    "launch_to_first_editor_ms": [
+      4822.06270005554,
+      5125.595799880102,
+      4835.639799945056
+    ],
+    "run_to_editor_ready_ms": [
+      3566.98130001314,
+      3908.776900032535,
+      3599.2463999427855
+    ],
+    "pre_run_median_ms": 732.9842001199722,
+    "phase_medians_ms": {
+      "_checkTextures": 68.30109981819987,
+      "_loadTextures": 116.90869997255504,
+      "_createBlockSprites": 312.03219993039966,
+      "_buildMipmaps": 7.044000085443258,
+      "_createIconSprites": 9.84820001758635,
+      "_loadSounds": 2065.590800018981,
+      "_loadUITextures": 1.30390003323555,
+      "_createBackground": 0.8279001340270042,
+      "_playMenuMusic": 286.0832998994738,
+      "_preloadTutorialMusic": 538.9203999657184,
+      "_generateStructurePreviews": 101.38350003398955,
+      "_createInitialFloor": 9.94289992377162
+    },
+    "max_gap_ms": [
+      541.5223001036793,
+      541.2626001052558,
+      540.9268999937922
+    ]
+  },
+  "frozen": {
+    "launch_to_first_editor_ms": [
+      8100.558599922806,
+      8085.882999934256,
+      7905.914300121367
+    ],
+    "run_to_editor_ready_ms": [
+      4187.090900028124,
+      4057.933200150728,
+      3770.5938001163304
+    ],
+    "pre_run_median_ms": 3534.0357997920364,
+    "phase_medians_ms": {
+      "_checkTextures": 189.4038999453187,
+      "_loadTextures": 191.8862999882549,
+      "_createBlockSprites": 292.092900024727,
+      "_buildMipmaps": 6.805600132793188,
+      "_createIconSprites": 9.448400000110269,
+      "_loadSounds": 2155.371400061995,
+      "_loadUITextures": 2.250600140541792,
+      "_createBackground": 1.0953000746667385,
+      "_playMenuMusic": 301.9503999967128,
+      "_preloadTutorialMusic": 751.3103999663144,
+      "_generateStructurePreviews": 99.0933000575751,
+      "_createInitialFloor": 0.8217000868171453
+    },
+    "max_gap_ms": [
+      532.0452998857945,
+      519.6247000712901,
+      524.4956999085844
+    ]
+  },
+  "accepted_frozen_run_to_editor_ready_ms": [
+    5233.663200167939,
+    5430.7203001808375
+  ],
+  "cache_conditions": "Fresh processes, existing filesystem cache. First and repeated launches; no reboot or OS cache purge. Not a true cold-disk benchmark.",
+  "launch_timer": "Parent and child perf_counter clock; first editor presentation recorded after flip. Pre-run includes onefile initialization/imports and construction, not separately decomposed."
+}

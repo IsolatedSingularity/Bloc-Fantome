@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Optional
 
 import pygame
@@ -20,7 +21,14 @@ def set_text_scale(scale):
     TEXT_SCALE = max(1.0, min(2.0, float(scale)))
 
 
-def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None, italic=False):
+def font_source(bold=False, fonts_dir=FONTS_DIR, fallback=None, italic=False, experiment=True):
+    # Review-only choice. No saved preference or global default change.
+    # Large labels may use Light; small functional text stays Regular/Text.
+    experiment=os.environ.get('BLOC_FONT_EXPERIMENT','') if experiment else ''
+    if experiment in ('plex','plex-light') and not italic:
+        weight='Text' if bold else 'Regular'
+        path=Path(__file__).with_name('fonts')/'IBMPlexSans'/f'IBMPlexSans-{weight}.ttf'
+        if path.is_file():return str(path)
     # SDL can resolve the family name to Segoe UI Light. Choose the installed
     # regular/semibold face explicitly. Never distribute Microsoft font files.
     installed = os.path.join(os.environ.get('WINDIR', 'C:/Windows'), 'Fonts',
@@ -103,9 +111,13 @@ def load_ui_font(
     fallback: Optional[str] = None,
     bold: bool = False,
     italic: bool = False,
+    experiment: bool = True,
 ) -> UIFont:
     """Resolve OS Segoe UI, with the existing licensed local font as fallback."""
-    path = font_source(bold, fonts_dir, fallback, italic)
+    path = font_source(bold, fonts_dir, fallback, italic, experiment)
+    if experiment and os.environ.get('BLOC_FONT_EXPERIMENT')=='plex-light' and size>=20 and not italic:
+        light=Path(__file__).with_name('fonts')/'IBMPlexSans'/'IBMPlexSans-Light.ttf'
+        if light.is_file():path=str(light)
     try:
         font = pygame.font.Font(path, round(size * TEXT_SCALE))
     except (OSError, pygame.error):

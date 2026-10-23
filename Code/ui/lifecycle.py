@@ -83,9 +83,8 @@ class GoodbyeScreen:
             alpha = round(100 * max(0, (y/h-.62)/.38) ** 1.4)
             pygame.draw.line(veil, (4,12,23,alpha), (0,y), (w,y))
         self.background.blit(veil, (0,0))
-        self.title = load_ui_font(max(32,min(48,round(h*.052)))).render('Goodbye', True, (236,240,242))
+        self.title = load_ui_font(max(44,min(68,round(h*.070)))).render('Goodbye', True, (236,240,242))
         self.message = load_ui_font(max(15,min(21,round(h*.022)))).render(self.phrase, True, (211,226,233))
-        self.hint = load_ui_font(13).render('Press any key or click to close', True, (169,190,202))
         self.shade = pygame.Surface(self._size)
         self.shade.fill((4,12,23))
 
@@ -102,10 +101,10 @@ class GoodbyeScreen:
         screen.blit(self.background, (0,0))
         arrival = min(1, max(0, elapsed / 400))
         lift = 0 if self.reduced else round(5 * (1-arrival) ** 3)
-        center = (round(w*.27), round(h*.78)+lift)
-        message_y=center[1]+self.title.get_height()//2+self.message.get_height()//2+4
-        for text,y in ((self.title,center[1]),(self.message,message_y),(self.hint,h-25)):
-            screen.blit(text,text.get_rect(center=(center[0] if text is not self.hint else w//2,y)))
+        center = (w//2, round(h*.78)+lift)
+        message_y=center[1]+self.title.get_height()//2+self.message.get_height()//2+10
+        for text,y in ((self.title,center[1]),(self.message,message_y)):
+            screen.blit(text,text.get_rect(center=(center[0],y)))
         assembly(screen,(center[0],center[1]-self.title.get_height()//2-25),
                  elapsed/1000,self.reduced,closing=True)
         if not self.reduced:
