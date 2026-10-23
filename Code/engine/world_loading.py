@@ -12,7 +12,7 @@ class WorldLoadingAppMixin:
         if self.pendingBiomeLoad is not None or self.pendingWorldLoad is not None:
             return
         self._biomeLoadOwner = self._captureLoadOwner()
-        self.pendingBiomeLoad = (self.worldLoadExecutor.submit(self._stageBiomeScene, biome_id), biome_id)
+        self.pendingBiomeLoad = (self.worldLoadExecutor.submit(self._stageBiomeScene, biome_id, library=True), biome_id)
 
 
     def _pollBiomeLoad(self):

@@ -1,0 +1,68 @@
+{
+  "version": "3.0.0",
+  "release_date": "2026-10-22",
+  "tests": {
+    "passed": 632,
+    "elapsed_seconds": 244.43
+  },
+  "runtime_source_manifest_matches": true,
+  "manifest_files_verified": 30,
+  "biome_scenes": 37,
+  "biome_audit_inputs_unchanged": true,
+  "exe_sha256": "fc567b23b31c33a07c82f5c7c7b37ffd94dca371144ddcdccbd399d00d437bdc",
+  "exe_bytes": 282060369,
+  "source_and_frozen_integration": [
+    {
+      "name": "frozen-integration",
+      "returncode": 0
+    },
+    {
+      "name": "frozen-edges",
+      "returncode": 0
+    },
+    {
+      "name": "source-integration",
+      "returncode": 0
+    }
+  ],
+  "root_smoke": {
+    "returncode": 0
+  },
+  "startup_audio": [
+    {
+      "name": "audio-final",
+      "onset_s": 3.637166666666667,
+      "correlation": 0.9512614357300628,
+      "unexpected_silence_runs_s": [],
+      "capture_status_flags": [
+        0
+      ],
+      "child_exit": 0
+    }
+  ],
+  "installed_checks": {
+    "installed_version": "3.0.0",
+    "start_menu": {
+      "actual_shortcut_launch": true,
+      "target_icon_working_directory_verified": true,
+      "installed_process_path_and_version_verified": true
+    },
+    "mouse": {
+      "block_placement": true,
+      "rain_toggle_and_drawer_persistence": true,
+      "explicit_drawer_dismissal": true,
+      "dirty_exit_prompt": true,
+      "native_save_and_exit": true,
+      "goodbye": true
+    },
+    "saved_fixture": "installed-physical/saves/build.json.gz",
+    "keyboard": "Helper-generated Ctrl+Z and Escape had no visible effect. Native keyboard coverage is inconclusive; SDL event regressions pass.",
+    "windows_snap": "Unverified; available helper does not support a validated screen-edge drag and disallows Windows-key shortcuts.",
+    "os_dpi": 120,
+    "exe_sha256": "fc567b23b31c33a07c82f5c7c7b37ffd94dca371144ddcdccbd399d00d437bdc"
+  },
+  "user_data": {
+    "files_checked": 52,
+    "all_unchanged": true
+  }
+}

@@ -171,7 +171,7 @@ class Library:
             ease=1-(1-progress)**3
             self.rect=pygame.Rect(*(round(a+(b-a)*ease) for a,b in zip(self._morph_from,target)))
         else:self.rect=target;self._morph_from=None
-        panel(screen,self.rect,alpha=240)
+        panel(screen,self.rect,alpha=240,major=True)
         panel_clip=screen.get_clip();screen.set_clip(self.rect.clip(panel_clip))
         x,y,w,h=self.rect;left=x+16;top=y+12
         from ui.chrome import close_size
@@ -216,7 +216,8 @@ class Library:
                 self.dimension_rects[dim]=r.clip(self.rect)
                 button(screen,r,'',self.small,r.collidepoint(mouse),dim==self.dimension,quiet=True)
                 size=max(24,min(rail_width-24,tile_h-self.small.get_linesize()-12))
-                icon(screen,'dimension_'+dim,pygame.Rect(r.centerx-size//2,r.y+4,size,size),TEXT)
+                art='biome_overworld' if self.tab=='Biomes' and dim=='overworld' else 'dimension_'+dim
+                icon(screen,art,pygame.Rect(r.centerx-size//2,r.y+4,size,size),TEXT)
                 label_surface=self.small.render(label,True,ACCENT if dim==self.dimension else TEXT)
                 screen.blit(label_surface,label_surface.get_rect(midbottom=(r.centerx,r.bottom-6)))
             gallery_left+=rail_width+16

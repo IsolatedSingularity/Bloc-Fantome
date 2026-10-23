@@ -1,0 +1,24 @@
+[
+  {
+    "file": "workshop-toggle.wav",
+    "source": "Code/ui/audio/toggle-soft.wav",
+    "source_sha256": "8b630175c107747f5169f4d2501c1929d485bc9db2127b5d043dbecd943f02b2",
+    "sha256": "25d69fac54d62de241059e71141f849310c0c60a755b7fb61e90e353f7b8f832",
+    "filters": "atrim=0:0.32,afade=t=out:st=0.08:d=0.24",
+    "context_gain": 0.48,
+    "duration": 0.32,
+    "rms": 0.040262402979611665,
+    "peak": 0.2021484375
+  },
+  {
+    "file": "workshop-button.wav",
+    "source": "Assets/Sound Hub/ui/selected/pressButton.wav",
+    "source_sha256": "8616f2bc95d0a6dd851ec1fb3d4381ec7e942db22201f22f10dc5dc5473ad66d",
+    "sha256": "cb8f2ab182c0ea27a24f75a513ab7cd00acbd6ed79db0a0afe62677105a1310b",
+    "filters": "atrim=0:0.28,afade=t=in:d=0.008,afade=t=out:st=0.06:d=0.22",
+    "context_gain": 0.62,
+    "duration": 0.28,
+    "rms": 0.048832551665852535,
+    "peak": 0.22589111328125
+  }
+]

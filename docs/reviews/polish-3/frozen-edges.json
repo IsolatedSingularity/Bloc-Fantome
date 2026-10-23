@@ -1,0 +1,69 @@
+{
+  "physical_input": false,
+  "audio_muted": true,
+  "cases": [
+    {
+      "case": "escape",
+      "driver": "windows",
+      "elapsed_ms": 74.66310006566346,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "letter",
+      "driver": "windows",
+      "elapsed_ms": 70.43439988046885,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "mouse",
+      "driver": "windows",
+      "elapsed_ms": 73.79800011403859,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "window-close",
+      "driver": "windows",
+      "elapsed_ms": 76.62270008586347,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    },
+    {
+      "case": "worker-skip",
+      "driver": "windows",
+      "elapsed_ms": 361.96329980157316,
+      "frames": 0,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": [
+        "SDL alive until worker finished"
+      ]
+    },
+    {
+      "case": "reduced-motion",
+      "driver": "windows",
+      "elapsed_ms": 3261.014699935913,
+      "frames": 183,
+      "saved_skybox_off_preserved": true,
+      "old_tutorial_auto_launch_ignored": true,
+      "sdl_closed": true,
+      "worker": []
+    }
+  ],
+  "evidence_stage": "Before final audio cache handoff correction; corresponding functional code unchanged"
+}

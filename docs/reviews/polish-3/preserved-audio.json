@@ -1,0 +1,17 @@
+{
+  "unchanged": 12,
+  "sources": {
+    "Assets/Sound Hub/ui/selected/bootUp.wav": "f353fa2d4997860b5e2862c24f065e919611b8cac66bc71910dec6451d6dd87a",
+    "Assets/Sound Hub/ui/selected/close.wav": "3130ad44242b5263fde0277edf1467d07c66402ec41bc10aa42b17ac7c8c61c0",
+    "Assets/Sound Hub/ui/selected/error.wav": "f5c216484737fcb0bfdcf0f726a477c2f55acf69665c5b9696a2128962256303",
+    "Assets/Sound Hub/ui/selected/pressButton.wav": "8616f2bc95d0a6dd851ec1fb3d4381ec7e942db22201f22f10dc5dc5473ad66d",
+    "Assets/Sound Hub/ui/selected/save.wav": "79a6b37bc2c0968a43fafbd9348a3457d2b198f6b1fcb217d1ac4559e6812dac",
+    "Assets/Sound Hub/ui/selected/shutDown.wav": "d323421c7d753a40d3181b0151526bf28ed82423989098f4f33595c95d659aeb",
+    "Assets/Sound Hub/ui/selected/worldMap.wav": "2a4ff57ff2ab9091c1650c529f6482ccea1023056a915ee892b5102be8018720",
+    "Assets/Sound Hub/ui/selected/Extra/Piano_Ui (6).wav": "baeb619af4e15e9eb7fe375bdc9ee58461deaad5a3516ff736895f5c114bbdf1",
+    "Assets/Sound Hub/ui/selected/Extra/Piano_Ui (7).wav": "29e7826f95624128c61b5b090703fa8c0e3175fd6e2c671ebeaf739612c2bacf",
+    "Assets/Sound Hub/ui/selected/Extra/SkywardHero_UI (13).wav": "f3a312e43ad8718b28d320db28b082bddb67f9063eb9dbdc8d0a191cf16a9c83",
+    "Assets/Sound Hub/ui/selected/Extra/SkywardHero_UI (14).wav": "a5b3eb2f91eed87ec1158f649fbc1d648a854972bd9b3c40aa46ae8e0948cede",
+    "Code/ui/audio/close-short.wav": "bbbc7ecc803beae8dd4e5d53c17b49956a56962b75e388846592f10eb0bb24b8"
+  }
+}

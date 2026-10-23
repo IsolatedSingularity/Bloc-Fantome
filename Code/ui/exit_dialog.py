@@ -34,17 +34,17 @@ class ExitDialog:
             self.shade = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
             self.shade.fill((3, 7, 12, 175))
         screen.blit(self.shade, (0, 0))
-        width = min(screen.get_width() - 32, 620)
-        message = ('Saving… Please wait for the confirmed write.' if pending else
-                   'Unsaved changes will be lost. Save and Exit keeps your build.' if self.dirty else
-                   'Your saved build will be here when you return.')
+        width = min(screen.get_width() - 32, max(460, self.small.size('Save and Exit')[0]*3+88))
+        message = ('Saving…' if pending else
+                   'Exit without saving your changes?' if self.dirty else
+                   'Your build is saved.')
         body_height = chrome.wrapped_height(error or message, self.small, width - 40)
-        box = pygame.Rect(0, 0, width, max(190, body_height + 126))
+        box = pygame.Rect(0, 0, width, max(152, body_height + self.font.get_height() + 96))
         box.center = screen.get_rect().center
-        chrome.panel(screen, box)
-        screen.blit(self.font.render('Exit Bloc Fantôme?', True, chrome.TEXT), (box.x + 20, box.y + 20))
+        chrome.panel(screen, box, alpha=228, major=True)
+        screen.blit(self.font.render('Leave the workshop?', True, chrome.TEXT), (box.x + 20, box.y + 16))
         chrome.wrapped(screen, error or message, self.small,
-                       (box.x + 20, box.y + 62, width - 40, body_height),
+                       (box.x + 20, box.y + 24 + self.font.get_height(), width - 40, body_height),
                        chrome.ERROR if error else chrome.MUTED)
         choices = [('stay', 'Stay')]
         if not pending:

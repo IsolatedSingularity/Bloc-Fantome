@@ -28,18 +28,20 @@ def rounded(screen, color, rect, radius=RADIUS):
     rect = pygame.Rect(rect)
     if rect.width <= 0 or rect.height <= 0:return
     rgba = tuple(color) if len(color)==4 else (*color,255)
-    radius = max(1,min(int(radius),rect.width//2,rect.height//2))
+    radius = max(0,min(int(radius),rect.width//2,rect.height//2))
     key = (rect.size,rgba,radius)
     layer = _rounded_cache.get(key)
     if layer is None:
         layer=pygame.Surface(rect.size,pygame.SRCALPHA)
         layer.fill((*rgba[:3],0))
         w,h=rect.size;r=radius
+        if not r:
+            layer.fill(rgba)
         pygame.draw.rect(layer,rgba,(r,0,w-2*r,h))
         pygame.draw.rect(layer,rgba,(0,r,w,h-2*r))
         # Supersample only four tiny corner buffers. Text and the panel body
         # stay at their native final size; no full-screen supersampling.
-        corner=pygame.Surface((r*6,r*6),pygame.SRCALPHA)
+        corner=pygame.Surface((max(1,r*6),max(1,r*6)),pygame.SRCALPHA)
         pygame.draw.circle(corner,(255,255,255,255),(r*3,r*3),r*3)
         circle=pygame.transform.smoothscale(corner,(r*2,r*2))
         coverage=pygame.surfarray.array_alpha(circle).astype('uint16')*rgba[3]//255
@@ -60,13 +62,13 @@ def rounded(screen, color, rect, radius=RADIUS):
     screen.blit(layer,rect)
 
 
-def panel(screen, rect, assets=None, accent=None, alpha=246):
+def panel(screen, rect, assets=None, accent=None, alpha=246, *, major=False):
     rect=pygame.Rect(rect)
     # Cached fills retain readable navy; only a small top highlight is translucent.
     alpha=max(215,alpha)
-    rounded(screen,(*SURFACE,alpha),rect)
+    rounded(screen,(*SURFACE,alpha),rect,0 if major else RADIUS)
     if rect.width>24 and rect.height>20:
-        outline(screen, (57,75,94,100), rect, RADIUS)
+        outline(screen, (57,75,94,100), rect, 0 if major else RADIUS)
 
 
 def _outline(size, color, radius, width):
@@ -79,7 +81,7 @@ def _outline(size, color, radius, width):
     outer=pygame.Surface(size,pygame.SRCALPHA)
     inner=pygame.Surface(size,pygame.SRCALPHA)
     rounded(outer,(255,255,255),outer.get_rect(),radius)
-    rounded(inner,(255,255,255),inner.get_rect().inflate(-2*width,-2*width),max(1,radius-width))
+    rounded(inner,(255,255,255),inner.get_rect().inflate(-2*width,-2*width),max(0,radius-width))
     coverage=pygame.surfarray.array_alpha(outer).astype('int32')-pygame.surfarray.array_alpha(inner)
     layer=pygame.Surface(size,pygame.SRCALPHA);layer.fill(color)
     alpha=pygame.surfarray.pixels_alpha(layer)

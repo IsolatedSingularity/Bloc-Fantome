@@ -28,7 +28,7 @@ This is the most direct fit.
 
 Bloc already has canonical piston simulation and a 100 ms interpolated `PistonMotion`. Ponder adds a useful way of thinking about the **display** of that motion: the head, rod and moved payload are one presentation event, sampled from one phase, while canonical world state remains owned by the simulator.
 
-The first future agent should therefore inspect the current render path for:
+The next maintainer should therefore inspect the current render path for:
 
 - one shared motion progress value for head / rod / payload;
 - suppression of duplicate source/destination geometry during transit;
@@ -170,7 +170,7 @@ The common layer would own only temporary presentation concerns: selected geomet
 
 That is the coherent direction. It avoids a Frankenstein outcome where the tutorial, Lab, previews and live editor each invent separate animation systems.
 
-## Recommended reading order for future agents
+## Recommended reading order for future maintainers
 
 When the task concerns Ponder-like presentation:
 
@@ -191,6 +191,6 @@ This document does **not** authorize implementation. When the QA gate is clear a
 
 Compare extension start, intermediate frames, endpoint, retraction, interruption and an occluded foreground case. Determine whether existing interpolation/compositing already produces the desired coherent motion.
 
-Only if it cannot should the next agent prototype a translation-only visual section.
+Only if it cannot should the next maintainer prototype a translation-only visual section.
 
 The desired result is not “Bloc Fantôme has Ponder.” It is that the mechanisms in Bloc Fantôme read with the same immediate clarity and satisfying physical coherence that made Ponder stand out in the first place.

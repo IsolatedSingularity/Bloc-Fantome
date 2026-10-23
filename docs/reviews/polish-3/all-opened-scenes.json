@@ -1,0 +1,372 @@
+[
+  {
+    "scene": "plains",
+    "cells": 192029,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "sunflower_plains",
+    "cells": 125444,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "forest",
+    "cells": 185017,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "flower_forest",
+    "cells": 128880,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "birch_forest",
+    "cells": 135381,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "dark_forest",
+    "cells": 143488,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "desert",
+    "cells": 212328,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "taiga",
+    "cells": 147631,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "giant_tree_taiga",
+    "cells": 149411,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "snowy_tundra",
+    "cells": 156166,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "ice_spikes",
+    "cells": 132152,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "snowy_taiga",
+    "cells": 135256,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "mountains",
+    "cells": 137197,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "wooded_mountains",
+    "cells": 121433,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "swamp",
+    "cells": 17023,
+    "size": [
+      32,
+      32,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "jungle",
+    "cells": 173468,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "bamboo_jungle",
+    "cells": 144169,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "savanna",
+    "cells": 149168,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "shattered_savanna",
+    "cells": 133459,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "ocean",
+    "cells": 343254,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "warm_ocean",
+    "cells": 291285,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "frozen_ocean",
+    "cells": 326130,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "river",
+    "cells": 128352,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "frozen_river",
+    "cells": 127644,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "beach",
+    "cells": 226458,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "stone_shore",
+    "cells": 213781,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "badlands",
+    "cells": 295341,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "eroded_badlands",
+    "cells": 130041,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "mushroom_fields",
+    "cells": 190438,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "nether_wastes",
+    "cells": 263379,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "crimson_forest",
+    "cells": 266815,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "warped_forest",
+    "cells": 207886,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "soul_sand_valley",
+    "cells": 166911,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "basalt_deltas",
+    "cells": 214032,
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "the_end",
+    "cells": 568661,
+    "size": [
+      256,
+      256,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "end_highlands",
+    "cells": 200199,
+    "size": [
+      128,
+      128,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "small_end_islands",
+    "cells": 939,
+    "size": [
+      33,
+      43,
+      256
+    ],
+    "exact_positions": true
+  }
+]

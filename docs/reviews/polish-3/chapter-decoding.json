@@ -1,0 +1,50 @@
+[
+  {
+    "chapter": "01-one.ogg",
+    "prepare_seconds": 1.5633457000367343,
+    "max_poll_ms": 48.764799954369664,
+    "load_ms": 0.05010003224015236,
+    "duration_seconds": 257.9800109863281,
+    "cached": 0
+  },
+  {
+    "chapter": "03-three.ogg",
+    "prepare_seconds": 1.2134219000581652,
+    "max_poll_ms": 0.3933999687433243,
+    "load_ms": 0.0521000474691391,
+    "duration_seconds": 215.0,
+    "cached": 1
+  },
+  {
+    "chapter": "07-seven.ogg",
+    "prepare_seconds": 1.1191239000763744,
+    "max_poll_ms": 0.1555001363158226,
+    "load_ms": 0.04619988612830639,
+    "duration_seconds": 200.0,
+    "cached": 2
+  },
+  {
+    "chapter": "01-one.ogg",
+    "prepare_seconds": 8.799834176898003e-06,
+    "max_poll_ms": 0.004300149157643318,
+    "load_ms": 0.010200077667832375,
+    "duration_seconds": 257.9800109863281,
+    "cached": 2
+  },
+  {
+    "chapter": "03-three.ogg",
+    "prepare_seconds": 3.2999087125062943e-06,
+    "max_poll_ms": 0.002400018274784088,
+    "load_ms": 0.00700005330145359,
+    "duration_seconds": 215.0,
+    "cached": 2
+  },
+  {
+    "chapter": "07-seven.ogg",
+    "prepare_seconds": 2.400018274784088e-06,
+    "max_poll_ms": 0.001800013706088066,
+    "load_ms": 0.005800044164061546,
+    "duration_seconds": 200.0,
+    "cached": 2
+  }
+]

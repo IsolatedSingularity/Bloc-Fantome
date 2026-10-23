@@ -20,7 +20,7 @@ def render(s, app):
     top=s.operation_rect.bottom+8 if s.operation_rect.height else 82
     height=min(h-top-84,2*row+52+content)
     box=pygame.Rect(w-width-24,top,width,height)
-    s._panel(screen,box,232)
+    s._panel(screen,box,232,major=True)
     start=len(s.hits);x=box.x+12;inner=width-24;cw=(inner-8)//3
     for i,key in enumerate(('save','open','settings')):
         s._button(screen,(x+i*(cw+4),top+12,cw,row),key.title(),key)

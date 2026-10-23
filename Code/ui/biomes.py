@@ -124,6 +124,8 @@ class BiomePanel:
             self.previews.move_to_end(key)
             return self.previews[key]
         path=Path(BUNDLED_DATA_DIR)/'biome_captures'/f"{entry['id']}.png"
+        derived=path.parent/'derived'/path.name
+        if derived.exists():path=derived
         if path.exists():
             source=pygame.image.load(str(path)).convert_alpha()
             scale=min(size[0]/source.get_width(),size[1]/source.get_height())

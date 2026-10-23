@@ -1,0 +1,31 @@
+         11399983 function calls in 6.149 seconds
+
+   Ordered by: cumulative time
+   List reduced from 62 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.118    0.118    6.149    6.149 performance.py:45(settle)
+      454    0.172    0.000    5.906    0.013 blocFantome.py:21221(_renderWorld)
+      448    0.091    0.000    4.615    0.010 renderer.py:146(worldToScreenBatch)
+      448    2.199    0.005    4.354    0.010 {built-in method numpy.fromiter}
+ 10775920    2.158    0.000    2.158    0.000 renderer.py:156(<genexpr>)
+      454    0.620    0.001    0.620    0.001 {method 'blit' of 'pygame.surface.Surface' objects}
+      454    0.167    0.000    0.289    0.001 blocFantome.py:21141(_visibleScreenRenderPlan)
+      896    0.153    0.000    0.153    0.000 {method 'tolist' of 'numpy.ndarray' objects}
+   165707    0.091    0.000    0.115    0.000 {method 'get' of 'dict' objects}
+      454    0.115    0.000    0.115    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+   214067    0.065    0.000    0.065    0.000 {built-in method builtins.round}
+      454    0.002    0.000    0.030    0.000 blocFantome.py:20835(_visibleBlocksInDrawOrder)
+      454    0.001    0.000    0.030    0.000 repaint_batch.py:31(finish)
+    46637    0.019    0.000    0.029    0.000 enum.py:1266(__hash__)
+      454    0.003    0.000    0.029    0.000 repaint_batch.py:23(flush)
+      454    0.007    0.000    0.029    0.000 blocFantome.py:20853(_editorVisibleBlocksInDrawOrder)
+    20624    0.024    0.000    0.028    0.000 repaint_batch.py:15(append)
+      454    0.026    0.000    0.026    0.000 {method 'blits' of 'pygame.surface.Surface' objects}
+     1757    0.010    0.000    0.026    0.000 blocFantome.py:7721(getScaledSprite)
+      454    0.002    0.000    0.016    0.000 blocFantome.py:20828(_cameraWorldCenter)
+      896    0.012    0.000    0.012    0.000 {method 'astype' of 'numpy.ndarray' objects}
+     1363    0.005    0.000    0.012    0.000 blocFantome.py:9237(_worldViewportRight)
+    46637    0.010    0.000    0.010    0.000 {built-in method builtins.hash}
+      454    0.002    0.000    0.008    0.000 renderer.py:181(screenToWorld)
+     3800    0.005    0.000    0.008    0.000 renderer.py:128(worldToScreen)

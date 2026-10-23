@@ -8,6 +8,25 @@ from ui.chrome import panel, wrapped, TEXT, MUTED
 from ui.fonts import load_ui_font
 from runtime_paths import BUNDLED_DATA_DIR, WORLDS_DIR
 
+# Source coordinates, deliberately separate from canonical captures. Villages
+# need a close landscape view; the End retains its accepted cover composition.
+WORLD_FRAMING = {
+    'village_plains_1161': (1.55, .52, .46),
+    'village_desert_1161': (1.45, .50, .45),
+    'village_savanna_1161': (1.50, .52, .44),
+    'village_snowy_1161': (1.45, .50, .44),
+    'village_taiga_1161': (1.45, .54, .44),
+    'ocean_monument_1161': (1.12, .50, .43),
+    'ancient_city_121': (1.0, .50, .50),
+    'trial_chamber_121': (1.10, .50, .43),
+    'basalt_deltas_1161': (1.08, .50, .48),
+    'bastion_bridge_1161': (1.08, .50, .47),
+    'bastion_hoglin_stable_1161': (1.08, .50, .47),
+    'bastion_housing_units_1161': (1.08, .50, .47),
+    'bastion_treasure_1161': (1.08, .50, .47),
+    'nether_fortress_biomes_1161': (1.08, .50, .47),
+}
+
 
 class PreviewImages:
     def __init__(self, byte_budget=32*1024*1024):
@@ -121,11 +140,19 @@ class PreviewImages:
         # actual build, including narrow towers and transparent decoration.
         bounds=source.get_bounding_rect(min_alpha=16)
         if bounds.width and bounds.height:source=source.subsurface(bounds)
-        fit=max if kind in ('world','biome') else min
+        framing=WORLD_FRAMING.get(value.scene_id) if kind=='world' else None
+        complete_islands=kind=='biome' and value['id']=='small_end_islands'
+        fit=min if complete_islands or kind=='world' and value.scene_id=='ancient_city_121' else max if kind in ('world','biome') else min
         ratio=fit(size[0]/source.get_width(),size[1]/source.get_height())
+        if complete_islands:ratio*=.91
+        if framing:ratio*=framing[0]
         result=pygame.Surface(size,pygame.SRCALPHA)
         fitted=pygame.transform.scale(source,(max(1,round(source.get_width()*ratio)),max(1,round(source.get_height()*ratio))))
-        result.blit(fitted,fitted.get_rect(center=result.get_rect().center))
+        if framing:
+            _,fx,fy=framing
+            position=(round(size[0]/2-fitted.get_width()*fx),round(size[1]/2-fitted.get_height()*fy))
+        else:position=fitted.get_rect(center=result.get_rect().center)
+        result.blit(fitted,position)
         self._retain(key,result)
         return result
 

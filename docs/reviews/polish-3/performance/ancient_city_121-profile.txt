@@ -1,0 +1,31 @@
+         338908 function calls in 0.298 seconds
+
+   Ordered by: cumulative time
+   List reduced from 80 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.004    0.004    0.298    0.298 performance.py:45(settle)
+       17    0.038    0.002    0.286    0.017 blocFantome.py:21221(_renderWorld)
+       17    0.064    0.004    0.100    0.006 blocFantome.py:21141(_visibleScreenRenderPlan)
+        9    0.002    0.000    0.063    0.007 renderer.py:146(worldToScreenBatch)
+        9    0.027    0.003    0.056    0.006 {built-in method numpy.fromiter}
+       17    0.029    0.002    0.029    0.002 {method 'blit' of 'pygame.surface.Surface' objects}
+   120492    0.029    0.000    0.029    0.000 renderer.py:156(<genexpr>)
+    57588    0.020    0.000    0.027    0.000 {method 'get' of 'dict' objects}
+    93220    0.026    0.000    0.026    0.000 {built-in method builtins.round}
+     4065    0.006    0.000    0.009    0.000 renderer.py:128(worldToScreen)
+    12143    0.005    0.000    0.008    0.000 enum.py:1266(__hash__)
+      597    0.003    0.000    0.007    0.000 blocFantome.py:7721(getScaledSprite)
+       17    0.006    0.000    0.006    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+     4729    0.005    0.000    0.006    0.000 repaint_batch.py:15(append)
+       17    0.000    0.000    0.005    0.000 repaint_batch.py:31(finish)
+       17    0.000    0.000    0.005    0.000 repaint_batch.py:23(flush)
+       17    0.005    0.000    0.005    0.000 {method 'blits' of 'pygame.surface.Surface' objects}
+       18    0.005    0.000    0.005    0.000 {method 'tolist' of 'numpy.ndarray' objects}
+     4862    0.004    0.000    0.004    0.000 blocFantome.py:20999(_isOpaqueCubeDefinition)
+    12143    0.003    0.000    0.003    0.000 {built-in method builtins.hash}
+      605    0.001    0.000    0.002    0.000 performance.py:305(get)
+       17    0.000    0.000    0.002    0.000 blocFantome.py:20835(_visibleBlocksInDrawOrder)
+      218    0.001    0.000    0.002    0.000 blocks.py:504(in_view)
+     4746    0.002    0.000    0.002    0.000 {method 'append' of 'list' objects}
+       17    0.000    0.000    0.002    0.000 blocFantome.py:20853(_editorVisibleBlocksInDrawOrder)

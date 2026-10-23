@@ -54,7 +54,7 @@ def slider(app,label,value,x,y,width):
 def render(app):
     screen=app.screen;rect,sliders,controls=layout(app);font=app.smallFont;mouse=pygame.mouse.get_pos()
     shade=pygame.Surface(screen.get_size(),pygame.SRCALPHA);shade.fill((3,8,16,105));screen.blit(shade,(0,0))
-    chrome.panel(screen,rect,alpha=246)
+    chrome.panel(screen,rect,alpha=236,major=True)
     screen.blit(app.sectionFont.render('Settings',True,chrome.TEXT),(rect.x+22,rect.y+12))
     close=close_rect(app,rect);chrome.button(screen,close,'Close',font,close.collidepoint(mouse),quiet=True)
     heading=font.get_linesize()+4

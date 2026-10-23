@@ -1,0 +1,252 @@
+{
+  "baseline": "8abcf8e1",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "viewport": [
+    1200,
+    800
+  ],
+  "method": "warm alternate baseline/candidate, four measured runs after one warmup; native QA overlapped first cases",
+  "operations": [
+    {
+      "scene": "ancient_city_121",
+      "action": "pan",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 310.879849945195,
+        "max_ms": 318.5980999842286,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 326.14279992412776,
+        "max_ms": 344.69109983183444,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "ancient_city_121",
+      "action": "zoom",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.803299956023693,
+        "max_ms": 62.47049989178777,
+        "frames": 337
+      },
+      "candidate": {
+        "median_ms": 10.693099815398455,
+        "max_ms": 62.78320006094873,
+        "frames": 309
+      }
+    },
+    {
+      "scene": "ancient_city_121",
+      "action": "rotate",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 11.338100070133805,
+        "max_ms": 68.27089982107282,
+        "frames": 21
+      },
+      "candidate": {
+        "median_ms": 10.784500045701861,
+        "max_ms": 61.16149993613362,
+        "frames": 17
+      }
+    },
+    {
+      "scene": "ancient_city_121",
+      "action": "edit",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 70.37654996383935,
+        "max_ms": 75.97299991175532,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 79.47759993840009,
+        "max_ms": 90.14600003138185,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "action": "pan",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 676.8039501039311,
+        "max_ms": 781.1038000509143,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 700.0510999932885,
+        "max_ms": 758.9306000154465,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "action": "zoom",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.426249937154353,
+        "max_ms": 29.167799977585673,
+        "frames": 596
+      },
+      "candidate": {
+        "median_ms": 10.378099977970123,
+        "max_ms": 17.56210019811988,
+        "frames": 583
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "action": "rotate",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 67.10485008079559,
+        "max_ms": 83.2446999847889,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 71.13509997725487,
+        "max_ms": 81.12099999561906,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "trial_chamber_121",
+      "action": "edit",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 73.2700499938801,
+        "max_ms": 101.97669989429414,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 85.24245000444353,
+        "max_ms": 102.26469999179244,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "village_plains_1161",
+      "action": "pan",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 485.09544995613396,
+        "max_ms": 595.2337000053376,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 497.5202999776229,
+        "max_ms": 507.1010999381542,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "village_plains_1161",
+      "action": "zoom",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.344799957238138,
+        "max_ms": 16.31140010431409,
+        "frames": 426
+      },
+      "candidate": {
+        "median_ms": 10.279950103722513,
+        "max_ms": 20.219399826601148,
+        "frames": 416
+      }
+    },
+    {
+      "scene": "village_plains_1161",
+      "action": "rotate",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.526449885219336,
+        "max_ms": 94.51229986734688,
+        "frames": 82
+      },
+      "candidate": {
+        "median_ms": 10.315100196748972,
+        "max_ms": 113.3254999294877,
+        "frames": 73
+      }
+    },
+    {
+      "scene": "village_plains_1161",
+      "action": "edit",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 180.03640009555966,
+        "max_ms": 235.6688000727445,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 177.38065007142723,
+        "max_ms": 211.5273999515921,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "ocean_monument_1161",
+      "action": "pan",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 345.0682999100536,
+        "max_ms": 370.61460013501346,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 378.1705000437796,
+        "max_ms": 385.34929999150336,
+        "frames": 4
+      }
+    },
+    {
+      "scene": "ocean_monument_1161",
+      "action": "zoom",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.372899938374758,
+        "max_ms": 17.76030007749796,
+        "frames": 284
+      },
+      "candidate": {
+        "median_ms": 10.420500067993999,
+        "max_ms": 16.853699926286936,
+        "frames": 271
+      }
+    },
+    {
+      "scene": "ocean_monument_1161",
+      "action": "rotate",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 10.386600042693317,
+        "max_ms": 86.70490002259612,
+        "frames": 32
+      },
+      "candidate": {
+        "median_ms": 10.580400004982948,
+        "max_ms": 79.30919993668795,
+        "frames": 33
+      }
+    },
+    {
+      "scene": "ocean_monument_1161",
+      "action": "edit",
+      "pixel_equal": true,
+      "accepted": {
+        "median_ms": 118.21360001340508,
+        "max_ms": 122.26950004696846,
+        "frames": 4
+      },
+      "candidate": {
+        "median_ms": 122.25855002179742,
+        "max_ms": 136.23569998890162,
+        "frames": 4
+      }
+    }
+  ]
+}

@@ -5,21 +5,19 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - Unreleased candidate
+## [3.0.0] - 2026-10-22
 
 ### Changed
-- Make IBM Plex Sans the production default, with Regular labels and Light headings.
-- Keep one painting-fitted startup/editor window and fade directly into the editor.
-- Decode compressed sounds outside SDL's playback lock and hand boot audio into the existing menu bed.
-- Add native borderless dragging/resizing, quiet title controls and exact floating geometry restore.
-- Give the enlarged lifecycle cubes finite physical recoil; refine translucent World tiles with distinct motion and a simpler End icon.
-- Replace Settings with a compact measured inspector and keyboard-operable sliders, mutes and switches.
-- Add subtle selection/toggle piano derivatives while preserving accepted recordings.
+- Refine the workshop with IBM Plex typography, square outer panels, rounded controls and a smaller translucent Exit dialog.
+- Preserve the swamp painting, native title controls, startup audio handoff and accepted Goodbye presentation.
+- Keep World open after internal actions; improve layered clouds, readable snow, sunlight, lunar and Nether control motion, with Reduced Motion support.
+- Tune Library framing by subject, add a Biomes-only bell icon, and derive matching Swamp and complete Small End Islands scenes without rewriting canonical captures.
+- Shorten and soften World/Tools interaction cues. Add complete piano chapters at approximately one-third of ordinary music transitions, with asynchronous preparation and a bounded cache.
+- Document private asset recovery, refresh screenshots and record source, packaged and installation checks.
 
-### Verification and release status
-- The final finishing review documents source/frozen tests, Windows output captures and remaining owner checks.
-- Keep Pass C rendering improvements; reject the follow-up optimization that did not improve measured latency.
-- Development candidate only. Main promotion, root executable and installation await owner acceptance.
+### Known limitations
+- Large captured worlds still have camera rebuild, editing, loading and save stalls. The owner accepted these documented limits for 3.0; this release does not claim a renderer performance breakthrough.
+- Physical keyboard, Windows Snap and other unverified platform checks are distinguished from automated coverage in the release QA record.
 
 ## [2.9.9] - 2026-10-21
 
@@ -194,7 +192,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.6.4] - 2026-08-27
 
 ### Added
-- Added an ignored, lossless WorldBuilder reference corpus with the original archives, byte-identical DCR movies, raw ProjectorRays and shockwave-extractor output, searchable Lingo/cast indexes, rebuild tools, and an agent-first entrypoint.
+- Added an ignored, lossless WorldBuilder reference corpus with the original archives, byte-identical DCR movies, raw ProjectorRays and shockwave-extractor output, searchable Lingo/cast indexes, rebuild tools, and a searchable entrypoint.
 - Added map-specific, texture-derived travelers: villager and bee, strider and blaze, shulker and endermite, and cod and salmon.
 
 ### Changed

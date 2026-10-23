@@ -1,0 +1,41 @@
+{
+  "rows": [
+    {
+      "name": "baseline",
+      "run": 0,
+      "seconds": 13.395468699978665
+    },
+    {
+      "name": "candidate",
+      "run": 0,
+      "seconds": 12.341283699963242
+    },
+    {
+      "name": "baseline",
+      "run": 1,
+      "seconds": 12.742616799892858
+    },
+    {
+      "name": "candidate",
+      "run": 1,
+      "seconds": 13.777342999819666
+    },
+    {
+      "name": "baseline",
+      "run": 2,
+      "seconds": 12.79591799993068
+    },
+    {
+      "name": "candidate",
+      "run": 2,
+      "seconds": 12.730795100098476
+    }
+  ],
+  "medians": {
+    "baseline": 12.79591799993068,
+    "candidate": 12.730795100098476
+  },
+  "filesystem": "warm filesystem cache, fresh process, dummy audio, Windows native display",
+  "tested_candidate_sha256": "621549bb99e0e65820f23cde46563e316e20eed1006183cabedf5c26f64975ab",
+  "subsequent_change": "Cache handoff correction and comments only; input/rendering code unchanged"
+}

@@ -1,0 +1,21 @@
+{
+  "seed": 41,
+  "transitions": 12000,
+  "counts": {
+    "normal-b": 4014,
+    "01-one": 1527,
+    "normal-a": 4014,
+    "03-three": 1520,
+    "07-seven": 925
+  },
+  "piano_fraction": 0.331,
+  "immediate_repeats": 0,
+  "startup": "normal-a",
+  "chapter_weights": [
+    2,
+    2,
+    1
+  ],
+  "selection_only": true,
+  "live_duration_playthrough": false
+}

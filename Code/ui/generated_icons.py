@@ -14,7 +14,7 @@ TOOLS_A = ('fill','brush','selection','copy','paste','clip_left','clip_right',
            'blueprint','mirror_x')
 TOOLS_B = ('mirror_y','radial','measure','layers','layer_up','layer_down','minimap',
            'center','xray','interact','turn','turn_placed','half','undo','redo','tools_emblem')
-DIMENSIONS = ('dimension_overworld','dimension_nether','dimension_end')
+DIMENSIONS = ('dimension_overworld','dimension_nether','dimension_end','biome_overworld')
 NAMES = CONTROLS + ACTIONS + TOOLS_A + TOOLS_B + DIMENSIONS
 ANIMATED = CONTROLS[4:] + ('nether',)
 
@@ -26,8 +26,10 @@ def artwork():
             ('library-revision-mask.png',('library_structures','library_saved'),2,1),
             ('library-landmarks-mask.png',('library_worlds','library_biomes','library_saved'),3,1),
             ('tools-a-mask.png',TOOLS_A,4,4),('tools-b-mask.png',TOOLS_B,4,4),
-            ('dimensions-mask.png',('library_worlds','library_biomes')+DIMENSIONS,5,1),
-            ('polish-mask.png',('dimension_overworld','dimension_end','lighting','clouds'),2,2))
+            ('dimensions-mask.png',('library_worlds','library_biomes')+DIMENSIONS[:3],5,1),
+            ('polish-mask.png',('dimension_overworld','dimension_end','lighting','clouds'),2,2),
+            ('biome-bell-mask.png',('biome_overworld',),1,1),
+            ('cloud-banks-mask.png',('clouds',),1,1))
     for filename,names,cols,rows in sheets:
         atlas=pygame.image.load(str(Path(__file__).with_name('art')/filename));w,h=atlas.get_size()
         for i,name in enumerate(names):

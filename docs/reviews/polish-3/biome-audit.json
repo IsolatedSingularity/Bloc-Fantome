@@ -1,0 +1,951 @@
+[
+  {
+    "id": "plains",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 1,
+    "captured_raw_id": 1,
+    "cells": 192029,
+    "origin": [
+      -176,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "48": 1056,
+      "45": 1600,
+      "7": 592,
+      "16": 2640,
+      "1": 3120,
+      "24": 208
+    },
+    "derived": null
+  },
+  {
+    "id": "sunflower_plains",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 129,
+    "captured_raw_id": 129,
+    "cells": 125444,
+    "origin": [
+      -208,
+      208
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "1": 6784,
+      "18": 176,
+      "129": 1712,
+      "7": 544
+    },
+    "derived": null
+  },
+  {
+    "id": "forest",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 4,
+    "captured_raw_id": 4,
+    "cells": 185017,
+    "origin": [
+      16,
+      -144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "4": 4960,
+      "7": 1424,
+      "16": 1520,
+      "24": 1040,
+      "18": 208,
+      "0": 64
+    },
+    "derived": null
+  },
+  {
+    "id": "flower_forest",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 132,
+    "captured_raw_id": 132,
+    "cells": 128880,
+    "origin": [
+      -464,
+      496
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "131": 3632,
+      "132": 1648,
+      "18": 2960,
+      "7": 192,
+      "4": 784
+    },
+    "derived": null
+  },
+  {
+    "id": "birch_forest",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 27,
+    "captured_raw_id": 27,
+    "cells": 135381,
+    "origin": [
+      80,
+      368
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "1": 272,
+      "28": 1120,
+      "27": 3488,
+      "4": 4112,
+      "7": 224
+    },
+    "derived": null
+  },
+  {
+    "id": "dark_forest",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 29,
+    "captured_raw_id": 29,
+    "cells": 143488,
+    "origin": [
+      -496,
+      -688
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "3": 1456,
+      "29": 2688,
+      "16": 1408,
+      "0": 2112,
+      "7": 1408,
+      "25": 144
+    },
+    "derived": null
+  },
+  {
+    "id": "desert",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 2,
+    "captured_raw_id": 2,
+    "cells": 212328,
+    "origin": [
+      1552,
+      1936
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "46": 4240,
+      "7": 752,
+      "16": 1904,
+      "2": 1616,
+      "0": 704
+    },
+    "derived": null
+  },
+  {
+    "id": "taiga",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 5,
+    "captured_raw_id": 5,
+    "cells": 147631,
+    "origin": [
+      -272,
+      -272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "5": 6496,
+      "16": 912,
+      "7": 1024,
+      "0": 720,
+      "4": 64
+    },
+    "derived": null
+  },
+  {
+    "id": "giant_tree_taiga",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 32,
+    "captured_raw_id": 32,
+    "cells": 149411,
+    "origin": [
+      3184,
+      1744
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "5": 5456,
+      "16": 304,
+      "7": 144,
+      "0": 112,
+      "24": 224,
+      "32": 2864,
+      "33": 112
+    },
+    "derived": null
+  },
+  {
+    "id": "snowy_tundra",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 12,
+    "captured_raw_id": 12,
+    "cells": 156166,
+    "origin": [
+      -1392,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "46": 2128,
+      "26": 592,
+      "12": 2384,
+      "11": 208,
+      "25": 1312,
+      "3": 2080,
+      "7": 512
+    },
+    "derived": null
+  },
+  {
+    "id": "ice_spikes",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 140,
+    "captured_raw_id": 140,
+    "cells": 132152,
+    "origin": [
+      4144,
+      912
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "12": 5728,
+      "140": 3328,
+      "7": 48,
+      "26": 112
+    },
+    "derived": null
+  },
+  {
+    "id": "snowy_taiga",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 30,
+    "captured_raw_id": 30,
+    "cells": 135256,
+    "origin": [
+      -1904,
+      176
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "12": 3552,
+      "11": 384,
+      "7": 784,
+      "30": 3008,
+      "13": 1488
+    },
+    "derived": null
+  },
+  {
+    "id": "mountains",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 3,
+    "captured_raw_id": 3,
+    "cells": 137197,
+    "origin": [
+      176,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "4": 4464,
+      "16": 400,
+      "7": 1104,
+      "0": 48,
+      "3": 3040,
+      "23": 160
+    },
+    "derived": null
+  },
+  {
+    "id": "wooded_mountains",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 34,
+    "captured_raw_id": 34,
+    "cells": 121433,
+    "origin": [
+      -624,
+      336
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "7": 1792,
+      "34": 3504,
+      "3": 2464,
+      "131": 1456
+    },
+    "derived": null
+  },
+  {
+    "id": "swamp",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 6,
+    "captured_raw_id": 6,
+    "cells": 17023,
+    "origin": [
+      -215,
+      -327
+    ],
+    "size": [
+      32,
+      32,
+      256
+    ],
+    "surface_biomes": {
+      "1": 1072,
+      "5": 3168,
+      "7": 1952,
+      "6": 2096,
+      "4": 928
+    },
+    "derived": {
+      "file": "overworld_swamp.json.gz",
+      "sha256": "ec43ce6c1d98244e6bcbb0db012c58c80962c3ef92ae16b8a5bd5155c7f53463",
+      "window": [
+        25,
+        9,
+        32,
+        32
+      ],
+      "surface_biomes": {
+        "1": 95,
+        "7": 320,
+        "6": 587
+      },
+      "swamp_fraction": 0.5858283433133733
+    }
+  },
+  {
+    "id": "jungle",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 21,
+    "captured_raw_id": 21,
+    "cells": 173468,
+    "origin": [
+      112,
+      -144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "16": 2992,
+      "0": 2096,
+      "4": 416,
+      "21": 2864,
+      "7": 816,
+      "22": 32
+    },
+    "derived": null
+  },
+  {
+    "id": "bamboo_jungle",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 168,
+    "captured_raw_id": 168,
+    "cells": 144169,
+    "origin": [
+      272,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "3": 1936,
+      "23": 736,
+      "21": 672,
+      "7": 1072,
+      "168": 4640,
+      "4": 160
+    },
+    "derived": null
+  },
+  {
+    "id": "savanna",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 35,
+    "captured_raw_id": 35,
+    "cells": 149168,
+    "origin": [
+      720,
+      2064
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "46": 1504,
+      "16": 2272,
+      "7": 1056,
+      "35": 4384
+    },
+    "derived": null
+  },
+  {
+    "id": "shattered_savanna",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 163,
+    "captured_raw_id": 163,
+    "cells": 133459,
+    "origin": [
+      3024,
+      3344
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "2": 2224,
+      "163": 5152,
+      "16": 928,
+      "45": 256,
+      "7": 656
+    },
+    "derived": null
+  },
+  {
+    "id": "ocean",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 0,
+    "captured_raw_id": 0,
+    "cells": 343254,
+    "origin": [
+      -48,
+      -48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "0": 4272,
+      "24": 4688,
+      "48": 64,
+      "45": 192
+    },
+    "derived": null
+  },
+  {
+    "id": "warm_ocean",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 44,
+    "captured_raw_id": 44,
+    "cells": 291285,
+    "origin": [
+      -848,
+      -1392
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "45": 3552,
+      "44": 4464,
+      "48": 1200
+    },
+    "derived": null
+  },
+  {
+    "id": "frozen_ocean",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 10,
+    "captured_raw_id": 10,
+    "cells": 326130,
+    "origin": [
+      176,
+      -2448
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "46": 2272,
+      "50": 3328,
+      "49": 1264,
+      "10": 2352
+    },
+    "derived": null
+  },
+  {
+    "id": "river",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 7,
+    "captured_raw_id": 7,
+    "cells": 128352,
+    "origin": [
+      -208,
+      144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "16": 48,
+      "1": 6944,
+      "18": 1120,
+      "7": 1008,
+      "129": 96
+    },
+    "derived": null
+  },
+  {
+    "id": "frozen_river",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 11,
+    "captured_raw_id": 11,
+    "cells": 127644,
+    "origin": [
+      -1520,
+      272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "12": 5216,
+      "11": 544,
+      "7": 528,
+      "3": 2544,
+      "34": 288,
+      "5": 96
+    },
+    "derived": null
+  },
+  {
+    "id": "beach",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 16,
+    "captured_raw_id": 16,
+    "cells": 226458,
+    "origin": [
+      16,
+      -112
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "4": 2768,
+      "7": 1008,
+      "16": 1504,
+      "24": 2048,
+      "0": 1888
+    },
+    "derived": null
+  },
+  {
+    "id": "stone_shore",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 25,
+    "captured_raw_id": 25,
+    "cells": 213781,
+    "origin": [
+      -624,
+      144
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "24": 768,
+      "7": 800,
+      "25": 1312,
+      "3": 64,
+      "0": 4496,
+      "16": 864,
+      "4": 912
+    },
+    "derived": null
+  },
+  {
+    "id": "badlands",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 37,
+    "captured_raw_id": 37,
+    "cells": 295341,
+    "origin": [
+      -2928,
+      2192
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "24": 4240,
+      "0": 1136,
+      "46": 1024,
+      "7": 800,
+      "37": 2016
+    },
+    "derived": null
+  },
+  {
+    "id": "eroded_badlands",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 165,
+    "captured_raw_id": 165,
+    "cells": 130041,
+    "origin": [
+      -4912,
+      1776
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "36": 688,
+      "35": 5584,
+      "7": 1808,
+      "165": 1104,
+      "166": 32
+    },
+    "derived": null
+  },
+  {
+    "id": "mushroom_fields",
+    "dimension": "overworld",
+    "capture_dimension": "overworld",
+    "expected_raw_id": 14,
+    "captured_raw_id": 14,
+    "cells": 190438,
+    "origin": [
+      -2928,
+      1520
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "14": 3360,
+      "15": 3008,
+      "46": 2176,
+      "49": 672
+    },
+    "derived": null
+  },
+  {
+    "id": "nether_wastes",
+    "dimension": "nether",
+    "capture_dimension": "nether",
+    "expected_raw_id": 8,
+    "captured_raw_id": 8,
+    "cells": 263379,
+    "origin": [
+      288,
+      -272
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "8": 448,
+      "170": 8768
+    },
+    "derived": null
+  },
+  {
+    "id": "crimson_forest",
+    "dimension": "nether",
+    "capture_dimension": "nether",
+    "expected_raw_id": 171,
+    "captured_raw_id": 171,
+    "cells": 266815,
+    "origin": [
+      -416,
+      448
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "171": 9216
+    },
+    "derived": null
+  },
+  {
+    "id": "warped_forest",
+    "dimension": "nether",
+    "capture_dimension": "nether",
+    "expected_raw_id": 172,
+    "captured_raw_id": 172,
+    "cells": 207886,
+    "origin": [
+      -352,
+      48
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "172": 9216
+    },
+    "derived": null
+  },
+  {
+    "id": "soul_sand_valley",
+    "dimension": "nether",
+    "capture_dimension": "nether",
+    "expected_raw_id": 170,
+    "captured_raw_id": 170,
+    "cells": 166911,
+    "origin": [
+      -144,
+      320
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "170": 9216
+    },
+    "derived": null
+  },
+  {
+    "id": "basalt_deltas",
+    "dimension": "nether",
+    "capture_dimension": "nether",
+    "expected_raw_id": 173,
+    "captured_raw_id": 173,
+    "cells": 214032,
+    "origin": [
+      -944,
+      -304
+    ],
+    "size": [
+      96,
+      96,
+      256
+    ],
+    "surface_biomes": {
+      "173": 9216
+    },
+    "derived": null
+  },
+  {
+    "id": "the_end",
+    "dimension": "end",
+    "capture_dimension": "end",
+    "expected_raw_id": 9,
+    "captured_raw_id": 9,
+    "cells": 568661,
+    "origin": [
+      -128,
+      -128
+    ],
+    "size": [
+      256,
+      256,
+      256
+    ],
+    "surface_biomes": {
+      "9": 65536
+    },
+    "derived": null
+  },
+  {
+    "id": "end_highlands",
+    "dimension": "end",
+    "capture_dimension": "end",
+    "expected_raw_id": 42,
+    "captured_raw_id": 42,
+    "cells": 200199,
+    "origin": [
+      672,
+      -800
+    ],
+    "size": [
+      128,
+      128,
+      256
+    ],
+    "surface_biomes": {
+      "40": 768,
+      "41": 4608,
+      "9": 5376,
+      "43": 1280,
+      "42": 4352
+    },
+    "derived": null
+  },
+  {
+    "id": "small_end_islands",
+    "dimension": "end",
+    "capture_dimension": "end",
+    "expected_raw_id": 40,
+    "captured_raw_id": 40,
+    "cells": 939,
+    "origin": [
+      -717,
+      736
+    ],
+    "size": [
+      33,
+      43,
+      256
+    ],
+    "surface_biomes": {
+      "40": 9728,
+      "43": 768,
+      "41": 512,
+      "9": 5376
+    },
+    "derived": {
+      "file": "end_small_end_islands.json.gz",
+      "sha256": "afe5c0606d15450d352f6be1d739281ea56d9f34b3eef85c1a3b94e9fb7e52b7",
+      "components": [
+        {
+          "columns": 77,
+          "complete": true
+        },
+        {
+          "columns": 968,
+          "complete": false
+        },
+        {
+          "columns": 145,
+          "complete": true
+        },
+        {
+          "columns": 170,
+          "complete": false
+        },
+        {
+          "columns": 109,
+          "complete": true
+        },
+        {
+          "columns": 16,
+          "complete": false
+        }
+      ]
+    }
+  }
+]

@@ -1,6 +1,6 @@
 # Bloc Fantôme laptop-reset recovery
 
-GitHub source and the downloadable release are not a backup of this working folder. Copy the items below to your chosen backup destination before resetting Windows. No recovery archive was created, at the owner's request.
+GitHub source and older release downloads are not a backup of this working folder. Copy the items below to your chosen backup destination before resetting Windows. The 3.0 release now retains verified same-device rollback copies under `.qa/release-3/rollback/`; an independent backup still needs verification. See [the current asset layout](LOCAL_ASSET_LAYOUT.md).
 
 ## Irreplaceable or owner-managed inputs
 
@@ -11,12 +11,12 @@ Paths below are relative to the project folder unless stated otherwise. Copy com
 | `Assets/` in full | Extracted Texture Hub and Sound Hub, Zekton font, skyboxes, WorldBuilder media, opening media, private licensing records and future local assets are partly ignored. Keep original source bytes. |
 | Root asset archives and original media | `zekton.zip`, `*.skybox.zip`, `Black Mesa Skyboxes.zip`, `WorldBuilder.zip`, and any locally supplied archives may be ignored. Retain originals even when extracted assets exist. |
 | `Code/saves/` and root `saves/` | User builds, autosaves, rolling backups and custom music are not all tracked. Keep both locations. |
-| Installed app's `saves/`, `screenshots/`, `.app_config.json`, `.tutorial_config.json`, `.opening_config.json` | The installed app writes beside its executable, separately from this checkout. Current installation is `C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme`. Include hidden files. |
+| Installed app's `saves/`, `screenshots/`, `.app_config.json`, `.tutorial_config.json`, `.opening_config.json` | The installed app writes beside its executable, separately from this checkout. The per-user installation normally lives under `%LOCALAPPDATA%/Programs/Bloc Fantôme`. Include hidden files. |
 | Project and `Code/` hidden configuration files | `.app_config.json`, `.tutorial_config.json` and any local configuration retain settings and tutorial progress. Review packages have separate configurations too. |
 | `.qa/` rollback packages and preservation evidence | Review executables, old prepared bundles and archived evidence are ignored. Preserve at least `owner-pass-ar`, `owner-pass-ar-icons`, `owner-pass-ar-ui`, `release-299`, and `repository-archive-20261020`. Copy their saves too. |
 | `References/`, `Game Reference/`, `WorldBuilder Reference/`, `Redstone Reference/`, `NEW; PONDER PACKAGE/` | Source captures, reference media and authoring inputs are partly ignored or local-only. Copy in full rather than guessing which derived-looking files are original. |
 | `abyssalAnchor/`, `Jenova/`, `OPEN_INACCURACIES.md`, `OPEN_PROBLEMS.md`, `REFACTOR_IMPLEMENTATION_PLAN.md`, `NEXT.txt`, `nextIdeas.txt` | Private planning/reference material may exist outside the tracked source tree. Preserve when present. |
-| `AGENTS.md`, `.codex/`, `.agents/`, `.kilo/`, `.vscode/` and local agent instructions | Local workflow settings are intentionally excluded from Git. Preserve privately. |
+| Local editor settings and workflow instructions | Local workflow settings are intentionally excluded from Git. Preserve privately. |
 | Any `.env*`, `secrets/`, `credentials/`, `*.key`, `*.pem` | If present, copy privately through your own secure backup process; do not upload them with the public release. |
 | Root EXEs and `Code/build/installer/` installers | Keep known-good rollback binaries and the corresponding external Assets directory. A review EXE with an Assets junction is not a portable package by itself. |
 

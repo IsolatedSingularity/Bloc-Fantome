@@ -28,7 +28,7 @@ SOURCES=('blocFantome.py','engine/world.py','engine/world_snapshot.py',
 def fingerprint_at(root):
     """Hash code and source records read by the exact lesson builders."""
     root=Path(root);paths={root/name for name in SOURCES}
-    for pattern in ('biome_captures/*.json*','biome_captures/runtime/*.gz',
+    for pattern in ('biome_captures/*.json*','biome_captures/runtime/*.gz','biome_captures/derived/*.json*',
                     'worlds/*.json*','saves/*.json*'):
         paths.update(root.glob(pattern))
     digest=hashlib.sha256()

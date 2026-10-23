@@ -8404,11 +8404,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.musicBackendName = "preloaded decoded track"
         self.musicBackend = musicBackend
         self.tutorialMusicPaths = {}
+        piano_chapters=[]
+        for filename,weight in (('01-one.ogg',2),('03-three.ogg',2),('07-seven.ogg',1)):
+            path=os.path.join(SOUNDS_DIR,'opening','piano-chapters',filename)
+            if os.path.isfile(path):piano_chapters.append((path,weight))
+            else:print(f'Optional source-checkout piano chapter unavailable: {path}')
         self.musicController = MusicController(
             musicBackend,
             volume=self.musicVolume,
             output_headroom=0.80,
             logger=print,
+            piano_chapters=piano_chapters,
         )
         print(
             f"Audio: {self.musicBackendName} | mixer={pygame.mixer.get_init()} "
@@ -9100,6 +9106,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.worldLoadExecutor.shutdown(wait=True)
                 if hasattr(self,'_mapExecutor'):self._mapExecutor.shutdown(wait=True)
                 if hasattr(self,'_saveExecutor'):self._saveExecutor.shutdown(wait=True)
+                if hasattr(self.musicBackend,'shutdown'):self.musicBackend.shutdown()
             finally:workers_done.set()
         threading.Thread(target=drain_workers,name='shutdown-drain',daemon=True).start()
         # Bound the exit tail; continue pumping OS events, never wait for the
@@ -15246,12 +15253,12 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from engine.world_catalog import world_catalog
         self.library.open(self, "Worlds")
 
-    def _stageBiomeScene(self, biome_id, *, world_scene=None):
+    def _stageBiomeScene(self, biome_id, *, world_scene=None, library=False):
         """Prepare captured cells without touching the live editor or SDL."""
         from engine.biome_capture import capture
         from engine.anvil import JavaBlock
         from engine.world_snapshot import WorldSnapshot
-        data=capture(biome_id)
+        data=capture(biome_id,library=library)
         palette=data['palette']
         # Resolve each palette state once instead of parsing it for every cell.
         source=[JavaBlock(p,0,0,state['Name'],state.get('Properties',{}))
@@ -15321,7 +15328,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 
     def _openBiomeScene(self, biome_id):
-        self._applyBiomeScene(*self._stageBiomeScene(biome_id))
+        self._applyBiomeScene(*self._stageBiomeScene(biome_id,library=True))
 
     def _applyBiomeScene(self, snapshot, metadata):
         self.searchActive = False

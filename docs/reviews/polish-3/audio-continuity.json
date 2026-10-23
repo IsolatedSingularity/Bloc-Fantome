@@ -1,0 +1,22 @@
+[
+  {
+    "name": "source-audio",
+    "onset_s": 2.5521666666666665,
+    "correlation": 0.9512854037921329,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  },
+  {
+    "name": "frozen-audio-handoff",
+    "onset_s": 11.159,
+    "correlation": 0.9999194281180893,
+    "unexpected_silence_runs_s": [],
+    "capture_status_flags": [
+      0
+    ],
+    "child_exit": 0
+  }
+]

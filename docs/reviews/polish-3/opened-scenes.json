@@ -1,0 +1,22 @@
+[
+  {
+    "scene": "swamp",
+    "cells": 17023,
+    "size": [
+      32,
+      32,
+      256
+    ],
+    "exact_positions": true
+  },
+  {
+    "scene": "small_end_islands",
+    "cells": 939,
+    "size": [
+      33,
+      43,
+      256
+    ],
+    "exact_positions": true
+  }
+]

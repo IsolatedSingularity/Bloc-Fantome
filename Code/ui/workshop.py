@@ -122,7 +122,7 @@ class Workshop:
 
     def open_drawer(self, page, app):
         self._clear_drawer_hits()
-        self.page='' if self.page==page else page
+        self.page='' if self.page==page and page!='world' else page
         self.menu=self.page=='menu'; self.scroll=0; self.scroller.reset(); self.shortcut_scroller.reset(); self.category_menu=False
         app.searchActive=False; self.focus=None; self.reveal()
         self.cue(app,'open' if self.page else 'cancel')
@@ -145,8 +145,8 @@ class Workshop:
                       selected,enabled,self.focus==action,quiet)
         if rect.colliderect(screen.get_clip()):self.hits.append((rect.clip(screen.get_clip()),action,enabled))
 
-    def _panel(self,screen,rect,alpha=246):
-        rect=pygame.Rect(rect);chrome.panel(screen,rect,alpha=alpha);self.panels.append(rect)
+    def _panel(self,screen,rect,alpha=246,major=False):
+        rect=pygame.Rect(rect);chrome.panel(screen,rect,alpha=alpha,major=major);self.panels.append(rect)
 
     @staticmethod
     def canvas_controls(size):
@@ -287,7 +287,7 @@ class Workshop:
             chrome.wrapped(screen,self.error or self.status,self.small,box.inflate(-24,-12),chrome.ERROR if self.error else chrome.TEXT)
         if self.confirm:
             box=pygame.Rect(0,0,min(w-48,460),170);box.center=screen.get_rect().center
-            self._panel(screen,box)
+            self._panel(screen,box,major=True)
             message = 'Clear this world? Unsaved changes will be removed.'
             chrome.wrapped(screen,message,self.font,box.inflate(-40,-38))
             self._button(screen,(box.x+20,box.bottom-50,190,34),'Cancel','confirm:cancel')
@@ -528,7 +528,7 @@ class Workshop:
             elif route=='legacy':self.legacy=True
             elif route=='terrain_view':
                 modes=('all','transparent','hidden');app.sceneTerrainMode=modes[(modes.index(app.sceneTerrainMode)+1)%3];app._invalidateViewCaches()
-            if route not in ('preference','text_scale') and action not in ('rain','snow','sun','clouds','lighting','sky','sky_previous','sky_next','flow','horror_rain','overworld','nether','end'):
+            if self.page!='world' and route not in ('preference','text_scale') and action not in ('rain','snow','sun','clouds','lighting','sky','sky_previous','sky_next','flow','horror_rain','overworld','nether','end'):
                 self.close_drawer(app)
             if field or route=='preference':self.cue(app,'toggle')
         except (OSError,ValueError,pygame.error) as error:

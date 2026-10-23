@@ -1,0 +1,43 @@
+{
+  "tool": "Computer Use @oai/sky",
+  "os_dpi": 120,
+  "source": {
+    "World_open_mouse": true,
+    "Nether_keeps_World": true,
+    "X_closes_World": true,
+    "fullscreen_and_exact_restore": true,
+    "restore_logical_geometry": [
+      157,
+      335,
+      1105,
+      534
+    ],
+    "dirty_exit_Stay_preserves_world": true,
+    "confirmed_exit": true,
+    "title_drag_attempted": true,
+    "title_drag_screen_delta_measured": false
+  },
+  "frozen": {
+    "World_open_mouse": true,
+    "Nether_keeps_World": true,
+    "sky_toggle_keeps_World": true,
+    "X_closes_World": true,
+    "native_corner_resize": true,
+    "resize_logical_size": [
+      1002,
+      522
+    ],
+    "minimize_and_restore": true,
+    "confirmed_exit": true
+  },
+  "physical_keyboard": "Escape via helper produced no visible action in source or frozen; inconclusive. SDL key event regressions passed.",
+  "unverified": [
+    "Windows Snap",
+    "precision trackpad",
+    "other OS DPI settings",
+    "multiple monitors"
+  ],
+  "launch_recovery": "A hidden process launcher hid the first packaged interactive window. Relaunched visibly with Python subprocess; mouse inputs then succeeded. Prior foreground-PID error did not recur.",
+  "tested_candidate_sha256": "621549bb99e0e65820f23cde46563e316e20eed1006183cabedf5c26f64975ab",
+  "subsequent_change": "Cache handoff correction and comments only; input/rendering code unchanged"
+}

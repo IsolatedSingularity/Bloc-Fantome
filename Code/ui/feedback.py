@@ -11,6 +11,8 @@ CUES = {
     'button': ('pressButton.wav', .90, .075, 1, 'ui'),
     'select': ('select-soft.wav', .86, .10, 2, 'ui'),
     'toggle': ('toggle-soft.wav', .70, .16, 2, 'ui'),
+    'workshop_toggle': ('workshop-toggle.wav', .48, .16, 2, 'ui'),
+    'workshop_button': ('workshop-button.wav', .62, .075, 1, 'ui'),
     'close': ('close-short.wav', .72, .15, 2, 'ui_semantic'),
     'world_map': ('worldMap.wav', .82, .5, 3, 'ui_semantic'),
     'save': ('save.wav', .78, .2, 4, 'ui_semantic'),
@@ -24,7 +26,7 @@ ALIASES = {'open': 'button', 'cancel': 'close',
 
 def sound_path(filename):
     from pathlib import Path
-    if filename in ('close-short.wav','select-soft.wav','toggle-soft.wav'):return Path(__file__).with_name('audio')/filename
+    if filename in ('close-short.wav','select-soft.wav','toggle-soft.wav','workshop-toggle.wav','workshop-button.wav'):return Path(__file__).with_name('audio')/filename
     return Path(SOUNDS_DIR)/'ui'/'selected'/filename
 
 
@@ -50,6 +52,8 @@ def set_volume(assets, volume):
 
 def play(assets, name):
     name = ALIASES.get(name, name)
+    if getattr(assets,'_feedback_context',None) in ('world','tools') and name in ('toggle','button'):
+        name='workshop_'+name
     # Hover/focus, text input and scrolling are intentionally silent.
     if name not in CUES or not pygame.mixer.get_init():return None
     state = getattr(assets, '_feedback_event', None)
@@ -96,5 +100,11 @@ def action(method):
     @wraps(method)
     def wrapped(self, *args, **kwargs):
         app = args[-1] if args else kwargs['app']
-        with event(getattr(app,'assetManager',None)):return method(self, *args, **kwargs)
+        assets=getattr(app,'assetManager',None)
+        previous=getattr(assets,'_feedback_context',None)
+        if assets is not None:assets._feedback_context=getattr(self,'page',None)
+        try:
+            with event(assets):return method(self, *args, **kwargs)
+        finally:
+            if assets is not None:assets._feedback_context=previous
     return wrapped

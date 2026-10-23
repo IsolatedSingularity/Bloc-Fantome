@@ -17,10 +17,10 @@ def draw_drawer(shell,app):
     box=pygame.Rect(w-width-24 if shell.page in ('tools','world','menu') else 24,y,width,h-y-84)
     if shell.page=='world':
         # The World material deliberately exposes scene luminance beneath it.
-        chrome.rounded(screen,(*chrome.SURFACE,178),box,12)
-        chrome.outline(screen,(137,170,204,70),box,12)
+        chrome.rounded(screen,(*chrome.SURFACE,178),box,0)
+        chrome.outline(screen,(137,170,204,70),box,0)
         shell.panels.append(box)
-    else:shell._panel(screen,box,234)
+    else:shell._panel(screen,box,234,major=True)
     shell.shortcuts_rect=pygame.Rect(0,0,0,0);shell.category_rect=pygame.Rect(0,0,0,0)
     x=box.x+16;y=box.y+12
     screen.blit(shell.title.render(shell.page.title(),True,chrome.TEXT),(x,y))
@@ -166,7 +166,8 @@ def world(s,app,box):
         if action=='end':
             from ui.world_material import end_icon
             screen.blit(end_icon((34,34)),(r.centerx-17,r.centery-17))
-        else:icon(screen,action,pygame.Rect(r.centerx-19,r.centery-19,38,38),(255,255,255),phase=0)
+        else:icon(screen,action,pygame.Rect(r.centerx-19,r.centery-19,38,38),(255,255,255),
+                  phase=pygame.time.get_ticks()/1000 if active and not s.visibility.reduced_motion else 0)
     screen.set_clip(old)
     if tip:
         r=pygame.Rect(box.x+12,box.bottom-38,box.width-24,30);chrome.panel(screen,r,250)

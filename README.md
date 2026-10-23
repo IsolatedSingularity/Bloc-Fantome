@@ -3,448 +3,107 @@
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
 
-> **⚠️ DISCLAIMER:** This is an unofficial fan project and is **NOT** affiliated with, endorsed by, or connected to [Mojang Studios](https://www.minecraft.net/) or Microsoft. All block textures and sound effects must be sourced by the user from their own Minecraft installation (version 1.21.1+). Minecraft® is a registered trademark of Mojang Synergies AB.
+An isometric building sandbox by Jeffrey Morais. Place a block, build a quiet corner of the world, and see what lies beyond it.
 
-##### An isometric 2.5D creative sandbox inspired by voxel building games. Build structures, explore dimensions, and place blocks in this Pygame-powered building simulator. 
+> This is an unofficial fan project, not affiliated with or endorsed by Mojang Studios or Microsoft. Minecraft textures and sounds must come from your own Java Edition installation, version 1.21.1 or later. Minecraft® is a registered trademark of Mojang Synergies AB.
 
-![Pre-made Structures](References/bmc_structures.png)
+![The 3.0 building editor](docs/media/3.0/editor.png)
 
----
+## Version 3.0
 
-## Overview
+The workshop has a new title bar, floating controls, IBM Plex typography and square outer panels. The smaller buttons and preview cards stay rounded. Text renders at its selected display size, and Reduced Motion is available from Menu.
 
-*Bloc Fantôme* is a **creative building sandbox** that brings the essence of voxel-based block-placing into a clean, isometric 2.5D perspective. Built entirely in Python with Pygame, this simulator allows users to place blocks onto a grid-based canvas, construct structures, and explore different dimensions. Users must provide their own textures and sounds from a legitimate Minecraft installation (version 1.21.1 or later).
+![The loading presentation](docs/media/3.0/opening.gif)
 
-![Main Interface](References/main.png)
+The full swamp painting leads into the editor. Startup and Goodbye have their own short presentation and audio handoffs. The optional manual Introduction does not autoplay by default.
 
-The project serves as both a **creative tool** for designing and visualizing Minecraft-style builds and a **technical demonstration** of isometric rendering, sprite management, and interactive GUI design in Python. Every block placement triggers authentic sounds with 3D positional audio. Volume fades with distance, and stereo panning shifts based on where the block is placed on screen.
+## Building
+
+Choose materials in **Build**, then place them on the canvas. The held-block preview shows the placement before you click. **Tools** contains brushes, fill, selections, clipboard rotation, mirrors and block adjustments. Undo and redo retain editable world state.
+
+The canvas can grow or shrink around its center. Terrain slices and local noise provide a starting landscape; they are artistic generators, separate from imported Java worlds. Water, lava, fire, portals and interactive blocks retain their individual behavior.
+
+Save a named build, reopen it through **Library**, or use the quick-save slots. Saving uses an atomic write and keeps recovery copies. Keep your own backups too.
 
 *The world remembers every block you place.*
 
-**Goal:** Provide an accessible, lightweight building sandbox where users can experiment with block placement, load pre-made structures, and explore the creative possibilities of voxel-based construction without the overhead of a full 3D engine.
+## Library
 
-<br>
+**Dimensions**, **Biomes**, **Structures** and **Saved Builds** share a preview gallery. Dimension scenes include villages, bastions, End locations, Ocean Monument, Ancient City and Trial Chamber. Entries identify their source version; a captured location is not a claim that the application recreates Minecraft's world generator.
 
-> *Some doors, once opened, cannot be closed.*
+![Library dimension previews](docs/media/3.0/library.png)
 
----
+The featured biome collection contains 37 scenes. Swamp and Small End Islands use documented source subsets: the original captures remain intact, and the preview opens the same selected cells. Small End Islands shows three complete, separated islands.
 
-## Features
+![Biome previews](docs/media/3.0/biomes.png)
 
-### Block Placement & Building
+**Import Java World** reads supported Anvil region data from a local Java save. The interactive tutorial, World Map and Redstone Lab remain available through the workshop.
 
-The core experience revolves around intuitive block placement on an isometric grid. A ghost preview shows exactly where your block will land before you commit, and an unlimited undo/redo system (Ctrl+Z / Ctrl+Y) ensures you can always fix mistakes. Or undo them one hundred times over if needed.
+## World and sound
 
-Building tools include adjustable brush sizes (1×1, 2×2, 3×3) for rapid construction, a fill tool for quickly covering large areas, and mirror mode for perfectly symmetrical builds. All saves are automatically compressed and backed up, so your creations are never lost.
+**World** controls the dimension, weather, light, skybox and liquid simulation. Its drawer stays open while you make changes. Close it with X or Escape. Clouds, rain, snow, sunlight, moonlight and liquid controls have distinct motion, with accurate On/Off states.
 
-*...and some features that found their way in on their own.*
+![World controls in motion](docs/media/3.0/world.gif)
 
-### 200+ Block Types
+World and Tools use shorter, quieter interaction cues. Ordinary music transitions occasionally select a complete opening piano chapter; the separate startup, map and Goodbye cues keep their own routing. Settings provides independent music, ambience and effects controls.
 
-More than 200 authentic Minecraft blocks are organized into expandable categories. Water, lava, fire, and portals feature real-time animations that bring your builds to life.
-
-![Block Showcase](References/block_showcase.png)
-
-| Category | Examples |
-|----------|----------|
-| **Natural** | Grass, Dirt, Stone, Sand, Gravel, Snow, Ice |
-| **Wood** | Oak, Birch, Spruce, Dark Oak, Acacia, Jungle |
-| **Ores** | Coal, Iron, Gold, Diamond, Emerald, Lapis, Redstone |
-| **Nether** | Netherrack, Soul Sand, Blackstone, Basalt, Ancient Debris |
-| **End** | End Stone, Purpur, Obsidian |
-| **Decorative** | Glass, Wool (16 colors), Concrete, Terracotta |
-| **Interactive** | Doors, Stairs, Slabs, Chests |
-| **Liquids** | Water, Lava (with flow simulation) |
-
-### Special Block Behaviors
-
-```python
-# Stairs can be rotated to face different directions
-if event.key == K_r:
-    rotate_stair_facing()  # Cycles: North → East → South → West
-
-# Slabs can be flipped between top and bottom position
-if event.key == K_f:
-    flip_slab_position()   # Toggles: Bottom ↔ Top
-
-# Doors can be opened and closed with right-click
-if right_click_on_door:
-    toggle_door_state()    # Swings open/closed with sound
-```
-
-### Pre-made Structures
-
-Instantly place complete structures: houses, towers, trees, portals, temples, and more. Load bastion remnants from the Nether or end city towers from the void. The structures panel lets you preview each build before placing it in your world.
-
-### Worlds Beyond the Frame
-
-The **Worlds** gallery opens the canvas beyond a single building plot. These are 256×256 editable scenes backed by chunk-indexed storage and a four-chunk render distance, so the editor only prepares the part of a massive build that can matter to the current view. You can pan across the scene, place and remove blocks, and save the result like any other build.
-
-![Bridge Bastion World](References/worlds_bastion.png)
-
-The bundled gallery includes all four Java 1.16.1 bastion types, a Java 1.16.1 End City, five Java 1.16.1 village biomes, and separately labelled Java 1.21 Ancient City and Trial Chamber assemblies. Their structures are assembled from the canonical NBT, processor lists, feature elements, and jigsaw pools used by the structure viewer in [Minecraft-Generation](https://github.com/IsolatedSingularity/Minecraft-Generation). Technical markers stay hidden, while the structure palette remains available as ordinary placeable blocks in the editor. The surrounding habitats are deterministic showcase terrain, not claims of seed-identical natural generation. When exact generated blocks matter, **Import Java World** reads a four-chunk-radius slice directly from an official Java save's Anvil region files.
-
-The render path is built for these larger scenes. Sparse 16×16×16 chunks, conservative chunk culling, hidden-cube rejection, LRU sprite caches, and a movable cached viewport keep stable and scrolling views responsive without changing the editor into a static structure viewer. The **−** and **+** controls shrink or extend all three canvas axes in 16-block steps. Hovering either control previews the new dimensions and warns how many occupied cells a shrink would remove.
-
-*The horizon moved when you were not looking.*
-
-### Terrain Slices
-
-Open **Features** and choose **Terrain Slice** to replace the canvas with a broad, editable cross-section of the active dimension. Overworld slices form changing heights, banks, dips, rivers, and climate-influenced surfaces. Nether slices move between crimson, warped, soul sand valley, and basalt habitats. End slices break apart into islands and void.
-
-![Overworld Terrain Slice](References/terrain_slice.png)
-
-Terrain Slice is a source-informed artistic generator for immediate building space. It is deliberately labeled separately from Java parity. For the actual output of Minecraft's world generator, import the chunks from a Java world instead.
-
-*There is always more land beyond the edge of the map.*
-
-<br>
-
-<p align="center"><sub>. . .</sub></p>
-
-<br>
-
-<p align="center"><sub>Have we met before?</sub></p>
-
-<p align="center"><sub>You look familiar.</sub></p>
-
-<br>
-
-<p align="center"><sub>No, that's not right.</sub></p>
-
-<p align="center"><sub>I would remember a face like yours.</sub></p>
-
-<br>
-
-<p align="center"><sub>Wouldn't I?</sub></p>
-
-<br>
-
-<p align="center"><sub>. . .</sub></p>
-
-<br>
-
-## Interactive Tutorial
-
-![Tutorial Screen](References/tutorial.png)
-
-A comprehensive tutorial guides users through all features, from basic block placement to advanced tools like mirror mode and dimension switching. Each step demonstrates concepts hands-on with example structures you can interact with immediately.
-
-*The tutorial will always be here for you. Always.*
-
----
-
-![Dimensions Header](References/Dimensions.png)
-
-![Dimensions Demo](References/Dimensions.gif)
-
-Three distinct dimensions await, each transforming your building canvas with unique floor textures, ambient soundscapes, and atmospheric music. Switching dimensions does not just change the scenery. It transports you to an entirely different realm with its own character and mood.
-
-### Overworld
-
-The default dimension greets you with familiar grass-covered ground and the gentle sounds of a calm meadow. Peaceful piano melodies drift in the background as you build under open skies. This is home. Comfortable. Safe. Full of creative possibility.
-
-### Nether
-
-![Nether Dimension](References/nether.png)
-
-Step through the portal and the world transforms. Netherrack stretches beneath your feet, cracked and ancient. The air fills with deep, ominous rumbling: the sound of a realm that exists in eternal twilight between fire and shadow. Crimson forests and warped fungal growths dot the landscape, their bioluminescent glow cutting through the perpetual haze. Here you will find soul sand valleys, bastions of blackstone, and rivers of flowing lava that illuminate the darkness with their molten glow. The music shifts to something darker, more primal. Drums echo in the deep.
-
-### The End
-
-Journey to the edge of existence itself. End stone forms an alien landscape floating in an infinite void, its pale yellow surface stark against the absolute darkness that surrounds it. The atmosphere here is different. Ethereal. Empty. *Unsettling*. Distant, haunting tones drift through the emptiness, and the purple-tinged sky holds no stars, no sun, no moon. End cities rise from the void, their purpur spires reaching toward nothing. This is a place of endings, where the familiar rules of the world no longer apply.
-
-![End Dimension](References/end.png)
-
----
-
-![Weather Header](References/Weather.png)
-
-![Weather Effects](References/Weather.gif)
-
-*The sky knows when you are watching.*
-
-Weather transforms your world from static canvas into something *alive*. The system simulates atmospheric effects that respond to the space around them, creating moments of beauty and drama. Or something else entirely.
-
-Rain arrives without warning. *First a whisper.* Then a downpour. Each raindrop is individually simulated, falling at slightly different speeds and angles. As drops strike the ground, they burst into tiny splash particles that fade naturally. The intensity ebbs and flows over time. Sometimes lightening to a drizzle. Other times intensifying into a driving storm.
-
-*You did not ask for thunder.*
-
-Lightning strikes illuminate your entire build in a flash of white. The bolts themselves are procedurally generated, branching and forking as they arc from sky to ground. During storms, the sky darkens gradually, casting your world in moody shadow. *The shadows remember their shapes.*
-
-Snow brings a gentler atmosphere. Delicate flakes drift downward with realistic physics, swaying side to side as they fall. The effect is constrained to your building platform, creating a cozy snow globe effect around your creations. *Inside looking out. Or outside looking in?*
-
-Clouds drift lazily overhead when enabled, their parallax movement creating depth against the sky. Multiple layers at different altitudes move at different speeds. *They are patient.*
-
----
-
-![Lighting Header](References/Lighting.png)
-
-![Lighting Effects](References/Lighting.gif)
-
-The lighting system adds depth and atmosphere through dynamic illumination. Light-emitting blocks cast a warm glow that propagates outward, falling off naturally with distance. Place a glowstone and watch as nearby blocks brighten; surround it with walls and observe how light fills the interior space.
-
-Multiple light sources interact realistically, their influences combining to create nuanced illumination. A room lit by sea lanterns feels different from one lit by shroomlight. Each source has its own color temperature and intensity. Magma blocks provide dim, ominous underglow, while jack-o'-lanterns cast their carved grins in warm orange light.
-
-The day/night cycle brings its own lighting drama. The sun traces a smooth arc across the sky, its position determining the overall brightness of your world. As dusk approaches, colors shift toward warm oranges and purples. Night brings darkness, punctuated only by starlight and whatever artificial illumination you've placed. Stars twinkle overhead, their brightness fluctuating gently, and the moon cycles through eight distinct phases just as it does in the real Minecraft.
-
-```python
-# Light-emitting blocks and their intensities
-GLOWSTONE:      lightLevel = 15  # Maximum brightness
-SEA_LANTERN:    lightLevel = 15  # Cool, even glow
-JACK_O_LANTERN: lightLevel = 15  # Warm, flickering
-SHROOMLIGHT:    lightLevel = 15  # Organic luminescence
-MAGMA_BLOCK:    lightLevel = 3   # Dim, dangerous glow
-LAVA:           lightLevel = 15  # Molten brilliance
-```
-
----
-
-![Liquids Header](References/Liquids.png)
-
-![Liquids Demo](References/liquids.gif)
-
-Water and lava behave as true fluids, flowing and spreading according to the same rules that govern them in Minecraft itself. Place a water source and watch it cascade downward, filling available space, spreading horizontally across flat surfaces, and tumbling over edges to continue its descent.
-
-The flow simulation tracks liquid levels from 1 to 8, where 8 represents a source block and lower values indicate flowing liquid at various distances from the source. Water spreads quickly, seeking the lowest available path with each simulation tick. Lava moves six times slower, its molten viscosity creating a more ponderous, threatening spread.
-
-When water meets lava, the interaction produces obsidian or cobblestone depending on the circumstances: source lava becomes obsidian, while flowing lava hardens to cobblestone. These interactions are accompanied by the satisfying hiss of rapidly cooling stone.
-
-```python
-def update_liquid_flow(liquid_type, position):
-    """
-    Simulate liquid spread from a source block.
-    Water flows every 400ms, lava every 2400ms (6x slower).
-    """
-    current_level = get_liquid_level(position)
-    
-    # Flow downward first (gravity)
-    if can_flow_to(position.below()):
-        spread_liquid(position.below(), level=current_level)
-    
-    # Then spread horizontally with decreasing level
-    for neighbor in horizontal_neighbors(position):
-        if can_flow_to(neighbor) and current_level > 1:
-            spread_liquid(neighbor, level=current_level - 1)
-```
-
-The liquid simulation runs continuously in the background, so you can place a water source at the top of a staircase and watch it tumble down step by step, or create lava falls that slowly creep toward your structures. Liquid flow can be toggled on and off if you prefer static water features.
-
-<br>
-
-<p align="center"><sub>. . .</sub></p>
-
-<br>
-
-<p align="center"><sub>L'eau sait où elle veut aller.</sub></p>
-
-<p align="center"><sub>Elle trouve toujours un chemin vers le bas.</sub></p>
-
-<br>
-
-<p align="center"><sub>Tu peux essayer de l'arrêter.</sub></p>
-
-<p align="center"><sub>Construire des murs. Placer des blocs.</sub></p>
-
-<p align="center"><sub>Elle attendra.</sub></p>
-
-<br>
-
-<p align="center"><sub>Elle a toujours attendu.</sub></p>
-
-<br>
-
-<p align="center"><sub>. . .</sub></p>
-
-<br>
-
----
-
-## World Map
-
-The **World Map** button opens four purpose-built selector hubs instead of placing another structure into the current build. The Overworld is a village survey crossed by water, the Nether is a full-screen five-biome bastion and fortress war table, the End is a broken atlas of drifting islands with its complete ship, and the locked Deep Ocean preview is built around a full-scale monument. Small Minecraft-textured travelers bring each map to life without changing its routes or levels.
-
-The mission marker is reconstructed from the WorldBuilder Director cast rather than approximated from its outline: the mint, green-grey, and black question mark is registered over a separate green shadow, follows the original two-pixel idle orbit, and swaps to the recovered blink cast every 200 ms while hovered. Completing an objective fixes a flag to the map, with progress remembered between launches.
-
-![Overworld, Nether, End, and Deep Ocean World Map hubs](References/world_map_montage.png)
-
-The first route in each dimension is a focused builder puzzle: repair the Overworld crossing, complete and power the Nether redstone line, or bridge the End islands and light the End City beacon. These levels borrow the real block palette and redstone simulation, but they run in an isolated session. Returning to the editor restores the build, camera, hotbar, undo history, weather, and display settings that were active before the map opened.
-
-![World Map builder objective](References/world_map_objective.png)
-
-The top controls are now attached to the live viewport. The window can be snapped or maximized down to a guarded 960×640 minimum, while F11 or Alt+Enter toggles native fullscreen. Text remains rendered at its final size and only viewport-sized caches are rebuilt, keeping the display crisp without turning every resize into a full content reload.
-
-| Local terrain preview | Center-preserving canvas controls |
-|---|---|
-| ![Terrain hover preview](References/terrain_hover.gif) | ![Canvas resize controls](References/canvas_controls.gif) |
-
----
-
-## The Geometry of Blocks
-
-### Isometric Projection
-
-The simulator employs a **2:1 dimetric projection**, the standard for pixel-art isometric games. World coordinates $(x, y, z) \in \mathbb{Z}^3$ map to screen coordinates $(u, v) \in \mathbb{R}^2$ via the affine transformation:
-
-$$
-\mathbf{T}: \mathbb{Z}^3 \to \mathbb{R}^2, \quad \begin{pmatrix} u \\ v \end{pmatrix} = \underbrace{\begin{pmatrix} w/2 & -w/2 & 0 \\ h/2 & h/2 & -h \end{pmatrix}}_{\mathbf{P}} \begin{pmatrix} x \\ y \\ z \end{pmatrix} + \begin{pmatrix} u_0 \\ v_0 \end{pmatrix}
-$$
-
-where $w$ is the tile width, $h$ is the tile height, and $(u_0, v_0)$ is the camera offset. The projection matrix $\mathbf{P}$ has rank 2, collapsing the 3D lattice onto a 2D plane while preserving the isometric angle $\theta = \arctan(1/2) \approx 26.57°$.
-
-The inverse mapping for screen-to-world picking requires solving the underdetermined system. Given screen coordinates $(u, v)$ and a fixed height plane $z = z_0$:
-
-$$
-\begin{pmatrix} x \\ y \end{pmatrix} = \mathbf{P}_{xy}^{-1} \left( \begin{pmatrix} u - u_0 \\ v - v_0 + h \cdot z_0 \end{pmatrix} \right) = \frac{1}{wh} \begin{pmatrix} h & w \\ -h & w \end{pmatrix} \begin{pmatrix} u - u_0 \\ v - v_0 + h \cdot z_0 \end{pmatrix}
-$$
-
-```python
-def world_to_screen(grid_x, grid_y, grid_z):
-    """Convert 3D world coordinates to 2D isometric screen position"""
-    screen_x = (grid_x - grid_y) * (TILE_WIDTH // 2) + offset_x
-    screen_y = (grid_x + grid_y) * (TILE_HEIGHT // 2) - grid_z * BLOCK_HEIGHT + offset_y
-    return screen_x, screen_y
-```
-
-### Depth Ordering
-
-Blocks are rendered back-to-front using the **Painter's Algorithm**. For blocks at positions $\mathbf{r}_i = (x_i, y_i, z_i)$, the depth ordering is given by the linear functional:
-
-$$
-d: \mathbb{Z}^3 \to \mathbb{Z}, \quad d(\mathbf{r}) = x + y + z
-$$
-
-This defines a total preorder on the block set $\mathcal{B}$. Blocks with equal depth $d(\mathbf{r}_i) = d(\mathbf{r}_j)$ lie on the same isometric plane and do not occlude each other. The sorting operation has complexity $\mathcal{O}(n \log n)$ for $n$ visible blocks.
-
-For a block at position $\mathbf{r}$, the set of positions it occludes is:
-
-$$
-\text{Occluded}(\mathbf{r}) = \{ \mathbf{r}' \in \mathbb{Z}^3 : d(\mathbf{r}') < d(\mathbf{r}) \land \mathbf{T}(\mathbf{r}') \cap \mathbf{T}(\mathbf{r}) \neq \varnothing \}
-$$
-
-```python
-def render_world():
-    """Render all blocks in correct depth order"""
-    blocks_to_draw = []
-    
-    for (x, y, z), block_type in world.blocks.items():
-        sort_key = x + y + z  # Isometric depth
-        blocks_to_draw.append((sort_key, x, y, z, block_type))
-    
-    blocks_to_draw.sort(key=lambda b: b[0])  # Furthest first
-    
-    for _, x, y, z, block_type in blocks_to_draw:
-        draw_block(x, y, z, block_type)
-```
-
-### Sparse World Representation
-
-The world state is a partial function $\mathcal{W}: \mathbb{Z}^3 \rightharpoonup \mathcal{B}$ where $\mathcal{B}$ is the finite set of block types. The domain $\text{dom}(\mathcal{W}) \subset \mathbb{Z}^3$ contains only occupied positions. This **sparse chunk storage** keeps occupied cells indexed in 16×16×16 regions. Memory remains $\mathcal{O}(|\text{dom}(\mathcal{W})|)$ rather than $\mathcal{O}(|V|)$ for the bounding volume $V$, while render-distance queries avoid scanning the entire build.
-
-Block operations define a group action on world states:
-
-$$
-\text{Place}: \mathcal{W} \times \mathbb{Z}^3 \times \mathcal{B} \to \mathcal{W}, \quad \text{Remove}: \mathcal{W} \times \mathbb{Z}^3 \to \mathcal{W}
-$$
-
-The undo/redo system maintains a history stack $\mathcal{H} = (\mathcal{W}_0, \mathcal{W}_1, \ldots, \mathcal{W}_n)$ with pointer $k$, supporting $\mathcal{O}(1)$ state traversal.
-
-```python
-class World:
-    def __init__(self, width, depth, height):
-        self.blocks = {}        # Compatibility view of occupied cells
-        self.chunkStorage = ChunkStorage(chunk_size=16)
-        self.properties = {}    # Special block states (doors, stairs, slabs)
-        self.liquidLevels = {}  # Liquid level tracking (1-8)
-```
-
-### Liquid Dynamics
-
-Liquid flow follows a discrete diffusion model. Let $\ell(\mathbf{r}, t) \in \{0, 1, \ldots, 8\}$ denote the liquid level at position $\mathbf{r}$ and time step $t$. The update rule is:
-
-$$
-\ell(\mathbf{r}, t+1) = \begin{cases}
-\ell(\mathbf{r}_{above}, t) & \text{if } \mathbf{r}_{above} \text{ has liquid} \\
-\max\limits_{\mathbf{n} \in N_h(\mathbf{r})} \ell(\mathbf{n}, t) - 1 & \text{otherwise}
-\end{cases}
-$$
-
-where $N_h(\mathbf{r})$ is the horizontal 4-neighborhood. Water updates every $\Delta t_w = 250\text{ms}$. Lava updates every $1500\text{ms}$ outside the Nether and every $500\text{ms}$ inside it, matching the Java 1.16.1 scheduling ratio of 5 ticks for water, 30 ticks for ordinary lava, and 10 ticks for Nether lava.
-
-### Light Propagation
-
-Light propagates via breadth-first flood fill from emissive sources. For a light source at $\mathbf{r}_0$ with intensity $I_0$, the light level at position $\mathbf{r}$ is:
-
-$$
-L(\mathbf{r}) = \max\left(0, I_0 - \lVert\mathbf{r} - \mathbf{r}_0\rVert_1\right)
-$$
-
-where $\lVert\cdot\rVert_1$ is the Manhattan distance. Multiple sources combine via $L_{\text{total}}(\mathbf{r}) = \max_i L_i(\mathbf{r})$.
-
----
+![Settings](docs/media/3.0/settings.png)
 
 ## Controls
 
 | Input | Action |
-|-------|--------|
-| **Left Click** | Place block |
-| **Right Click** | Remove / Interact |
-| **Middle Mouse** | Pan camera |
-| **Scroll** | Zoom |
-| **WASD** | Move camera |
-| **Q / E** | Rotate view |
-| **R** | Rotate stairs |
-| **F** | Flip slab / Fill mode |
-| **B** | Brush size |
-| **M** | Mirror mode |
-| **Ctrl+Z/Y** | Undo / Redo |
-| **Ctrl+S/O** | Save / Load |
+| --- | --- |
+| Left click | Place the previewed block |
+| Right click | Remove or interact |
+| Middle drag / WASD | Move the camera |
+| Mouse wheel | Zoom |
+| Q / E | Rotate the view |
+| Ctrl+Z / Ctrl+Y | Undo / redo |
+| Ctrl+S | Save |
+| Home | Fit the world |
+| Escape | Close the active drawer or cancel the active interaction |
 
----
+The Tools hotkey list and Menu help describe the remaining shortcuts. Window dragging, resizing, fullscreen and floating-window restore are available from the title bar and Menu.
 
-## Quick Start
+## Run from source
 
-```bash
-# 1. Install the locked runtime dependencies
+Python 3.12 is the tested version. From the repository root:
+
+```powershell
 python -m pip install -r requirements.txt
-
-# 2. Setup assets (requires Minecraft 1.21.1+ installed)
-cd Code
-python setup_assets.py
-
-# 3. Run
-python blocFantome.py
-
-# 4. Build!
-# Left-click to place, right-click to remove
-# Select blocks from the right panel
+python Code/setup_assets.py
+python Code/blocFantome.py
 ```
 
-> **Note:** You must own a legitimate copy of Minecraft Java Edition and have it installed to use this application. The setup script will extract textures and sounds from your local installation.
+The setup script extracts ordinary Minecraft assets from an owned local installation. It does not supply the selected audio, licensed fonts, skyboxes or other private release inputs. See [Local assets and recovery](docs/LOCAL_ASSET_LAYOUT.md) before restoring a checkout or building the full local Windows edition.
+
+```powershell
+python Code/tools/check_local_assets.py
+python Code/build_exe.py --output-dir .qa/release
+```
+
+The local executable expects its adjacent Assets folder. No binary containing private or Minecraft-extracted media is distributed by this release. Development and verification instructions are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Known limits
+
+Large captured worlds can stall during camera rebuilds, edits, loading and saving. In the final comparison, Ocean Monument pan rebuilds had a median near 378 ms and edits near 122 ms; these are measurements from one Windows machine, not performance guarantees. This release preserves the accepted renderer and documents those limits rather than claiming consistently smooth large-world input.
+
+Physical keyboard and Windows Snap coverage is recorded separately from automated SDL event checks in the [release QA record](docs/releases/3.0.0.md). See [CHANGELOG.md](CHANGELOG.md) for the release history.
+
+## Credits
+
+- **Jeffrey Morais**, original author.
+- **[Mojang Studios](https://www.minecraft.net/)**, creators of Minecraft. Please support the official game.
+- **[Minecraft Wiki](https://minecraft.wiki/)**, technical reference material.
+- **[Pygame](https://www.pygame.org/)** and its community.
+- **IBM Plex**, with its [bundled Open Font License](Code/ui/fonts/IBMPlexSans/OFL.txt).
+- **Ewan Howell**, creator of the locally supplied Black Mesa skybox pack. Other supplied media retain their original attribution and licensing records.
+
+See [LICENSE](LICENSE) and the [asset register](docs/design/ASSETS.md). Source-code licensing does not grant rights to redistribute extracted or privately licensed media.
+
+*...and to those who watch from beyond the render distance*
 
 ---
-
-## Acknowledgments
-
-This project would not be possible without:
-
-- **[Mojang Studios](https://www.minecraft.net/)** for creating Minecraft, whose assets this project is designed to work with
-- **[Minecraft Wiki](https://minecraft.wiki/)** for comprehensive documentation
-- **[Pygame Community](https://www.pygame.org/)** for the excellent 2D game framework
-- *...and to those who watch from beyond the render distance*
-
-> [!NOTE]
-> This simulator requires assets from your own Minecraft installation. Please support the official game at [minecraft.net](https://www.minecraft.net/).
-
----
-
-*Author: Jeffrey Morais*
-
----
-
-<br>
-<br>
-<br>
 
 ![Anomaly](References/anomaly.png)
 

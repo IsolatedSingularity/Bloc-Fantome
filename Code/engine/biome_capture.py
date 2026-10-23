@@ -18,9 +18,10 @@ def scene_manifest():
     return json.loads(path.read_text()) if path.exists() else {}
 
 @lru_cache(maxsize=2)
-def capture(name):
+def capture(name, *, library=False):
     row={'file':'tutorial_end_city.json.gz'} if name=='_tutorial_end_city' else (scene_manifest() if name.startswith('_scene_') else manifest())[name]
-    data=load_capture_file(ROOT/row['file'])
+    derived=ROOT/'derived'/(name+'.json.gz')
+    data=load_capture_file(derived if library and derived.exists() else ROOT/row['file'])
     if data['data_version']!=2567:raise ValueError('Biome capture must be Java 1.16.1')
     return data
 

@@ -1,0 +1,31 @@
+         3690151 function calls in 2.048 seconds
+
+   Ordered by: cumulative time
+   List reduced from 62 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.036    0.036    2.048    2.048 performance.py:45(settle)
+      150    0.076    0.001    1.971    0.013 blocFantome.py:21221(_renderWorld)
+      145    0.031    0.000    1.415    0.010 renderer.py:146(worldToScreenBatch)
+      145    0.701    0.005    1.331    0.009 {built-in method numpy.fromiter}
+  3293266    0.631    0.000    0.631    0.000 renderer.py:156(<genexpr>)
+      150    0.213    0.001    0.213    0.001 {method 'blit' of 'pygame.surface.Surface' objects}
+      150    0.098    0.001    0.166    0.001 blocFantome.py:21141(_visibleScreenRenderPlan)
+   110418    0.049    0.000    0.060    0.000 {method 'get' of 'dict' objects}
+      290    0.046    0.000    0.046    0.000 {method 'tolist' of 'numpy.ndarray' objects}
+   164423    0.039    0.000    0.039    0.000 {built-in method builtins.round}
+      150    0.038    0.000    0.038    0.000 {method 'fill' of 'pygame.surface.Surface' objects}
+    10681    0.012    0.000    0.014    0.000 repaint_batch.py:15(append)
+      150    0.000    0.000    0.014    0.000 repaint_batch.py:31(finish)
+      150    0.001    0.000    0.014    0.000 repaint_batch.py:23(flush)
+    23543    0.009    0.000    0.013    0.000 enum.py:1266(__hash__)
+      150    0.012    0.000    0.012    0.000 {method 'blits' of 'pygame.surface.Surface' objects}
+      981    0.005    0.000    0.012    0.000 blocFantome.py:7721(getScaledSprite)
+      150    0.001    0.000    0.010    0.000 blocFantome.py:20835(_visibleBlocksInDrawOrder)
+      150    0.003    0.000    0.010    0.000 blocFantome.py:20853(_editorVisibleBlocksInDrawOrder)
+     3809    0.004    0.000    0.007    0.000 renderer.py:128(worldToScreen)
+      150    0.001    0.000    0.005    0.000 blocFantome.py:20828(_cameraWorldCenter)
+    23543    0.005    0.000    0.005    0.000 {built-in method builtins.hash}
+      451    0.002    0.000    0.004    0.000 blocFantome.py:9237(_worldViewportRight)
+      290    0.004    0.000    0.004    0.000 {method 'astype' of 'numpy.ndarray' objects}
+    12321    0.004    0.000    0.004    0.000 {built-in method builtins.len}

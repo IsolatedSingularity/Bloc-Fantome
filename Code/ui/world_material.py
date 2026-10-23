@@ -7,7 +7,7 @@ from functools import lru_cache
 import pygame
 import numpy as np
 from ui import chrome
-from ui.generated_icons import fitted, layers
+from ui.generated_icons import fitted, layers, artwork
 
 
 def material(screen,rect,color,level,focused=False):
@@ -48,6 +48,31 @@ def pieces(name,size):
     return (source,)
 
 
+@lru_cache(maxsize=96)
+def snowflake(size,angle):
+    # The old source is a group of flakes. Repeating that group made unreadable
+    # specks. Draw a single branched flake, then cache nine tumble poses.
+    # Six branched arms remain readable at the actual 16-27px particle size.
+    flake=pygame.Surface((size*3,size*3),pygame.SRCALPHA)
+    center=pygame.Vector2(size*1.5,size*1.5);radius=size*1.22
+    for i in range(6):
+        direction=pygame.Vector2(1,0).rotate(i*60)
+        end=center+direction*radius
+        pygame.draw.line(flake,(255,255,255),center,end,5)
+        joint=center+direction*radius*.58
+        for side in (-1,1):
+            tip=joint+direction.rotate(side*55)*radius*.32
+            pygame.draw.line(flake,(255,255,255),joint,tip,5)
+    flake=pygame.transform.smoothscale(flake,(size,size))
+    return pygame.transform.rotozoom(flake,angle,1)
+
+
+@lru_cache(maxsize=4)
+def solar_frames(size):
+    source=fitted('sun',size)
+    return tuple(pygame.transform.rotozoom(source,i*3,1) for i in range(120))
+
+
 def icon(screen,name,rect,seconds,level=1.,reduced=False,celestial=0.):
     """State transitions finish in 200ms; active paths have independent clocks."""
     rect=pygame.Rect(rect);size=(round(rect.width*.88),round(rect.height*.88))
@@ -68,18 +93,22 @@ def icon(screen,name,rect,seconds,level=1.,reduced=False,celestial=0.):
                 pygame.draw.line(screen,(170,200,220),(round(x-q*3),y),(round(x+q*3),y),1)
     elif name=='snow':
         # Three independently advected flakes; bounded tumble, never a spinner.
-        for i,(scale,speed,offset) in enumerate(((.58,.13,.12),(.34,.19,.62),(.26,.11,.87))):
-            flake=fitted('snow',(round(size[0]*scale),round(size[1]*scale)))
+        for i,(scale,speed,offset) in enumerate(((.60,.23,.25),(.43,.29,.62),(.34,.19,.85))):
             life=(t*speed+offset)%1 if active else offset
             dx=(i-1)*rect.width*.25+(life-.5)**2*(8 if i%2 else -9)
             dy=(life-.5)*rect.height*.52
             angle=(life-.5)*36*(1 if i%2 else -1) if active else 0
-            flake=pygame.transform.rotozoom(flake,angle,1)
+            flake=snowflake(max(10,round(size[0]*scale)),round(angle/5)*5)
             fade=min(1,life*8,(1-life)*8) if active else 1
             _blit(screen,flake,center,alpha*fade,dx,dy)
     elif name=='sun':
         night=celestial%720>=360
-        body=fitted('sky' if night else 'sun',size)
+        if night:
+            # The lunar phase shares the anchored crescent and independent star
+            # reveal, rather than waiting minutes for a one-pixel orbit change.
+            icon(screen,'sky',rect,seconds,level,reduced,celestial)
+            return
+        body=solar_frames(size)[int(t*2)%120] if active else fitted('sun',size)
         q=(celestial%360)/360 if active else .5
         _blit(screen,body,center,alpha,math.sin((q-.5)*math.pi)*4,-math.sin(q*math.pi)*3*level)
         # A low horizon shadow responds to the same celestial position.
@@ -88,9 +117,12 @@ def icon(screen,name,rect,seconds,level=1.,reduced=False,celestial=0.):
         parts=pieces(name,size)
         for i,part in enumerate(sorted(parts,key=lambda p:p.get_bounding_rect().centery)):
             # Different speeds and opposing occlusion, with soft wrapped edges.
-            travel=(t*(.09+i*.035)+i*.39)%1 if active else .5
-            dx=(travel-.5)*8;fade=.72+.28*(1-abs(travel-.5)*2)
-            _blit(screen,part,center,alpha*(fade if i==0 else 1),dx,-i*.5)
+            # Each bank follows a separate passing path. Fade at its wrap so
+            # the return never snaps; the three banks never vanish together.
+            travel=(t*(.08+i*.023)+i*.31)%1 if active else .5
+            dx=(travel-.5)*(12+i*3)
+            fade=min(1,travel*7,(1-travel)*7) if active else 1
+            _blit(screen,part,center,alpha*fade*(.70+i*.15),dx,-i*.5)
     elif name=='lighting':
         # Move illumination across the original cube faces, keeping its shape.
         lit=base.copy();w,h=lit.get_size();pixels=pygame.surfarray.pixels_alpha(lit)

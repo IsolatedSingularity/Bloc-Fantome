@@ -1,0 +1,54 @@
+{
+  "swamp": {
+    "file": "swamp.json.gz",
+    "sha256": "ec43ce6c1d98244e6bcbb0db012c58c80962c3ef92ae16b8a5bd5155c7f53463",
+    "window": [
+      25,
+      9,
+      32,
+      32
+    ],
+    "surface_biomes": {
+      "1": 95,
+      "7": 320,
+      "6": 587
+    },
+    "swamp_fraction": 0.5858283433133733,
+    "source_file": "overworld_swamp.json.gz",
+    "cells": 17023,
+    "preview": "swamp.png"
+  },
+  "small_end_islands": {
+    "file": "small_end_islands.json.gz",
+    "sha256": "afe5c0606d15450d352f6be1d739281ea56d9f34b3eef85c1a3b94e9fb7e52b7",
+    "components": [
+      {
+        "columns": 77,
+        "complete": true
+      },
+      {
+        "columns": 968,
+        "complete": false
+      },
+      {
+        "columns": 145,
+        "complete": true
+      },
+      {
+        "columns": 170,
+        "complete": false
+      },
+      {
+        "columns": 109,
+        "complete": true
+      },
+      {
+        "columns": 16,
+        "complete": false
+      }
+    ],
+    "source_file": "end_small_end_islands.json.gz",
+    "cells": 939,
+    "preview": "small_end_islands.png"
+  }
+}

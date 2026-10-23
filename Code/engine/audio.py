@@ -13,8 +13,9 @@ class PreloadedMusicBackend:
 
     ``pygame.mixer.music`` streams through SDL_mixer's decoder while the app is
     running.  Keeping one decoded track on a reserved channel removes decoder
-    chunk boundaries and disk access from steady playback.  Only the current
-    track is retained, so memory use is bounded by one decoded song.
+    chunk boundaries and disk access from steady playback. Ordinary playback
+    retains the current track, up to three cached tracks and one decode job.
+    Cinematic sequences retain their explicitly supplied fragments separately.
     """
 
     def __init__(self, mixer: Any, channel_index: int = 31,
@@ -32,6 +33,37 @@ class PreloadedMusicBackend:
         self._queued_index: Optional[int] = None
         self._sequence_loop_start = 0
         self.stop_posts_end_event = False
+        self._preparing = None
+        self._prepare_executor = None
+        self._prepare_failed = set()
+
+    def prepare(self, path):
+        """Decode at most one upcoming track while the current phrase plays."""
+        from concurrent.futures import ThreadPoolExecutor
+        if path in self._preloaded or path == self._path or path in self._prepare_failed:return True
+        if self._preparing:
+            old_path, future = self._preparing
+            if not future.done():return False
+            try:
+                self._preloaded[old_path] = future.result()
+                self._trim_cache()
+            except Exception as exc:
+                self._prepare_failed.add(old_path)
+                self._logger(f'Could not prepare music {old_path}: {exc}')
+            self._preparing = None
+            if path in self._preloaded or path in self._prepare_failed:return True
+        if self._prepare_executor is None:
+            self._prepare_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='music-prepare')
+        self._preparing = (path, self._prepare_executor.submit(self._decode, path))
+        return False
+
+    def _trim_cache(self):
+        while len(self._preloaded) > 3:
+            self._preloaded.pop(next(iter(self._preloaded)))
+
+    def shutdown(self):
+        if self._prepare_executor:self._prepare_executor.shutdown(wait=True, cancel_futures=True)
+        self._preparing = None
 
     def _trim_mp3_padding(self, path: str, sound: Any) -> Any:
         """Remove decoded MP3 encoder silence without adding a dependency.
@@ -111,9 +143,14 @@ class PreloadedMusicBackend:
         self._queued_index = None
         self._sequence_loop_start = 0
         path = str(path)
+        # Claim the prepared track before caching the outgoing one. Otherwise
+        # an oldest cached selection can be evicted and decoded on this thread.
+        prepared = self._preloaded.pop(path, None)
+        if prepared is None and path == self._path:prepared = self._sound
         if self._sound is not None and self._path:
             self._preloaded[self._path] = self._sound
-        self._sound = self._preloaded.pop(path, None)
+            self._trim_cache()
+        self._sound = prepared
         if self._sound is None:
             self._sound = self._decode(path)
         self._path = path
@@ -326,6 +363,8 @@ class MusicController:
         output_headroom: float = 0.82,
         shuffle: Optional[Callable[[list], None]] = None,
         logger: Optional[Callable[[str], None]] = None,
+        piano_chapters=(),
+        rng=None,
     ) -> None:
         self._music = music
         self._shuffle = shuffle or random.shuffle
@@ -343,6 +382,11 @@ class MusicController:
         self._expected_stop_events = 0
         self.last_track: Optional[str] = None
         self.sequence_mode = False
+        self.piano_chapters = tuple(piano_chapters)
+        self._rng = rng or random
+        self._next_track = None
+        self._waiting_for_track = False
+        self.ordinary_mode = True
 
     def set_endevent(self, event_type: int) -> None:
         """Configure natural track completion on either supported backend."""
@@ -370,13 +414,16 @@ class MusicController:
         """Leave mix-bus headroom for effects and speaker enhancement paths."""
         return self._clamp(self.volume * self.output_headroom * scale)
 
-    def set_playlist(self, tracks: Iterable[str], *, fade: bool = True) -> bool:
+    def set_playlist(self, tracks: Iterable[str], *, fade: bool = True, ordinary: bool = True) -> bool:
         """Shuffle and activate a playlist, fading the old one when possible."""
 
         playlist = list(dict.fromkeys(str(track) for track in tracks if track))
         if not playlist:
             return False
         self.sequence_mode = False
+        self.ordinary_mode = ordinary
+        self._next_track = None
+        self._waiting_for_track = False
         self._shuffle(playlist)
         self._avoid_immediate_repeat(playlist)
         if fade and self._music.get_busy():
@@ -393,7 +440,7 @@ class MusicController:
         sequence = list(dict.fromkeys(str(track) for track in tracks if track))
         loader = getattr(self._music, "load_sequence", None)
         if not sequence or loader is None:
-            return self.set_playlist(sequence, fade=False)
+            return self.set_playlist(sequence, fade=False, ordinary=False)
         try:
             try:
                 loaded = loader(sequence, loop_start=loop_start)
@@ -413,6 +460,8 @@ class MusicController:
         self.fading_in = True
         self.fade_elapsed_ms = 0.0
         self.sequence_mode = True
+        self._next_track = None
+        self._waiting_for_track = False
         self.last_track = sequence[0]
         return True
 
@@ -431,7 +480,23 @@ class MusicController:
         ):
             tracks[0], tracks[1] = tracks[1], tracks[0]
 
-    def play_next(self) -> bool:
+    def _plan_next(self):
+        if not self.ordinary_mode or not self.piano_chapters or not self.tracks:return
+        if self.index >= len(self.tracks):
+            self._shuffle(self.tracks); self._avoid_immediate_repeat(self.tracks); self.index = 0
+        eligible=[(path, weight) for path, weight in self.piano_chapters if path != self.last_track]
+        if eligible and self._rng.random() < 1/3:
+            paths, weights=zip(*eligible)
+            self._next_track=(self._rng.choices(paths, weights=weights, k=1)[0], False)
+        else:
+            selected=self.tracks[self.index]
+            if len(self.tracks)>1 and selected==self.last_track:
+                other=(self.index+1)%len(self.tracks)
+                self.tracks[self.index],self.tracks[other]=self.tracks[other],selected
+                selected=self.tracks[self.index]
+            self._next_track=(selected, True)
+
+    def play_next(self, *, natural=False) -> bool:
         """Start the next playable track and begin a short fade-in."""
 
         if not self.tracks:
@@ -443,8 +508,16 @@ class MusicController:
                 self._shuffle(self.tracks)
                 self._avoid_immediate_repeat(self.tracks)
                 self.index = 0
-            selected = self.tracks[self.index]
-            self.index += 1
+            planned=self._next_track if natural else None
+            selected = planned[0] if planned else self.tracks[self.index]
+            if planned:
+                prepare=getattr(self._music,'prepare',None)
+                if prepare and not prepare(selected):
+                    self._waiting_for_track=True
+                    return False
+            self._waiting_for_track=False
+            self._next_track=None
+            if not planned or planned[1]:self.index += 1
             attempts -= 1
             try:
                 self._music.load(selected)
@@ -458,6 +531,7 @@ class MusicController:
             self.fading_in = True
             self.last_track = selected
             self._logger(f"Now playing: {os.path.basename(selected)}")
+            self._plan_next()
             return True
         return False
 
@@ -477,9 +551,13 @@ class MusicController:
             if advanced:
                 self.last_track = getattr(self._music, "path", self.last_track)
             return advanced
-        return self.play_next()
+        return self.play_next(natural=True)
 
     def update(self, elapsed_ms: float) -> None:
+        if not self.sequence_mode and not self.fading_out and self._next_track:
+            prepare=getattr(self._music,'prepare',None)
+            if prepare:prepare(self._next_track[0])
+            if self._waiting_for_track:self.play_next(natural=True)
         if self.sequence_mode:
             maintainer = getattr(self._music, "maintain_sequence", None)
             if maintainer is not None and maintainer():
@@ -507,6 +585,8 @@ class MusicController:
 
     def stop(self) -> None:
         self.pending_tracks = None
+        self._next_track = None
+        self._waiting_for_track = False
         self.fading_in = False
         self.fading_out = False
         self.sequence_mode = False
