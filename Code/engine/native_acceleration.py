@@ -7,6 +7,7 @@ import ctypes
 import os
 from pathlib import Path
 import sys
+from engine.native_provenance import verified
 from typing import Iterable, Optional
 
 
@@ -36,7 +37,8 @@ def _load_library():
         return _library
     _load_attempted = True
     for path in _candidate_paths():
-        if not path.is_file():
+        code = None if getattr(sys, 'frozen', False) else Path(__file__).resolve().parents[1]
+        if not path.is_file() or not verified(path, code):
             continue
         try:
             library = ctypes.CDLL(str(path))

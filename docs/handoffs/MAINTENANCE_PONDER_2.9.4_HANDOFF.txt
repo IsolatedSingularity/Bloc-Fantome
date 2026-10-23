@@ -45,7 +45,7 @@ module, Tk dialogs and native acceleration. Source/root/installer metadata 2.9.4
 Installed EXE matches root SHA256:
 FDECB520F92C71658DC054C7F6929BF73F173318B26DD64455878E568D835F14
 
-Upgraded C:\Users\hunkb\AppData\Local\Programs\Bloc Fantome (accented folder).
+Upgraded C:\Users\<user>\AppData\Local\Programs\Bloc Fantome (accented folder).
 Actual Start Menu Bloc Fantome shortcut launched that installed 2.9.4 EXE.
 Target, icon and working directory verified for app/uninstaller shortcuts:
 .qa/consistency-start-menu-294.json.

@@ -1,3 +1,6 @@
+> Historical evidence. Status and branch names below apply to the recorded date.
+> Current direction: [roadmap](ROADMAP.md). 3.0 is accepted; 3.1 is engineering review.
+
 # Engineering review, October 20, 2026
 
 **Disposition: Engineering HOLD on existing performance gates. Functional fixes

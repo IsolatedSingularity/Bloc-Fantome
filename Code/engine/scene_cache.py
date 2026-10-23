@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import struct
+import tempfile
 from typing import Iterable
 
 from engine.block_state import (
@@ -18,7 +19,7 @@ from engine.block_state import (
 )
 
 
-MAGIC = b"BFC7"
+MAGIC = b"BFC8"
 HEADER = struct.Struct("<4s32sI")
 RECORD = struct.Struct("<hhhHHBBBBBBBBBBii")
 STAIR_SHAPES = tuple(StairShape)
@@ -42,12 +43,21 @@ def load(path: str, expected_digest: bytes, block_type):
         magic, digest, metadata_size = HEADER.unpack(handle.read(HEADER.size))
         if magic != MAGIC or digest != expected_digest or metadata_size > 1024 * 1024:
             raise ValueError("Stale or invalid world cache")
-        metadata = json.loads(handle.read(metadata_size).decode("utf-8"))
+        metadata_bytes = handle.read(metadata_size)
+        metadata = json.loads(metadata_bytes.decode("utf-8"))
         count_data = handle.read(4)
         if len(count_data) != 4:
             raise ValueError("Truncated world cache")
         count = struct.unpack("<I", count_data)[0]
         payload = handle.read()
+    if len(payload) < 32:
+        raise ValueError("Missing world cache checksum")
+    payload, checksum = payload[:-32], payload[-32:]
+    actual = hashlib.sha256(metadata_bytes)
+    actual.update(count_data)
+    actual.update(payload)
+    if actual.digest() != checksum:
+        raise ValueError("Damaged world cache payload")
     if len(payload) != count * RECORD.size:
         raise ValueError("Invalid world cache record count")
 
@@ -131,55 +141,68 @@ def write(path: str, digest: bytes, dimension: str, bounds, scene,
          "captures": captures, "skipped_count": skipped_count},
         separators=(",", ":"),
     ).encode("utf-8")
-    temp_path = path + ".tmp"
+    fd, temp_path = tempfile.mkstemp(prefix=os.path.basename(path) + ".", suffix=".tmp",
+                                     dir=os.path.dirname(path))
+    os.close(fd)
     structure_surfaces_by_view = structure_surfaces_by_view or {}
     view_surface_positions_by_view = view_surface_positions_by_view or {}
-    with open(temp_path, "wb") as handle:
-        handle.write(HEADER.pack(MAGIC, digest, len(metadata)))
-        handle.write(metadata)
-        handle.write(struct.pack("<I", len(staged)))
-        for x, y, z, block, props, liquid_state in staged:
-            flags = 2 if (x, y, z) in structure_positions else 0
-            if (x, y, z) in exterior_glass_positions:
-                flags |= 64
-            for rotation in range(4):
-                if (x, y, z) in structure_surfaces_by_view.get(rotation, ()):
-                    flags |= 128 << rotation
-            if (x, y, z) in surface_positions:
-                flags |= 2048
-            for rotation in range(4):
-                if (x, y, z) in view_surface_positions_by_view.get(rotation, ()):
-                    flags |= 4096 << rotation
-            facing = slab = stair = door_half = hinge = liquid = 0
-            if props is not None:
-                flags |= 1
-                if props.isOpen:
-                    flags |= 32
-                facing = props.facing.value
-                slab = props.slabPosition.value
-                stair = STAIR_SHAPES.index(props.stairShape)
-                door_half = 1 if props.doorHalf == DoorHalf.UPPER else 0
-                hinge = 1 if props.doorHinge == DoorHinge.RIGHT else 0
-            if liquid_state is not None:
-                flags |= 4
-                liquid, source, falling = liquid_state
-                if source:
-                    flags |= 8
-                if falling:
-                    flags |= 16
-            handle.write(RECORD.pack(
-                x, y, z, block.value, flags, facing, slab, stair,
-                door_half, hinge, liquid,
-                props.oxidationStage if props else 0,
-                props.redstonePower if props else 0,
-                props.repeaterDelay if props else 1,
-                (int(props.powered) | int(props.repeaterLocked) << 1 |
-                 int(props.pistonExtended) << 2 | int(props.sticky) << 3 |
-                 int(props.comparatorSubtract) << 4) if props else 0,
-                capture_indices[props.sourceCapture] if props else -1,
-                props.sourcePalette if props else -1,
-            ))
-    os.replace(temp_path, path)
+    try:
+        with open(temp_path, "wb") as handle:
+            handle.write(HEADER.pack(MAGIC, digest, len(metadata)))
+            handle.write(metadata)
+            handle.write(struct.pack("<I", len(staged)))
+            for x, y, z, block, props, liquid_state in staged:
+                flags = 2 if (x, y, z) in structure_positions else 0
+                if (x, y, z) in exterior_glass_positions:
+                    flags |= 64
+                for rotation in range(4):
+                    if (x, y, z) in structure_surfaces_by_view.get(rotation, ()):
+                        flags |= 128 << rotation
+                if (x, y, z) in surface_positions:
+                    flags |= 2048
+                for rotation in range(4):
+                    if (x, y, z) in view_surface_positions_by_view.get(rotation, ()):
+                        flags |= 4096 << rotation
+                facing = slab = stair = door_half = hinge = liquid = 0
+                if props is not None:
+                    flags |= 1
+                    if props.isOpen:
+                        flags |= 32
+                    facing = props.facing.value
+                    slab = props.slabPosition.value
+                    stair = STAIR_SHAPES.index(props.stairShape)
+                    door_half = 1 if props.doorHalf == DoorHalf.UPPER else 0
+                    hinge = 1 if props.doorHinge == DoorHinge.RIGHT else 0
+                if liquid_state is not None:
+                    flags |= 4
+                    liquid, source, falling = liquid_state
+                    if source:
+                        flags |= 8
+                    if falling:
+                        flags |= 16
+                handle.write(RECORD.pack(
+                    x, y, z, block.value, flags, facing, slab, stair,
+                    door_half, hinge, liquid,
+                    props.oxidationStage if props else 0,
+                    props.redstonePower if props else 0,
+                    props.repeaterDelay if props else 1,
+                    (int(props.powered) | int(props.repeaterLocked) << 1 |
+                     int(props.pistonExtended) << 2 | int(props.sticky) << 3 |
+                     int(props.comparatorSubtract) << 4) if props else 0,
+                    capture_indices[props.sourceCapture] if props else -1,
+                    props.sourcePalette if props else -1,
+                ))
+        with open(temp_path, "rb") as stream:
+            stream.seek(HEADER.size)
+            checksum = hashlib.file_digest(stream, "sha256").digest()
+        with open(temp_path, "ab") as stream:
+            stream.write(checksum)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp_path, path)
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
 
 
 def prune(cache_dir: str, maximum_bytes: int = 1024 * 1024 * 1024) -> None:

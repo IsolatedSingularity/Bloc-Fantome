@@ -1,5 +1,7 @@
 # 2.9.9 final Pass B polish
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Runtime commit: `776692d2e485c9a0856c94384648506baf41d2cb`. Starting point: `52194d4c224f81048aae44aa68c9f103df71de0b`.
 Development-only review candidate. [Exact changed files](changed-files.txt).
 
@@ -16,9 +18,9 @@ Lighting and Clouds use the established generated white style, with cached face
 illumination/ground shadow and independent cloud drift. Other tile animations
 retain their roles; On/Off state and Reduced Motion remain authoritative.
 [Native sizes](icons-native.png), [Library](library-1200-100.png),
-[World](world-1200-100.png), [six-second motion study](tile-motion.mp4).
+[World](world-1200-100.png), six-second motion study (local artifact: `tile-motion.mp4`).
 
-The original close recording is untouched. Its [400 ms derivative](close-short.wav)
+The original close recording is untouched. Its 400 ms derivative (local artifact: `close-short.wav`)
 has a 3 ms attack ramp and 150 ms cosine fade; [recipe and hashes](close-short.json).
 Library opening and closing each use one cue. Button gain increases 0.80 → 0.90.
 Boot retains the swamp painting/title with three small assembling forms during
@@ -53,7 +55,7 @@ Windows SDL and real events/channels, isolated settings/saves and muted audio.
 They check fresh defaults, palette groups, cold/warm maps and Library, single
 Library cues, failed/successful saves, Escape/Stay and explicit Exit. The separate
 [native fast-exit check](fast-exit.json) took 42.5 ms including SDL teardown.
-[Lifecycle/UI clip](lifecycle-ui.mp4) uses actual presentation timestamps with an
+Lifecycle/UI clip (local artifact: `lifecycle-ui.mp4`) uses actual presentation timestamps with an
 explicitly offline cue reference, not speaker loopback. Its [audio measurements](audio-reference.json)
 show zero clipped samples; acoustic and artistic approval remain open.
 

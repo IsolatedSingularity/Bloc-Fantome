@@ -1,5 +1,7 @@
 # Pass 1: anchored workshop, native typography and architectural sound
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Review continuation of the owner-approved `f63db3ab` composition, on `codex/pass1-owner-review-2026-10-20`. The current implementation is ready for visual/listening review, **not installation approval**. Performance and acceptance holds below remain explicit. No creature work, installed-game replacement or main promotion.
 
 Verified source: [`98fc6485`](https://github.com/IsolatedSingularity/Bloc-Fantome/commit/98fc6485fc6575c0bbd0210722836592859f4d8a). **464 tests passed; 45 Python-fallback checks passed; all 56 preservation targets match.**
@@ -33,16 +35,16 @@ Native Windows captures use the real production application at 960×640, 1200×8
 
 Internal iterations corrected clipped material names and drawer footers, overlapping map instructions, unscrollable enlarged Lab content, the missing tutorial minimize glyph, low-contrast map arrows, a hidden History footer and notification layering. Retained first-iteration examples: [Build](native/iterations/first-build-960-text150.png), [tutorial](native/iterations/first-tutorial-text150.png), [map](native/iterations/first-world-map-text150.png). Native fullscreen testing exposed both a wrong desktop-size query and cumulative zoom loss; three final round trips preserve the exact world anchor and zoom. A scripted compressed save/reopen preserves all 147 test blocks.
 
-[Actual mouse footage](native/mouse-interactions.mp4) shows material selection, drag assignment, placement/Undo and preview interaction. Search text was set by the harness after OS keyboard injection failed to reach Pygame. The footage ends when an incomplete command-file write crashed the QA harness; the harness parser was corrected. It is **partial native interaction evidence**, not an uninterrupted full acceptance run. Batch captures use scripted app actions. Keyboard-handler tests pass, but native keyboard delivery, Windows 100/150/200%, monitor transfer and the complete save/import workflow remain unverified. These are not silently counted as passes.
+Actual mouse footage (local artifact: `native/mouse-interactions.mp4`) shows material selection, drag assignment, placement/Undo and preview interaction. Search text was set by the harness after OS keyboard injection failed to reach Pygame. The footage ends when an incomplete command-file write crashed the QA harness; the harness parser was corrected. It is **partial native interaction evidence**, not an uninterrupted full acceptance run. Batch captures use scripted app actions. Keyboard-handler tests pass, but native keyboard delivery, Windows 100/150/200%, monitor transfer and the complete save/import workflow remain unverified. These are not silently counted as passes.
 
 ## Audio
 
 **Provisional runtime choice: B4 Chamber.** It builds on the owner's B/B3 preference with recorded foundation strain, low stone pressure, irregular masonry joints and a longer reflected settling tail. B4 Ground is the drier comparison. These are compositional candidates, not a loudness-only change. No new creature or vocal material was introduced.
 
-- **In scene:** [B4 Chamber](audio/opening-B4-chamber.mp4), [B4 Ground](audio/opening-B4-ground.mp4).
-- **Isolated:** [Chamber](audio/B4-chamber.mp3), [Ground](audio/B4-ground.mp3).
-- **UI family:** [audition](audio/ui-cues.mp3), [cue order](audio/ui-cues.json). No hover spam.
-- **Piano:** [chapter-boundary audition](audio/piano-boundaries.mp3), [audition positions](audio/piano-boundaries.json), [master/chapter cue sheet](audio/piano-cue-sheet.json).
+- **In scene:** B4 Chamber (local artifact: `audio/opening-B4-chamber.mp4`), B4 Ground (local artifact: `audio/opening-B4-ground.mp4`).
+- **Isolated:** Chamber (local artifact: `audio/B4-chamber.mp3`), Ground (local artifact: `audio/B4-ground.mp3`).
+- **UI family:** audition (local artifact: `audio/ui-cues.mp3`), [cue order](audio/ui-cues.json). No hover spam.
+- **Piano:** chapter-boundary audition (local artifact: `audio/piano-boundaries.mp3`), [audition positions](audio/piano-boundaries.json), [master/chapter cue sheet](audio/piano-cue-sheet.json).
 
 Four selective lossless Sonniss GDC 2015 recordings were acquired from the per-file mirror after the bundle download was unavailable: Mechanical Wave rock/debris and BeautifulNoise stone/metal tension. [Source URLs and hashes](audio/source-provenance.json), [credits](audio/CREDITS.txt), [Sonniss terms](https://sonniss.com/gdc-bundle-license/). Original media and local license evidence remain preserved; raw packs are not published. B4 does not use the prior CC BY-NC stone study source.
 

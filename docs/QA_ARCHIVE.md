@@ -1,5 +1,10 @@
 # Generated QA evidence recovery
 
+The newer [3.1 preservation record](engineering/PRESERVATION_3_1.md) supersedes
+this historical retention inventory. It preserves and untracks the remaining QA
+tree and selected legacy media after a second verified archive/extraction cycle.
+The October 20 archive below remains valid recovery evidence.
+
 The October 20 engineering review archived 4,899 tracked, derived files
 (2,197,710,239 bytes). These are rendered PNG/GIF/video checks, derived scene
 caches, profiles and JUnit reports. Every original remains at its existing local

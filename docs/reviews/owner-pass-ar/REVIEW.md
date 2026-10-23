@@ -1,5 +1,7 @@
 # Pass A-R implementation and evidence checkpoint
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 **Review build, not accepted main. Overall acceptance remains HOLD for camera/loading latency and owner artistic review.** The approved placement repair and UI revision are implemented. Pass B, audio/cinematics and creature replacement were not started.
 
 Base: `c9573dcba74a954fd1e3b79433a59b54bc2dbe62`. Continue on `codex/pass1-owner-review-2026-10-20`; the commit containing this report is the single implementation checkpoint. Accepted main stays `175686c21649a8d37826f8a22850c85482a69fd9`.
@@ -50,7 +52,7 @@ Shared navy/translucent tokens, native Segoe typography, bounded antialiased cor
 
 - Build uses a genuine vertical icon/text category rail, all 464 identities, search/favorites/properties/hotbar routes, and a narrow two-step category gallery. Recent and the noisy footer are absent.
 - World uses icon-only toggle tiles, tooltip state, semantic active animation and reduced-motion support. Dimension, generation, sky and destructive actions remain separate. The actual rain click and visible rain are captured.
-- Library opens a detached illustrated four-choice palette. A 180 ms reciprocal rectangle transition expands into preview galleries; selecting a preview does not place or replace a world. Explicit Open/Place, import and cancellation remain. [Actual mouse sequence](native-ui/native-input.mp4) and [selection](native-ui/library-selection.png) show the result.
+- Library opens a detached illustrated four-choice palette. A 180 ms reciprocal rectangle transition expands into preview galleries; selecting a preview does not place or replace a world. Explicit Open/Place, import and cancellation remain. Actual mouse sequence (local artifact: `native-ui/native-input.mp4`) and [selection](native-ui/library-selection.png) show the result.
 - Menu is grouped; Tools retains separate command/Hotkeys scrolling, right-inset glyphs, keycaps and italic descriptions. Native review caught and removed duplicated Undo/Home entries; final hidden-native captures reflect that correction.
 - Colored terrain thumbnails return to grow/shrink/noise. Occupied-edge shrink now refuses with a small cue; safe shrink proceeds directly. The old clipping test was updated to verify refusal, preservation, then safe shrink and growth. Bottom-left identity/Unsaved/Fill prose is removed; internal save state and tool routes remain.
 

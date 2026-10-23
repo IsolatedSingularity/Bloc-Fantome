@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import struct
+import tempfile
 import zlib
 from typing import Optional
 
@@ -520,8 +521,10 @@ def read_build(path, block_catalog, cache_policy: BuildReadPolicy) -> BuildReadR
 def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
     """Atomically write a v5 gzip build from a stable world snapshot."""
     path = Path(path)
-    temp_path = path.with_name(path.name + ".tmp")
     path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=path.parent)
+    os.close(fd)
+    temp_path = Path(temporary)
     def block_records():
         for (x, y, z), block_type in snapshot.blocks.items():
             position = (x, y, z)
@@ -598,6 +601,8 @@ def write_build(path, snapshot: WorldSnapshot, definitions) -> SaveResult:
                     import time
                     time.sleep(.001)
             handle.write(']}')
+        with temp_path.open("rb+") as stream:
+            os.fsync(stream.fileno())
         os.replace(temp_path, path)
     except Exception:
         try:

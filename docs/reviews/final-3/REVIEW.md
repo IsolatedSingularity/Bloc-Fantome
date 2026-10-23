@@ -1,7 +1,9 @@
 # Bloc Fantôme 3.0 finishing candidate
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Stage A implementation and local review build, awaiting owner artistic acceptance.
-Stage B has not started. [Launch the review EXE](../../../.qa/final-3/package/BlocFantome.exe)
+Stage B has not started. Launch the review EXE (local artifact: `../../../.qa/final-3/package/BlocFantome.exe`)
 in its existing folder; its Assets junction uses this checkout. It is not a portable
 distribution. Main, root/installed EXEs, Start Menu, saves, README and owner `night.png`
 remain unchanged. [Executable preservation](preserved-executables.json), [package](package.json).
@@ -19,10 +21,10 @@ masks and eight independent animations. The End silhouette is simplified. Settin
 is a measured inspector with three audio sliders/mutes, compact preference switches,
 separate Play Introduction and honest VSync text. Autoplay remains off.
 
-Review the [World recording](world.mp4), [complete drawer](world.png),
+Review the World recording (local artifact: `world.mp4`), [complete drawer](world.png),
 [Settings at 960×640/150%](settings-960-150.png),
 [Settings at 1200×800/100%](settings-1200-100.png),
-[startup](startup.mp4) and [Goodbye](goodbye.mp4).
+startup (local artifact: `startup.mp4`) and Goodbye (local artifact: `goodbye.mp4`).
 Recordings use actual native SDL presentations sampled up to 20 FPS with their
 recorded timestamps; they are silent, and do not establish universal smoothness.
 Static frames and contact sheets were inspected. Owner judgment of motion remains
@@ -37,8 +39,8 @@ PCM conversion and routing. Owner WAVs retain the original decoder and hashes.
 The existing menu bed begins its fade during loading after 3.2 seconds. The
 1024-sample mixer buffer and accepted channel ownership remain unchanged.
 
-[Windows output comparison](startup-listening.wav): baseline source starts at 0.5s;
-packaged candidate at 9s. [Selection audition](selection-audition.wav): original click
+Windows output comparison (local artifact: `startup-listening.wav`): baseline source starts at 0.5s;
+packaged candidate at 9s. Selection audition (local artifact: `selection-audition.wav`): original click
 at 0.6s, new selection at 1.95s, new switch at 2.99s.
 [Recipes/hashes](sound-variants.json) preserve their sources; [all accepted recordings](preserved-audio.json)
 were rehashed unchanged. [Material audit](material-audit.json) found no missing

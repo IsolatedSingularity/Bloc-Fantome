@@ -19,12 +19,20 @@ CORE_MODULES={
     'test_public_contract','test_redstone','test_redstone_lab','test_scene_cache',
     'test_settings_io','test_terrain','test_tutorial_bundle_core','test_undo',
     'test_world_indexes','test_visibility_contract',
+    'test_native_build','test_setup_assets','test_persistence_adversarial',
 }
 
 
 def pytest_collection_modifyitems(items):
     for item in items:
         if Path(item.path).stem in CORE_MODULES:item.add_marker(pytest.mark.core)
+
+
+def pytest_configure(config):
+    # A fresh clone has no ignored .qa directory. Pytest creates basetemp itself,
+    # but not its missing parents; retain the explicit writable fixture location.
+    if config.option.basetemp:
+        Path(config.option.basetemp).parent.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.fixture(scope='session',autouse=True)

@@ -33,7 +33,7 @@ Biome selection uses source biome records and visual inspection. The `surface_bi
 
 The root EXE and installer were built as **2.7.4**. The archive check verified every region/atlas byte against the current source files, the embedded splash, and the Tk runtime. Nine packaging contract tests passed after the final packaging adjustment. Build logs: `.qa/worldmap-274-build.log` and `.qa/worldmap-274-installer-build.log`; archive evidence: `.qa/worldmap-274-archive.json`.
 
-The installed EXE at `C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe` reports 2.7.4 and matches the root SHA-256: `C229DDFD9B20EE04E271349F38198C19C99E00A16E1347855A07EC8F41C69716`. Start Menu target, working directory, icon and required installed assets passed verification. Both saved hotbars were preserved. Evidence: `.qa/worldmap-274-install-verification.json`.
+The installed EXE at `C:\Users\<user>\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe` reports 2.7.4 and matches the root SHA-256: `C229DDFD9B20EE04E271349F38198C19C99E00A16E1347855A07EC8F41C69716`. Start Menu target, working directory, icon and required installed assets passed verification. Both saved hotbars were preserved. Evidence: `.qa/worldmap-274-install-verification.json`.
 
 Both the root EXE and installed Start Menu launch passed their 20-second smoke checks. Their actual Pygame windows responded, all four windows per launch responded, and zero exact-path test processes remained afterward. Evidence: `.qa/worldmap-274-release-smoke.json`.
 

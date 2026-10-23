@@ -14,9 +14,9 @@ creative animation sequence. Do not equate research suggestions with user choice
 BASELINE AND LOCAL COPIES
 
 Active clone:
-C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome
 Additional recovered copy:
-C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome
+C:\Users\<user>\OneDrive\Documents\GitHub\Bloc-Fantome
 
 Audit baseline: main, HEAD 68cb7a9a85a75449ed47eaefd9feed9fee612a31, clean before
 the new handoff/prompt files and compact audit evidence were added.
@@ -112,7 +112,7 @@ RECOMMENDED FIX ORDER
    contract. tests\test_public_contract.py:91 hashes eight absolute source_file
    paths. Current hash is fbd97d083d199892208aed4e3ddd9e61e83fc70661ab684e87c9fef5d6040c52.
    Replacing ONLY the checkout root with the former
-   C:\Users\hunkb\OneDrive\Documents\GitHub\Bite-Size-Minecraft
+   C:\Users\<user>\OneDrive\Documents\GitHub\Bite-Size-Minecraft
    reproduces expected 00a10913750fe3892de37cb42c99389b31e01a189c5f28be8431239f158f3dc2.
    No expected digest or test source was changed. This is a portability defect,
    not evidence that recovered structure contents changed. Use stable relative

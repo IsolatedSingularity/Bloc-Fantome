@@ -26,8 +26,8 @@ The sky launcher resolved a requested root path to the OLD installed 2.9.2 app. 
 Installer compilation is still running in exec session 17387 at checkpoint time. Its log is .qa/maintenance/installer-build.log. Check for successful completion before using Code/build/installer/BlocFantome_Setup_2.9.3.exe (a partial file may exist). No installation/upgrade has occurred; installed version remains 2.9.2.
 Remaining: verify compiler completion, inspect real root splash/window, install 2.9.3 preserving saves/config, repair and verify actual Start Menu app/uninstall shortcut target/icon/working directory, launch via actual shortcut and inspect installed 2.9.3, verify installed/root SHA256 equality and unchanged user data, close exact QA processes, replace this checkpoint with final handoff.
 
-Installed directory: C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme
-Start Menu directory: C:\Users\hunkb\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Bloc Fantôme
+Installed directory: C:\Users\<user>\AppData\Local\Programs\Bloc Fantôme
+Start Menu directory: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Bloc Fantôme
 User data baseline: .qa/maintenance/userdata-before.json
 Installation is already explicitly authorized by the user and AGENTS.md; no routine approval is needed. For UI automation, respect the Escape stop and resume only on a new user turn.
 

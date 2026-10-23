@@ -1,5 +1,7 @@
 # Owner UI restoration and icon checkpoint, 2026-10-21
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Review build: `.qa/owner-pass-ar-ui/package-v2/BlocFantome.exe`.
 SHA-256: `6229eea74c0c3db04ae8e60168c832bd6c2599f4433f62d775a1175b41d6830e`.
 This is an isolated local build with an Assets junction into this checkout. Keep it in this directory. Installed EXE, Start Menu, accepted main, saves and previous review builds remain unchanged, as requested for this review cycle.
@@ -18,7 +20,7 @@ The implementation is unstaged and uncommitted on the existing shared review bra
 
 ## Verification
 
-Final complete suite: [496 passed](final-full.log). Focused final checks: [36 passed](final2.log). [Build log](build-v2.log) records packaging success; all six PNGs extracted from the EXE match source bytes exactly.
+Final complete suite: 496 passed (local artifact: `final-full.log`). Focused final checks: 36 passed (local artifact: `final2.log`). Build log (local artifact: `build-v2.log`) records packaging success; all six PNGs extracted from the EXE match source bytes exactly.
 
 Hidden Windows SDL captures cover 960x640, 1200x800 and 1920x1080, and 100/125/150% text. Inspect [editor](editor-1200.png), [Library hover](library-saved-hover-1200.png), [narrow Library](library-home-960-text150.png), [Tools](tools-1200.png), [large-text Tools](tools-960-text150.png), [World](world-1200.png), [Menu](menu-1200.png), [grow](preview-grow.png), [shrink](preview-shrink.png), [noise](preview-noise.png), and [measured error toast](save-failure-text150.png). These are scripted native-renderer checks, not OS input.
 

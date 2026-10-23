@@ -1,5 +1,7 @@
 # Pass B finalization: verified behavior and evidence
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 ## Scope and identity
 
 Version 2.9.9, `development`, starting at
@@ -101,12 +103,12 @@ wording and camera with the current renderer and its original sky/lighting flags
 [after](welcome-after.png) is the final scene. Menu/dock before images are preserved
 Pass B captures. This comparison does not imply an exact baseline executable run.
 
-[Map clip](map-presented.mp4) and [startup/UI/shutdown audition](startup-ui-shutdown.mp4)
+Map clip (local artifact: `map-presented.mp4`) and startup/UI/shutdown audition (local artifact: `startup-ui-shutdown.mp4`)
 use native source frames captured at up to 15 FPS after actual display flips, with
 real elapsed durations. The app presented more frames than the recording samples.
 The latter adds an offline reference mix at recorded cue onsets/channel interruptions,
 with 50% effects and 0.72 headroom. It is not live speaker loopback. The separate
-[before](balance-before.wav)/[after](balance-after.wav) 15-second references compare
+before (local artifact: `balance-before.wav`)/after (local artifact: `balance-after.wav`) 15-second references compare
 all seven original cues over matched rain ambience. No extra UI recordings or
 synthesized cues are assigned. Original selected hashes match source/frozen.
 

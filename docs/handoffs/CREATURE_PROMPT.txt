@@ -1,4 +1,4 @@
-Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome.
+Work in C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome.
 Read AGENTS.md, docs/handoffs/INTRO_POLISH_2.9.6_HANDOFF.txt, and the relevant
 opening_scene.py, opening_audio.py, opening_geometry.py and presentation_renderer.py.
 Preserve the approved two-monument opening, native-resolution rendering, world
@@ -40,7 +40,7 @@ held poses, acceleration, limb contacts and negative space. Silent Hill is an
 atmospheric/movement reference, not a request to reproduce a specific character.
 Existing architectural references are in References/Sanctuary and NEW; PONDER PACKAGE.
 
-Read-only orientation initially: C:\Users\hunkb\OneDrive\Documents\Embryo\Horror Audio
+Read-only orientation initially: C:\Users\<user>\OneDrive\Documents\Embryo\Horror Audio
 Read its AGENTS.md, docs/STATUS.md, docs/NEXT_SESSION.md, docs/sc/STUDIES.md and
 docs/rack/AMBIENCE_02.md. Its ignored workspace/render corpus was absent when checked.
 Accepted direction there: Rack Counterweight Vault / Listening Membrane r03;
@@ -82,6 +82,6 @@ to the references; passing tests alone does not establish art quality.
 
 Finish with a consistent new patch version, verified root EXE and installer,
 installation and actual Start Menu launch. Also update the runtime EXE and required
-assets in C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome, preserving its
+assets in C:\Users\<user>\OneDrive\Documents\GitHub\Bloc-Fantome, preserving its
 source and user data. Hash-check all copies, verify shortcut target/icon/workdir,
 close QA processes, and leave a concise handoff in docs/handoffs.

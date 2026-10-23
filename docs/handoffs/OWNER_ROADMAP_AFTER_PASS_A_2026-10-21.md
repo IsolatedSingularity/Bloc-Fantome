@@ -1,3 +1,9 @@
+> Historical evidence. Status and branch names below apply to the recorded date.
+
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
+> Current direction: [roadmap](../ROADMAP.md). 3.0 is accepted; 3.1 is engineering review.
+
 # Bloc Fantôme | Owner roadmap and Pass A feedback
 **Owner decisions, user-visible defects and cross-chat/Codex handoff, 21 October 2026.**
 
@@ -7,7 +13,7 @@ Repository: IsolatedSingularity/Bloc-Fantome.
 Development branch: codex/pass1-owner-review-2026-10-20.
 Last reviewed implementation before this documentation-only handoff: aa5f6f9fb9a7f450df5e6f382bef7d6a3000357e.
 Last accepted main as of this record: 175686c21649a8d37826f8a22850c85482a69fd9.
-Source evidence: [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), [Pass 1 review](../reviews/pass1-complete/REVIEW.md), [prior design handoff](ASTRA_PASS1_CONTINUATION_DESIGN_SYSTEM_2026-10-20.md), [creature proof](CREATURE_MOTION_PROOF.txt), [encounter handoff](ENCOUNTER_2.9.7_HANDOFF.txt). Read current HEAD and local AGENTS.md before any consequential work; these SHAs are historical anchors, not reset targets.
+Source evidence: [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), [Pass 1 review](../reviews/pass1-complete/REVIEW.md), prior design handoff (local artifact: `ASTRA_PASS1_CONTINUATION_DESIGN_SYSTEM_2026-10-20.md`), [creature proof](CREATURE_MOTION_PROOF.txt), [encounter handoff](ENCOUNTER_2.9.7_HANDOFF.txt). Read current HEAD and local AGENTS.md before any consequential work; these SHAs are historical anchors, not reset targets.
 
 
 ## Owner decisions resolved on 21 October 2026 (Pass A-R)

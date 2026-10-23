@@ -1,6 +1,8 @@
 Bloc Fantôme 3.0 development candidate, Pass C, 22 October 2026.
 
-[Launch the isolated review EXE](../../../.qa/pass-c/package/BlocFantome.exe). Keep it in that directory: its Assets junction uses this checkout. This is a local review build, not a portable distribution. The ignored `.qa` executable and local QA logs are not uploaded to GitHub; the source, measurements, representative screenshots and recordings are included here. [Package hash and contents](package.json), [source provenance](source-manifest.json).
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
+Launch the isolated review EXE (local artifact: `../../../.qa/pass-c/package/BlocFantome.exe`). Keep it in that directory: its Assets junction uses this checkout. This is a local review build, not a portable distribution. The ignored `.qa` executable and local QA logs are not uploaded to GitHub; the source, measurements, representative screenshots and recordings are included here. [Package hash and contents](package.json), [source provenance](source-manifest.json).
 
 Local `main` was safely fast-forwarded to accepted `2ea56e34`; its runtime baseline is `0a90d833`. Pass C source and review evidence are on `development`; 3.0 has not been promoted to `main`. Root/installed executables, shortcuts, owner data, README and original media were preserved. Cathedral Soft Blue is now reserved for 4.0; creature work remains deferred.
 
@@ -25,7 +27,7 @@ Candidate zoom-frame medians are 8.8–9.2 ms. Work is spread across frames: med
 
 [586 tests passed](full-suite.txt). Final native SDL [source](source.json)/[packaged](frozen.json) probes cover maps, cancellation, Library, resize, manual tutorial, save success/failure and Exit/Stay; [source](source-edges.json)/[packaged](frozen-edges.json) edge probes cover skips and safe worker shutdown. Scalar/array tests include alpha, clipping and wrapped UVs. Native mouse checks passed; injected keyboard navigation was inconclusive, while SDL keyboard-event tests passed. Physical keyboard/trackpad and human audio listening remain owner checks.
 
-The [atlas recording](atlas.mp4) retains sampled presentation times across three Back/Escape cycles, five rapid cancellations and Reduced Motion, with world-state equality. [Goodbye recording](goodbye.mp4) and [final native capture](native-goodbye.jpg) show the preserved composition. Clips are silent, sampled at up to 30/15 FPS respectively, and do not establish universal frame-rate smoothness. Typography was rendered at 960/1200 widths and 100/150% text; Goodbye also at 1920. OS DPI was 125%; other OS DPI settings were not tested.
+The atlas recording (local artifact: `atlas.mp4`) retains sampled presentation times across three Back/Escape cycles, five rapid cancellations and Reduced Motion, with world-state equality. Goodbye recording (local artifact: `goodbye.mp4`) and [final native capture](native-goodbye.jpg) show the preserved composition. Clips are silent, sampled at up to 30/15 FPS respectively, and do not establish universal frame-rate smoothness. Typography was rendered at 960/1200 widths and 100/150% text; Goodbye also at 1920. OS DPI was 125%; other OS DPI settings were not tested.
 
 VSync remains honestly unavailable. Profiling identifies CPU raster/allocation work; it does not establish an alternative backend's benefit. No backend switch was justified without native input/DPI/stability evidence. Pygame's [display contract](https://www.pygame.org/docs/ref/display.html#pygame.display.set_mode) also does not guarantee requested VSync.
 

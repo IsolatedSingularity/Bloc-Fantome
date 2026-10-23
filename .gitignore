@@ -46,6 +46,7 @@ env/
 # Application generated files
 .app_config.json
 .tutorial_config.json
+.opening_config.json
 minecraft_builder.log
 
 # Personal/private folders
@@ -70,6 +71,12 @@ Assets/Texture Hub/blocks/*
 !Assets/Texture Hub/blocks/mine_crafter_*.png.mcmeta
 
 # Owner-supplied licensed assets, skyboxes, font software, and private license records
+/Assets/Extensive Library/
+/Assets/Extras/structures_NBT (original)/
+/Assets/Texture Hub/blocks/mine_crafter_*.png*
+/Code/ui/audio/*.wav
+/Code/ui/audio/*.ogg
+/Code/ui/audio/*.mp3
 Assets/Fonts/Zekton/
 Assets/Private Sources/
 zekton.zip
@@ -86,6 +93,7 @@ Assets/**/LICENSE*.txt
 
 # User saves (keep example saves in Code/saves)
 saves/*.json.gz
+saves/*.json
 Code/saves/_autosave.json.gz
 Code/saves/_backups/
 
@@ -158,6 +166,17 @@ credentials/
 # Retained source captures/scripts stay tracked; new output stays local.
 # Archived derived evidence is indexed in docs/QA_ARCHIVE.md.
 /.qa/
+/visual-checks/
+/References/*.gif
+!/References/Darkness.gif
+/References/Excess/*.mp4
+/docs/reviews/**/*.wav
+/docs/reviews/**/*.mp3
+/docs/reviews/**/*.mp4
+/docs/reviews/**/*.gif
+/docs/reviews/**/*.prof
+/docs/reviews/**/*.xml
+/docs/handoffs/ASTRA_*.md
 /Code/tutorial_prepared/
 /References/Opening/
 /Assets/Opening/**/*.npz

@@ -36,6 +36,8 @@ def jump_height(seconds, index):
 
 
 def assembly(screen, center, seconds, reduced=False, closing=False, opacity=1):
+    # Retiming only the decoration leaves loading, audio and outro deadlines alone.
+    seconds *= 1.06
     for i in range(3):
         # Outro runs once, right to left, settling before the closing fade.
         lift,stretch,angle=(0.,1.,0.) if reduced else block_pose(min(seconds*1.14,3.59),2-i) if closing else block_pose(seconds,i)
@@ -43,7 +45,7 @@ def assembly(screen, center, seconds, reduced=False, closing=False, opacity=1):
         x=center[0]+(i-1)*18;y=center[1]-lift
         color=tuple(round(v*opacity) for v in (177,204,205))
         def point(px,py):
-            px*=1.18/stretch;py=(py-9)*1.18*stretch
+            px*=1.239/stretch;py=(py-9)*1.239*stretch
             return round(x+px*math.cos(angle)-py*math.sin(angle)),round(y+10.62+px*math.sin(angle)+py*math.cos(angle))
         pygame.draw.polygon(screen,color,[point(*p) for p in ((-6,0),(0,-3),(6,0),(0,3))])
         pygame.draw.lines(screen,color,False,[point(*p) for p in ((-6,1),(-6,6),(0,9),(6,6),(6,1))],1)

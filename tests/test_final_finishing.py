@@ -4,7 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pygame
 import pytest
-from ui.lifecycle import block_pose
+from ui.lifecycle import block_pose, assembly, GoodbyeScreen
 from ui.window_chrome import hit_region,WindowChrome
 from ui.world_material import icon
 from engine.audio_decode import load_sound
@@ -17,6 +17,32 @@ def test_contact_converts_fall_into_compression_and_settles():
     assert block_pose(.69,0)[1]<1
     assert block_pose(.77,0)[1]>1
     assert block_pose(.95,0)==(0.,1.,0.)
+
+
+def test_lifecycle_cubes_keep_sequence_spacing_and_reduced_motion():
+    def frame(seconds, closing=False, reduced=False):
+        surface=pygame.Surface((100,80),pygame.SRCALPHA)
+        assembly(surface,(50,40),seconds,reduced,closing)
+        return surface
+    def tops(surface):
+        return [pygame.mask.from_surface(surface.subsurface((x,0,18,80))).get_bounding_rects()[0].top
+                for x in (23,41,59)]
+    rest=tops(frame(0))
+    for closing in (False,True):
+        rate=1.06*(1.14 if closing else 1)
+        for step in range(3):
+            active=2-step if closing else step
+            peak=tops(frame((step*1.02+.37)/rate,closing))
+            assert peak[active]<rest[active]-7
+            assert all(peak[i]==rest[i] for i in range(3) if i!=active)
+        still=pygame.image.tobytes(frame(0,closing,True),'RGBA')
+        for tick in range(361):
+            surface=frame(tick/120,closing)
+            # No adjacent cubes touch even during compression/recoil.
+            assert len(pygame.mask.from_surface(surface).get_bounding_rects())==3
+            assert pygame.image.tobytes(frame(tick/120,closing,True),'RGBA')==still
+    assert pygame.image.tobytes(frame(2.65,True),'RGBA')==pygame.image.tobytes(frame(0,True),'RGBA')
+    assert GoodbyeScreen.duration_ms==3000 and GoodbyeScreen.fade_ms==350
 
 
 def test_native_hit_regions_keep_title_buttons_and_world_as_clients():

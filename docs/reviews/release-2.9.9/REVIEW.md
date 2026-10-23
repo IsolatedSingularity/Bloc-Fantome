@@ -35,7 +35,7 @@ The large-world benchmark ran after the full suite and first packaging jobs comp
 
 ## Delivery and recovery
 
-The complete installer is `Code/build/installer/BlocFantome_Setup_2.9.9.exe`; the isolated EXE is `.qa/release-299/package/BlocFantome.exe`. The installed app is `C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe`. Root, review and installed EXE hashes must agree in [checkpoint.json](checkpoint.json). Start Menu target/icon/working directory are recorded in [shortcuts.json](shortcuts.json).
+The complete installer is `Code/build/installer/BlocFantome_Setup_2.9.9.exe`; the isolated EXE is `.qa/release-299/package/BlocFantome.exe`. The installed app is `C:\Users\<user>\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe`. Root, review and installed EXE hashes must agree in [checkpoint.json](checkpoint.json). Start Menu target/icon/working directory are recorded in [shortcuts.json](shortcuts.json).
 
 Root and installed prior executables were copied into `.qa/release-299/rollback/` before upgrading. Earlier review packages and installers remain. The preservation manifest checks saves, settings, source media and accepted main; only the explicitly upgraded root/installed EXEs may differ. No README edit or Git history rewrite was performed.
 

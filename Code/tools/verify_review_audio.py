@@ -80,6 +80,14 @@ def run_handoff(output, app_module):
             ready();app._playLifecycleCue('boot');cue('boot')
             ready();app._saveBuilding(filepath=str(out.parent/'saved.json.gz'))
             app._pendingSave.future.result(timeout=15);app._pollSave();cue('save')
+            saved_blocks=dict(app.world.blocks)
+            saved_bounds=(app.world.width,app.world.depth,app.world.height,app.world.min_y)
+            app._placeBlockWithUndo(1,1,2,app_module.BlockType.STONE)
+            assert app.world.blocks!=saved_blocks
+            assert app._loadBuildingFromPath(str(out.parent/'saved.json.gz'),silent=True)
+            assert app.world.blocks==saved_blocks
+            assert (app.world.width,app.world.depth,app.world.height,app.world.min_y)==saved_bounds
+            result['checks'].append('saved world reload restores exact blocks and bounds')
             ready();app.currentBuildPath=None
             with temporary_attribute(app,'_openSaveAsDialog',lambda:None):app.workshop.act('save',app)
             assert not any(pygame.mixer.Channel(i).get_busy() for i in (0,1,27,28))

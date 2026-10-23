@@ -1,5 +1,7 @@
 # Owner Pass A: production editor review
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Development branch: `codex/pass1-owner-review-2026-10-20`. Base: `120e619b`; canonical main remains `175686c2`. This is a bounded implementation with **performance and native-keyboard holds**, not an overall acceptance PASS. No Pass B, main promotion, installer, or installed-game replacement.
 
 ## Implemented
@@ -37,17 +39,17 @@ Final tutorial diagnostic, milliseconds (single visit; scripted native input):
 
 ## Verification and review artifacts
 
-[Final suite](full-suite.xml): 475 passed. [Python fallback](fallback.xml): 27 passed. New regressions compare edited orders against fresh sorts across all modes/views, retain old snapshots, compare partial/full RGBA pixels in four rotations with glass, verify precise-scroll bounds/ownership, and exercise preview-only selection. Historical failures and logs are retained. Earlier failures were a missed staging conversion and obsolete progressive-render/16-lesson assertions; the replacement checks require complete interaction surfaces and preserve independent Lab/restoration coverage.
+Final suite (local artifact: `full-suite.xml`): 475 passed. Python fallback (local artifact: `fallback.xml`): 27 passed. New regressions compare edited orders against fresh sorts across all modes/views, retain old snapshots, compare partial/full RGBA pixels in four rotations with glass, verify precise-scroll bounds/ownership, and exercise preview-only selection. Historical failures and logs are retained. Earlier failures were a missed staging conversion and obsolete progressive-render/16-lesson assertions; the replacement checks require complete interaction surfaces and preserve independent Lab/restoration coverage.
 
 [Native matrix](native/matrix.json): 960×640, 1200×800, 1920×1080, 100/125/150% in-app text, map/Lab, and fullscreen/windowed camera equality. OS DPI stayed at 125%. [Tutorial/persistence checks](tutorial/report.json) verify stair facing/half through undo, redo and compressed save/reopen, then exact original-world restoration after tour scenes.
 
-Actual OS mouse input: [short footage](native/mouse-interactions.mp4), [events](native/input-events.jsonl), [Library selection](native/os-library-preview.png), [active snow](native/os-world-active.png). Captures otherwise use scripted application actions. F1/Escape injection produced no SDL keyboard events; physical keyboard/precision-trackpad acceptance and other OS DPI scales remain unverified. The mouse footage predates the final cosmetic tile-icon polish. A QA logger error is retained separately; the corrected recording completed.
+Actual OS mouse input: short footage (local artifact: `native/mouse-interactions.mp4`), [events](native/input-events.jsonl), [Library selection](native/os-library-preview.png), [active snow](native/os-world-active.png). Captures otherwise use scripted application actions. F1/Escape injection produced no SDL keyboard events; physical keyboard/precision-trackpad acceptance and other OS DPI scales remain unverified. The mouse footage predates the final cosmetic tile-icon polish. A QA logger error is retained separately; the corrected recording completed.
 
 Visual entry points: [Build](native/catalog-1200.png), [Tools at 150%](native/tools-960-text150.png), [World](native/world-1200.png), [Library](native/library-structures.png), [quiet controls](native/quiet.png), [welcome](tutorial/welcome.png), [snow](tutorial/snow.png).
 
 ## Isolated playable handoff
 
-Run `.qa/owner-pass-a/package/BlocFantome.exe` from this checkout. The folder contains its own review preferences/saves and an Assets junction to the existing licensed assets; it is **not a portable installer**. Opening/tutorial auto-start are disabled only in this isolated folder; both remain available from Menu. [Package identity](package.json), [source hashes](source-manifest.json), [prepared-bundle bake](bake.log), [build log](build.log), [final packaged World capture](native/packaged-world.png).
+Run `.qa/owner-pass-a/package/BlocFantome.exe` from this checkout. The folder contains its own review preferences/saves and an Assets junction to the existing licensed assets; it is **not a portable installer**. Opening/tutorial auto-start are disabled only in this isolated folder; both remain available from Menu. [Package identity](package.json), [source hashes](source-manifest.json), prepared-bundle bake (local artifact: `bake.log`), build log (local artifact: `build.log`), [final packaged World capture](native/packaged-world.png).
 
 [Preservation](preservation.json) compares all 56 prior review targets: original media, root rollback executable, saves and settings. All match. The [installed executable](installed-check.json) also matches the preserved root rollback hash; its settings timestamps predate this QA session. The UI launcher initially resolved an explicit QA path to the installed app; process-path/time inspection caught this, all QA-created processes were closed, and the isolated executable was then launched directly and verified. That mistaken launch appended the installed diagnostic log. No Start Menu change was made. Final QA process count is recorded in `process-cleanup.txt`.
 

@@ -185,6 +185,9 @@ def main(argv=None) -> int:
         raise ValueError("cold-operation benchmarks require at least five repetitions")
     args.cache_dir.mkdir(parents=True,exist_ok=True)
     blocFantome.DERIVED_WORLD_CACHE_DIR=str(args.cache_dir.resolve())
+    # Rotation saves preferences. Keep benchmark camera/music state out of the
+    # source application's settings, even when running with real local assets.
+    blocFantome.APP_CONFIG_FILE=str(args.cache_dir.resolve()/'benchmark-preferences.json')
     app = blocFantome.BlocFantome()
     if not app.assetManager.loadAllAssets():
         raise RuntimeError("assets unavailable")

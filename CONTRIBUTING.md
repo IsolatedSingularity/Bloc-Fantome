@@ -11,7 +11,7 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
 - New branch names are neutral and purpose-based, **never named after development tools or models**. Prefer **development** for the single ongoing development branch. An existing historically named branch may be temporarily retained to avoid an unsafe rename. Rename/consolidate it only after verifying remote/local refs, worktrees, unique commits and collaborators; do not create extra temporary branches merely to rename.
 - At a safe checkpoint, inspect historical branches. Retire obsolete ones only when unique commits/evidence have been preserved or integrated, and there is an easy rollback. Never force-push/rewrite history or delete owner changes as cleanup.
 - First read the live branch HEAD, status, local AGENTS.md and latest docs/handoffs owner roadmap. Keep review builds, installed executable and saves safe until acceptance. Do not promote HOLD work merely because unit tests pass.
-- Current owner roadmap (including completed Pass A-R, Pass B finalization, Pass C engineering/UX/consolidation, original-creature Pass D and later backlog): [OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md](docs/handoffs/OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md). Current approved A-R handoff: [PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md](docs/handoffs/PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md). Historical branches and docs are evidence, not automatic new instructions.
+- Current scope and acceptance gates: [Current roadmap](docs/ROADMAP.md). Dated handoffs are historical evidence and do not authorize new work.
 - Keep following ignored local owner instructions alongside this repository policy. Do not overwrite those instructions or publish private workflow configuration without approval.
 
 **Current acceptance status:** The owner accepted the 3.0 artistic candidate and its documented large-world performance limits on 2026-10-22. The measurements below remain engineering targets, not claims that this release meets every target. See the current release QA record; retain historical reviews as dated evidence.
@@ -33,7 +33,7 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
 - Python 3.12 (tested with 3.12.10, Windows x64)
 - Runtime libraries from `requirements.txt` (Pygame and NumPy)
 - Git
-- Minecraft Java Edition 1.21.1+ (for assets)
+- Minecraft Java Edition 1.21.1 (validated extraction layout; launch once first)
 
 ### Clone the Repository
 ```bash
@@ -49,8 +49,10 @@ python -m pip install -r requirements-dev.txt
 ### Setup Assets
 ```bash
 cd Code
-python setup_assets.py
+python setup_assets.py --output-dir ../.qa/java-assets-review
 ```
+
+Review the staged extraction before copying missing files into `Assets/`. Setup reads the launcher asset index and hashed sound objects, rejects missing/corrupt inputs and collisions, and never replaces differing existing files. It preserves native texture resolution and nested entity/GUI paths. Restore private inputs separately using [asset recovery](docs/LOCAL_ASSET_LAYOUT.md).
 
 ### Run from Source
 ```bash

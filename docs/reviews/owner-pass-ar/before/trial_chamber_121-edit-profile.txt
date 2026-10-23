@@ -4,28 +4,28 @@
    List reduced from 74 to 25 due to restriction <25>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15889(_placeBlockWithUndo)
-        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:294(execute)
-        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:81(execute)
-        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:617(setBlock)
-        1    0.000    0.000    0.002    0.002 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:132(_storeBlock)
-        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:295(_refreshPreparedDrawOrders)
-       12    0.000    0.000    0.001    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:48(patched)
-      108    0.000    0.000    0.001    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:55(_change)
-        1    0.000    0.000    0.001    0.001 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:9191(_afterWorldEdit)
+        1    0.000    0.000    0.002    0.002 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15889(_placeBlockWithUndo)
+        1    0.000    0.000    0.002    0.002 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:294(execute)
+        1    0.000    0.000    0.002    0.002 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:81(execute)
+        1    0.000    0.000    0.002    0.002 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:617(setBlock)
+        1    0.000    0.000    0.002    0.002 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:132(_storeBlock)
+        1    0.000    0.000    0.001    0.001 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:295(_refreshPreparedDrawOrders)
+       12    0.000    0.000    0.001    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:48(patched)
+      108    0.000    0.000    0.001    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:55(_change)
+        1    0.000    0.000    0.001    0.001 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:9191(_afterWorldEdit)
         5    0.001    0.000    0.001    0.000 {built-in method builtins.max}
       216    0.000    0.000    0.000    0.000 {built-in method _bisect.bisect_left}
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:224(_refreshSurfaceNeighborhood)
-     1104    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:10(painter_key)
-        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:351(_refreshViewSurfacePosition)
-        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:216(_isSurfaceBlock)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:224(_refreshSurfaceNeighborhood)
+     1104    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\draw_order.py:10(painter_key)
+        7    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:351(_refreshViewSurfacePosition)
+        7    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:216(_isSurfaceBlock)
       114    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
        24    0.000    0.000    0.000    0.000 {method 'copy' of 'list' objects}
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:171(_addPositionIndexes)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:171(_addPositionIndexes)
       326    0.000    0.000    0.000    0.000 {built-in method builtins.len}
         4    0.000    0.000    0.000    0.000 {built-in method builtins.any}
-       17    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:220(<genexpr>)
+       17    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:220(<genexpr>)
         1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
        88    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:198(_refreshOccupiedBounds)
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:201(_recordTutorialPlacement)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:198(_refreshOccupiedBounds)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:201(_recordTutorialPlacement)

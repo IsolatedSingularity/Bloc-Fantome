@@ -34,9 +34,9 @@ byte-for-byte. Audio behavior and channel lifetime tested; final subjective
 listening quality remains for owner review, not inferred from waveform checks.
 
 Delivery
-Root: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\BlocFantome.exe
-Installed: C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
-Secondary: C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
+Root: C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\BlocFantome.exe
+Installed: C:\Users\<user>\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
+Secondary: C:\Users\<user>\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
 All three report 2.9.6 and SHA256:
 4FF00765D78A036399DDE199BD266DE4C2225890971ADB17A4CFBE18B6F3FEEE
 Installer: Code/build/installer/BlocFantome_Setup_2.9.6.exe

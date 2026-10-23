@@ -1,5 +1,7 @@
 # 2.9.9 Pass B finalization review
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Development-only finalization is implemented. The current roadmap is **Pass B
 finalization, Pass C engineering/UX/consolidation, then Pass D original creature**.
 Artistic and physical acceptance remain open. No Pass C work or Cathedral restyle
@@ -27,10 +29,10 @@ Menu keeps Save/Open/Settings and groups four explicit quick-slot Save/Load rows
   [quick slots at 150%](finalization/quick-slots-960-150.png).
 - [Tutorial dock before](finalization/tutorial-dock-before.png) /
   [after](finalization/tutorial-dock-after.png), [exit](finalization/exit-960-150.png).
-- [Actual presented map frames](finalization/map-presented.mp4).
-- [Startup/UI/shutdown with offline reference audio](finalization/startup-ui-shutdown.mp4).
-- [Audio balance before](finalization/balance-before.wav) /
-  [after](finalization/balance-after.wav).
+- Actual presented map frames (local artifact: `finalization/map-presented.mp4`).
+- Startup/UI/shutdown with offline reference audio (local artifact: `finalization/startup-ui-shutdown.mp4`).
+- Audio balance before (local artifact: `finalization/balance-before.wav`) /
+  after (local artifact: `finalization/balance-after.wav`).
 
 Native probes use hidden Windows SDL/WGL windows and scripted calls/events. Audio
 references are offline mixes of preserved recordings, not microphone/speaker

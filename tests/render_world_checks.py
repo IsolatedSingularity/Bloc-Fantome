@@ -80,4 +80,4 @@ if __name__ == "__main__":
         selected = tuple(sys.argv[2:]) or SCENES
         render(output, selected)
     else:
-        render(Path(tempfile.gettempdir()) / "kilo" / "bloc-fantome-world-checks")
+        render(ROOT / ".qa" / "world-checks")

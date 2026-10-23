@@ -1,2 +1,0 @@
-from pathlib import Path
-p=Path('CHANGELOG.md');s=p.read_text(encoding='utf-8').replace('- Stage every tutorial page off the input thread; cache hotbar icons and time-slice cold terrain drawing without dropping cells.', '- Stage every tutorial page off the input thread; cache hotbar icons and time-slice cold terrain drawing without dropping cells. Finish an in-progress render despite advancing water/fire frames.');p.write_text(s,encoding='utf-8')

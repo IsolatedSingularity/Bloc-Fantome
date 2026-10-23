@@ -22,7 +22,7 @@ window caption. Borderless fullscreen for opening; restore prior editor window.
 Keep a windowed preview option for testing.
 
 Release target clarification
-The owner uses C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe.
+The owner uses C:\Users\<user>\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe.
 Verified that copy is 2.9.2. Embryo root and installed executable are both 2.9.4
 with matching hashes. Next authorized release must update the owner's GitHub
 runtime copy as well as Embryo root EXE and installer; synchronize required media

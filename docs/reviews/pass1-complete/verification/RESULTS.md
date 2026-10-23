@@ -1,14 +1,16 @@
 # Verification index
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 Source commit: `98fc6485fc6575c0bbd0210722836592859f4d8a`, descended from the approved `f63db3ab` review. [Changed source hashes plus prepared bundle manifest](source-manifest.json). Windows Python 3.12.10, Pygame 2.6.1 / SDL 2.28.4. Original engineering ownership, stale-job, atomic-write and exact visibility contracts remain in the full suite.
 
 SHA256 records describe the local Windows QA bytes; Git may normalize text-file line endings. Binary media and executable hashes are unaffected.
 
 | Layer | Result | Evidence |
 |---|---|---|
-| SOURCE/TEST | **464 passed, 198.60 s** | [Complete suite XML](release-suite.xml) |
-| Python fallback | **45 passed, 15.95 s**, native accelerator disabled | [Fallback XML](fallback.xml) |
-| Focused UI/opening | **40 passed** | [Focused XML](polish.xml) |
+| SOURCE/TEST | **464 passed, 198.60 s** | Complete suite XML (local artifact: `release-suite.xml`) |
+| Python fallback | **45 passed, 15.95 s**, native accelerator disabled | Fallback XML (local artifact: `fallback.xml`) |
+| Focused UI/opening | **40 passed** | Focused XML (local artifact: `polish.xml`) |
 | Corrupt loads/settings/tutorial recovery | **26 passed** | [Recovery log](recovery.log) |
 | Prepared lesson cache | All 12 large lesson records regenerated; fail-closed validation retained | [Bake log](bake-release.log), full suite |
 | NATIVE UI | Windows 125% DPI; three sizes; 100/125/150% in-app text; fullscreen and save/reopen assertions | [Matrix](../native/matrix-iteration2.json), [final checks](../native/final-checks.json) |
@@ -19,7 +21,7 @@ SHA256 records describe the local Windows QA bytes; Git may normalize text-file 
 
 The packaged archive contains `ui.feedback`, `ui.history`, `ui.opening_piano`, `ui.workshop_actions`, the Rust accelerator and all prepared tutorial records. Raw archive listing remains local at `.qa/pass1-complete/package-archive-final.txt`. The review EXE uses the workspace Assets junction, which includes the ten new derived audio files; it is not a portable installer. Final QA processes were closed and the exact executable path was checked for zero remaining processes.
 
-Earlier full validation recorded [453 passes and 10 failures](final-suite2.xml): four obsolete UI-layout assertions and six corrupt-load tests exposing a missing optional-UI guard. The controls tests now use displayed geometry; the load error handler tolerates a headless/partially initialized app and preserves the live world. The complete final rerun passes. Initial silent-output runs were interrupted for diagnosis; they are not counted as passing runs.
+Earlier full validation recorded 453 passes and 10 failures (local artifact: `final-suite2.xml`): four obsolete UI-layout assertions and six corrupt-load tests exposing a missing optional-UI guard. The controls tests now use displayed geometry; the load error handler tolerates a headless/partially initialized app and preserves the live world. The complete final rerun passes. Initial silent-output runs were interrupted for diagnosis; they are not counted as passing runs.
 
 Native limitations: OS keyboard injection did not reach the source app and did not visibly exit the packaged opening; later source automation also encountered stale window bindings. Mouse evidence and scripted handler tests are labeled separately. Windows 100/150/200% display scaling, monitor transfer, minimize/focus recovery and the complete uninterrupted native editing/import/save workflow are not accepted by inference. Windows Settings was inspected only; scale remained 125%.
 

@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "3.0.0"
+APP_VERSION = "3.1.0"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -57,7 +57,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.3.0.0'
+        myappid = 'blocfantome.builder.3.1.0'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass

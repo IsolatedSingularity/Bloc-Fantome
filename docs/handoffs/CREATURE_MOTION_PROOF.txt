@@ -1,6 +1,6 @@
 CREATURE MOTION CHECKPOINT
 Owner-facing date: 2026-10-18
-Checkout: C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome
+Checkout: C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome
 Baseline: main, a1fe11ee. Existing CHANGELOG.md and opening_audio.py edits preserved.
 
 Latest owner decisions
@@ -102,6 +102,6 @@ Next steps after owner motion review
 Redstone Map remains paused.
 
 Reproduce the silent proof
-& 'C:\Users\hunkb\AppData\Local\Programs\Python\Python312\python.exe' Code/tools/render_creature_proof.py --video
+& 'C:\Users\<user>\AppData\Local\Programs\Python\Python312\python.exe' Code/tools/render_creature_proof.py --video
 The repository .venv lacks numpy. The existing global Python 3.12.10 has the
 needed pygame 2.6.1 and numpy 2.4.6. No environment was changed.

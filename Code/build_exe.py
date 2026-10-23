@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "3.0.0"
+VERSION = "3.1.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"
@@ -174,11 +174,8 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     native_result = subprocess.run(
         [sys.executable, NATIVE_BUILDER], cwd=SCRIPT_DIR, check=False
     )
-    if native_result.returncode and os.path.isfile(NATIVE_LIBRARY):
-        raise RuntimeError(
-            "Native accelerator refresh failed. Close source/test processes "
-            "using the DLL before rebuilding; refusing to silently omit it."
-        )
+    if native_result.returncode:
+        print("Native build unavailable or failed; packaging the explicit Python fallback.")
     map_region_root = os.path.join(SCRIPT_DIR, 'world_map_regions')
     from engine.world_map_regions import REGIONS
     required_regions = tuple(f'{dimension}_{key}' for dimension,regions in REGIONS.items() for key,_ in regions)
@@ -294,6 +291,7 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
         cmd.append(f"{option}={sourcePath}{os.pathsep}{destination}")
     if native_result.returncode == 0 and os.path.isfile(NATIVE_LIBRARY):
         cmd.append(f"--add-binary={NATIVE_LIBRARY}{os.pathsep}native")
+        cmd.append(f"--add-data={os.path.splitext(NATIVE_LIBRARY)[0]}.json{os.pathsep}native")
     
     # Add windowed mode only for release builds
     if not debug and not diagnostic:
@@ -369,12 +367,11 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
         print(f"\nExecutable created at:\n  {exe_path}")
         
         print("\n--- Distribution Instructions ---")
-        print("To share this application, provide users with:")
-        print(f"  1. {exe_path}")
-        print("  2. Instructions to run setup_assets.py first")
-        print("  3. config.json (optional, for custom settings)")
-        print("\nNote: Users must have Minecraft Java Edition 1.21.1+ installed")
-        print("      and run setup_assets.py to extract textures and sounds.")
+        print("This is a local review/release artifact, not a public media grant.")
+        print("Keep the matching private Assets folder beside the executable.")
+        print("Java 1.21.1 extraction restores ordinary game assets only;")
+        print("restore licensed opening/font/skybox/custom audio inputs separately.")
+        print("See docs/LOCAL_ASSET_LAYOUT.md for recovery and acceptance gates.")
         print("\nTo create an installer, run:")
         print("  iscc installer.iss")
     else:

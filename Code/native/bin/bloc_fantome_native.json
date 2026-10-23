@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "binary_sha256": "38c9c881848ade5efaf2883f319bce734becaea8f901e33ba7eca08332ae277d",
+  "sources": {
+    "build_native.py": "f44940e03f739940ee427515b993b31598c397c0806fb6b8806856bf2e29c3e9",
+    "native/depth_sort/Cargo.toml": "29f4cf5149174f9d4a3f633d9ca2f91ba4485d4912565a264850d792d682c9e3",
+    "native/depth_sort/Cargo.lock": "1bffeb1de3dcfa5ccfcb16198472d38a5af490bd2ca2f7896257bb5334b505ce",
+    "native/depth_sort/src/lib.rs": "8d193cbe74445609cc1f7af1cecd6b0a6afb0b6cb71250d712029ecc07881f12"
+  },
+  "machine": "amd64",
+  "bits": 64
+}

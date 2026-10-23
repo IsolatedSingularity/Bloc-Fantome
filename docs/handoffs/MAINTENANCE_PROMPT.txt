@@ -1,4 +1,4 @@
-Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome.
+Work in C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome.
 Read AGENTS.md and docs\handoffs\MAINTENANCE_AUDIT_2026-10-18.txt, then implement
 the maintenance work. The audit is an orientation, not a substitute for checking
 the live implementation. Preserve existing behavior, artwork, assets and saves.

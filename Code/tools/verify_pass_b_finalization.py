@@ -182,6 +182,16 @@ def run(output, module, *, polish=False, acceptance=False):
                     action=app._exitDialog.handle(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_ESCAPE))
                     app._exitAction(action);assert app.running and app._exitDialog is None
                     app._requestExit();assert app._exitDialog.focus=='stay'
+                # This interaction script does not visit every semantic sound.
+                # Audition the remaining decoder/router contracts explicitly;
+                # keep these separate from cues observed through UI actions.
+                remaining=set(feedback.CUES)-{row['cue'] for row in cues}-{'shutdown'}
+                for name in sorted(remaining):
+                    channel=feedback.play(app.assetManager,name)
+                    assert channel is not None, ('cue audition rejected',name)
+                    assert channel.get_sound() is app.assetManager._selected_cues[name]
+                    channel.stop()
+                operations.append({'explicit_cue_auditions':sorted(remaining)})
                 state['phase']='shutdown';app._exitAction('exit')
         app._handleEvents=tick
         try:

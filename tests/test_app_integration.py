@@ -28,6 +28,18 @@ except ImportError:
 class AppIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Real map/rotation actions persist preferences. Never let this fixture
+        # read or modify the source checkout's personal settings or save folder.
+        cls._data = tempfile.TemporaryDirectory(prefix='app-integration-')
+        cls.addClassCleanup(cls._data.cleanup)
+        for name, value in (
+            ('APP_CONFIG_FILE', str(Path(cls._data.name) / 'preferences.json')),
+            ('SAVES_DIR', str(Path(cls._data.name) / 'saves')),
+            ('DERIVED_WORLD_CACHE_DIR', str(Path(cls._data.name) / 'cache')),
+        ):
+            isolation = patch.object(app_module, name, value)
+            isolation.start()
+            cls.addClassCleanup(isolation.stop)
         pygame.font.init()
         cls.app = app_module.BlocFantome()
         if not cls.app.assetManager.loadAllAssets():
@@ -35,6 +47,7 @@ class AppIntegrationTests(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.app.worldLoadExecutor.shutdown(wait=True, cancel_futures=True)
         pygame.display.quit()
 
     def setUp(self):

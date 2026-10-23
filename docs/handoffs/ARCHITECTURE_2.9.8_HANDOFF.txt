@@ -39,8 +39,8 @@ Verification
 - git diff --check passed. No commit, staging or push performed.
 
 Delivery
-Installed: C:\Users\hunkb\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
-Secondary: C:\Users\hunkb\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
+Installed: C:\Users\<user>\AppData\Local\Programs\Bloc Fantôme\BlocFantome.exe
+Secondary: C:\Users\<user>\OneDrive\Documents\GitHub\Bloc-Fantome\BlocFantome.exe
 Root, installed and secondary executable SHA256:
 B90EEBA07012C3E1818AAFCD4E275673FA66E3E59D0D3CD5221A12337DA040C7
 Start Menu target, working directory and icon were repaired and verified.

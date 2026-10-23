@@ -1,8 +1,9 @@
 # Bloc Fantôme design specification
 
-Status: final 3.0 finishing candidate on development, awaiting owner acceptance. The Cathedral redesign is reserved
-for 4.0. This file separates preservation requirements from future design tokens.
-The current owner's request supersedes historical handoffs that still block Pass B.
+Status: 3.0.0 was owner-accepted on 22 October 2026 at `46324ef4`.
+3.1 preserves that presentation while consolidating engineering. Follow the
+[current roadmap](docs/ROADMAP.md); no Cathedral redesign or creature replacement
+is authorized in 3.1. Dated Pass A/B/C statements below describe design history.
 
 ## Accepted 2.9.9 presentation
 
@@ -36,11 +37,10 @@ claim that those checks passed.
 
 ## Pass B finalization contracts
 
-The owner provisionally accepted Pass B on 22 October 2026. Local main is
-fast-forwarded to `2ea56e3438263aae0a8ec4fc9879e49f341d9660`; its runtime is
-`0a90d833a5f49a83249ab1f5759bd7c5fe7859d4`. Pass C develops 3.0 on development.
-The original creature replacement remains a separate future decision. Installation
-and shortcuts remain unchanged. Pass C produces one isolated review EXE.
+Historical context: Pass B was provisionally accepted on 22 October 2026.
+The later 3.0 release superseded its candidate status and upgraded the installed
+application. The following behavior contracts remain in force for 3.1; the
+original creature and optional encounter remain unchanged.
 
 The swamp painting presents before bulk assets, with boot audio requested at its
 first visible frame, with its cue decoded before presentation. Three small original

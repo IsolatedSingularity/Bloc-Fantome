@@ -1,4 +1,4 @@
-Work in C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome after the maintenance
+Work in C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome after the maintenance
 phase. Read AGENTS.md, its latest maintenance handoff, and the relevant parts of
 NEW; PONDER PACKAGE. Preserve the game's existing visual identity and working
 simulation, save/undo behavior, native-size typography and release workflow.

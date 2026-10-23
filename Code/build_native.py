@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+from engine.native_provenance import verified, write_receipt
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -17,8 +18,8 @@ OUTPUT = SCRIPT_DIR / "native" / "bin" / "bloc_fantome_native.dll"
 def build(*, required: bool = False) -> bool:
     cargo = shutil.which("cargo")
     if cargo is None:
-        if OUTPUT.is_file():
-            print(f"Rust toolchain unavailable; using existing accelerator: {OUTPUT}")
+        if verified(OUTPUT, SCRIPT_DIR):
+            print(f"Rust toolchain unavailable; using source-verified accelerator: {OUTPUT}")
             return True
         message = "Rust toolchain unavailable; packaged app will use the Python fallback"
         if required:
@@ -30,7 +31,7 @@ def build(*, required: bool = False) -> bool:
     environment = os.environ.copy()
     environment["CARGO_TARGET_DIR"] = str(target_dir)
     result = subprocess.run(
-        [cargo, "build", "--release", "--manifest-path", str(MANIFEST)],
+        [cargo, "build", "--release", "--locked", "--offline", "--manifest-path", str(MANIFEST)],
         cwd=SCRIPT_DIR,
         env=environment,
         check=False,
@@ -47,9 +48,11 @@ def build(*, required: bool = False) -> bool:
         raise FileNotFoundError(f"Cargo did not produce {compiled}")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     if OUTPUT.is_file() and OUTPUT.read_bytes() == compiled.read_bytes():
+        write_receipt(OUTPUT, SCRIPT_DIR)
         print(f"Native accelerator already matches the compiled build: {OUTPUT}")
         return True
     shutil.copy2(compiled, OUTPUT)
+    write_receipt(OUTPUT, SCRIPT_DIR)
     print(f"Built optional native accelerator: {OUTPUT}")
     return True
 

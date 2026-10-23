@@ -1,5 +1,7 @@
 # Bloc Fantôme 2.9.9: Pass B acceptance candidate
 
+Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
+
 22 October 2026. Runtime: `0a90d833a5f49a83249ab1f5759bd7c5fe7859d4`, on `development`.
 Supersedes the polish candidate for review; acceptance remains pending.
 
@@ -81,7 +83,7 @@ representative full-size images were visually inspected. [Matrix](visual-matrix.
 full originals remain in `.qa/pass-b-acceptance/visual-candidate`. OS DPI was
 measured separately at 120 (125%); other OS DPI settings were not tested.
 
-[Boot](boot.mp4), [interaction/resize](interactions.mp4), and [Goodbye](goodbye.mp4)
+Boot (local artifact: `boot.mp4`), interaction/resize (local artifact: `interactions.mp4`), and Goodbye (local artifact: `goodbye.mp4`)
 clips retain presentation timestamps. Captured frames are sampled at 15 FPS;
 30 FPS export repeats frames. Audio is an explicitly offline cue reference,
 not speaker loopback. Boot requests followed first flips by 0.89/1.28 ms

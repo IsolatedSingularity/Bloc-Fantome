@@ -4,30 +4,30 @@
    List reduced from 78 to 25 due to restriction <25>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.000    0.000    0.554    0.554 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15862(_placeBlockWithUndo)
-        1    0.000    0.000    0.554    0.554 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:294(execute)
-        1    0.000    0.000    0.554    0.554 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:81(execute)
-        1    0.000    0.000    0.554    0.554 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:648(setBlock)
-        1    0.000    0.000    0.554    0.554 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:132(_storeBlock)
-        1    0.139    0.139    0.553    0.553 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:294(_refreshPreparedDrawOrders)
-   532799    0.213    0.000    0.307    0.000 C:\Users\hunkb\AppData\Local\Programs\Python\Python312\Lib\heapq.py:316(merge)
-   304195    0.052    0.000    0.052    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:345(<genexpr>)
+        1    0.000    0.000    0.554    0.554 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:15862(_placeBlockWithUndo)
+        1    0.000    0.000    0.554    0.554 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:294(execute)
+        1    0.000    0.000    0.554    0.554 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\undo.py:81(execute)
+        1    0.000    0.000    0.554    0.554 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:648(setBlock)
+        1    0.000    0.000    0.554    0.554 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:132(_storeBlock)
+        1    0.139    0.139    0.553    0.553 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:294(_refreshPreparedDrawOrders)
+   532799    0.213    0.000    0.307    0.000 C:\Users\<user>\AppData\Local\Programs\Python\Python312\Lib\heapq.py:316(merge)
+   304195    0.052    0.000    0.052    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:345(<genexpr>)
    296178    0.051    0.000    0.051    0.000 {built-in method _heapq.heapreplace}
-   181542    0.046    0.000    0.046    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:315(<genexpr>)
-   296226    0.043    0.000    0.043    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:303(key)
-    47034    0.008    0.000    0.008    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:336(<genexpr>)
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:9197(_afterWorldEdit)
+   181542    0.046    0.000    0.046    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:315(<genexpr>)
+   296226    0.043    0.000    0.043    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:303(key)
+    47034    0.008    0.000    0.008    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:336(<genexpr>)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\blocFantome.py:9197(_afterWorldEdit)
         5    0.000    0.000    0.000    0.000 {built-in method builtins.max}
        12    0.000    0.000    0.000    0.000 {built-in method builtins.sorted}
-       40    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:351(<genexpr>)
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:223(_refreshSurfaceNeighborhood)
-       28    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:306(item)
-        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:383(_refreshViewSurfacePosition)
+       40    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:351(<genexpr>)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:223(_refreshSurfaceNeighborhood)
+       28    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:306(item)
+        7    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:383(_refreshViewSurfacePosition)
       109    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:170(_addPositionIndexes)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:170(_addPositionIndexes)
         1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
        78    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
-        1    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:201(_recordTutorialPlacement)
-        7    0.000    0.000    0.000    0.000 C:\Users\hunkb\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:215(_isSurfaceBlock)
+        1    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\tutorial_runtime.py:201(_recordTutorialPlacement)
+        7    0.000    0.000    0.000    0.000 C:\Users\<user>\OneDrive\Documents\Embryo\Bloc-Fantome\Code\engine\world.py:215(_isSurfaceBlock)
 
 
