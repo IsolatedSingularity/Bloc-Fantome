@@ -5,22 +5,22 @@ Historical evidence. Local-only artifacts are recorded as paths; see the [recove
 > Current direction: [roadmap](../ROADMAP.md). 3.0 is accepted; 3.1 is engineering review.
 
 # Bloc Fantôme | Owner roadmap and Pass A feedback
-**Owner decisions, user-visible defects and cross-chat/Codex handoff, 21 October 2026.**
+**Owner decisions, user-visible defects and review handoff, 21 October 2026.**
 
-**STATUS: PASS A ON HOLD.** This file preserves the agreed roadmap and the latest owner feedback, not authorization to implement another pass before design choices and research are settled. NEXT: clarify selected creative choices with the owner, research reference designs, produce one bounded Codex revision prompt, and review playable results. **Do not start Pass B or the creature replacement yet.**
+**STATUS: PASS A ON HOLD.** This file preserves the agreed roadmap and the latest owner feedback, not authorization to implement another pass before design choices and research are settled. NEXT: clarify selected creative choices with the owner, research reference designs, produce one bounded revision brief, and review playable results. **Do not start Pass B or the creature replacement yet.**
 
 Repository: IsolatedSingularity/Bloc-Fantome.
-Development branch: codex/pass1-owner-review-2026-10-20.
+Development branch: historical owner-review branch (20 October 2026).
 Last reviewed implementation before this documentation-only handoff: aa5f6f9fb9a7f450df5e6f382bef7d6a3000357e.
 Last accepted main as of this record: 175686c21649a8d37826f8a22850c85482a69fd9.
-Source evidence: [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), [Pass 1 review](../reviews/pass1-complete/REVIEW.md), prior design handoff (local artifact: `ASTRA_PASS1_CONTINUATION_DESIGN_SYSTEM_2026-10-20.md`), [creature proof](CREATURE_MOTION_PROOF.txt), [encounter handoff](ENCOUNTER_2.9.7_HANDOFF.txt). Read current HEAD and local AGENTS.md before any consequential work; these SHAs are historical anchors, not reset targets.
+Source evidence: [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), [Pass 1 review](../reviews/pass1-complete/REVIEW.md), prior design handoff (local artifact: `the preserved 20 October design-system continuation in the private recovery archive`), [creature proof](CREATURE_MOTION_PROOF.txt), [encounter handoff](ENCOUNTER_2.9.7_HANDOFF.txt). Read current HEAD and local AGENTS.md before any consequential work; these SHAs are historical anchors, not reset targets.
 
 
 ## Owner decisions resolved on 21 October 2026 (Pass A-R)
 
 These decisions supersede tentative creative alternatives above. The consolidated implementation handoff is [PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md](PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md).
 
-- **Branch hygiene:** one active development branch plus main, where practical. New names must NEVER include a Codex/agent/tool prefix. Prefer neutral development. Existing historical remote branches remain until safely consolidated, not casually deleted. Apply on every pass via CONTRIBUTING.md.
+- **Branch hygiene:** one active development branch plus main, where practical. New names must NEVER include a tool-specific prefix. Prefer neutral development. Existing historical remote branches remain until safely consolidated, not casually deleted. Apply on every pass via CONTRIBUTING.md.
 - **Library:** opening Library presents four distinct large illustrated category buttons, one word under each. Prefer **one horizontal row of four** when space permits, reflow to 2 × 2 when composition/viewport demands. This is a floating, detached surface, not a top-bar-attached file manager. Selection transforms that surface into a compact browse/preview gallery with explicit Open/Place and clean reversible transition, inspired by the *principle* of the original Ratchet & Clank 1 shop transitions, not copying its design. The separate Menu is NOT given this special animation.
 - **Build:** the current production app has two horizontal category tabs and a next arrow, NOT a vertical rail. Owner therefore selects a proper **vertical icon + text category rail**. On compact 960 × 640 or enlarged text, use a two-step category submenu if the rail would crush the block grid; retain full search, selection and inventory.
 - **World:** owner retains icon-only centered responsive toggle tiles, meaningful independent weather/effect animations, true state indications and hover/focus tooltips. Separate smaller ordinary actions, not a long list.
@@ -58,7 +58,7 @@ Published report: 475 full-suite tests and 27 fallback checks passed, preserving
 - Tools: move triangular/diagonal icon-and-silhouette inset from LEFT edge to RIGHT edge of each row and refine. Keep independent scroll regions, add a distinct HOTKEYS heading in the lower section, make shortcut chords immediately legible and explanation text decluttered/subtle/italicized.
 - Menu: the monotone oversized text-command list needs intentional information architecture and distinctive interaction design, researched from quality applications and games. Maintain every feature; do not merely recolor the existing list.
 - Library: on first click, show a **free-floating compact four-category landing menu** (Worlds, Biomes, Structures, Saved Builds). Four LARGE icon buttons with ONE word underneath each, not an attached long dropdown/tabbed file-explorer view. Clicking a category opens a separately considered submenu/gallery with actual relevant preview thumbnails and explicit Open vs Place; changing view should feel like a compact surface transforming/opening/closing. Ratchet & Clank 1 store/vendor menus are a *motion/interaction inspiration*, not a source to copy. No awkward empty regions, oversized headers, permanent four-tab row or accidental load/place. The owner is open to alternatives after seeing principled references.
-- The modern Segoe-based charcoal style is liked; **refine rather than reinvent**. The owner asks to research effective spacing, typography, responsiveness and menu hierarchy from Apple HIG, Microsoft Fluent, excellent game UI, Cursor/Vercel-like polished software before issuing a Codex prompt.
+- The modern Segoe-based charcoal style is liked; **refine rather than reinvent**. The owner asks to research effective spacing, typography, responsiveness and menu hierarchy from Apple HIG, Microsoft Fluent, excellent game UI, polished desktop and web software before issuing a implementation brief.
 
 Previously accepted Pass A behaviors still needed: contextual hotbar, precise trackpad scrolling, contextual tool abilities, tutorial restoration, updated snow/terrain response, full block catalog, valid save/undo and animations that do not steal input. Fix rather than regress them.
 
@@ -86,6 +86,6 @@ Audit the full block catalog's material/unique behaviors, audio association, emi
 
 ## Workflow, QA and new browser-chat recovery
 
-Browser is independent reviewer/creative director; Codex performs local code changes/builds/profiling/tests. Read local AGENTS.md and current branch/status/source (never presume this file is newer than the repo). Keep original licensed media, private owner recordings, rollback EXEs, user saves/settings, reproducible QA artifacts and Git provenance. Publish bounded source/evidence on one development branch. Keep main as accepted baseline, and never assert artistic or real-input success purely from tests. No unlimited speculative rewrites or extra branches. Real user-visible acceptance matters.
+The review brief and local implementation have separate responsibilities: creative direction and code/build/profiling/test verification. Read local AGENTS.md and current branch/status/source (never presume this file is newer than the repo). Keep original licensed media, private owner recordings, rollback EXEs, user saves/settings, reproducible QA artifacts and Git provenance. Publish bounded source/evidence on one development branch. Keep main as accepted baseline, and never assert artistic or real-input success purely from tests. No unlimited speculative rewrites or extra branches. Real user-visible acceptance matters.
 
-**Pass A-R owner decisions are resolved and a consolidated handoff has been issued** in PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md. The browser and agents should read this owner roadmap and current repository HEAD before beginning or reviewing. Only owner acceptance of A-R unlocks Pass B. Every future browser chat can recover this file via the linked repo branch, then retrieve the latest commit/handoff instead of relying on memory alone.
+**Pass A-R owner decisions are resolved and a consolidated handoff has been issued** in PASS_A_REVISION_OWNER_APPROVED_2026-10-21.md. The browser and maintainers should read this owner roadmap and current repository HEAD before beginning or reviewing. Only owner acceptance of A-R unlocks Pass B. Every future browser chat can recover this file via the linked repo branch, then retrieve the latest commit/handoff instead of relying on memory alone.

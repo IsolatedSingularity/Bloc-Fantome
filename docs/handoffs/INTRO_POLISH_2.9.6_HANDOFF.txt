@@ -68,4 +68,4 @@ dark folded humanoid, planted climbing plus violent stop-start movement, realist
 eye, forceful head impacts without gore, sparse layered muffled voices, cinematic
 camera without in-scene Escape/Skip. First checkpoint is a short motion proof at
 the cathedral before the complete encounter. No creature was implemented here.
-Redstone Map remains paused. No README edit, commit or push was made by the agent.
+Redstone Map remains paused. No README edit, commit or push was made by the maintainer.

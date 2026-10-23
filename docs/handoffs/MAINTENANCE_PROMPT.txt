@@ -35,7 +35,7 @@ Complete the stable batch with consistent patch-version metadata, the rebuilt
 BlocFantome.exe and installer in the clone, installation/upgrade, and a verified
 launch through the actual Bloc Fantome Start Menu shortcut. Preserve user data,
 verify shortcut target/icon/working directory, and close QA processes. Keep final
-artifacts and a concise handoff inside the clone; .codex is scratch space only.
+artifacts and a concise handoff inside the clone; the temporary workspace is scratch space only.
 Leave changes unstaged, uncommitted and unpushed. Proceed without routine phase
 approvals; ask only for a material unresolved design choice or consequential scope
 expansion. Report what changed, decisive verification and any remaining limitations.

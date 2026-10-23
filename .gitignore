@@ -122,7 +122,7 @@ audit-*.md
 .env
 audit-*.md
 
-# Kilo Code / Agent Configuration
+# Local workspace configuration
 .kilo/
 .kilocodeignore
 AGENTS.md
@@ -131,7 +131,7 @@ Jenova/
 # TEMP FILES
 NEXT.txt
 
-# AI & Problematic Content (Standardized)
+# Local instruction and workspace files
 CLAUDE.md
 GEMINI.md
 *.agent.md
@@ -191,3 +191,7 @@ logs/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Preserved original research entry points; neutral public names replace them.
+/NEW; PONDER PACKAGE/README_FOR_AGENTS.md
+/NEW; PONDER PACKAGE/agent_index.json

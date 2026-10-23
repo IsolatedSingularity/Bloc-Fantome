@@ -58,6 +58,6 @@ All entries have pinned paths in [scene_catalog.json](scene_catalog.json) and [t
 
 Start with `PistonScenes.movement`, `PistonScenes.poles`, `BearingScenes.windmillsAsSource`, `RedstoneScenes.sticker` and `RedstoneScenes.contact`. These were directly inspected. Their teaching mechanisms are discussed in [the deep dive](piston_redstone_deep_dive.md).
 
-Belts, gantries, pulleys and train assembly are useful next-reading candidates for a future agent, not examples declared visually superior without inspection. Fetch them selectively or fetch the whole small scene-code set. The included method indexer discovers candidate storyboard methods after downloading; it does not parse Java control flow or infer exact registry bindings.
+Belts, gantries, pulleys and train assembly are useful next-reading candidates for a future maintainer, not examples declared visually superior without inspection. Fetch them selectively or fetch the whole small scene-code set. The included method indexer discovers candidate storyboard methods after downloading; it does not parse Java control flow or infer exact registry bindings.
 
 The authoritative item-to-scene registration remains `AllCreatePonderScenes.java`. To establish exact playable coverage, evaluate its registrations and conditional dependencies rather than equating source-file count with user-visible scenes. [Registry](../SOURCES.md#c-registry).

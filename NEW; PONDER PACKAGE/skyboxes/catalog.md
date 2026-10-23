@@ -50,4 +50,4 @@ python scripts/fetch_references.py --manifest skyboxes/manifest.json --id sky-sa
 python scripts/fetch_references.py --manifest skyboxes/manifest.json --id sky-cloud-cube --max-total-mib 40 --execute
 ```
 
-No `--execute` means no network calls. The manifest includes acquisition status and format, so an agent can see which entries are not yet ready-to-load assets.
+No `--execute` means no network calls. The manifest includes acquisition status and format, so a maintainer can see which entries are not yet ready-to-load assets.

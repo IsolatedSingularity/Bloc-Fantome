@@ -2,7 +2,8 @@
 
 23 October 2026. Baseline: `46324ef4f26ecaeaefe6cf5f22524f0be4c03251`.
 The owner subsequently authorized coherent staging and development publication.
-Main promotion and installation still require final evidence acceptance.
+The owner accepted this preservation approach on 23 October 2026 and authorized
+release promotion and installation. See [release delivery](RELEASE_3_1.md).
 
 ## Tracking and restoration
 
@@ -44,7 +45,7 @@ historical handoffs and old scripts remain privately preserved; no original was
 deleted. The three reference directories were neither moved nor consolidated.
 Current 3.0 gallery media and useful compact review records remain public.
 
-Archived historical assistant-named handoff files are no longer current public
+Archived historical internal handoff files are no longer current public
 guidance. The current roadmap uses neutral names. Forty historical documents had
 machine-specific username prefixes replaced with `<user>`; original texts remain
 in the verified archive. Dates, findings, source identities and historical outcomes

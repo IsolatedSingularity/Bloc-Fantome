@@ -9,7 +9,7 @@
     "tools-b-mask.png",
     "library-landmarks-mask.png"
   ],
-  "branch": "codex/pass1-owner-review-2026-10-20",
+  "branch_description": "historical owner-review branch (20 October 2026)",
   "head": "c34520dfc82b103bafad0ac5f4e53a0cd92dbb03",
   "accepted_main": "175686c21649a8d37826f8a22850c85482a69fd9",
   "source_hashes": {

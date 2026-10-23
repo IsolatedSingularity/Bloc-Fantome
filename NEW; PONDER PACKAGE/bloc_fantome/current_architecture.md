@@ -26,6 +26,6 @@ Documentation includes historical release/QA material. The 2.9.2 handoff describ
 
 ## Known gaps, not inferred bugs
 
-`Code/blocFantome.py` exists and is 1,092,830 bytes at this snapshot. Multiple connector reads returned metadata without its body, or an explicit size/unsupported-content error. The source was not empty. This blocked a complete trace from motion events into final application compositing. The downloader includes that exact pinned path so a local agent can finish the trace. [Path](../SOURCES.md#b-app).
+`Code/blocFantome.py` exists and is 1,092,830 bytes at this snapshot. Multiple connector reads returned metadata without its body, or an explicit size/unsupported-content error. The source was not empty. This blocked a complete trace from motion events into final application compositing. The downloader includes that exact pinned path so a local maintainer can finish the trace. [Path](../SOURCES.md#b-app).
 
 Lighting implementation and native rasterization internals were not exhaustively inspected. Existing README feature descriptions are documentation claims, not measurements. No local build, gameplay session, screenshot comparison or performance run was performed. Recommendations below therefore specify diagnostics and acceptance criteria rather than declaring a discovered defect.

@@ -9,7 +9,7 @@ later chat; the active 2.9.8 opening remains unchanged.**
 
 Start: `main@175686c21649a8d37826f8a22850c85482a69fd9`.
 Verified functional source: `e108c0130a26275e688c081e85072d1cbac71279`.
-Branch: `codex/engineering-consolidation`. Final publication SHA is in the chat handoff.
+Branch: the historical engineering consolidation branch. Final publication SHA is in the chat handoff.
 
 Origin's main baseline was verified live. Embryo started clean with one worktree.
 The secondary GitHub checkout was at `68cb7a9a85a75449ed47eaefd9feed9fee612a31`

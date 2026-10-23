@@ -5,7 +5,7 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - Unreleased engineering review
+## [3.1.0] - 2026-10-23
 
 ### Fixed
 - Recover Java 1.21.1 sounds from verified asset indexes and hashed objects; retain nested texture paths and animation metadata, stage validation, and reject incomplete inputs/collisions without replacing existing files.
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserve and verify local archives before untracking bulky QA, legacy recordings and private extracted media. Keep history, original media and accepted 3.0 rollback intact.
 - Add asset-independent source CI, current roadmap, recovery guidance, issue register and a proposed 3.2 architecture/performance plan.
 - Retain the README-linked Darkness animation; classify and verify remaining removals and replace broken historical media links with explicit local recovery references.
-- Preserve the accepted interface and optional opening. Development review publication is authorized; main promotion, tag, root replacement and installation upgrade await acceptance of final source and preservation evidence.
+- Preserve the accepted interface and optional opening. The owner accepted the final engineering and preservation evidence. Release delivery includes matching source/tag, root executable, installed application and verified Start Menu launch. See `docs/engineering/RELEASE_3_1.md` for verification boundaries.
 
 ## [3.0.0] - 2026-10-22
 

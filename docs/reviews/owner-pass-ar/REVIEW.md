@@ -4,7 +4,7 @@ Historical evidence. Local-only artifacts are recorded as paths; see the [recove
 
 **Review build, not accepted main. Overall acceptance remains HOLD for camera/loading latency and owner artistic review.** The approved placement repair and UI revision are implemented. Pass B, audio/cinematics and creature replacement were not started.
 
-Base: `c9573dcba74a954fd1e3b79433a59b54bc2dbe62`. Continue on `codex/pass1-owner-review-2026-10-20`; the commit containing this report is the single implementation checkpoint. Accepted main stays `175686c21649a8d37826f8a22850c85482a69fd9`.
+Base: `c9573dcba74a954fd1e3b79433a59b54bc2dbe62`. Continue on `historical owner-review branch (20 October 2026)`; the commit containing this report is the single implementation checkpoint. Accepted main stays `175686c21649a8d37826f8a22850c85482a69fd9`.
 
 ## Status by evidence layer
 

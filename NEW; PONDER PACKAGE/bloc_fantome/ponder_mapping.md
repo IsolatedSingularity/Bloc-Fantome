@@ -27,4 +27,4 @@ For a proposed interaction gate, distinguish the explanation clock from the user
 
 First match one inspected behavior closely enough to compare it. A scripted group translation is a good candidate because it does not require all Create models or arbitrary 3D rotation. Record timing, visibility, direction and end state before trying a new artistic treatment. Do not import Ponder's entire visual identity, reinterpret the introductory disc design, or replace existing gameplay with demonstrations.
 
-A source importer is not an automatic port. Storyboards contain Java callbacks, loops, mod block IDs and Create-specific helpers. A filename/method index can guide an agent to the right code, but it cannot reliably translate all callbacks into an engine-neutral timeline without semantic analysis.
+A source importer is not an automatic port. Storyboards contain Java callbacks, loops, mod block IDs and Create-specific helpers. A filename/method index can guide a maintainer to the right code, but it cannot reliably translate all callbacks into an engine-neutral timeline without semantic analysis.

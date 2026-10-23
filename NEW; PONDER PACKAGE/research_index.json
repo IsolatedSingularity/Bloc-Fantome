@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "start": "README_FOR_AGENTS.md",
+  "start": "RESEARCH_GUIDE.md",
   "routes": {
     "piston_smoothness": [
       "bloc_fantome/current_architecture.md",

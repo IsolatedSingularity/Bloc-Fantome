@@ -24,4 +24,4 @@ Avoid a general timeline engine, renderer rewrite, new contract/harness framewor
 or unnecessary dependency work. Use focused tests and visual checks proportionate
 to the change. Final delivery includes updated EXE/installer, installation and
 verified Start Menu launch, preserved user data and a concise handoff in the clone.
-Use .codex only for temporary agent work. Leave Git changes unstaged and unpushed.
+Use the temporary workspace only for scratch work. Leave Git changes unstaged and unpushed.

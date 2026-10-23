@@ -3,14 +3,14 @@
 Owner direction, 23 October 2026. This is the single current roadmap. Dated
 handoffs and research remain historical evidence, not additional authorization.
 
-## Accepted baseline
+## Preserved 3.0 rollback
 
 3.0.0, `46324ef4f26ecaeaefe6cf5f22524f0be4c03251`, is artistically accepted,
 including its documented large-world performance limits. Preserve its optional
 opening, creature, source material, controls, appearance, saves and settings.
-The accepted root executable and installation remain the rollback during review.
+Its complete executable, installation and source remain the 3.0 rollback.
 
-## 3.1.0: engineering consolidation, in review
+## 3.1.0: accepted engineering consolidation
 
 Improve preservation, asset recovery, native provenance, persistence integrity,
 reproducibility and developer guidance. Revalidate previous fixes before changing
@@ -19,13 +19,11 @@ See [final engineering review](engineering/FINAL_REVIEW_3_1.md),
 [issue register](engineering/ISSUES_3_1.md) and
 [recovery instructions](LOCAL_ASSET_LAYOUT.md).
 
-The owner artistically accepted the candidate subject to a small lifecycle cube
-adjustment and authorized final validation, coherent staging and publication to
-development. The isolated build is not an accepted release. Main promotion,
-tagging, root replacement and installation upgrade follow acceptance of the final
-source and preservation evidence. That later handoff must verify the real
-Start Menu target, icon, working directory, running version and gameplay, plus
-unchanged user data and private media. Source-only promotion is insufficient.
+The owner accepted the final lifecycle correction, source and preservation
+evidence and authorized the complete 3.1.0 release. Delivery requires matching
+main/development/tag, the root executable, installation and real Start Menu
+launch, plus user-data preservation. See [release delivery](engineering/RELEASE_3_1.md).
+Retain complete 3.0 rollback and preserve accepted 3.1 as the next baseline.
 
 ## 3.2: performance and moderate architecture work
 

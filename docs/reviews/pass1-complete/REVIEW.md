@@ -2,7 +2,7 @@
 
 Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
 
-Review continuation of the owner-approved `f63db3ab` composition, on `codex/pass1-owner-review-2026-10-20`. The current implementation is ready for visual/listening review, **not installation approval**. Performance and acceptance holds below remain explicit. No creature work, installed-game replacement or main promotion.
+Review continuation of the owner-approved `f63db3ab` composition, on `historical owner-review branch (20 October 2026)`. The current implementation is ready for visual/listening review, **not installation approval**. Performance and acceptance holds below remain explicit. No creature work, installed-game replacement or main promotion.
 
 Verified source: [`98fc6485`](https://github.com/IsolatedSingularity/Bloc-Fantome/commit/98fc6485fc6575c0bbd0210722836592859f4d8a). **464 tests passed; 45 Python-fallback checks passed; all 56 preservation targets match.**
 
@@ -48,7 +48,7 @@ Actual mouse footage (local artifact: `native/mouse-interactions.mp4`) shows mat
 
 Four selective lossless Sonniss GDC 2015 recordings were acquired from the per-file mirror after the bundle download was unavailable: Mechanical Wave rock/debris and BeautifulNoise stone/metal tension. [Source URLs and hashes](audio/source-provenance.json), [credits](audio/CREDITS.txt), [Sonniss terms](https://sonniss.com/gdc-bundle-license/). Original media and local license evidence remain preserved; raw packs are not published. B4 does not use the prior CC BY-NC stone study source.
 
-The 17-second candidates have matched RMS 0.075. Their 30–180 Hz spectral-energy fractions are 63.0% and 68.4%; the 12–16 s tail remains at RMS 0.0345/0.0386. [Analysis](audio/analysis.json), [layer cue sheet](audio/cue-sheet.json). These measurements support changed weight and sustain, **not subjective quality**. Videos are offline synchronized mixes over current Windows/WGL footage, not loopback recordings; [mix provenance](audio/mix-provenance.json) records gains, timing and omitted input-dependent sounds. Assistant subjective audition was unavailable; owner listening remains the artistic gate.
+The 17-second candidates have matched RMS 0.075. Their 30–180 Hz spectral-energy fractions are 63.0% and 68.4%; the 12–16 s tail remains at RMS 0.0345/0.0386. [Analysis](audio/analysis.json), [layer cue sheet](audio/cue-sheet.json). These measurements support changed weight and sustain, **not subjective quality**. Videos are offline synchronized mixes over current Windows/WGL footage, not loopback recordings; [mix provenance](audio/mix-provenance.json) records gains, timing and omitted input-dependent sounds. Subjective listening was not performed; owner listening remains the artistic gate.
 
 The piano now chooses complete creator-marked chapters one, three and seven from the owner's 1,952-second master: 258, 215 and 200 seconds. Timing and dynamics remain intact. A shuffled queue avoids immediate repeats, decodes the next chapter off the presentation thread and stops on the encounter. The original recording is byte-identical. Mixer routing reserves opening channels while restoring eight automatic SFX channels; real SDL tests verify that paused editor loops survive and ordinary `Sound.play()` still obtains a channel.
 

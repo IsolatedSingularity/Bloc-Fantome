@@ -23,7 +23,7 @@ Shader files retain their GPL/LGPL notices. Bloc's application file is included 
 
 ## Optional full Ponder package source
 
-The targeted core is sufficient to follow these notes. To collect the rest of the Ponder package for an agent:
+The targeted core is sufficient to follow these notes. To collect the rest of the Ponder package for a maintainer:
 
 ```powershell
 python scripts/expand_ponder_manifest.py

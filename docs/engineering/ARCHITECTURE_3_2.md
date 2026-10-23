@@ -3,7 +3,7 @@
 ## Release delivery contract
 
 3.2 remains future work covering both measured performance and moderate
-monolithic-app refactoring. After 3.1 acceptance, preserve its source, root EXE,
+monolithic-app refactoring. 3.1 is owner-accepted. Preserve its source, root EXE,
 complete installation, settings and private inputs as the next rollback baseline.
 An accepted 3.2 release must update main, its version tag, version resources,
 changelog and relevant documentation, then rebuild the root `BlocFantome.exe`,

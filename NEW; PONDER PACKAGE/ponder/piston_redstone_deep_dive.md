@@ -12,7 +12,7 @@ The registry associates `mechanical_piston/anchor` with `PistonScenes::movement`
 
 `PistonMotion.progress(now_ms)` is a clamped elapsed-time fraction. `iter_moving` interpolates payload coordinates from start to end, and `moving_final_targets` exposes destination cells during active motion. The simulator uses 50 ms logic steps; piston proposal commits create a 100 ms motion. Active payload handling already has regression coverage. This project does not need “its first interpolation system.” [Implementation](../SOURCES.md#b-redstone), [tests located](../SOURCES.md#b-redstone-tests).
 
-The main application's render-loop body could not be read through the connector because the file exceeded its content limit. Consequently, this kit does **not** assert whether every existing visual part uses the interpolated payload correctly. That is the first inspection task for an agent with a local clone.
+The main application's render-loop body could not be read through the connector because the file exceeded its content limit. Consequently, this kit does **not** assert whether every existing visual part uses the interpolated payload correctly. That is the first inspection task for a maintainer with a local clone.
 
 ## Arithmetic comparison, not a benchmark
 
@@ -28,7 +28,7 @@ This difference can explain part of the subjective smoothness without establishi
 
 **RedstoneScenes.sticker/contact:** sticker and attached plank share a pivot. Both rotate while attached; after a scripted detach only the sticker rotates. The contact scene schedules redstone toggles around authored angular crossings. These examples illustrate presentation of causality, not evidence that every result came from unconstrained circuit simulation. [Source](../SOURCES.md#c-redstonescenes).
 
-## Bounded diagnostic protocol for future agents
+## Bounded diagnostic protocol for future maintainers
 
 Use the existing local redstone tests and visual-check entry points. Record one extend/retract cycle with frame timestamps. Inspect the application use sites of `iter_moving`, `moving_final_targets` and `piston_motion_at` before proposing code changes. Establish whether head/rod/payload share phase; whether final-cell geometry is suppressed; whether caching reuses a stale pose; whether a foreground occluder maintains order; and whether a missed frame rather than interpolation caused the jump.
 

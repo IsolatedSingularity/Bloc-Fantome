@@ -1,5 +1,5 @@
 {
-  "tool": "Computer Use @oai/sky",
+  "tool": "Windows UI automation using native mouse injection and screen capture",
   "os_dpi": 120,
   "source": {
     "World_open_mouse": true,

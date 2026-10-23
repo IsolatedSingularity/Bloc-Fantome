@@ -78,7 +78,7 @@ supports developing architectural anticipation and a contrasting quiet interval;
 it does not establish that adding more spectacle will improve this opening.
 
 Source repository handoff, 2026-10-20
-The owner subsequently requested a commit and push for browser GPT review.
+The owner subsequently requested a commit and push for external review.
 The earlier verification record describes the state at local delivery.
 Source, tests, authoring tools, asset attribution and these notes are included.
 QA evidence, installers, extracted rig/texture media and reference images remain

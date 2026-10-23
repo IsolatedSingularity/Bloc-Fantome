@@ -4,9 +4,9 @@ BLOC FANTOME: FIX-FIRST AUDIT AND CREATIVE CONTEXT
 CURRENT USER DIRECTION
 
 The audit was read-only. The user has now agreed on a maintenance phase and
-requested prompts for the next development chat, using Astra.
+requested prompts for the next development chat and external review.
 Redstone Map work is paused. Do not automatically select Redstone Lab or piston
-polish as the next creative task because an old agent handoff recommends it.
+polish as the next creative task because an old maintainer handoff recommends it.
 The intended Ponder-inspired work is broader; the user has browser context that
 has not yet been supplied or inspected. Recover that brief before choosing the
 creative animation sequence. Do not equate research suggestions with user choices.
@@ -24,7 +24,7 @@ Current runtime version 2.9.2. Last source/release work was September 13; the la
 September commits add QA/reference handoffs. No application code, tests, README,
 Git history, or user saves were changed by this audit. Durable handoffs/prompts
 and compact evidence now live inside the clone. Temporary reproduction scripts
-and scratch fixtures remain agent workspace material outside the clone.
+and scratch fixtures remain maintainer workspace material outside the clone.
 
 CONFIRMED MAINTENANCE PREFERENCES
 
@@ -47,7 +47,7 @@ CONFIRMED MAINTENANCE PREFERENCES
   install/upgrade the app, and verify the actual Start Menu launch. Preserve user
   saves/configuration and close exact-path QA processes afterward.
 - Final builds, installer, assets, prompts, handoffs and compact release evidence
-  belong in the clone. The global .codex tree is temporary agent workspace, never
+  belong in the clone. The global temporary workspace is scratch space, never
   the sole home of a deliverable or a runtime dependency.
 
 Read the active clone's AGENTS.md before work. It was recovered, exists locally,
@@ -192,7 +192,7 @@ The kit explicitly defers exact disc layout and horror/narrative direction to
 the owner. It does NOT contain a complete approved storyboard, exact selected
 animation list, scene order, durations, final camera choreography, or final audio
 map. Its examples and the September bridge's piston-first recommendation are
-agent research suggestions. They must not override the latest user direction.
+maintainer research suggestions. They must not override the latest user direction.
 
 VERIFICATION AND EVIDENCE
 
@@ -217,14 +217,14 @@ contract-tests.xml              Current 9-pass/1-failure contract run
 
 The fixtures path recorded in audit-results.json is historical provenance, not
 a required input. The compact results and reproduction descriptions above are
-self-contained; no deliverable depends on the global .codex directory.
+self-contained; no deliverable depends on the global temporary workspace.
 
 Latest useful project evidence:
 .qa\revision-292-handoff.md
 References\Redstone_Lab_QA.md
 docs\PRE_IMPLEMENTATION_QA.md
 docs\PONDER_REFERENCE_BRIDGE.md
-NEW; PONDER PACKAGE\README_FOR_AGENTS.md
+NEW; PONDER PACKAGE\RESEARCH_GUIDE.md
 NEW; PONDER PACKAGE\bloc_fantome\opportunities.md
 
 Suggested next-chat start: read this file and AGENTS.md, preserve the recovered

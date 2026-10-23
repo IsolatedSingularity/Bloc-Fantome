@@ -1,12 +1,12 @@
 # Bloc Fantôme | Consolidated Pass A-R implementation
-**Owner decisions finalized 21 October 2026. ONE coherent Codex development pass; not an experimental UI study.**
+**Owner decisions finalized 21 October 2026. ONE coherent development pass; not an experimental UI study.**
 
 ## Repository / precedence
 
 Repository: IsolatedSingularity/Bloc-Fantome.
-As of handoff drafting, existing development branch was codex/pass1-owner-review-2026-10-20 at e301fcbcb90c0ab3812be56c58c801d27578392c; owner Pass A implementation is aa5f6f9fb9a7f450df5e6f382bef7d6a3000357e; accepted main is 175686c21649a8d37826f8a22850c85482a69fd9. **These are historical references: check live HEAD, status, owner edits and local AGENTS.md, preserve existing work.** Read CONTRIBUTING.md branch policy, [full owner roadmap](OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md), [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), current implementation, and applicable design-system notes. Do not infer installed acceptance.
+As of handoff drafting, existing development branch was historical owner-review branch (20 October 2026) at e301fcbcb90c0ab3812be56c58c801d27578392c; owner Pass A implementation is aa5f6f9fb9a7f450df5e6f382bef7d6a3000357e; accepted main is 175686c21649a8d37826f8a22850c85482a69fd9. **These are historical references: check live HEAD, status, owner edits and local AGENTS.md, preserve existing work.** Read CONTRIBUTING.md branch policy, [full owner roadmap](OWNER_ROADMAP_AFTER_PASS_A_2026-10-21.md), [Owner Pass A review](../reviews/owner-pass-a/REVIEW.md), current implementation, and applicable design-system notes. Do not infer installed acceptance.
 
-BRANCH POLICY: Do not create another topic branch. Use the existing active development ref for this task. Prefer a single neutral-name development branch, not agent/tool-prefixed names. A safe rename to development may be performed only after checking remote/local worktrees, refs, collaborators, and whether it would create stale duplicate branches. Existing historical branches must be consolidated/retired carefully, never by speculative deletion/rewrite. Do not rename just to satisfy this instruction if unsafe. Main remains accepted, preserved.
+BRANCH POLICY: Do not create another topic branch. Use the existing active development ref for this task. Prefer a single neutral-name development branch, not maintainer/tool-prefixed names. A safe rename to development may be performed only after checking remote/local worktrees, refs, collaborators, and whether it would create stale duplicate branches. Existing historical branches must be consolidated/retired carefully, never by speculative deletion/rewrite. Do not rename just to satisfy this instruction if unsafe. Main remains accepted, preserved.
 
 ## Goal and priority
 

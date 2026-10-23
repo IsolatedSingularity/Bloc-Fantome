@@ -176,7 +176,7 @@ When the task concerns Ponder-like presentation:
 
 1. Read `docs/PRE_IMPLEMENTATION_QA.md` and respect its implementation gate.
 2. Read this bridge.
-3. Read `NEW; PONDER PACKAGE/README_FOR_AGENTS.md`.
+3. Read `NEW; PONDER PACKAGE/RESEARCH_GUIDE.md`.
 4. For piston/motion work: `ponder/piston_redstone_deep_dive.md` → `ponder/animation_primitives.md` → `ponder/rendering.md`.
 5. For tutorial/Lab work: `bloc_fantome/ponder_mapping.md` → `bloc_fantome/opportunities.md`.
 6. Fetch/read additional Create scene source only when a concrete Bloc question points to it.

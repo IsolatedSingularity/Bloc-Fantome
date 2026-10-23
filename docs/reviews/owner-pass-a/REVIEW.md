@@ -2,7 +2,7 @@
 
 Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
 
-Development branch: `codex/pass1-owner-review-2026-10-20`. Base: `120e619b`; canonical main remains `175686c2`. This is a bounded implementation with **performance and native-keyboard holds**, not an overall acceptance PASS. No Pass B, main promotion, installer, or installed-game replacement.
+Development branch: `historical owner-review branch (20 October 2026)`. Base: `120e619b`; canonical main remains `175686c2`. This is a bounded implementation with **performance and native-keyboard holds**, not an overall acceptance PASS. No Pass B, main promotion, installer, or installed-game replacement.
 
 ## Implemented
 

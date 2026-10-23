@@ -26,7 +26,7 @@ The connected GitHub surface does not provide a runnable checkout here, so the c
 - **Reproduced**: directly demonstrated in this audit or existing evidence.
 - **Static proof**: follows directly from current control/data flow.
 - **Hypothesis**: credible runtime failure still needing a focused reproduction.
-- **Architecture/governance**: raises failure probability or agent ambiguity without being one immediate runtime bug.
+- **Architecture/governance**: raises failure probability or maintainer ambiguity without being one immediate runtime bug.
 
 # P0 — resolve before substantial further implementation
 
@@ -169,7 +169,7 @@ This defeats the intended “optional native acceleration with Python fallback�
 
 **Timing:** before the next packaged release.
 
-## P1-6 — The modularization is incomplete enough to mislead implementation agents
+## P1-6 — The modularization is incomplete enough to mislead implementation maintainers
 
 **Class:** architecture/governance.
 
@@ -177,7 +177,7 @@ The refactor plan explicitly targeted a roughly 3,000–5,000-line composition r
 
 Current `Code/blocFantome.py` is about **23,499 lines / 1.11 MB**. It still contains complete legacy `World` and `IsometricRenderer` implementations, then later rebinds those names to `engine.world.World` and `engine.renderer.IsometricRenderer` immediately before `BlocFantome`. Multiple `_legacy...` paths also remain.
 
-The public-contract test named `test_dead_duplicate_types_are_not_exported` proves only that the final exported names point to modular classes; it does not prove duplicate implementations are absent. An agent can patch a visually plausible in-file method and change nothing at runtime.
+The public-contract test named `test_dead_duplicate_types_are_not_exported` proves only that the final exported names point to modular classes; it does not prove duplicate implementations are absent. A maintainer can patch a visually plausible in-file method and change nothing at runtime.
 
 This is the clearest “Frankenstein” risk found: runtime is partially modular, but ownership is not legible from the source layout.
 
@@ -185,19 +185,19 @@ This is the clearest “Frankenstein” risk found: runtime is partially modular
 
 **Timing:** before broad feature work that touches those systems; do not perform the cleanup blindly.
 
-## P1-7 — Historical QA contains executable source-mutating scripts with no tracked agent warning
+## P1-7 — Historical QA contains executable source-mutating scripts with no tracked maintainer warning
 
-**Class:** governance/agent-safety.
+**Class:** governance/maintainer-safety.
 
 There are **73 top-level `.qa/*.py` scripts**. Many are historical patch scripts that perform string replacement and `write_text()` directly against current `Code/` files (examples: `implement_consistency.py`, `implement-tour-291.py`, `open_captured_biomes.py`, `optimize_biomes.py`, `fix-fidelity-291.py`).
 
-Meanwhile current handoffs repeatedly say rules were recorded in `AGENTS.md`, but no `AGENTS.md` is tracked at HEAD and `.gitignore` explicitly ignores it and other agent-instruction files.
+Meanwhile current handoffs repeatedly say rules were recorded in `AGENTS.md`, but no `AGENTS.md` is tracked at HEAD and `.gitignore` explicitly ignores it and other maintainer-instruction files.
 
-A future autonomous agent can reasonably mistake stale mutators for current maintenance tools or believe governance exists when it is absent from the repository.
+A future future maintainer can reasonably mistake stale mutators for current maintenance tools or believe governance exists when it is absent from the repository.
 
-**Acceptance:** explicitly classify `.qa` as historical evidence by default; quarantine/rename mutators or place a tracked README in `.qa` saying which scripts are archival and unsafe to rerun. Put current agent/release rules in one tracked file that is not ignored.
+**Acceptance:** explicitly classify `.qa` as historical evidence by default; quarantine/rename mutators or place a tracked README in `.qa` saying which scripts are archival and unsafe to rerun. Put current maintainer/release rules in one tracked file that is not ignored.
 
-**Timing:** before agent-driven implementation resumes.
+**Timing:** before maintainer-driven implementation resumes.
 
 ## P1-8 — Repository QA evidence has become a repository-operability risk
 
@@ -205,7 +205,7 @@ A future autonomous agent can reasonably mistake stale mutators for current main
 
 The tracked tree is ~3.49 GB; `.qa` is ~2.82 GB by itself and contains Minecraft worlds/regions, repeated visual outputs, logs, historical scripts and multiple release generations. `References` is another ~391 MB.
 
-This makes cloning, indexing, code search, agent context selection, antivirus/OneDrive activity, and history operations materially harder. It also increases the chance that stale evidence is treated as current evidence.
+This makes cloning, indexing, code search, maintainer context selection, antivirus/OneDrive activity, and history operations materially harder. It also increases the chance that stale evidence is treated as current evidence.
 
 **Acceptance:** define a retained-evidence policy. Keep compact manifests/hashes/final representative evidence in Git and move bulky regenerable/native-world artifacts to releases/LFS/external archival storage if preservation is required. Do not delete historical evidence until provenance requirements are understood.
 
@@ -233,7 +233,7 @@ Examples:
 
 This root-level script downloads a Bedrock resource pack, writes to old `Assets/textures` and `Assets/sounds` paths, and discusses placeholder sounds. The active project contract is Java local extraction into Texture Hub/Sound Hub.
 
-It is not referenced by current setup docs, but its generic name makes accidental invocation by a user/agent credible.
+It is not referenced by current setup docs, but its generic name makes accidental invocation by a user/maintainer credible.
 
 **Acceptance:** mark it historical/deprecated prominently, move it out of the active Code root, or remove it after confirming no consumer.
 
@@ -259,7 +259,7 @@ Bounds are capped, but the JSON `blocks` list length is not. Duplicate coordinat
 
 `References/OPEN_PROBLEMS.md` still records face picking errors at extreme Z/screen edges. Existing tests are extensive but this exact documented limitation should stay visible until a focused regression proves it closed.
 
-# Adversarial test matrix for the next agent
+# Adversarial test matrix for the next maintainer
 
 Run cheap/focused tests first. Do not start broad refactoring until the P0 cases are green.
 
@@ -278,7 +278,7 @@ Run cheap/focused tests first. Do not start broad refactoring until the P0 cases
 - **Fresh bootstrap:** clean venv + declared requirements + clean asset hubs + supported Minecraft install; source launch, pytest, visual checks, audio.
 - **Asset extraction:** index/object sound reconstruction, destination collision detection, interrupted extraction, version switch, missing/corrupt local assets.
 - **Packaged app:** source/EXE semantic parity, Start Menu, Tk dialog, save/load, audio, native fallback, active-load shutdown.
-- **Agent safety:** verify current implementation ownership before edits; never run historical `.qa` mutation scripts by name alone.
+- **Maintenance safety:** verify current implementation ownership before edits; never run historical `.qa` mutation scripts by name alone.
 
 # CI/test relevance
 

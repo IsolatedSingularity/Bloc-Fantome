@@ -1,6 +1,10 @@
 # 3.1 final correction and release review
 
-23 October 2026. Development review only. The owner artistically accepted the
+23 October 2026. Historical development review, now accepted by the owner.
+The final release workflow is recorded in [release delivery](RELEASE_3_1.md).
+The following evidence describes the reviewed candidate before release.
+
+Development review only at the time of this report. The owner artistically accepted the
 candidate subject to the cube adjustment and authorized development publication.
 Main promotion, 3.1.0 tagging/release, root replacement and installation still await
 acceptance of the final source and preservation evidence. No 3.2 work began.

@@ -56,7 +56,7 @@ Original B's stone passage begins at source 32 s, where the next few seconds are
 
 All three comparison clips have RMS 0.075, not a perceptual-loudness guarantee. New candidate crest factors are 17.30/15.08 dB and low-band fractions 35.59%/46.08%. These measurements substantiate a different envelope and frequency balance, not subjective quality. B2 is the proposed physical direction; owner listening must decide whether it achieves the requested scale without becoming machinery or a cinematic rumble. No vocal or creature sources were used.
 
-Existing decoded preview recordings are reused. Source hashes, original creator/license records, cue sheets, SuperCollider scripts and unmastered renders are retained in `.qa/pass1-revision2/audio/`. No new lossless master or Sonniss acquisition is claimed. The earlier Sonniss access limitation remains. Piano, runtime audio assets and scene geometry are unchanged. Videos are offline mixes over the unchanged 1080p native capture, with the rise starting at 13 s, not loopback recordings. Assistant subjective audition is unavailable; owner listening remains the artistic gate.
+Existing decoded preview recordings are reused. Source hashes, original creator/license records, cue sheets, SuperCollider scripts and unmastered renders are retained in `.qa/pass1-revision2/audio/`. No new lossless master or Sonniss acquisition is claimed. The earlier Sonniss access limitation remains. Piano, runtime audio assets and scene geometry are unchanged. Videos are offline mixes over the unchanged 1080p native capture, with the rise starting at 13 s, not loopback recordings. Subjective listening was not performed; owner listening remains the artistic gate.
 
 ## Separate evidence and preservation
 

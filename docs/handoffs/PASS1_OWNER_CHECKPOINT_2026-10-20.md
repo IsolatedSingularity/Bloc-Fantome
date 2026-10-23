@@ -2,7 +2,7 @@
 
 Historical evidence. Local-only artifacts are recorded as paths; see the [recovery index](../QA_ARCHIVE.md). Acceptance statements below describe that review date, not the current release.
 
-This is an unaccepted development slice, not a finished Pass 1 or release. Baseline remains `codex/engineering-consolidation@ef6dae62a86a148bdf77d508e4e2422fe2ba5e02`. Changes are unstaged and uncommitted. The pinned browser specification and its five linked research documents were read; private working copies are in `.qa/pass1/research/`. No branch replacement, installation, README edit or creature change occurred.
+This is an unaccepted development slice, not a finished Pass 1 or release. Baseline remains `ef6dae62a86a148bdf77d508e4e2422fe2ba5e02`. Changes are unstaged and uncommitted. The pinned browser specification and its five linked research documents were read; private working copies are in `.qa/pass1/research/`. No branch replacement, installation, README edit or creature change occurred.
 
 ## Owner decision
 
