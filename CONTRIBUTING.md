@@ -41,6 +41,15 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
 
 ## Repository hygiene
 
+- Local publication check (agent responsibility): the tracked
+  `.githooks/pre-push` is inactive until installed. In each
+  checkout, inspect `core.hooksPath` and `.git/hooks/pre-push` first. If neither
+  is in use, enable with `git config --local core.hooksPath .githooks`.
+  Preserve existing hooks and integrate safely rather than overriding them;
+  report conflicts for review. Verify activation and the owner's Git identity
+  before publishing, including after recloning. Web/API writes bypass local
+  hooks and require equivalent publication checks.
+
 - Use task-based names for branches, worktree directories, commits and release
   artifacts, never tool- or model-branded names. Public commits, documentation
   and releases must have no generated-by credits, automated co-author trailers

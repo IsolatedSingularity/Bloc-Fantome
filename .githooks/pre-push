@@ -1,0 +1,102 @@
+#!/bin/sh
+# Publication checks for this repository. Read-only; no network calls.
+set -eu
+
+owner_name='Jeffrey Morais'
+owner_email='90666427+IsolatedSingularity@users.noreply.github.com'
+blocked=0
+seen=' '
+
+if [ "$(git config --get user.name || true)" != "$owner_name" ] ||
+   [ "$(git config --get user.email || true)" != "$owner_email" ]; then
+  echo '[publication] BLOCK: local Git identity differs from the repository owner.' >&2
+  blocked=1
+fi
+
+while read -r local_ref local_oid remote_ref remote_oid; do
+  [ -n "$local_oid" ] || continue
+  case "$local_oid" in
+    0000000000000000000000000000000000000000|0000000000000000000000000000000000000000000000000000000000000000) continue ;;
+  esac
+  case "$local_ref" in refs/tags/*) continue ;; esac
+
+  case "$remote_oid" in
+    0000000000000000000000000000000000000000|0000000000000000000000000000000000000000000000000000000000000000)
+      if printf '%s\n' "$remote_ref" | grep -Eiq '(^|[-/_])(codex|openai|chatgpt|claude|anthropic|copilot|agent)([-/_]|$)'; then
+        echo "[publication] BLOCK: new branch name contains tool branding: $remote_ref" >&2
+        blocked=1
+      fi
+      commits=$(git rev-list --max-count=101 "$local_oid" --not --remotes)
+      ;;
+    *)
+      if git cat-file -e "$remote_oid^{commit}" 2>/dev/null; then
+        commits=$(git rev-list --max-count=101 "$remote_oid..$local_oid")
+      else
+        echo '[publication] BLOCK: remote tip is unavailable locally; fetch before publishing.' >&2
+        blocked=1
+        commits=''
+      fi
+      ;;
+  esac
+
+  count=0
+  for commit in $commits; do
+    count=$((count + 1))
+    case "$seen" in *" $commit "*) continue ;; esac
+    seen="$seen$commit "
+
+    committer=$(git show -s --format='%cn <%ce>' "$commit")
+    if [ "$committer" != "$owner_name <$owner_email>" ]; then
+      echo "[publication] BLOCK: unexpected committer in $commit: $committer" >&2
+      blocked=1
+    fi
+    author=$(git show -s --format='%an <%ae>' "$commit")
+    if printf '%s\n' "$author" "$committer" | grep -Eiq '(codex|chatgpt|openai|anthropic|claude|copilot|\[bot\])'; then
+      echo "[publication] BLOCK: tool-branded commit identity in $commit" >&2
+      blocked=1
+    fi
+    if git show -s --format=%B "$commit" | grep -Eiq '^[[:space:]]*(generated([ -]with|[ -]by)|made[ -]with|ai-generated|co-authored-by:[[:space:]]*(codex|openai|chatgpt|claude|anthropic|github-copilot|.*\[bot\]))'; then
+      echo "[publication] BLOCK: automated attribution trailer in $commit" >&2
+      blocked=1
+    fi
+
+    # Only newly added files in outgoing commits; historical paths stay untouched.
+    if git diff-tree --root -r --diff-filter=A --name-only --no-commit-id "$commit" |
+      while IFS= read -r path; do
+        [ -n "$path" ] || continue
+        if printf '%s\n' "$path" | grep -Eiq '(^|/)(codex|openai|chatgpt|claude|anthropic|copilot)([./_-]|$)'; then
+          echo "[publication] BLOCK: new tool-branded path: $path" >&2
+          exit 31
+        fi
+        case "$path" in
+          */__pycache__/*|__pycache__/*|*/node_modules/*|node_modules/*|*/.godot/imported/*|.godot/imported/*|*/.venv/*|.venv/*)
+            echo "[publication] BLOCK: generated dependency/cache path: $path" >&2
+            exit 31 ;;
+        esac
+        size=$(git cat-file -s "$commit:$path" 2>/dev/null || echo 0)
+        if [ "$size" -gt 52428800 ] 2>/dev/null; then
+          echo "[publication] WARN: new file exceeds 50 MiB: $path" >&2
+        fi
+      done; then
+      :
+    else
+      result=$?
+      if [ "$result" -eq 31 ]; then
+        blocked=1
+      else
+        echo '[publication] BLOCK: could not inspect newly added paths.' >&2
+        blocked=1
+      fi
+    fi
+  done
+  if [ "$count" -gt 100 ]; then
+    echo '[publication] BLOCK: more than 100 outgoing commits; review in smaller batches.' >&2
+    blocked=1
+  fi
+done
+
+if [ "$blocked" -ne 0 ]; then
+  echo '[publication] Push stopped for review. No files were changed.' >&2
+  exit 1
+fi
+exit 0
