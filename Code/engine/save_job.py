@@ -52,6 +52,45 @@ class SaveJob:
     generation: int = 0
     autosave: bool = False
 
+    def belongs_to(self, world, generation):
+        """Edits may advance revision; replacing the document invalidates ownership."""
+        return self.world is world and self.generation == generation
+
+
+class SaveCoordinator:
+    """Single owner of the save worker and its one in-flight transaction.
+
+    The UI owns capture, dialogs and presentation. This service receives an
+    already-owned snapshot and returns completion exactly once on the UI thread.
+    It has no application/SDL dependency and never reads the live world on a worker.
+    """
+    def __init__(self, executor=None):
+        self.executor = executor
+        self.pending = None
+
+    def start(self, snapshot, definitions, *, world, revision, generation, path,
+              track_path, silent, started, capture_ms, autosave=False, backup=None):
+        if self.pending is not None:
+            raise RuntimeError("A save transaction is already pending")
+        if self.executor is None:
+            from concurrent.futures import ThreadPoolExecutor
+            self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='build-save')
+        future = self.executor.submit(write_timed, path, snapshot, definitions, backup)
+        self.pending = SaveJob(future, world, revision, str(path), track_path,
+                               silent, started, capture_ms, generation, autosave)
+        return self.pending
+
+    def take_completed(self):
+        job = self.pending
+        if job is None or not job.future.done():
+            return None
+        self.pending = None
+        return job
+
+    def shutdown(self):
+        if self.executor is not None:
+            self.executor.shutdown(wait=True)
+
 
 def write_timed(path, snapshot, definitions, backup=None):
     from engine.build_io import write_build

@@ -7904,6 +7904,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._visibleOrderCache = []
         self._visibleOrderOccluded = 0
         self._visibleOrderCaches = {}
+        from engine.world_view import WorldViewGeometry
+        self._worldViewGeometry = WorldViewGeometry()
         self._screenPlanCacheKey = None
         self._screenPlanCache = []
         self._screenPlanOccluded = 0
@@ -9105,7 +9107,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             try:
                 self.worldLoadExecutor.shutdown(wait=True)
                 if hasattr(self,'_mapExecutor'):self._mapExecutor.shutdown(wait=True)
-                if hasattr(self,'_saveExecutor'):self._saveExecutor.shutdown(wait=True)
+                if hasattr(self,'_saveExecutor'):self._saveService().shutdown()
                 if hasattr(self.musicBackend,'shutdown'):self.musicBackend.shutdown()
             finally:workers_done.set()
         threading.Thread(target=drain_workers,name='shutdown-drain',daemon=True).start()
@@ -14983,6 +14985,39 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         
         self.highlightedBlock = (baseX, baseY, baseZ)
 
+    def _saveService(self):
+        service = getattr(self, '_saveCoordinator', None)
+        if service is None:
+            from engine.save_job import SaveCoordinator
+            service = self._saveCoordinator = SaveCoordinator()
+        return service
+
+    # Compatibility accessors for existing diagnostics/tests. There is one owner,
+    # not parallel application and coordinator copies of pending work.
+    @property
+    def _pendingSave(self):
+        service = getattr(self, '_saveCoordinator', None)
+        return service.pending if service is not None else None
+
+    @_pendingSave.setter
+    def _pendingSave(self, job):
+        self._saveService().pending = job
+
+    @property
+    def _saveExecutor(self):
+        service = getattr(self, '_saveCoordinator', None)
+        if service is None or service.executor is None:
+            raise AttributeError('No save worker has been started')
+        return service.executor
+
+    @_saveExecutor.setter
+    def _saveExecutor(self, executor):
+        self._saveService().executor = executor
+
+    @_saveExecutor.deleter
+    def _saveExecutor(self):
+        self._saveService().executor = None
+
     def _saveBuilding(self, filename: str = None, silent: bool = False, filepath: str = None, *, background=None):
         """Save the current building to a compressed JSON file (gzip) with atomic write"""
         from datetime import datetime
@@ -15008,7 +15043,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self.workshop.status = 'Saving…'
             return None
         from time import perf_counter
-        from engine.save_job import capture_save, SaveJob, write_timed
+        from engine.save_job import capture_save
         started = perf_counter()
         if not silent:
             from ui.chrome import panel, TEXT
@@ -15043,14 +15078,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if background is None:
                 background = not silent
             if background:
-                if not hasattr(self, '_saveExecutor'):
-                    self._saveExecutor = ThreadPoolExecutor(max_workers=1, thread_name_prefix='build-save')
                 autosave = silent and os.path.basename(filepath) == os.path.basename(self.autoSavePath)
                 backup = (self.backupDir, self.maxBackups) if autosave and self.autoBackupEnabled else None
-                self._pendingSave = SaveJob(self._saveExecutor.submit(write_timed, filepath,
-                    snapshot, BLOCK_DEFINITIONS, backup), self.world, self.world.revision,
-                    str(filepath), trackCurrentPath, silent, started, capture_ms,
-                    getattr(self, '_documentGeneration', 0), autosave)
+                self._saveService().start(snapshot, BLOCK_DEFINITIONS,
+                    world=self.world, revision=self.world.revision,
+                    generation=getattr(self, '_documentGeneration', 0), path=filepath,
+                    track_path=trackCurrentPath, silent=silent, started=started,
+                    capture_ms=capture_ms, autosave=autosave, backup=backup)
                 self.workshop.status = 'Saving…'
                 self.workshop._status_at = pygame.time.get_ticks() / 1000
                 self.workshop.error = ''
@@ -15088,7 +15122,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.workshop._status_at = pygame.time.get_ticks() / 1000
         if not job.future.done():
             return
-        self._pendingSave = None
+        self._saveService().take_completed()
         from ui.feedback import play
         try:
             result, write_ms, warning = job.future.result()
@@ -15102,7 +15136,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
         self._lastSaveMetrics = dict(capture_ms=job.capture_ms, write_ms=write_ms,
                                     blocks=result.block_count if hasattr(result, 'block_count') else len(job.world.blocks))
-        same_document = self.world is job.world and getattr(self, '_documentGeneration', 0) == job.generation
+        same_document = job.belongs_to(self.world, getattr(self, '_documentGeneration', 0))
         if same_document:
             map_state = self._worldMapSessionSnapshot if self.worldMapActive else None
             if map_state is not None:
@@ -21050,11 +21084,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _clearGlassNeighborMask(self, x: int, y: int, z: int) -> int:
         """Encode six screen-relative same-glass neighbors for connected edges."""
+        glass = self.world.blockTypePositions.get(BlockType.GLASS)
+        if not glass:
+            return 0
         mask = 0
-        blocks = self.world.blocks
-        if blocks.get((x, y, z + 1), BlockType.AIR) == BlockType.GLASS:
+        if (x, y, z + 1) in glass:
             mask |= 1
-        if blocks.get((x, y, z - 1), BlockType.AIR) == BlockType.GLASS:
+        if (x, y, z - 1) in glass:
             mask |= 2
         sideDirections = (
             ((0, 1), (1, 0)),
@@ -21067,7 +21103,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             (4, visibleY), (8, (-visibleY[0], -visibleY[1])),
             (16, visibleX), (32, (-visibleX[0], -visibleX[1])),
         ):
-            if blocks.get((x + dx, y + dy, z), BlockType.AIR) == BlockType.GLASS:
+            if (x + dx, y + dy, z) in glass:
                 mask |= bit
         return mask
 
@@ -21140,6 +21176,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _visibleScreenRenderPlan(self):
         """Cache screen culling and solid-cube occlusion until view state changes."""
+        geometry = getattr(self, '_worldViewGeometry', None)
+        if geometry is not None:
+            # Release the prior document even when the new view takes a fast path.
+            geometry.begin_revision((self.world, self.world.revision))
         blocksToDraw = self._visibleBlocksInDrawOrder()
         if (
             self._screenCullAnchorOffset is None
@@ -21187,28 +21227,47 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 self._screenPlanCache=blocksToDraw
                 self._screenPlanOccluded=occluded
                 return blocksToDraw,occluded,len(blocksToDraw)
-        for item in blocksToDraw:
+        indices = None
+        if len(blocksToDraw) >= 4096:
+            from engine.world_view import ProjectionState, WorldViewGeometry
+            if geometry is None:
+                geometry = self._worldViewGeometry = WorldViewGeometry()
+                geometry.begin_revision((self.world, self.world.revision))
+            indices = geometry.visible_indices(
+                self._visibleOrderCacheKey, blocksToDraw,
+                ProjectionState(rotation, halfTileWidth, halfTileHeight,
+                                blockHeight, offsetX, offsetY),
+                (-margin-spriteHalfWidth, -margin-spriteHeight,
+                 viewportRight+margin+spriteHalfWidth, WINDOW_HEIGHT+margin),
+            )
+        if indices is None:
+            candidates = blocksToDraw
+        else:
+            from engine.world_view import select_draw_items
+            candidates = select_draw_items(blocksToDraw, indices)
+        for item in candidates:
             _, x, y, z, blockType = item
             if self.sceneMetadata.get('water_cutaway') and blockType in (BlockType.WATER,BlockType.BUBBLE_COLUMN):
                 source=self.world.getBlockProperties(x,y,z)
                 if source and source.sourceCapture:continue
-            if rotation == 0:
-                rx, ry = x, y
-            elif rotation == 1:
-                rx, ry = -y, x
-            elif rotation == 2:
-                rx, ry = -x, -y
-            else:
-                rx, ry = y, -x
-            screenX = round((rx - ry) * halfTileWidth + offsetX)
-            screenY = round((rx + ry) * halfTileHeight - z * blockHeight + offsetY)
-            if (
-                screenX + spriteHalfWidth < -margin
-                or screenX - spriteHalfWidth > viewportRight + margin
-                or screenY + spriteHeight < -margin
-                or screenY > WINDOW_HEIGHT + margin
-            ):
-                continue
+            if indices is None:
+                if rotation == 0:
+                    rx, ry = x, y
+                elif rotation == 1:
+                    rx, ry = -y, x
+                elif rotation == 2:
+                    rx, ry = -x, -y
+                else:
+                    rx, ry = y, -x
+                screenX = round((rx - ry) * halfTileWidth + offsetX)
+                screenY = round((rx + ry) * halfTileHeight - z * blockHeight + offsetY)
+                if (
+                    screenX + spriteHalfWidth < -margin
+                    or screenX - spriteHalfWidth > viewportRight + margin
+                    or screenY + spriteHeight < -margin
+                    or screenY > WINDOW_HEIGHT + margin
+                ):
+                    continue
             if blockType == BlockType.GLASS and self._clearGlassFaceMask(x, y, z) == 0:
                 occluded += 1
                 continue
@@ -21387,9 +21446,22 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         import time
         batchStarted = time.perf_counter()
         rasterVariants = {}
+        screenStartIndex = startIndex
+        screenPositions = None
+        if reusedBlits is None and incrementalZoomBuild and transitionBatch >= 4096:
+            # A time-limited frame usually consumes only part of this batch.
+            # Project its fixed range once, then reuse the remaining columns.
+            screenStartIndex = (startIndex // transitionBatch) * transitionBatch
+            endIndex = min(len(blocksToDraw), screenStartIndex + transitionBatch)
+            screenPositions = self._worldViewGeometry.projected_columns(
+                (surfaceKey, self.renderer.offsetX, self.renderer.offsetY,
+                 screenStartIndex, endIndex),
+                lambda: blocksToDraw[screenStartIndex:endIndex],
+                self.renderer.worldToScreenBatch,
+            )
         drawItems=() if reusedBlits is not None else blocksToDraw[startIndex:endIndex]
-        screenPositions=(self.renderer.worldToScreenBatch(drawItems, draw_items=True, columns=True)
-                         if len(drawItems)>=4096 else None)
+        if screenPositions is None and len(drawItems)>=4096:
+            screenPositions=self.renderer.worldToScreenBatch(drawItems, draw_items=True, columns=True)
         properties_get=self.world.blockProperties.get
         for itemIndex, (_, x, y, z, blockType) in enumerate(
             drawItems, startIndex
@@ -21401,7 +21473,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     break
             if (x, y, z) in movingTargets:
                 continue
-            screenX, screenY = ((screenPositions[0][itemIndex-startIndex], screenPositions[1][itemIndex-startIndex]) if screenPositions is not None
+            screenX, screenY = ((screenPositions[0][itemIndex-screenStartIndex], screenPositions[1][itemIndex-screenStartIndex]) if screenPositions is not None
                                 else self.renderer.worldToScreen(x,y,z))
             
             # Horror: Block texture flicker - briefly show wrong texture
@@ -21424,9 +21496,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             # and per-cell effects are absent. Reuse within this repaint only;
             # revision, camera, animation and property changes cannot go stale.
             variantKey = None
+            glassNeighbors = None
             if not self.lightingEnabled and not self.horrorEnabled:
                 if sourceProps and sourceProps.sourceCapture and displayBlockType == blockType:
                     variantKey = (blockType, sourceProps.sourceCapture, sourceProps.sourcePalette)
+                elif displayBlockType == BlockType.GLASS:
+                    glassNeighbors = self._clearGlassNeighborMask(x, y, z)
+                    # Original material still controls X-Ray alpha for shell glass.
+                    variantKey = (displayBlockType, blockType, glassNeighbors)
                 elif sourceProps is None and self._isOpaqueCubeDefinition(blockDef):
                     variantKey = (displayBlockType,)
                 if variantKey is not None:
@@ -21469,7 +21546,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 
                     if displayBlockType == BlockType.GLASS:
                         sprite = self.assetManager.getConnectedGlassSprite(
-                            self._clearGlassNeighborMask(x, y, z)
+                            glassNeighbors if glassNeighbors is not None
+                            else self._clearGlassNeighborMask(x, y, z)
                         )
                     elif displayBlockType == BlockType.OXIDIZING_COPPER:
                         stage = props.oxidationStage if props else 0
