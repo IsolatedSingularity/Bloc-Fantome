@@ -16,6 +16,29 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
 
 **Current acceptance status:** The owner accepted the 3.0 artistic candidate and its documented large-world performance limits on 2026-10-22. The measurements below remain engineering targets, not claims that this release meets every target. See the current release QA record; retain historical reviews as dated evidence.
 
+## Storage bookkeeping
+
+- Disposable QA has a **5 GiB aggregate budget per project**, not per folder,
+  branch or pass. Count QA worktrees, evidence directories, test/build copies,
+  verification extractions and QA caches, including those outside the repository.
+  Retain current acceptance evidence and one useful rollback, not every
+  intermediate copy. Unique source assets, owner changes, saves/settings and
+  scientific results/provenance are not disposable QA. Existing preservation
+  and approval gates still apply; this budget does not authorize deletion.
+- Do not back up backups. Reset/recovery exports must explicitly select
+  irreplaceable files, including required ignored inputs, rather than everything
+  Git ignores. Exclude regenerable caches/builds, redundant QA and previous
+  backup archives. Obtain approval of exact cleanup targets first and assign
+  one cleanup owner to shared locations. After approved deletion, keep a small
+  receipt of paths, why removal was safe and measured space recovered, not
+  another archive of the discarded material.
+- Before and after each substantial pass, record aggregate project-owned QA
+  storage, affected-drive free space and their deltas in the existing task
+  receipt. Declare one scratch root and account for any exceptions. Obtain
+  approval before exceeding 5 GiB or making large downloads/exports elsewhere.
+  If already over budget, do not add bulk artifacts until cleanup or a scoped
+  exception is approved. Reuse existing bookkeeping, not a new reporting system.
+
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
@@ -123,9 +146,9 @@ python Code/build_exe.py --diagnostic --output-dir .qa/review-package
 - Use type hints for function parameters and return types
 
 ### Naming Conventions
-- Classes: `PascalCase` (e.g., `BlocFantome`, `AssetManager`)
+- Classes: `PascalCase` (e.g., `_BlockType`, `AssetManager`)
 - Functions/Methods: `camelCase` with underscore prefix for private (e.g., `_renderWorld`, `loadAssets`)
-- Constants: `UPPER_SNAKE_CASE` (e.g., `TILE_WIDTH`, `GRID_HEIGHT`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `WINDOW_WIDTH`, `GRID_HEIGHT`)
 - Variables: `camelCase` (e.g., `blockType`, `currentDimension`)
 
 ### Docstrings
@@ -184,16 +207,19 @@ Add the corresponding compatibility catalog entry to `BLOCK_DEFINITIONS` in
 `Code/blocFantome.py`. `Code/domain/block_catalog.py` owns the immutable value
 types used by this map:
 ```python
-BlockType.MY_NEW_BLOCK: BlockDefinition(
-    textureTop="my_block_top.png",
-    textureSide="my_block.png",
-    textureBottom="my_block_bottom.png",
-    transparent=False,
-    solid=True,
-    lightLevel=0,
-    animated=False,
-    category="Building"
-),
+BLOCK_DEFINITIONS = {
+    # ...
+    BlockType.MY_NEW_BLOCK: BlockDefinition(
+        textureTop="my_block_top.png",
+        textureSide="my_block.png",
+        textureBottom="my_block_bottom.png",
+        transparent=False,
+        solid=True,
+        lightLevel=0,
+        animated=False,
+        category="Building"
+    ),
+}
 ```
 
 ### Step 3: Add Texture Files
@@ -206,8 +232,8 @@ Place your 16x16 PNG textures in `Assets/Texture Hub/blocks/`:
 Ensure your block's category exists in `BLOCK_CATEGORIES`:
 ```python
 BLOCK_CATEGORIES = {
-    "Building": [BlockType.STONE, ..., BlockType.MY_NEW_BLOCK],
     # ...
+    "Building": [BlockType.STONE, ..., BlockType.MY_NEW_BLOCK],
 }
 ```
 
@@ -215,6 +241,7 @@ BLOCK_CATEGORIES = {
 If your block has a unique sound category, add it to `BLOCK_SOUNDS`:
 ```python
 BLOCK_SOUNDS = {
+    # ...
     BlockType.MY_NEW_BLOCK: "stone",  # Use existing sound category
 }
 ```
@@ -230,8 +257,7 @@ Create a new JSON file in `Code/saves/`:
     "version": 3,
     "dimension": "overworld",
     "blocks": [
-        {"x": 0, "y": 0, "z": 0, "type": "STONE"},
-        {"x": 1, "y": 0, "z": 0, "type": "OAK_PLANKS"},
+        {"x": 0, "y": 0, "z": 0, "type": "OAK_PLANKS"},
         ...
     ]
 }
@@ -242,7 +268,7 @@ Add the JSON filename and display name to `JSON_STRUCTURE_LIBRARY` in
 `Code/domain/structures.py`:
 ```python
 JSON_STRUCTURE_LIBRARY = {
-    # ... existing structures ...
+    # ...
     "my_structure": "My Structure",
 }
 ```
@@ -364,7 +390,7 @@ For large builds (1000+ blocks):
 1. Test your changes thoroughly (see Testing section)
 2. Update documentation if adding features
 3. Add comments for complex logic
-4. Ensure no bare `except:` clauses
+4. Ensure no bare except clauses
 
 ### PR Title Format
 ```
@@ -391,7 +417,6 @@ Add screenshots for UI changes.
 
 ## Checklist
 - [ ] Tested manually
-- [ ] No new bare except clauses
 - [ ] Documentation updated
 ```
 
