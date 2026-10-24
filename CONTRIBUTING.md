@@ -39,6 +39,26 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
   If already over budget, do not add bulk artifacts until cleanup or a scoped
   exception is approved. Reuse existing bookkeeping, not a new reporting system.
 
+## Repository hygiene
+
+- Use task-based names for branches, worktree directories, commits and release
+  artifacts, never tool- or model-branded names. Public commits, documentation
+  and releases must have no generated-by credits, automated co-author trailers
+  or unnecessary tool signatures. Publish through the owner's configured Git
+  identity and verify author and committer; preserve accurate provenance and
+  historical references.
+- Reuse the main checkout and current development branch. Create an auxiliary
+  worktree only when isolation is needed; normally keep **at most two active
+  auxiliary worktrees per project**. More requires owner approval. At each
+  accepted checkpoint inspect active/stale worktrees and branches; propose
+  pruning only after checking dirty or ignored owner files, unique commits,
+  dependencies and rollback needs. No unattended destructive cleanup.
+- At handoff review tracked, untracked and ignored scratch files, obsolete
+  scripts, logs, duplicate reports and builds. Keep what has a current
+  consumer or preservation value; consolidate routine notes into existing
+  documentation. Propose exact deletion targets for approval, record completed
+  cleanup briefly, and avoid building new maintenance infrastructure.
+
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
