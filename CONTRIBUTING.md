@@ -146,9 +146,9 @@ python Code/build_exe.py --diagnostic --output-dir .qa/review-package
 - Use type hints for function parameters and return types
 
 ### Naming Conventions
-- Classes: `PascalCase` (e.g., `_BlockType`, `AssetManager`)
+- Classes: `PascalCase` (e.g., `BlocFantome`, `AssetManager`)
 - Functions/Methods: `camelCase` with underscore prefix for private (e.g., `_renderWorld`, `loadAssets`)
-- Constants: `UPPER_SNAKE_CASE` (e.g., `WINDOW_WIDTH`, `GRID_HEIGHT`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `TILE_WIDTH`, `GRID_HEIGHT`)
 - Variables: `camelCase` (e.g., `blockType`, `currentDimension`)
 
 ### Docstrings
@@ -207,19 +207,16 @@ Add the corresponding compatibility catalog entry to `BLOCK_DEFINITIONS` in
 `Code/blocFantome.py`. `Code/domain/block_catalog.py` owns the immutable value
 types used by this map:
 ```python
-BLOCK_DEFINITIONS = {
-    # ...
-    BlockType.MY_NEW_BLOCK: BlockDefinition(
-        textureTop="my_block_top.png",
-        textureSide="my_block.png",
-        textureBottom="my_block_bottom.png",
-        transparent=False,
-        solid=True,
-        lightLevel=0,
-        animated=False,
-        category="Building"
-    ),
-}
+BlockType.MY_NEW_BLOCK: BlockDefinition(
+    textureTop="my_block_top.png",
+    textureSide="my_block.png",
+    textureBottom="my_block_bottom.png",
+    transparent=False,
+    solid=True,
+    lightLevel=0,
+    animated=False,
+    category="Building"
+),
 ```
 
 ### Step 3: Add Texture Files
@@ -232,8 +229,8 @@ Place your 16x16 PNG textures in `Assets/Texture Hub/blocks/`:
 Ensure your block's category exists in `BLOCK_CATEGORIES`:
 ```python
 BLOCK_CATEGORIES = {
-    # ...
     "Building": [BlockType.STONE, ..., BlockType.MY_NEW_BLOCK],
+    # ...
 }
 ```
 
@@ -241,7 +238,6 @@ BLOCK_CATEGORIES = {
 If your block has a unique sound category, add it to `BLOCK_SOUNDS`:
 ```python
 BLOCK_SOUNDS = {
-    # ...
     BlockType.MY_NEW_BLOCK: "stone",  # Use existing sound category
 }
 ```
@@ -257,7 +253,8 @@ Create a new JSON file in `Code/saves/`:
     "version": 3,
     "dimension": "overworld",
     "blocks": [
-        {"x": 0, "y": 0, "z": 0, "type": "OAK_PLANKS"},
+        {"x": 0, "y": 0, "z": 0, "type": "STONE"},
+        {"x": 1, "y": 0, "z": 0, "type": "OAK_PLANKS"},
         ...
     ]
 }
@@ -268,7 +265,7 @@ Add the JSON filename and display name to `JSON_STRUCTURE_LIBRARY` in
 `Code/domain/structures.py`:
 ```python
 JSON_STRUCTURE_LIBRARY = {
-    # ...
+    # ... existing structures ...
     "my_structure": "My Structure",
 }
 ```
@@ -390,7 +387,7 @@ For large builds (1000+ blocks):
 1. Test your changes thoroughly (see Testing section)
 2. Update documentation if adding features
 3. Add comments for complex logic
-4. Ensure no bare except clauses
+4. Ensure no bare `except:` clauses
 
 ### PR Title Format
 ```
@@ -417,6 +414,7 @@ Add screenshots for UI changes.
 
 ## Checklist
 - [ ] Tested manually
+- [ ] No new bare except clauses
 - [ ] Documentation updated
 ```
 
