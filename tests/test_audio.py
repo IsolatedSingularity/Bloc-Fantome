@@ -121,6 +121,20 @@ class FakeMusic:
 
 
 class AudioRouterTests(unittest.TestCase):
+    def test_dynamic_weather_gain_keeps_mute_headroom_and_other_pools(self):
+        mixer=FakeMixer()
+        router=AUDIO.AudioRouter(mixer,{'weather':(2,3),'effects':(8,)})
+        bed=router.play('rain',group='weather',loops=-1,volume=.5)
+        effect=router.play('place',group='effects',volume=.7)
+        router.set_group_volume('weather',0)
+        router.set_channel_volume(bed,'weather',.9)
+        self.assertEqual(bed.volume,(0,0))
+        router.set_group_volume('weather',.6)
+        self.assertAlmostEqual(bed.volume[0],.9*.72*.6)
+        prior=effect.volume
+        router.set_channel_volume(effect,'weather',0)
+        self.assertEqual(effect.volume,prior)
+
     def test_gain_is_clamped_with_headroom(self):
         mixer = FakeMixer()
         router = AUDIO.AudioRouter(mixer, {"effects": (0,)}, peak_headroom=0.7)

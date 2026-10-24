@@ -112,6 +112,8 @@ def build(debug: bool = False, diagnostic: bool = False, output_dir=None):
     print("=" * 60)
 
     from engine.selected_audio import validate_selected_audio, validate_presentation_audio
+    from tools.prepare_atmosphere_audio import validate as validate_rain_audio
+    validate_rain_audio(PROJECT_ROOT)
     import hashlib, json
     night_art=os.path.join(SCRIPT_DIR,'ui','art','goodbye-night.png')
     with open(night_art,'rb') as handle:

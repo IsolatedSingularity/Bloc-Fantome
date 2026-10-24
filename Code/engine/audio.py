@@ -342,6 +342,14 @@ class AudioRouter:
         for channel in self._groups.get(group, ()):
             channel.stop()
 
+    def set_channel_volume(self, channel, group: str, volume: float) -> None:
+        """Animate an owned loop gain while retaining bus mute and headroom."""
+        if channel not in self._groups.get(group, ()):
+            return
+        gain = self._clamp(volume) * self.peak_headroom
+        self._channel_gains[id(channel)] = (gain, gain)
+        channel.set_volume(gain*self._group_volume[group],gain*self._group_volume[group])
+
 
 class MusicController:
     """Own the single music backend and its dimension transitions.

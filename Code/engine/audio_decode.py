@@ -11,7 +11,7 @@ import wave
 import pygame
 
 
-def load_sound(path, *, mixer=None):
+def load_sound(path, *, mixer=None, max_seconds=None):
     mixer=pygame.mixer if mixer is None else mixer
     if not isinstance(path,(str,os.PathLike)) or not os.path.isfile(path) or os.path.splitext(path)[1].lower() not in ('.ogg','.mp3'):
         return mixer.Sound(path)
@@ -20,7 +20,8 @@ def load_sound(path, *, mixer=None):
         rate=source.samplerate;channels=source.channels
         # MP3 containers can overestimate frame count. Array reads trim to the
         # actual decoded length instead of asserting that the estimate is exact.
-        pcm=source.read(dtype='int16',always_2d=True).tobytes()
+        frames=-1 if max_seconds is None else max(0,round(float(max_seconds)*rate))
+        pcm=source.read(frames=frames,dtype='int16',always_2d=True).tobytes()
     if mixer.get_init()==(rate,-16,channels):
         return mixer.Sound(buffer=pcm)
     # SDL_LoadWAV's format conversion does not enter Mix_LoadMusic_RW. Preserve

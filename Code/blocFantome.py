@@ -6953,15 +6953,27 @@ class AssetManager:
         # Load rain and thunder sounds from ambient/weather folder
         self.relaxingRainPath = None  # Path to the long rain track
         self.relaxingRainSound = None  # Pre-loaded rain Sound object (avoids stutter)
+        self.atmosphericRainSound = None
         self.thunderSounds = []
         weatherDir = os.path.join(SOUNDS_DIR, "ambient", "weather")
         if os.path.exists(weatherDir):
+            atmosphereDir=os.path.join(weatherDir,'atmosphere')
+            bedPath=os.path.join(atmosphereDir,'rain-bed.ogg')
+            if os.path.isfile(bedPath):
+                self.atmosphericRainSound=load_sound(bedPath)
+                self.atmosphericRainSound.set_volume(.65)
+                for material in ('stone','masonry','wood','foliage','glass_metal','water'):
+                    paths=[os.path.join(atmosphereDir,f'rain-{material}-{i}.ogg') for i in range(1,4)]
+                    self.sounds['rain_'+material]=[load_sound(path) for path in paths if os.path.isfile(path)]
             # Load the single relaxing rain track (12 min mp3) - preload to avoid stutter
             relaxingPath = os.path.join(weatherDir, "relaxingrain.mp3")
             if os.path.exists(relaxingPath):
                 self.relaxingRainPath = relaxingPath
                 try:
-                    self.relaxingRainSound = load_sound(relaxingPath)
+                    # Horror Rain uses exactly the first 30 seconds. Keep a
+                    # resampling guard, not a second 12-minute decoded buffer.
+                    self.relaxingRainSound = load_sound(relaxingPath,
+                        max_seconds=30.25 if self.atmosphericRainSound else None)
                     self.relaxingRainSound.set_volume(0.5)
                     print(f"    Pre-loaded relaxing rain track")
                 except Exception as e:
@@ -7418,6 +7430,7 @@ class AssetManager:
             )
             if channel:
                 self.soundLastPlayed[soundCategory] = currentTime
+            return channel
     
     def playPlaceSound(self, worldPos: Tuple[int, int, int] = None):
         """Play a generic block placement sound (stone) - used for operations without specific block type"""
@@ -8037,6 +8050,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._weatherParticleSurface = None
         self._weatherDarkOverlaySurface = None
         self._weatherDarkOverlayKey = None
+        from engine.atmosphere import Atmosphere
+        self.atmosphere = Atmosphere()
+        self._rainDetailChannels = []
         # Multiple rain sound channels for layered ambient effect (Minecraft-style)
         self.rainSoundChannels: List[Dict] = []  # {channel, sound, timer, nextSwitch, volume, targetVolume}
         
@@ -9096,6 +9112,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if self.snowEnabled:self._stopSnow()
         if self.rainEnabled:
             self._stopRain()
+        self.atmosphere.release()
         self.musicController.stop()
         self.worldLoadExecutor.shutdown(wait=False, cancel_futures=True)
         if hasattr(self, '_mapExecutor'):self._mapExecutor.shutdown(wait=False, cancel_futures=True)
@@ -9642,6 +9659,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         """Switch to a different dimension (changes background, floor, and music)"""
         if newDimension == self.currentDimension:
             return  # Already in this dimension
+        self.atmosphere.clear_depth()
         
         # Weather is dimension-specific; switching starts with a clean effect.
         if self.rainEnabled:
@@ -13700,6 +13718,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.rainIntensityTarget = 1.0
         self.weatherInteractionTimer = 0
         self.weatherImpactSoundAt = 0
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.atmosphere.start_rain((self._worldViewportRight(), WINDOW_HEIGHT))
+            self._rainBedGain=0.
         
         particleCount = config.get("particles", RAIN_DROP_COUNT_BASE)
         for _ in range(particleCount):
@@ -13712,17 +13733,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 "color": random.choice(config["colors"]),
                 "phase": random.uniform(0, math.tau),
             })
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.rainDrops = self.atmosphere.drops
         
         # Rain sound: Use pre-loaded Sound (avoids loading stutter)
         self.rainSoundChannel = None
         if self.currentDimension == DIMENSION_OVERWORLD and self.assetManager.relaxingRainSound:
             try:
                 # Use pre-loaded Sound object to avoid loading delay/stutter
-                self.rainSound = self.assetManager.relaxingRainSound
+                self.rainSound = getattr(self.assetManager, 'atmosphericRainSound', None) or self.assetManager.relaxingRainSound
                 self.rainSoundChannel = self.assetManager.playLoop(
                     self.rainSound,
                     group="weather",
-                    volume=self.ambientVolume * 0.55,
+                    volume=0.,
                 )
                 print("    Playing relaxing rain track (on sound channel)")
             except Exception as e:
@@ -13743,9 +13766,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.thunderAmbientChannel = None
         self.thunderAmbientTimer = 0
         self.nextThunderAmbientTime = random.randint(3000, 8000)  # First ambient 3-8 sec
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.nextThunderTime = random.randint(75000, 150000)
+            self.nextThunderAmbientTime = random.randint(35000, 70000)
     
     def _stopRain(self):
         """Stop rain effects"""
+        self.atmosphere.stop_rain()
+        for channel, sound in self._rainDetailChannels:
+            if channel.get_sound() is sound:channel.stop()
+        self._rainDetailChannels.clear()
+        if not self._atmosphereFogEnabled():self.atmosphere.release()
         self.rainDrops = []
         self.rainSplashes = []
         self.skyDarkness = 0
@@ -14172,7 +14203,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _weatherSurfaceCandidates(self):
         """Bounded local height lookups, including tree canopies and roofs."""
-        key=(self.world.revision,self.renderer.viewRotation,self.zoomLevel,
+        key=(id(self.world),self.world.revision,self.renderer.viewRotation,self.zoomLevel,
              round(self.renderer.offsetX/64),round(self.renderer.offsetY/64))
         if self._weatherSurfaceRevision != key:
             self._weatherSurfaceRevision=key
@@ -14209,9 +14240,19 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             },
         }
         category = categories[kind][self.currentDimension]
-        self.assetManager.playSound(
-            category, worldPos, self.effectsVolume * (0.22 if kind == "rain" else 0.16)
-        )
+        volume = self.effectsVolume * (0.22 if kind == "rain" else 0.16)
+        if kind == 'rain' and self.currentDimension == DIMENSION_OVERWORLD:
+            if self.ambientMuted or self.effectsMuted:return
+            from engine.atmosphere import rain_material
+            block = self.world.getBlock(*worldPos)
+            prepared = 'rain_' + rain_material(block.name)
+            if self.assetManager.sounds.get(prepared):category=prepared
+            self._rainDetailChannels[:]=[(c,s) for c,s in self._rainDetailChannels if c.get_busy() and c.get_sound() is s]
+            if len(self._rainDetailChannels)>=2:return
+            volume *= .65 + .35*self.rainIntensity
+        channel = self.assetManager.playSound(category, worldPos, volume)
+        if kind == 'rain' and self.currentDimension == DIMENSION_OVERWORLD and channel:
+            self._rainDetailChannels.append((channel,channel.get_sound()))
         self.weatherImpactSoundAt = now + random.randint(650, 1100)
 
     def _spawnWeatherImpacts(self, kind: str, minimum: int, maximum: int) -> None:
@@ -14229,6 +14270,27 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if spawned >= requested:
                 break
             (x, y), z = random.choice(candidates)
+            if kind == 'rain' and self.currentDimension == DIMENSION_OVERWORLD:
+                # Contact the exposed upper face, retaining world coordinates.
+                from engine.atmosphere import rain_material
+                block = self.world.getBlock(x,y,z)
+                definition = BLOCK_DEFINITIONS.get(block)
+                if definition is None or definition.isThin or definition.isPortal:continue
+                uv=(random.uniform(.15,.85),random.uniform(.15,.85))
+                # The renderer's z anchor is already the TOP vertex of a cube.
+                # Adding one here makes splashes float a whole block overhead.
+                top=float(z)
+                if definition.isSlab:
+                    props=self.world.getBlockProperties(x,y,z)
+                    if not props or getattr(props.slabPosition,'name','')=='BOTTOM':top=z-.5
+                if block==BlockType.WATER:top=z-1+max(.125,self.world.getLiquidLevel(x,y,z)/8)
+                screenX,screenY=self.atmosphere.project_contact({'position':(x,y,top),'uv':uv},self.renderer)
+                if not (0<=screenX<panelLeft and 0<=screenY<WINDOW_HEIGHT):continue
+                self.atmosphere.add_contact((x,y,top),rain_material(block.name),uv)
+                destination.append(dict(x=screenX,y=screenY,life=12,size=3,style='rain',
+                                        color=config['colors'][0],world=(x,y,top)))
+                firstWorldPos=firstWorldPos or (x,y,z);spawned+=1
+                continue
             screenX, screenY = self.renderer.worldToScreen(x, y, z)
             screenX += self.panOffsetX
             screenY += self.panOffsetY + TILE_HEIGHT // 2
@@ -14248,7 +14310,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             destination.append(impact)
             firstWorldPos = firstWorldPos or (x, y, z)
             spawned += 1
-        if firstWorldPos is not None:
+        if firstWorldPos is not None and not (kind=='rain' and self.currentDimension==DIMENSION_OVERWORLD):
             self._playWeatherImpactSound(kind, firstWorldPos)
     
     def _updatePlatformBounds(self):
@@ -16069,6 +16131,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                           stagedBlocks, filepath: str, silent: bool,
                           preferredMusic: str = None) -> bool:
         self._documentGeneration = getattr(self, '_documentGeneration', 0) + 1
+        self.atmosphere.clear_depth()
+        self.atmosphere.contacts.clear()
+        self._weatherSurfaceRevision = None
         if dimension != self.currentDimension:
             self._switchDimension(dimension, preferredMusic=preferredMusic, reset_canvas=False)
         from engine.world_snapshot import WorldSnapshot
@@ -17698,6 +17763,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     
     def _openOpeningScene(self):
         from ui.opening_scene import OpeningScene, skip_on_launch
+        self._openingWeatherRain = self.rainEnabled
+        if self.rainEnabled:self._stopRain()
+        self.atmosphere.release()
         # Display changes belong to this presentation, never to editor camera sizing.
         from pygame._sdl2 import Window
         # Pygame 2.6.1 stores a borrowed Python Window pointer in SDL user data.
@@ -17768,6 +17836,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.windowChrome.sync(fullscreen)
         pygame.mixer.unpause()
         self.musicController.unpause()
+        if getattr(self,'_openingWeatherRain',False) and self.rainEnabled:self._startRain()
+        self._openingWeatherRain=False
 
     def _settingsLayout(self):
         """One native layout for draw, hit testing and text-scale reflow."""
@@ -19563,6 +19633,18 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
     def _updateRain(self, dt: int):
         """Update rain particle positions and effects"""
+        ordinary = self.currentDimension == DIMENSION_OVERWORLD
+        reduced = self.workshop.visibility.reduced_motion
+        self.atmosphere.update(dt, self.rainEnabled and ordinary, reduced)
+        if ordinary and self.atmosphere.just_landed:
+            contact=self.atmosphere.just_landed[0]
+            x,y,z=contact['position']
+            self._playWeatherImpactSound('rain',(x,y,math.ceil(z)))
+        if not (self._atmosphereFogEnabled() or self.rainEnabled and ordinary) and self.atmosphere.depths:
+            self.atmosphere.clear_depth()
+            self.atmosphere.fog_low = self.atmosphere.fog_frame = None
+        for channel,sound in self._rainDetailChannels:
+            if channel.get_sound() is sound and (self.ambientMuted or self.effectsMuted):channel.stop()
         if not self.rainEnabled:
             # Fade out sky darkness and lightning
             if self.skyDarkness > 0:
@@ -19573,16 +19655,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
         config = self._getDimensionWeatherConfig()["rain"]
         
-        darknessTarget = config["darkness"]
+        darknessTarget = round(65 + 30*self.atmosphere.intensity) if ordinary else config["darkness"]
         if self.skyDarkness < darknessTarget:
-            self.skyDarkness = min(darknessTarget, self.skyDarkness + 1)
+            self.skyDarkness = min(darknessTarget, self.skyDarkness + dt*.06)
         
         # Fade out lightning flash
         if self.lightningFlash > 0:
             self.lightningFlash = max(0, self.lightningFlash - 8)
         
         # Update rain intensity over time (creates heavier/lighter rain periods)
-        self.rainIntensityTimer += dt
+        self.rainIntensityTimer += dt if not ordinary else 0
         if self.rainIntensityTimer >= 10000:  # Every 10 seconds, maybe change intensity
             self.rainIntensityTimer = 0
             if random.random() < 0.3:  # 30% chance to change
@@ -19592,12 +19674,26 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self.rainIntensity = min(self.rainIntensityTarget, self.rainIntensity + 0.005)
         elif self.rainIntensity > self.rainIntensityTarget:
             self.rainIntensity = max(self.rainIntensityTarget, self.rainIntensity - 0.005)
+        if ordinary:
+            self.rainIntensity=self.atmosphere.intensity
+            if self.rainSoundChannel and self.rainSoundChannel.get_sound() is self.rainSound:
+                # The camera's edit layer is the virtual ear height. Roofs above
+                # it damp the bed; this does not invent a first-person player.
+                cx,cy=self._cameraWorldCenter()
+                roof=self.world.heightIndex.get((round(cx),round(cy)))
+                ear=self.world.min_y+2
+                sheltered=roof is not None and roof>ear
+                target=self.ambientVolume*.55*self.atmosphere.rain_level*(.65+.35*self.rainIntensity)
+                if sheltered:target*=.6
+                gain=getattr(self,'_rainBedGain',0.)
+                self._rainBedGain=gain+(target-gain)*(1-math.exp(-max(0,dt)/800))
+                self.assetManager.audioRouter.set_channel_volume(self.rainSoundChannel,'weather',self._rainBedGain)
         
         # Rain ambience uses its own preloaded, bounded weather channel.
         
         # Update rain drops with wind angle and intensity
         dropSpeed = int(20 * self.rainIntensity)
-        for drop in self.rainDrops:
+        for drop in (() if ordinary else self.rainDrops):
             drop["y"] += drop["speed"] * self.rainIntensity
             drop["phase"] += 0.03
             curl = math.sin(drop["phase"]) * 0.35 if config["style"] == "embers" else 0
@@ -19620,20 +19716,20 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         splashInterval = max(25, int(baseInterval / self.rainIntensity))
         if self.splashSpawnTimer >= splashInterval:
             self.splashSpawnTimer %= splashInterval
-            self._spawnWeatherImpacts("rain", 3, 6)
+            self._spawnWeatherImpacts("rain", 9 if ordinary else 3, 14 if ordinary else 6)
 
         self._updateWeatherFireInteractions(dt)
         
         # Update splashes
         for splash in self.rainSplashes:
-            splash["life"] -= 1
+            splash["life"] -= dt*.06 if ordinary else 1
         self.rainSplashes = [s for s in self.rainSplashes if s["life"] > 0]
         
         # Lightning timing (visual effect with thunder sound)
         self.thunderTimer += dt
         if self.thunderTimer >= self.nextThunderTime:
             if self.currentDimension == DIMENSION_OVERWORLD:
-                self._triggerLightning()
+                if not reduced:self._triggerLightning()
             else:
                 # Nether heat flare / End void pulse, with no lightning bolt.
                 self.lightningFlash = 45
@@ -19648,7 +19744,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                         volume=self.ambientVolume * 0.18,
                     )
             self.thunderTimer = 0
-            self.nextThunderTime = random.randint(15000, 35000)
+            self.nextThunderTime = random.randint(75000,150000) if ordinary else random.randint(15000,35000)
         
         # Thunder ambient background (distant rumbles, separate from lightning)
         self.thunderAmbientTimer += dt
@@ -19656,7 +19752,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 and self.thunderAmbientTimer >= self.nextThunderAmbientTime):
             self._playThunderAmbient()
             self.thunderAmbientTimer = 0
-            self.nextThunderAmbientTime = random.randint(8000, 18000)  # 8-18 sec between ambient rumbles
+            self.nextThunderAmbientTime = random.randint(35000,70000)
         
         # Update lightning bolt visibility
         if self.lightningBoltTimer > 0:
@@ -19754,7 +19850,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 thunderSound,
                 group="weather",
                 volume=self.ambientVolume,
-                replace=True,
+                replace=False,
             )
         # Trigger lightning flash
         self.lightningFlash = 100  # Moderate flash that will fade out
@@ -19830,6 +19926,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
     def _renderRain(self) -> None:
         """Render rain overlay effects"""
         if not self.rainEnabled and not self.rainDrops:
+            return
+        if self.currentDimension == DIMENSION_OVERWORLD:
+            self.atmosphere.visibility_depth=self.atmosphere.depth_for(self._worldSurfaceCache)
+            self.atmosphere.visibility_offset=(self.renderer.offsetX-self._worldSurfaceCacheOffset[0]-self._worldSurfaceMargin,
+                                              self.renderer.offsetY-self._worldSurfaceCacheOffset[1]-self._worldSurfaceMargin)
+            self.atmosphere.render_rain(self.screen,self.renderer)
+            if self.lightningFlash>0 and not self.workshop.visibility.reduced_motion:
+                self.screen.blit(self._weatherDarkOverlay((210,225,242),round(self.lightningFlash)),(0,0))
             return
         
         # Calculate panel boundary (don't render rain on UI panel)
@@ -20043,6 +20147,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # under a flat blue screen tint.
         self._renderUnderwaterBackdrop()
         self._renderWorldMapBackdropFog()
+        if self.currentDimension == DIMENSION_OVERWORLD and self.rainEnabled:
+            self.atmosphere.render_rain(self.screen,self.renderer,distant=True)
 
         # Draw grid and blocks
         self._renderWorld()
@@ -20498,8 +20604,26 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             if rect.right >= 0 and rect.left < viewportWidth and rect.bottom >= 0 and rect.top < WINDOW_HEIGHT:
                 self.screen.blit(rendered, rect)
 
+    def _atmosphereFogEnabled(self):
+        return (self.currentDimension == DIMENSION_OVERWORLD and self.lightingEnabled
+                and not self.worldMapActive and not self.redstoneLabActive
+                and not self.horrorEnabled and not self.horrorRainEnabled
+                and not self.sceneMetadata.get('underwater'))
+
     def _renderDimensionFog(self) -> None:
         """Blend a cached horizon fog over the world viewport."""
+        if self._atmosphereFogEnabled():
+            source=self._worldSurfaceCache
+            if source is not None and self._worldSurfaceBuild is None:
+                brightness=self.dayBrightness if self.celestialEnabled else 1.
+                # Match the selected authored sky without altering its atlas.
+                variant=self.skyboxRenderer.current_index if self.skyboxesEnabled else 0
+                palette=((151,180,201),(147,137,171),(63,82,112))[variant%3]
+                color=tuple(round(v*(.28+.72*brightness)) for v in palette)
+                offset=(self.renderer.offsetX-self._worldSurfaceCacheOffset[0]-self._worldSurfaceMargin,
+                        self.renderer.offsetY-self._worldSurfaceCacheOffset[1]-self._worldSurfaceMargin)
+                self.atmosphere.render_fog(self.screen,source,offset,color,.68+.32*self.atmosphere.rain_level)
+            return
         if (
             self.worldMapActive
             and self.worldMapMode == "hub"
@@ -21338,11 +21462,13 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # Moving piston cells are composited at sub-cell positions every frame.
         self.redstone.prune_stale_motions()
         canCacheSurface = not self.horrorEnabled and not self.redstone.active_motions
+        atmosphereDepth = (self._atmosphereFogEnabled() or self.rainEnabled and self.currentDimension == DIMENSION_OVERWORLD) and canCacheSurface
         movingTargets = self.redstone.moving_final_targets
         if (
             canCacheSurface
             and self._worldSurfaceCache is not None
             and surfaceKey == self._worldSurfaceCacheKey
+            and (not atmosphereDepth or self.atmosphere.depth_for(self._worldSurfaceCache) is not None)
         ):
             deltaX = self.renderer.offsetX - self._worldSurfaceCacheOffset[0]
             deltaY = self.renderer.offsetY - self._worldSurfaceCacheOffset[1]
@@ -21361,7 +21487,8 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             return
 
         biomeView = self.sceneMetadata.get('kind') in ('biome', 'world') and canCacheSurface
-        if biomeView and surfaceKey in self._biomeViewSurfaces:
+        if (biomeView and surfaceKey in self._biomeViewSurfaces
+                and (not atmosphereDepth or self.atmosphere.depth_for(self._biomeViewSurfaces[surfaceKey][0]) is not None)):
             surface, offset = self._biomeViewSurfaces[surfaceKey]
             self._worldSurfaceCache = surface
             self._worldSurfaceCacheKey = surfaceKey
@@ -21423,6 +21550,17 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 targetSurface.set_clip(clip);targetSurface.fill((0,0,0,0),clip)
                 incrementalZoomBuild=False
         startIndex = self._worldSurfaceBuildIndex if incrementalZoomBuild else 0
+        depthStencil = None
+        if atmosphereDepth:
+            # Horizontal isometric camera depth; height never makes a near tower distant.
+            bounds=self.world.occupiedBounds
+            if bounds:
+                depths=[sum(self.renderer._rotateCoords(x,y)) for x in (bounds[0][0],bounds[1][0])
+                        for y in (bounds[0][1],bounds[1][1])]
+                depthRange=(min(depths),max(depths))
+            else:depthRange=(0,1)
+            depthStencil=self.atmosphere.begin_depth(targetSurface,self.renderer,depthRange,
+                                targetSurface.get_clip() if patchRect else None,patch[0] if patchRect else None)
         transitionBatch = 800 if self._worldTransitionKind == "load" else 8192
         endIndex = (
             min(len(blocksToDraw), startIndex + transitionBatch)
@@ -21514,6 +21652,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                         sprite, dx, dy = cachedRaster
                         margin = self._worldSurfaceMargin if canCacheSurface else 0
                         blits.append((sprite, (screenX+dx+margin, screenY+dy+margin)))
+                        if depthStencil:
+                            depthStencil.add(sprite,(screenX+dx+margin,screenY+dy+margin),
+                                             sum(self.renderer._rotateCoords(x,y)))
                         drawnCount += 1
                         continue
             if sourceProps and sourceProps.sourceCapture and displayBlockType==blockType:
@@ -21685,10 +21826,14 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                         drawY + (self._worldSurfaceMargin if canCacheSurface else 0),
                     ),
                 ))
+                if depthStencil:
+                    depthStencil.add(sprite,(drawX+self._worldSurfaceMargin,drawY+self._worldSurfaceMargin),
+                                     sum(self.renderer._rotateCoords(x,y)))
                 drawnCount += 1
 
         if reusedBlits is None:
             remember(self, labKey, labIndices, blits)
+        if depthStencil:depthStencil.flush()
         if pooledBlits:
             blits.finish()
         elif blits:

@@ -2078,6 +2078,10 @@ class AppIntegrationTests(unittest.TestCase):
                     self.app.splashSpawnTimer = 1000
                     self.app._updateRain(16)
                     self.assertTrue(self.app.rainSplashes)
+                    # Ordinary rain now cues the actual world-space landing,
+                    # after the visible incoming drop reaches its surface.
+                    if dimension==app_module.DIMENSION_OVERWORLD:
+                        for _ in range(100):self.app._updateRain(16)
                     play_sound.assert_called()
                     self.app.rainEnabled = False
                     self.app._stopRain()
@@ -2108,6 +2112,27 @@ class AppIntegrationTests(unittest.TestCase):
         refreshed = self.app._weatherSurfaceCandidates()
         self.assertIsNot(refreshed, first)
         self.assertIn(((2, 2), 1), refreshed)
+
+    def test_rain_hits_elevated_top_faces_in_all_camera_rotations(self):
+        renderer=self.app.renderer
+        original=(renderer.offsetX,renderer.offsetY,renderer.viewRotation,self.app.zoomLevel)
+        try:
+            self.app.world.setBlock(3,4,8,app_module.BlockType.STONE_BRICKS)
+            renderer.setOffset(500,500);renderer.setZoom(.5)
+            for rotation in range(4):
+                renderer.setViewRotation(rotation)
+                self.app.atmosphere.contacts.clear()
+                with patch.object(self.app,'_weatherSurfaceCandidates',return_value=(((3,4),8),)):
+                    self.app._spawnWeatherImpacts('rain',4,4)
+                self.assertEqual(len(self.app.atmosphere.contacts),4)
+                for contact in self.app.atmosphere.contacts:
+                    self.assertEqual(contact['position'],(3,4,8.))
+                    point=self.app.atmosphere.project_contact(contact,renderer)
+                    self.assertTrue(renderer._pointInConvexPolygon(point,renderer.getBlockFacePolygons(3,4,8)['top']))
+        finally:
+            renderer.setOffset(*original[:2]);renderer.setViewRotation(original[2]);renderer.setZoom(original[3])
+            self.app.atmosphere.contacts.clear()
+
 
     def test_rain_extinguishes_only_dimension_appropriate_fire_and_undoes(self):
         scenarios = (
