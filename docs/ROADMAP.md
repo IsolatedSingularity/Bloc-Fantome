@@ -1,6 +1,6 @@
 # Current roadmap
 
-Owner direction, 23 October 2026. This is the single current roadmap. Dated
+Owner direction, 24 October 2026. This is the single current roadmap. Dated
 handoffs and research remain historical evidence, not additional authorization.
 
 ## Preserved 3.0 rollback
@@ -35,6 +35,23 @@ does not start automatically with completion of 3.1.
 Accepted 3.2 delivery must update main/tag, version resources, changelog and docs,
 the root EXE, installed executable and verified Start Menu launch. Preserve
 accepted 3.1 as rollback; an EXE left under `.qa` is only a review build.
+
+## 3.3.0: accepted atmospheric polish
+
+The owner accepted the 3.2 source baseline and the 3.3 atmospheric candidate
+`b52fa4b7`, including the documented large-world performance and memory limits.
+3.3.0 combines both passes: layered rain, impacts on raised surfaces, a prepared
+recorded rain soundscape and moving depth-aware fog. See the
+[atmosphere review](engineering/ATMOSPHERE_3_3.md) for measured results.
+
+The owner authorized publication through the existing development and main
+branches, the annotated v3.3.0 tag and source-only release, followed by the local
+EXE and Start Menu upgrade. Final delivery evidence belongs in the
+[3.3 release record](engineering/RELEASE_3_3.md). The temporary preparation ceiling
+is 8 GiB; aggregate QA must return below 5 GiB before the local upgrade.
+
+Version 4 and the Cathedral interface overhaul are cancelled. Earlier 3.2
+candidate status above records that pass's history; 3.3 supersedes its delivery.
 
 ## Outside this consolidation
 

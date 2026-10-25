@@ -5,6 +5,18 @@ All notable changes to Bloc Fantôme will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-10-24
+
+### Changed
+- Add layered rain with slow intensity and wind changes, visible impacts on raised blocks and roofs, and ripples on water.
+- Add moving fog banks shaped by scene depth, keeping nearby geometry and editor controls readable.
+- Prepare a stereo rain bed and bounded material impact variations from the preserved recordings, with existing volume and channel ownership.
+- Include the accepted 3.2 projection reuse, connected-glass lookup reuse and single-owner save coordination.
+
+### Known limitations
+- Large-world loading and cold rebuild targets remain unmet. Ocean Monument reached a 19.1 ms full-frame p95 in the sustained test, and whole-process memory stabilization remains unverified. The owner accepted these limits for 3.3.0.
+- Version 4 and the Cathedral interface overhaul are cancelled.
+
 ## [3.1.0] - 2026-10-23
 
 ### Fixed

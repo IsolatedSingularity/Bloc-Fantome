@@ -1,9 +1,12 @@
 # Bloc Fantôme design specification
 
-Status: 3.0.0 was owner-accepted on 22 October 2026 at `46324ef4`.
-3.1 preserves that presentation while consolidating engineering. Follow the
-[current roadmap](docs/ROADMAP.md); no Cathedral redesign or creature replacement
-is authorized in 3.1. Dated Pass A/B/C statements below describe design history.
+Status: 3.3.0 was owner-accepted on 24 October 2026, including its documented
+performance and memory limits. It retains the accepted workshop and adds layered
+rain, elevated surface impacts and slowly moving depth-aware fog. The existing
+World controls, Reduced Motion, dimension rules and Horror Rain remain authoritative.
+See the [atmosphere review](docs/engineering/ATMOSPHERE_3_3.md) and
+[current roadmap](docs/ROADMAP.md). Version 4 and the Cathedral redesign are
+cancelled. Dated Pass A/B/C statements below describe design history.
 
 ## Accepted 2.9.9 presentation
 

@@ -1,8 +1,9 @@
 # 3.3 atmospheric review candidate
 
-Status: local owner review, not accepted or released. The installed/root 3.1
-executables and Start Menu route are deliberately preserved. Version resources
-remain at the accepted baseline until the release gate.
+Status: the owner accepted this candidate on 24 October 2026, including its
+documented performance and memory limits, and authorized the 3.3.0 release.
+The review evidence below describes the candidate before that acceptance.
+See [release delivery](RELEASE_3_3.md) for final source and installation status.
 
 The owner accepted the 3.2 source with its documented performance limitations in
 this chat. Its local rollback commit is
@@ -169,6 +170,5 @@ scan error still fails the gate. `budget-current.json` records accessible bytes,
 that allowance, drive free space and the remaining limit. Shared original media
 are unique inputs, not duplicated disposable files. No historical QA was deleted.
 
-Stop here for owner visual, listening and functional acceptance. No push, final
-tag/release, root EXE overwrite, installation or Start Menu edit is authorized
-until the owner accepts this actual candidate.
+The review stopped here for owner acceptance. That acceptance has now been
+received; final source publication and installation follow the release record.

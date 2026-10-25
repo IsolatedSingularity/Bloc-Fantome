@@ -3,7 +3,22 @@
 The permanent sonic direction is musical, subtle, tactile and piano-oriented,
 with a faint cathedral quality. Silence is part of the design. No generic sci-fi
 chirps, repetitive beeps, gratuitous reverb or invented alien oscillators.
-Version 2.9.9 uses the owner's selected recordings; 3.0 retains this discipline.
+Version 2.9.9 uses the owner's selected recordings; 3.3 retains this discipline.
+
+## Ordinary rain in 3.3
+
+Ordinary rain uses a prepared 72-second stereo bed and eighteen short material
+variations derived from the existing recording. The material profiles use filtering
+and gain; they are not new field recordings. Source hashes, processing recipes,
+lossless masters and runtime derivatives are recorded by
+`Code/tools/prepare_atmosphere_audio.py` and its private asset manifest.
+
+The bed follows slow weather intensity changes on the existing weather pool.
+Bounded detail voices follow actual exposed surface contacts, with camera-relative
+pan and shelter response. Existing ambience/effects mutes, music levels and mixer
+headroom remain in force. Introduction, scene changes, disabled weather and exit
+release the ordinary weather voices. Horror Rain retains its original bounded
+30-second recording view and separate ownership.
 
 ## Selected semantic events
 

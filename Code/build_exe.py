@@ -77,7 +77,7 @@ WORLD_MAP_RELEASE_FILES = [
 ]
 
 # Version info
-VERSION = "3.1.0"
+VERSION = "3.3.0"
 COMPANY = "Jeffrey Morais"
 PRODUCT = "Bloc Fantôme"
 COPYRIGHT = "Copyright (c) 2026 Jeffrey Morais"

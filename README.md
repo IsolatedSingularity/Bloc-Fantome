@@ -9,7 +9,9 @@ An isometric building sandbox by Jeffrey Morais. Place a block, build a quiet co
 
 ![The 3.0 building editor](docs/media/3.0/editor.png)
 
-## Version 3.0
+## Version 3.3.0
+
+Rain falls in layers, lands on raised roofs and blocks, and leaves splashes and water ripples. Its sound shifts with the weather and nearby materials. Slow fog banks soften distant buildings while the foreground stays clear.
 
 The workshop has a new title bar, floating controls, IBM Plex typography and square outer panels. The smaller buttons and preview cards stay rounded. Text renders at its selected display size, and Reduced Motion is available from Menu.
 
@@ -86,7 +88,7 @@ The local executable expects its adjacent Assets folder. No binary containing pr
 
 ## Known limits
 
-Large captured worlds can stall during camera rebuilds, edits, loading and saving. In the final comparison, Ocean Monument pan rebuilds had a median near 378 ms and edits near 122 ms; these are measurements from one Windows machine, not performance guarantees. This release preserves the accepted renderer and documents those limits rather than claiming consistently smooth large-world input.
+Large captured worlds can stall during camera rebuilds, edits, loading and saving. The 3.3 review measured Trial Chamber cached loading near 3 seconds and cold view rebuilds near 129 ms. Ocean Monument's full-frame p95 was 19.1 ms during the sustained run. Memory grew across scene changes; a stable whole-process plateau has not been established. These are measurements from one Windows machine, not performance guarantees.
 
 Physical keyboard and Windows Snap coverage is recorded separately from automated SDL event checks in the [release QA record](docs/releases/3.0.0.md). See [CHANGELOG.md](CHANGELOG.md) for the release history.
 

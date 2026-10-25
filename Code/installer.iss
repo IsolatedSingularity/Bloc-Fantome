@@ -11,7 +11,7 @@
 ; Or use Inno Setup Compiler GUI
 
 #define MyAppName "Bloc Fantôme"
-#define MyAppVersion "3.1.0"
+#define MyAppVersion "3.3.0"
 #define MyAppPublisher "Jeffrey Morais"
 #define MyAppURL "https://github.com/IsolatedSingularity/Bloc-Fantome"
 #define MyAppExeName "BlocFantome.exe"
