@@ -72,7 +72,7 @@ def test_canvas_previews_use_real_renderers_and_noise_click_uses_preview(app):
 def test_held_block_is_visible_with_awake_hud_and_nav_spacing_is_even(app):
     shell=app.workshop;shell.visibility.pinned=True;shell.render(app)
     assert shell.context in shell.panels and shell.context.width>100
-    right=[r for r,a,e in shell.hits if a in ('nav:tools','save','nav:menu')]
+    right=[r for r,a,e in shell.hits if a in ('nav:tools','settings','nav:menu')]
     assert right[1].left-right[0].right==right[2].left-right[1].right==4
     assert len({r.centery for r in right})==1
 

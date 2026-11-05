@@ -1309,6 +1309,10 @@ def render_workshop(output_dir: Path):
 
 if __name__ == "__main__":
     destination = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / ".qa" / "visual-checks"
+    if '--gui-331' in sys.argv:
+        from tools.verify_gui_331 import run
+        run(destination,app_module)
+        raise SystemExit(0)
     if '--lifecycle' in sys.argv:
         from render_lifecycle_checks import render as render_lifecycle
         render_lifecycle(destination)

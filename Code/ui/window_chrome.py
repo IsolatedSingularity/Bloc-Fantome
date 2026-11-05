@@ -65,7 +65,7 @@ class WindowChrome:
     def rects(self):
         return [pygame.Rect(self.width-(3-i)*BUTTON,0,BUTTON,HEIGHT) for i in range(3)]
 
-    def handle(self,event,app):
+    def handle(self,event,app,*,closing=False):
         if not self.enabled:return False
         if event.type==pygame.KEYDOWN:
             if event.key==pygame.K_F10:
@@ -74,7 +74,7 @@ class WindowChrome:
                 if event.key==pygame.K_ESCAPE:self.focus=None
                 elif event.key in (pygame.K_TAB,pygame.K_RIGHT):self.focus=(self.focus+1)%3
                 elif event.key==pygame.K_LEFT:self.focus=(self.focus-1)%3
-                elif event.key in (pygame.K_RETURN,pygame.K_SPACE):self.activate(self.focus,app)
+                elif event.key in (pygame.K_RETURN,pygame.K_SPACE):self.activate(self.focus,app,closing=closing)
                 return True
         if event.type in (pygame.MOUSEBUTTONDOWN,pygame.MOUSEBUTTONUP) and event.button==1:
             hit=next((i for i,r in enumerate(self.rects()) if r.collidepoint(event.pos)),None)
@@ -83,16 +83,17 @@ class WindowChrome:
                 if event.pos[1]<HEIGHT:return True
             else:
                 pressed=self.pressed;self.pressed=None
-                if hit is not None and hit==pressed:self.activate(hit,app)
+                if hit is not None and hit==pressed:self.activate(hit,app,closing=closing)
                 if pressed is not None or event.pos[1]<HEIGHT:return True
         return event.type==pygame.MOUSEMOTION and event.pos[1]<HEIGHT
 
-    def activate(self,index,app):
+    def activate(self,index,app,*,closing=False):
         self.focus=None
         if index==0:pygame.display.iconify()
         elif index==1:
             if app.openingScene is not None:app._setOpeningDisplay(not app._openingWindowed)
             else:app._toggleFullscreen()
+        elif closing:app._closingSkipRequested=True
         else:app._requestExit()
 
     def draw(self,screen):

@@ -31,7 +31,7 @@ import random
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
-APP_VERSION = "3.3.0"
+APP_VERSION = "3.3.2"
 
 # Import splash screen module
 from splash import SplashScreen, show_splash
@@ -57,7 +57,7 @@ if sys.platform == 'win32':
             ctypes.windll.user32.SetProcessDPIAware()
         # Bump when the embedded icon changes so Windows does not reuse the
         # taskbar identity and cached glyph from an older one-file build.
-        myappid = 'blocfantome.builder.3.3.0'
+        myappid = 'blocfantome.builder.3.3.2'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except Exception:
         pass
@@ -7848,6 +7848,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         from ui.window_chrome import WindowChrome
         self.windowChrome=WindowChrome()
         pygame.display.set_caption(f"{TITLE} [{APP_VERSION}]")
+        self.version = APP_VERSION
         try:
             from pygame._sdl2.video import Window
             self._displayWindow = Window.from_display_module()
@@ -8160,7 +8161,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.skyboxRenderer = SkyboxRenderer(
             SKYBOXES_DIR, (WINDOW_WIDTH, WINDOW_HEIGHT)
         )
-        self.skyboxesEnabled = self.skyboxRenderer.available(DIMENSION_OVERWORLD)
+        # Background skies start enabled; explicit saved choices still win.
         self.skyboxPrevRect = pygame.Rect(0, 0, 0, 0)
         self.skyboxNextRect = pygame.Rect(0, 0, 0, 0)
         self.skyboxToggleRect = pygame.Rect(0, 0, 0, 0)
@@ -8789,7 +8790,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     self.worldCenteredRotation = config.get(
                         "worldCenteredRotation", False
                     )
-                    # Version 2 adopts skies by default; later user choices persist.
+                    # An explicit saved choice overrides the quiet default.
                     self.skyboxesEnabled = bool(config.get('skyboxesEnabled', self.skyboxesEnabled))
                     # Migrate the first skybox release to the intended presets:
                     # Overworld Night and End Void Aurora. Once migrated, user
@@ -9100,6 +9101,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         if closing:
             feedback.preload(self.assetManager, ('shutdown',))
             closing.render(0)
+            self.windowChrome.draw(self.screen)
             pygame.display.flip()
         shutdown_started = pygame.time.get_ticks()
         if closing:self._playLifecycleCue('shutdown')
@@ -9132,13 +9134,16 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         # selected recording's full multi-second decay or delay failed startup.
         fading=False
         while (not fast_exit and pygame.time.get_ticks()-shutdown_started < GoodbyeScreen.duration_ms) or not workers_done.is_set():
-            events=pygame.event.get()
+            events=[event for event in pygame.event.get()
+                    if not self.windowChrome.handle(event,self,closing=True)]
+            if getattr(self,'_closingSkipRequested',False):fast_exit=True
             if GoodbyeScreen.skip_requested(events):
                 fast_exit=True
                 if pygame.mixer.get_init():pygame.mixer.Channel(29).stop()
             for event in events:
                 if event.type==pygame.VIDEORESIZE:
                     self.screen=pygame.display.set_mode(event.size,pygame.RESIZABLE)
+                    self.windowChrome.sync(False)
                     if closing:closing.screen=self.screen
             elapsed = pygame.time.get_ticks() - shutdown_started
             if fast_exit and not window_hidden:
@@ -9150,7 +9155,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                     self._displayWindow.hide()
                 window_hidden=True
             if closing and not fast_exit:
+                closing.screen=self.screen
                 closing.render(min(elapsed,closing.duration_ms))
+                self.windowChrome.draw(self.screen)
                 pygame.display.flip()
             if not fading and pygame.time.get_ticks()-shutdown_started >= GoodbyeScreen.duration_ms-GoodbyeScreen.fade_ms:
                 if pygame.mixer.get_init():pygame.mixer.Channel(29).fadeout(GoodbyeScreen.fade_ms)
@@ -9739,6 +9746,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         )
         self._tutorialSessionSnapshot = {
             "world": snapshot,
+            "workshopPage": self.workshop.page,
+            "libraryVisible": self.library.visible,
+            "settingsVisible": self.settingsMenuOpen,
             "practiceTools": self._capturePracticeTools(),
             "biomeExpanded": self.biomePanel.expanded,
             "sceneTerrainMode": self.sceneTerrainMode,
@@ -9780,6 +9790,9 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self.tutorialAdvancedMode = bool(advanced)
         self.tutorialScreen.setAdvanced(advanced)
         self.tutorialScreen.show()
+        self.workshop.close_drawer(self)
+        self.library.visible=False
+        self.settingsMenuOpen=False
         if advanced:
             # The field guide identifies itself; a second banner obscures the
             # first lesson and makes the initial scene harder to inspect.
@@ -9858,7 +9871,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
             self._stopSnow()
         if self.horrorRainEnabled:
             self._stopHorrorRain()
-        self.skyboxesEnabled = False
+        self.skyboxesEnabled = True
         self.celestialEnabled = False
         self.cloudsEnabled = False
         self.lightingEnabled = False
@@ -10029,6 +10042,11 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
         self._worldSurfaceCacheKey = None
         self.lightingDirty = True
         self._playMenuMusic(snapshot.dimension)
+        self.workshop.page=state.get("workshopPage", "")
+        self.workshop.menu=self.workshop.page=="menu"
+        self.library.visible=state.get("libraryVisible",False)
+        self.settingsMenuOpen=state.get("settingsVisible",False)
+        self.workshop.reveal()
         print("Tutorial ended - restored the previous build")
         return True
 
@@ -11164,6 +11182,18 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                         self._invalidateViewCaches()
                     elif event.type == pygame.USEREVENT + 1:
                         self.musicController.handle_end_event()
+                    continue
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                hit=next((action for rect,action,enabled in reversed(self.workshop.hits)
+                          if enabled and rect.collidepoint(event.pos) and
+                          (action.startswith('nav:') or action in ('settings','tutorial'))),None)
+                if hit and (self.library.visible or self.settingsMenuOpen or self.tutorialScreen.visible):
+                    if self.tutorialScreen.visible:self.tutorialScreen.hide()
+                    elif hit=='settings' and self.settingsMenuOpen:self.settingsMenuOpen=False
+                    elif hit=='nav:library' and self.library.visible:self.library.visible=False
+                    else:
+                        self.settingsMenuOpen=False;self.library.visible=False
+                        self.workshop.act(hit,self)
                     continue
             if self.library.handle_event(event, self):
                 continue
@@ -20957,7 +20987,7 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
                 celestial_angle=self.celestialAngle,
             )
             if not self.skyboxRenderer.available(self.currentDimension):
-                self.skyboxesEnabled = False
+                self.skyboxesEnabled = True
                 self.tooltipText = "Skybox assets are unavailable"
             else:
                 self.tooltipText = (
@@ -22834,6 +22864,10 @@ class BlocFantome(GuidedTutorialAppMixin, WorldLoadingAppMixin):
 
 def main():
     """Main entry point for the application"""
+    if '--verify-gui' in sys.argv:
+        from tools.verify_gui_331 import run
+        run(sys.argv[sys.argv.index('--verify-gui')+1],sys.modules[__name__])
+        return
     if '--verify-final-finishing' in sys.argv:
         from tools.verify_final_finishing import run
         run(sys.argv[sys.argv.index('--verify-final-finishing')+1],sys.modules[__name__])

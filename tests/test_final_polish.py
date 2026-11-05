@@ -29,10 +29,10 @@ def test_dimension_click_keeps_world_and_consumes_release(app):
     assert not shell.page
 
 
-def test_world_navigation_does_not_toggle_itself_closed(app):
+def test_world_navigation_toggles_itself_closed(app):
     app.workshop.page = 'world'
     app.workshop.act('nav:world', app)
-    assert app.workshop.page == 'world'
+    assert app.workshop.page == ''
 
 
 def test_piano_probability_weighting_playlist_resume_and_no_repeats():

@@ -13,8 +13,7 @@ from ui.generated_icons import fitted, layers, artwork
 def material(screen,rect,color,level,focused=False):
     tint=tuple(round(a+(b*.52-a)*level) for a,b in zip(chrome.CONTROL,color))
     chrome.rounded(screen,(*tint,120+round(28*level)),rect,12)
-    # A shallow, cached highlight follows the face; text never shares its alpha.
-    screen.blit(gloss(rect.size),rect)
+    # A continuous matte face avoids a detached highlight at the top corners.
     if focused:chrome.outline(screen,(*chrome.FOCUS,210),rect.inflate(-1,-1),12)
 
 

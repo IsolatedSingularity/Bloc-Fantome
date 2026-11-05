@@ -31,6 +31,7 @@ WORLD_FRAMING = {
 class PreviewImages:
     def __init__(self, byte_budget=32*1024*1024):
         self.images=OrderedDict();self.jobs={};self.failed=set()
+        self.job_last_request={}
         self.byte_budget=byte_budget
         self.retained_bytes=0
 
@@ -79,10 +80,14 @@ class PreviewImages:
         return sorted(visible,key=lambda row:sum(row[:3])),scale,offset
 
     def get(self,app,entry,size=(360,240)):
-        kind=entry['kind'];value=entry['value'];identity=self._identity(entry);key=(identity,size)
+        kind=entry['kind'];value=entry['value'];identity=self._identity(entry)
+        key=(identity,size,bool(entry.get('structure_scene')))
+        now=time.perf_counter()
+        if identity in self.jobs:self.job_last_request[identity]=now
         for old in tuple(self.jobs):
             if old[:2]==identity[:2] and old!=identity:
                 job=self.jobs.pop(old)
+                self.job_last_request.pop(old,None)
                 if hasattr(job,'cancel'):job.cancel()
         if key in self.images:
             self.images.move_to_end(key);return self.images[key]
@@ -106,9 +111,11 @@ class PreviewImages:
                     for old,job in tuple(self.jobs.items()):
                         # A partially painted preview has no worker left to
                         # finish it. Discard it when selection changes too.
-                        if not hasattr(job,'done') or job.done():self.jobs.pop(old)
+                        if now-self.job_last_request.get(old,0)>.25 and (not hasattr(job,'done') or job.done()):
+                            self.jobs.pop(old);self.job_last_request.pop(old,None)
                     if self.jobs:return None
                 self.jobs[jobkey]=app.worldLoadExecutor.submit(self._stage,app,path)
+                self.job_last_request[jobkey]=now
             job=self.jobs[jobkey]
             if hasattr(job,'done'):
                 if not job.done():return None
@@ -117,13 +124,14 @@ class PreviewImages:
                     surface=pygame.Surface((600,400),pygame.SRCALPHA)
                     job=[iter(rows),surface,scale,offset,{}];self.jobs[jobkey]=job
                 except Exception:
-                    self.failed.add(jobkey);self.jobs.pop(jobkey,None);return None
+                    self.failed.add(jobkey);self.jobs.pop(jobkey,None);self.job_last_request.pop(jobkey,None);return None
             rows,surface,scale,(ox,oy),sprites=job
             deadline=time.perf_counter()+.002
             while time.perf_counter()<deadline:
                 row=next(rows,None)
                 if row is None:
                     source=surface;self.jobs.pop(jobkey,None)
+                    self.job_last_request.pop(jobkey,None)
                     self._retain((identity,(600,400)),surface)
                     break
                 x,y,z,b=row
@@ -140,9 +148,9 @@ class PreviewImages:
         # actual build, including narrow towers and transparent decoration.
         bounds=source.get_bounding_rect(min_alpha=16)
         if bounds.width and bounds.height:source=source.subsurface(bounds)
-        framing=WORLD_FRAMING.get(value.scene_id) if kind=='world' else None
+        framing=WORLD_FRAMING.get(value.scene_id) if kind=='world' and not entry.get('structure_scene') else None
         complete_islands=kind=='biome' and value['id']=='small_end_islands'
-        fit=min if complete_islands or kind=='world' and value.scene_id=='ancient_city_121' else max if kind in ('world','biome') else min
+        fit=min if entry.get('structure_scene') or complete_islands or kind=='world' and value.scene_id=='ancient_city_121' else max if kind in ('world','biome') else min
         ratio=fit(size[0]/source.get_width(),size[1]/source.get_height())
         if complete_islands:ratio*=.91
         if framing:ratio*=framing[0]
@@ -230,6 +238,7 @@ class PreviewBrowser:
             app.screen.blit(text,text.get_rect(center=(x+width//2,y+13)))
             button(pygame.Rect(x+width-40,y,30,26),'>','page',1);y+=30
             label={'Worlds':'Open world','Biomes':'Open biome','Structures':'Place structure'}[section]
+            if section=='Structures' and self.catalog.pending and self.catalog.pending['kind']=='world':label='Open scene'
             button(pygame.Rect(x+10,y,width-20,27),label if self.catalog.pending else 'Choose a preview','open',None,bool(self.catalog.pending))
             y+=31
         return y

@@ -122,7 +122,7 @@ class Workshop:
 
     def open_drawer(self, page, app):
         self._clear_drawer_hits()
-        self.page='' if self.page==page and page!='world' else page
+        self.page='' if self.page==page else page
         self.menu=self.page=='menu'; self.scroll=0; self.scroller.reset(); self.shortcut_scroller.reset(); self.category_menu=False
         app.searchActive=False; self.focus=None; self.reveal()
         self.cue(app,'open' if self.page else 'cancel')
@@ -152,7 +152,7 @@ class Workshop:
     def canvas_controls(size):
         w,h=size
         return [(pygame.Rect(w-210+i*64,h-64,58,44),action)
-                for i,action in enumerate(('grow','shrink','noise'))]
+                for i,action in enumerate(('shrink','grow','noise'))]
 
     def _canvas_preview(self,app,controls,mouse):
         modal=(self.clean or self.confirm or app.library.visible or app.settingsMenuOpen
@@ -242,14 +242,20 @@ class Workshop:
             if alpha>0:
                 navigation=self._layer('navigation',screen.get_size())
                 for right,items in ((False,tuple((label,'nav:'+label.lower()) for label in ('Build','Library','World','Map'))),
-                                    (True,(('Tools','nav:tools'),('Save','save'),('Menu','nav:menu')))):
-                    widths=[max(86,self.small.size(label)[0]+24) for label,_ in items]
+                                    (True,(('Tools','nav:tools'),('Settings','settings'),('Menu','nav:menu')))):
+                    widths=[36 if label=='?' else max(86,self.small.size(label)[0]+24) for label,_ in items]
                     group_width=sum(widths)+4*(len(items)-1)+12
                     x=w-24-group_width if right else 24
                     self._panel(navigation,(x,20+title_inset,group_width,46),225)
                     x+=6
                     for (label,action),width in zip(items,widths):
                         self._button(navigation,(x,26+title_inset,width,34),label,action,self.page==label.lower(),quiet=True)
+                        if action=='settings':
+                            badge=pygame.Rect(x+width-18,18+title_inset,22,22)
+                            chrome.rounded(navigation,chrome.SELECTED,badge,11)
+                            mark=self.small.render('?',True,chrome.TEXT)
+                            navigation.blit(mark,mark.get_rect(center=badge.center))
+                            self.hits.append((badge,'tutorial',True))
                         x+=width+4
                 navigation.set_alpha(round(alpha*255));screen.blit(navigation,(0,0))
             for rect,action in controls:
@@ -264,14 +270,6 @@ class Workshop:
                 layer=self._layer('hud',screen.get_size())
                 self._hotbar(layer,app)
                 if self.page!='build':self._held_block(layer,app)
-                if not app.tutorialScreen.visible and self.page!='build':
-                    rect=app.tutorialScreen._restoreTileRect()
-                    app.tutorialScreen.renderDock(layer,rect,self.focus=='tutorial')
-                    self.hits.append((rect,'tutorial',True))
-                    if rect.collidepoint(mouse):
-                        label=self.small.render('Tutorial',True,chrome.TEXT)
-                        tip=label.get_rect(midbottom=(rect.centerx,rect.top-8)).inflate(16,8)
-                        chrome.panel(layer,tip);layer.blit(label,label.get_rect(center=tip.center))
                 layer.set_alpha(round(alpha*255));screen.blit(layer,(0,0))
             else:self.hotbar_bounds=pygame.Rect(0,0,0,0)
             self._animated_drawer(app)
@@ -517,7 +515,7 @@ class Workshop:
                 result=getattr(app.undoManager,route)()
                 if result:self.status=route.title()+': '+result.get_description();self.cue(app,'button')
             elif route=='library':app.library.open(app,args[0])
-            elif route=='settings':app.settingsMenuOpen=True
+            elif route=='settings':app.settingsMenuOpen=not app.settingsMenuOpen
             elif route=='help':app.showShortcutsPanel=True
             elif route=='preference':
                 setattr(self.visibility,args[0],not getattr(self.visibility,args[0]));app._saveAppConfig()

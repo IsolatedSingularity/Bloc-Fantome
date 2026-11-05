@@ -17,8 +17,8 @@ def draw_drawer(shell,app):
     box=pygame.Rect(w-width-24 if shell.page in ('tools','world','menu') else 24,y,width,h-y-84)
     if shell.page=='world':
         # The World material deliberately exposes scene luminance beneath it.
-        chrome.rounded(screen,(*chrome.SURFACE,178),box,0)
-        chrome.outline(screen,(137,170,204,70),box,0)
+        chrome.rounded(screen,(*chrome.SURFACE,178),box,chrome.RADIUS)
+        chrome.outline(screen,(137,170,204,70),box,chrome.RADIUS)
         shell.panels.append(box)
     else:shell._panel(screen,box,234,major=True)
     shell.shortcuts_rect=pygame.Rect(0,0,0,0);shell.category_rect=pygame.Rect(0,0,0,0)
@@ -149,7 +149,7 @@ def world(s,app,box):
         screen.blit(state,(r.x+10,r.bottom-state.get_height()-6))
         icon_size=min(68,tile_h-32,tile-20)
         world_icon(screen,action,pygame.Rect(r.centerx-icon_size//2,r.y+8,icon_size,icon_size),
-                   pygame.time.get_ticks()/1000+i*.731,level,s.visibility.reduced_motion,
+                   0,level,True,
                    getattr(app,'celestialAngle',0))
     top=area.y+toggle_h+16-s.scroll;aw=(area.width-3*gap)//4
     pygame.draw.line(screen,chrome.HOVER,(area.x,top-8),(area.right,top-8))

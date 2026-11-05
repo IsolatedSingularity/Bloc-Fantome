@@ -56,6 +56,8 @@ def render(app):
     shade=pygame.Surface(screen.get_size(),pygame.SRCALPHA);shade.fill((3,8,16,105));screen.blit(shade,(0,0))
     chrome.panel(screen,rect,alpha=236,major=True)
     screen.blit(app.sectionFont.render('Settings',True,chrome.TEXT),(rect.x+22,rect.y+12))
+    screen.blit(font.render('Bloc Fantôme '+app.version,True,chrome.MUTED),
+                (rect.x+40+app.sectionFont.size('Settings')[0],rect.y+14))
     close=close_rect(app,rect);chrome.button(screen,close,'Close',font,close.collidepoint(mouse),quiet=True)
     heading=font.get_linesize()+4
     for label,y in (('Audio',sliders[0][1].y-heading),('Preferences',controls[0][2].y-heading)):

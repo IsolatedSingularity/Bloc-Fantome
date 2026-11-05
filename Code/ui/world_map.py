@@ -607,9 +607,9 @@ class WorldMapView:
 
         tab_count = len(DIMENSION_LABELS)
         from ui.fonts import TEXT_SCALE
-        tab_width = min(round(142*TEXT_SCALE),max(82,(bar.width-142)//tab_count))
+        tab_width = min(round(142*TEXT_SCALE),max(82,(bar.width-250-6*(tab_count-1))//tab_count))
         tabs_width = tab_width * tab_count + 6 * (tab_count - 1)
-        start_x = max(bar.x + 116, bar.centerx - tabs_width // 2)
+        start_x = max(bar.x + 116, bar.centerx - tabs_width // 2 - 40)
         self.dimension_rects = {}
         for index, dimension in enumerate(DIMENSION_LABELS):
             rect = pygame.Rect(start_x + index * (tab_width + 6), bar.y + 8, tab_width, 36)
@@ -782,26 +782,12 @@ class WorldMapView:
         self._render_dimension_ambience(screen)
         self._render_landmarks(screen, renderer)
         self._render_travelers(screen, renderer)
-        title_rect = pygame.Rect(16, 14+getattr(self,'title_inset',0), min(520, width - 302), 82)
-        self._panel(screen, title_rect)
-        accent = DIMENSION_COLORS[self.dimension]
-        pygame.draw.rect(screen, accent, (title_rect.x + 4, title_rect.y + 4, 6, title_rect.height - 8))
-        title = self._text(DIMENSION_LABELS[self.dimension], (255, 234, 164), scale=3, fallback=self.font)
-        subtitle = self._text(self.scene.title, (229, 230, 238), scale=2)
-        screen.blit(title, (title_rect.x + 19, title_rect.y + 10))
-        screen.blit(subtitle, (title_rect.x + 20, title_rect.y + 48))
-
-        self.back_rect = pygame.Rect(width - 124, 17+getattr(self,'title_inset',0), 106, 36)
-        self._worldbuilder_panel(
-            screen, self.back_rect,
-            selected=self.back_rect.collidepoint(pygame.mouse.get_pos()),
-        )
-        self._navigation_chevron(screen,(self.back_rect.x+14,self.back_rect.centery))
-        back_text = self._text("BACK", TEXT, scale=2)
-        screen.blit(back_text, back_text.get_rect(center=(self.back_rect.centerx + 14, self.back_rect.centery)))
-        self._route_ledger(screen, completed)
+        title_rect = pygame.Rect(0,0,0,0)
+        self.route_panel_rect=pygame.Rect(0,0,0,0)
         self._navigation(screen)
         self._region_navigation(screen)
+        self.back_rect=pygame.Rect(width-118,screen.get_height()-62,88,36)
+        self._button(screen,self.back_rect,'BACK')
 
         # World Builder parks unavailable mission sprites off-screen rather
         # than presenting disabled question marks. The route ledger carries
@@ -831,11 +817,7 @@ class WorldMapView:
             if self.scene.region_key and (not screen.get_rect().contains(marker_area) or marker_area.collidelist(controls)>=0):
                 original = anchor
                 ax = max(80,min(width-100,anchor[0]))
-                ay = max(title_rect.bottom+65,min(screen.get_height()-165,anchor[1]))
-                if ax < self.region_panel_rect.right+45 and ay < self.region_panel_rect.bottom+60:
-                    ax = self.region_panel_rect.right+65
-                if ax > width-305 and ay < 310:
-                    ax = width-320
+                ay = max(100,min(self.region_panel_rect.top-75,anchor[1]))
                 anchor = (round(ax),round(ay))
                 if screen.get_rect().collidepoint(original):
                     pygame.draw.line(screen, (132,126,115), original, anchor, 1)
@@ -859,42 +841,31 @@ class WorldMapView:
             )
             self.node_rects.append(node_rect)
             self.node_hit_rects.append(node_rect.inflate(30, 26))
-            if hovered or self.scene.region_key:
+            if hovered:
                 self._render_mission_copy(screen, node_rect, route_index)
         self.node_rect = self.node_rects[0] if self.node_rects else pygame.Rect(0, 0, 0, 0)
         self.node_hit_rect = self.node_hit_rects[0] if self.node_hit_rects else pygame.Rect(0, 0, 0, 0)
 
-        self._render_badge(screen)
 
     def _region_navigation(self, screen: pygame.Surface) -> None:
         from engine.world_map_regions import REGIONS
         self.region_rects.clear()
         if self.source_map is None:
             return
-        row=max(32,self.small_font.get_linesize()+8)
-        heading=self._text('EXPLORE',ACCENT,scale=2)
-        first=heading.get_height()+24
-        panel=pygame.Rect(16,110+getattr(self,'title_inset',0),226,first+(len(REGIONS[self.dimension])+1)*row+16)
+        choices=[('overview','Overview'),*REGIONS[self.dimension]]
+        width,height=screen.get_size()
+        columns=4 if width<1400 else len(choices)
+        rows=math.ceil(len(choices)/columns)
+        row=max(34,self.small_font.get_linesize()+10)
+        panel=pygame.Rect(18,height-82-rows*(row+6)-16,width-36,rows*(row+6)+16)
         self.region_panel_rect=panel
-        self._panel(screen, panel)
-        heading = self._text("EXPLORE", (244, 226, 157), scale=2)
-        screen.blit(heading, (panel.x + 12, panel.y + 12))
-        for index, (key, label) in enumerate(REGIONS[self.dimension]):
-            rect = pygame.Rect(panel.x+10,panel.y+first+row*index,panel.width-20,row-5)
-            self.region_rects[key] = rect
-            selected = key == self.scene.region_key
+        self._panel(screen,panel)
+        cell=(panel.width-24)//columns
+        for index,(key,label) in enumerate(choices):
+            rect=pygame.Rect(panel.x+12+index%columns*cell,panel.y+8+index//columns*(row+6),cell-6,row)
+            self.region_rects[key]=rect
+            selected=(key==self.scene.region_key or key=='overview' and not self.scene.region_key)
             native_button(screen,rect,label,self.small_font,rect.collidepoint(pygame.mouse.get_pos()),selected,quiet=True)
-        rect=pygame.Rect(panel.x+10,panel.bottom-row-8,panel.width-20,row-5)
-        self.region_rects['overview']=rect
-        self._button(screen,rect,'OVERVIEW')
-        font=self._ui_font(15);line=font.get_linesize()+3
-        footer=pygame.Rect(16,screen.get_height()-82-(line*2+16),min(screen.get_width()-32,720),line*2+16)
-        self._panel(screen,footer)
-        caption='Java 1.16.1 / Seed 1'
-        if self.dimension=='nether':caption+=' / Roof cutaway'
-        elif self.dimension=='ocean':caption+=' / Water cutaway'
-        native_wrapped(screen,caption,font,(footer.x+12,footer.y+7,footer.width-24,line),MUTED)
-        native_wrapped(screen,'Middle drag: pan   Wheel: zoom   Home: reset',font,(footer.x+12,footer.y+7+line,footer.width-24,line),TEXT)
 
     def render_level(self, screen: pygame.Surface, progress: tuple[int, int, bool]) -> None:
         width, height = screen.get_size()

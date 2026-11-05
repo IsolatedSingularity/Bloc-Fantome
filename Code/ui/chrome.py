@@ -66,9 +66,9 @@ def panel(screen, rect, assets=None, accent=None, alpha=246, *, major=False):
     rect=pygame.Rect(rect)
     # Cached fills retain readable navy; only a small top highlight is translucent.
     alpha=max(215,alpha)
-    rounded(screen,(*SURFACE,alpha),rect,0 if major else RADIUS)
+    rounded(screen,(*SURFACE,alpha),rect,RADIUS)
     if rect.width>24 and rect.height>20:
-        outline(screen, (57,75,94,100), rect, 0 if major else RADIUS)
+        outline(screen, (57,75,94,100), rect, RADIUS)
 
 
 def _outline(size, color, radius, width):

@@ -63,7 +63,8 @@ def test_navigation_fades_and_motion_reveals_without_hidden_hits(app):
         shell.handle_event(pygame.event.Event(pygame.MOUSEMOTION,pos=(501,400),rel=(1,0),buttons=(0,0,0)),app)
         shell.render(app)
     actions={a for _,a,_ in shell.hits}
-    assert {'nav:build','nav:library','nav:world','nav:map','nav:tools','nav:menu','save'}<=actions
+    assert {'nav:build','nav:library','nav:world','nav:map','nav:tools','nav:menu','tutorial','settings'}<=actions
+    assert 'save' not in actions
     assert not {'reveal','undo','left','fit','right'}&actions
 
 

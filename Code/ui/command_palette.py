@@ -18,7 +18,8 @@ def render(s, app):
     group=s.menu_group;slots=s.menu_slots and group=='File'
     keys=GROUPS[group];content=(len(keys)+(4 if slots else 0))*(row+gap)
     top=s.operation_rect.bottom+8 if s.operation_rect.height else 82
-    height=min(h-top-84,2*row+52+content)
+    footer=s.small.get_linesize()+16
+    height=min(h-top-84,2*row+52+content+footer)
     box=pygame.Rect(w-width-24,top,width,height)
     s._panel(screen,box,232,major=True)
     start=len(s.hits);x=box.x+12;inner=width-24;cw=(inner-8)//3
@@ -30,7 +31,7 @@ def render(s, app):
     s._button(screen,(box.right-12-close_width,gy,close_width,row),'Close','close',quiet=True)
     y=gy+row+10
     pygame.draw.line(screen,chrome.HOVER,(x,y-5),(box.right-12,y-5))
-    s.list_rect=pygame.Rect(x,y,inner,box.bottom-y-12)
+    s.list_rect=pygame.Rect(x,y,inner,box.bottom-y-12-footer)
     s.max_scroll=max(0,content-s.list_rect.height)
     s.scroll=s.scroller.update(s.max_scroll,s.visibility.reduced_motion)
     old=screen.get_clip();screen.set_clip(s.list_rect);y-=s.scroll
@@ -62,6 +63,7 @@ def render(s, app):
                               f'quick_{action}_{slot}',enabled=action=='save' or occupied,quiet=True)
                 y+=row+gap
     screen.set_clip(old);s.menu_hits=s.hits[start:]
+    screen.blit(s.small.render('Bloc Fantôme '+app.version,True,chrome.MUTED),(x+8,box.bottom-footer))
     s.shortcuts_rect=s.category_rect=pygame.Rect(0,0,0,0)
     if s.max_scroll:
         track=s.list_rect;thumb=max(20,round(track.height**2/(track.height+s.max_scroll)))
