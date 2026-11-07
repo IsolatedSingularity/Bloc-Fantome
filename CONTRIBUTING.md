@@ -75,8 +75,10 @@ template. Its literary structure, wording, tone, pacing, narrative interludes
 and mathematical sections belong together. Preserve them, including every
 French passage and the closing gallery, acknowledgments and author end matter.
 
-Extend it through small, self-contained additions immediately before
-**Acknowledgments**, using its established voice and formatting. Do not replace
+Extend it through self-contained additions in the established voice. The
+**World Map** chapter follows the complete French water interlude, including
+its closing spacing and separator, and precedes **The Geometry of Blocks**.
+Use individual views from the regional World Map in reading order. Do not replace
 the original body or flatten it into generic product prose, marketing copy or
 release notes. Changes to existing prose require the owner's specific approval.
 

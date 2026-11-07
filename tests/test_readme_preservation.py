@@ -33,6 +33,7 @@ def test_canonical_passages_remain_in_order():
         '<sub>Construire des murs. Placer des blocs.</sub>',
         '<sub>Elle attendra.</sub>',
         '<sub>Elle a toujours attendu.</sub>',
+        '## World Map',
         '## The Geometry of Blocks',
         '### Isometric Projection',
         '### Depth Ordering',
@@ -59,15 +60,17 @@ def test_acknowledgments_and_gallery_are_unchanged():
     ), 'Preserve the acknowledgments, author credit and complete closing gallery.'
 
 
-def test_addendum_is_modular_and_uses_local_still_images():
+def test_world_map_follows_water_interlude_with_individual_stills():
     text = (ROOT / 'README.md').read_text(encoding='utf-8')
     assert '<!-- Artistic document:' in text[:500]
-    section = text.split('## A little farther\n', 1)[1].split('## Acknowledgments', 1)[0]
+    before, section = text.split('\n## World Map\n')
+    assert before.endswith('<sub>Elle a toujours attendu.</sub></p>\n\n<br>\n\n'
+                           '<p align="center"><sub>. . .</sub></p>\n\n<br>\n\n---\n')
+    section = section.split('\n## The Geometry of Blocks\n', 1)[0]
     assert not re.search(r'^## ', section, re.MULTILINE)
-    images = re.findall(r'!\[[^\]]+\]\((docs/media/3\.3/[^)]+)\)', section)
-    assert {Path(path).name for path in images} == {
-        'bastion.png', 'fortress.png', 'taiga.png', 'end-islands.png',
-    }
-    for path in images:
+    scenes = re.split(r'^### .+$', section, flags=re.MULTILINE)[1:]
+    assert len(scenes) == 4
+    for scene, name in zip(scenes, ('bastion', 'fortress', 'taiga', 'central-island')):
+        path = f'docs/media/3.3/{name}.png'
+        assert re.findall(r'^!\[[^\]]+\]\(([^)]+)\)$', scene, re.MULTILINE) == [path]
         assert (ROOT / path).read_bytes().startswith(b'\x89PNG\r\n\x1a\n'), path
-    assert '<p align="center"><sub>La brume passe. L\'horizon reste.</sub></p>' in section
