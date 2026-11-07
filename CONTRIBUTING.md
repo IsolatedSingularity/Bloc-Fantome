@@ -68,6 +68,24 @@ This policy overrides historical handoffs or branch names when they conflict. Ap
   documentation. Propose exact deletion targets for approval, record completed
   cleanup briefly, and avoid building new maintenance infrastructure.
 
+### README preservation contract
+
+The README is an artistic document, and its existing body is the canonical
+template. Its literary structure, wording, tone, pacing, narrative interludes
+and mathematical sections belong together. Preserve them, including every
+French passage and the closing gallery, acknowledgments and author end matter.
+
+Extend it through small, self-contained additions immediately before
+**Acknowledgments**, using its established voice and formatting. Do not replace
+the original body or flatten it into generic product prose, marketing copy or
+release notes. Changes to existing prose require the owner's specific approval.
+
+Keep tool and model branding, generation credits and automated attribution out
+of documentation, commit messages and release-facing text. Preserve the owner's
+authorship conventions. Run `python -m pytest -q tests/test_readme_preservation.py`
+and inspect the rendered README before publishing an addition; a passing anchor
+check does not replace reviewing the prose and gallery.
+
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
