@@ -70,7 +70,20 @@ def test_world_map_follows_water_interlude_with_individual_stills():
     assert not re.search(r'^## ', section, re.MULTILINE)
     scenes = re.split(r'^### .+$', section, flags=re.MULTILINE)[1:]
     assert len(scenes) == 4
-    for scene, name in zip(scenes, ('bastion', 'fortress', 'taiga', 'central-island')):
+    for scene, name in zip(scenes, ('swamp', 'mushroom-fields', 'warped-forest', 'ocean-monument')):
         path = f'docs/media/3.3/{name}.png'
         assert re.findall(r'^!\[[^\]]+\]\(([^)]+)\)$', scene, re.MULTILINE) == [path]
         assert (ROOT / path).read_bytes().startswith(b'\x89PNG\r\n\x1a\n'), path
+
+
+def test_regional_views_illustrate_their_dimensions():
+    text = (ROOT / 'README.md').read_text(encoding='utf-8')
+    dimensions = text.split('\n### Overworld\n', 1)[1].split('\n---\n', 1)[0]
+    sections = re.split(r'^### (?:Nether|The End)$', dimensions, flags=re.MULTILINE)
+    expected = [('taiga',), ('bastion', 'fortress'), ('central-island', 'outer-end-islands')]
+    assert len(sections) == len(expected)
+    for section, names in zip(sections, expected):
+        paths = re.findall(r'^!\[[^\]]+\]\(([^)]+)\)$', section, re.MULTILINE)
+        assert paths == [f'docs/media/3.3/{name}.png' for name in names]
+        for path in paths:
+            assert (ROOT / path).is_file(), path

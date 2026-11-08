@@ -147,15 +147,43 @@ Three distinct dimensions await, each transforming your building canvas with uni
 
 The default dimension greets you with familiar grass-covered ground and the gentle sounds of a calm meadow. Peaceful piano melodies drift in the background as you build under open skies. This is home. Comfortable. Safe. Full of creative possibility.
 
+#### Snowy Taiga
+
+There is a little blue water at the foot of the slope. Start there if you want to count the trees. Each spruce carries its snow on separate shelves, dark needles showing under the white, and for the first few trunks the counting is easy. Farther up, one low branch passes in front of the next tree and the crowns close over the ground. A strip of bare brown hillside appears between them. For a moment it looks like a path. A few trees farther on, you lose it.
+
+![Snow resting on tiers of spruce above a blue inlet and a stepped bank in the Snowy Taiga](docs/media/3.3/taiga.png)
+
 ### Nether
 
-![Nether Dimension](References/nether.png)
-
 Step through the portal and the world transforms. Netherrack stretches beneath your feet, cracked and ancient. The air fills with deep, ominous rumbling: the sound of a realm that exists in eternal twilight between fire and shadow. Crimson forests and warped fungal growths dot the landscape, their bioluminescent glow cutting through the perpetual haze. Here you will find soul sand valleys, bastions of blackstone, and rivers of flowing lava that illuminate the darkness with their molten glow. The music shifts to something darker, more primal. Drums echo in the deep.
+
+#### Hoglin Stable
+
+The bastion sits low in a bend of the lava. Across the bank, pale ribs stick out of the brown earth; a few more show white against the blackstone itself. The high wall at the back is the first part you can make out. Follow it down and what looked like one solid keep opens into pens, narrow passages and little square rooms. Lava shows through a break in the floor. From up here you can see quite clearly how to get from one pen to the next. Finding the way out is another matter.
+
+![The Hoglin Stable bastion, its broken blackstone walls between a fossil bank and lava](docs/media/3.3/bastion.png)
+
+#### Nether Fortress
+
+It takes a step back to see where the bridges go. One runs straight out over the lava, past a crossing and on to a second crossing almost exactly like the first. Underneath, the piers vanish into the red rock at different heights. The cutaway leaves enough of the hillside standing to show how much of this place you could walk over without ever knowing it was there. Try following a single corridor with your eye. *Were you at this crossing a moment ago?*
+
+![The entire Nether fortress, with long brick bridges, junctions and piers visible through the cutaway](docs/media/3.3/fortress.png)
 
 ### The End
 
 Journey to the edge of existence itself. End stone forms an alien landscape floating in an infinite void, its pale yellow surface stark against the absolute darkness that surrounds it. The atmosphere here is different. Ethereal. Empty. *Unsettling*. Distant, haunting tones drift through the emptiness, and the purple-tinged sky holds no stars, no sun, no moon. End cities rise from the void, their purpur spires reaching toward nothing. This is a place of endings, where the familiar rules of the world no longer apply.
+
+#### Central End Island
+
+The rim is easier to follow here. Pale steps run around the island, close together where the ground falls steeply, spreading apart as it levels out. Inside that rim the obsidian pillars stand at uneven heights. Look at their tops: a crystal just visible on one, the fine square of a cage on another. Between all those tall columns, the exit fountain is a small dark patch almost lost against the stone. You came all this way to see the pillars. It is the little space between them that you keep looking at.
+
+![The central End island in full, with its ring of obsidian pillars, crystals and the exit fountain](docs/media/3.3/central-island.png)
+
+#### Outer End Islands
+
+Away from the pillars, the ground breaks up. One broad shelf of end stone carries a thicket of chorus plants, their branches crooked at the joints. The city rises among them in the same pale purple, and for a moment its first tower is hard to pick out. Follow the straight edges. A stair gives way to a room, the room to a bridge, the bridge to a tower taller than the one you started from. Beyond the last roof hangs the ship. You can trace the whole journey from the stone at the foot of the city to the end of that bridge. There is a little black interval left over.
+
+![The complete End City island, its chorus groves and towers, with the End Ship beyond the last bridge](docs/media/3.3/outer-end-islands.png)
 
 ---
 
@@ -267,29 +295,29 @@ Before these regions appeared on the map, they existed in a Minecraft Java Editi
 
 Choose a region on the World Map. Two question marks hang over the terrain. From a distance a mark will do: a stable here, a bridge there. Come a little closer and the mark begins to seem too small for the thing it names.
 
-### Hoglin Stable
+### Swamp
 
-The bastion sits low in a bend of the lava. Across the bank, pale ribs stick out of the brown earth; a few more show white against the blackstone itself. The high wall at the back is the first part you can make out. Follow it down and what looked like one solid keep opens into pens, narrow passages and little square rooms. Lava shows through a break in the floor. From up here you can see quite clearly how to get from one pen to the next. Finding the way out is another matter.
+At the edge of the swamp the river is still blue. It keeps that colour around the bend, close against a narrow strip of sand. Among the trees the water turns the colour of the bank, and the easiest way to tell where it begins is to look for the lily pads. A vine hangs almost to the surface. Just past it there seems to be room to put a foot down. Look again at the little green squares.
 
-![The Hoglin Stable bastion, its broken blackstone walls between a fossil bank and lava](docs/media/3.3/bastion.png)
+![Vines and lily pads in the swamp shallows beside a bend of blue river](docs/media/3.3/swamp.png)
 
-### Nether Fortress
+### Mushroom Fields
 
-It takes a step back to see where the bridges go. One runs straight out over the lava, past a crossing and on to a second crossing almost exactly like the first. Underneath, the piers vanish into the red rock at different heights. The cutaway leaves enough of the hillside standing to show how much of this place you could walk over without ever knowing it was there. Try following a single corridor with your eye. *Were you at this crossing a moment ago?*
+The island nearly closes around a pool of its own. A low neck of land keeps it apart from the sea; you could cross the neck in a few steps and be back on the same blue shore. Up on the ridges, flat brown caps stand on pale stalks. The red ones are easier to follow. There is one on the point, another higher up, a little company of them on the hill. From this distance they would make quite a convincing village, if any of them had a door.
 
-![The entire Nether fortress, with long brick bridges, junctions and piers visible through the cutaway](docs/media/3.3/fortress.png)
+![The mushroom island and its enclosed blue pool, with red and brown caps on the ridges](docs/media/3.3/mushroom-fields.png)
 
-### Snowy Taiga
+### Warped Forest
 
-There is a little blue water at the foot of the slope. Start there if you want to count the trees. Each spruce carries its snow on separate shelves, dark needles showing under the white, and for the first few trunks the counting is easy. Farther up, one low branch passes in front of the next tree and the crowns close over the ground. A strip of bare brown hillside appears between them. For a moment it looks like a path. A few trees farther on, you lose it.
+From the far bank the crowns look almost blue. Come down to the clearing and the same colour is underfoot, right to the lip where the ground breaks off and the red rock shows through. Little yellow lights are caught high in the fungi. The orange below them has another source: a run of lava, narrow enough to lose behind a single stem. In the clearing stands a frame of obsidian. There is only a sliver of violet to see from this angle, but once you have found it, every gap between two stems begins to look like a doorway.
 
-![Snow resting on tiers of spruce above a blue inlet and a stepped bank in the Snowy Taiga](docs/media/3.3/taiga.png)
+![A violet portal in a clearing among warped fungi, with lava below the bank](docs/media/3.3/warped-forest.png)
 
-### Central End Island
+### Ocean Monument
 
-The rim is easier to follow here. Pale steps run around the island, close together where the ground falls steeply, spreading apart as it levels out. Inside that rim the obsidian pillars stand at uneven heights. Look at their tops: a crystal just visible on one, the fine square of a cage on another. Between all those tall columns, the exit fountain is a small dark patch almost lost against the stone. You came all this way to see the pillars. It is the little space between them that you keep looking at.
+The kelp grows straight up the sides of the monument. For a while it is difficult to tell which green lines belong to the building and which merely pass in front of it. Start at the seabed, where the stone feet stand clear of one another. Above them the long ledges go round the corners without a break; farther up, each terrace gives a little ground back to the water. Even on the highest step there is kelp. Down here a roof is just another place for the forest to begin.
 
-![The central End island in full, with its ring of obsidian pillars, crystals and the exit fountain](docs/media/3.3/central-island.png)
+![Prismarine terraces and supports of the Ocean Monument among columns of kelp](docs/media/3.3/ocean-monument.png)
 
 <br>
 
