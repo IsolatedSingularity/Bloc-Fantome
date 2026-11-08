@@ -263,6 +263,8 @@ The liquid simulation runs continuously in the background, so you can place a wa
 
 ## World Map
 
+Before these regions appeared on the map, they existed in a Minecraft Java Edition 1.16.1 world generated with seed 1. Once its terrain had been generated and saved into Anvil region files, the chosen chunks were read back, keeping their block states, biomes and structures in fixed captures. The World Map renders those records through its own isometric atlas, with deliberate cutaways and camera framing to reveal what the surface might conceal. Opening a region does not regenerate the world. You are looking at a saved place, from another angle.
+
 Choose a region on the World Map. Two question marks hang over the terrain. From a distance a mark will do: a stable here, a bridge there. Come a little closer and the mark begins to seem too small for the thing it names.
 
 ### Hoglin Stable
