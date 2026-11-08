@@ -1,5 +1,8 @@
 # Bloc Fantôme
 
+<!-- Artistic document: preserve its prose, structure, French passages and closing gallery.
+Extend modularly, without generic rewrites. See CONTRIBUTING.md for the preservation contract. -->
+
 <!-- Do not remove this comment. It is important. -->
 <!-- The gallery remembers those who visited. -->
 
@@ -253,6 +256,56 @@ The liquid simulation runs continuously in the background, so you can place a wa
 <br>
 
 <p align="center"><sub>. . .</sub></p>
+
+<br>
+
+---
+
+## World Map
+
+Before these regions appeared on the map, they existed in a Minecraft Java Edition 1.16.1 world generated with seed 1. Once its terrain had been generated and saved into Anvil region files, the chosen chunks were read back, keeping their block states, biomes and structures in fixed captures. The World Map renders those records through its own isometric atlas, with deliberate cutaways and camera framing to reveal what the surface might conceal. Opening a region does not regenerate the world. You are looking at a saved place, from another angle.
+
+Choose a region on the World Map. Two question marks hang over the terrain. From a distance a mark will do: a stable here, a bridge there. Come a little closer and the mark begins to seem too small for the thing it names.
+
+### Hoglin Stable
+
+The bastion sits low in a bend of the lava. Across the bank, pale ribs stick out of the brown earth; a few more show white against the blackstone itself. The high wall at the back is the first part you can make out. Follow it down and what looked like one solid keep opens into pens, narrow passages and little square rooms. Lava shows through a break in the floor. From up here you can see quite clearly how to get from one pen to the next. Finding the way out is another matter.
+
+![The Hoglin Stable bastion, its broken blackstone walls between a fossil bank and lava](docs/media/3.3/bastion.png)
+
+### Nether Fortress
+
+It takes a step back to see where the bridges go. One runs straight out over the lava, past a crossing and on to a second crossing almost exactly like the first. Underneath, the piers vanish into the red rock at different heights. The cutaway leaves enough of the hillside standing to show how much of this place you could walk over without ever knowing it was there. Try following a single corridor with your eye. *Were you at this crossing a moment ago?*
+
+![The entire Nether fortress, with long brick bridges, junctions and piers visible through the cutaway](docs/media/3.3/fortress.png)
+
+### Snowy Taiga
+
+There is a little blue water at the foot of the slope. Start there if you want to count the trees. Each spruce carries its snow on separate shelves, dark needles showing under the white, and for the first few trunks the counting is easy. Farther up, one low branch passes in front of the next tree and the crowns close over the ground. A strip of bare brown hillside appears between them. For a moment it looks like a path. A few trees farther on, you lose it.
+
+![Snow resting on tiers of spruce above a blue inlet and a stepped bank in the Snowy Taiga](docs/media/3.3/taiga.png)
+
+### Central End Island
+
+The rim is easier to follow here. Pale steps run around the island, close together where the ground falls steeply, spreading apart as it levels out. Inside that rim the obsidian pillars stand at uneven heights. Look at their tops: a crystal just visible on one, the fine square of a cage on another. Between all those tall columns, the exit fountain is a small dark patch almost lost against the stone. You came all this way to see the pillars. It is the little space between them that you keep looking at.
+
+![The central End island in full, with its ring of obsidian pillars, crystals and the exit fountain](docs/media/3.3/central-island.png)
+
+<br>
+
+<p align="center"><sub>Du doigt, tu fais le tour de l'île.</sub></p>
+
+<p align="center"><sub>Un pilier. Puis un autre.</sub></p>
+
+<br>
+
+<p align="center"><sub>Tu enlèves la main pour voir le dernier.</sub></p>
+
+<br>
+
+<p align="center"><sub>Alors à qui est le doigt</sub></p>
+
+<p align="center"><sub>qui continue de compter ?</sub></p>
 
 <br>
 
